@@ -1,0 +1,14 @@
+excludes:
+  scopes:
+  - name: "debug.*"
+    reason: "TEST_TOOL_OF"
+    comment: "Scope with dependencies only used for testing. Not included in build examples."
+  - name: "lintClassPath"
+    reason: "TEST_TOOL_OF"
+    comment: "Scope with dependencies only used for testing. Not included in build examples."
+  - name: "test.*"
+    reason: "TEST_TOOL_OF"
+    comment: "Scope with dependencies only used for testing. Not included in build examples."
+  - name: ".*Test.*"
+    reason: "TEST_TOOL_OF"
+    comment: "Scope with dependencies only used for testing. Not included in build examples."
