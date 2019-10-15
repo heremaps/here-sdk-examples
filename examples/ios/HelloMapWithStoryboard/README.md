@@ -1,4 +1,4 @@
-The HelloMapWithStoryboard example app shows how to build your UI from Xcode’s Interface builder using a storyboard. You can find how this is done in [ViewController.swift](guides/ios/markdown/en-US/examples/HelloMapWithStoryboard/HelloMapWithStoryboard/ViewController.swift).
+The HelloMapWithStoryboard example app shows how to build your UI from Xcode’s Interface builder using a storyboard. You can find how this is done in [ViewController.swift](HelloMapWithStoryboard/ViewController.swift).
 
 Build instructions:
 -------------------
