@@ -1,4 +1,4 @@
-The Gesture example app shows how to handle common map interactions and gestures, for example, double tap to zoom in. You can find how this is done in [GesturesExample.java](guides/android/markdown/en-US/examples/Gestures/app/src/main/java/com/here/gestures/GesturesExample.java).
+The Gesture example app shows how to handle common map interactions and gestures, for example, double tap to zoom in. You can find how this is done in [GesturesExample.java](app/src/main/java/com/here/gestures/GesturesExample.java).
 
 Build instructions:
 -------------------

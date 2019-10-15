@@ -1,4 +1,4 @@
-The Traffic example app shows how to toggle traffic flow and traffic incidents visualization on a map and how to log details about traffic incidents nearby. You can find how this is done in [TrafficExample.java](guides/android/markdown/en-US/examples/Traffic/app/src/main/java/com/here/traffic/TrafficExample.java).
+The Traffic example app shows how to toggle traffic flow and traffic incidents visualization on a map and how to log details about traffic incidents nearby. You can find how this is done in [TrafficExample.java](app/src/main/java/com/here/traffic/TrafficExample.java).
 
 Build instructions:
 -------------------

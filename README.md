@@ -5,7 +5,7 @@ The new HERE SDK enables you to build powerful location-aware applications. Expl
   <img src="images/here_sdk.jpg" width="500" />
 </p></center>
 
-The HERE SDK is consuming [Open Location Platform](https://developer.here.com/products/open-location-platform) (OLP) data and it is following HERE OS principles incorporating microservices and highly modularized components. Currently, the HERE SDK supports two platforms, Android and iOS.
+The HERE SDK is consuming [Open Location Platform](https://developer.here.com/products/open-location-platform) (OLP) data and it is following modern design principles incorporating microservices and highly modularized components. Currently, the HERE SDK supports two platforms, Android and iOS.
 
 For an overview of the existing features, please check our _Developer's Guide_:
 - [HERE SDK for Android: Developer's Guide](https://developer.here.com/documentation/android-sdk/dev_guide/index.html)
