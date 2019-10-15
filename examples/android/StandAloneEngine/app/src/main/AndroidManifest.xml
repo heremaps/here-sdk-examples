@@ -13,8 +13,8 @@
         android:theme="@style/AppTheme">
 
         <!-- Set your credentials for the HERE SDK. -->
-        <meta-data android:name="com.here.sdk.access_key_id" android:value="YOUR_APP_KEY"/>
-        <meta-data android:name="com.here.sdk.access_key_secret" android:value="YOUR_APP_SECRET"/>
+        <meta-data android:name="com.here.sdk.access_key_id" android:value="YOUR_ACCESS_KEY_ID"/>
+        <meta-data android:name="com.here.sdk.access_key_secret" android:value="YOUR_ACCESS_KEY_SECRET"/>
 
         <activity android:name=".MainActivity">
             <intent-filter>

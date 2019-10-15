@@ -1,3 +1,5 @@
+The MapObject example app shows how to add `MapPolyline`, `MapPolygon`, and `MapCircle` instances to the map. You can find how this is done in [MapObjectsExample.java](guides/android/markdown/en-US/examples/MapObjects/app/src/main/java/com/here/mapobjects/MapObjectsExample.java).
+
 Build instructions:
 -------------------
 

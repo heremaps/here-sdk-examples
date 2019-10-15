@@ -1,3 +1,5 @@
+The MapMarker example app shows how to pin images to mark specific spots on the map. You can find how this is done in [MapMarkerExample.java](guides/android/markdown/en-US/examples/MapMarker/app/src/main/java/com/here/mapmarker/MapMarkerExample.java).
+
 Build instructions:
 -------------------
 

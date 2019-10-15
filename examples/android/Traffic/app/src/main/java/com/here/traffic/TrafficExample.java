@@ -26,13 +26,12 @@ import android.widget.Toast;
 
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.LanguageCode;
-import com.here.sdk.core.errors.EngineInstantiationErrorException;
-import com.here.sdk.mapview.Camera;
-import com.here.sdk.mapview.LayerState;
-import com.here.sdk.mapview.MapLayer;
-import com.here.sdk.mapview.MapView;
-import com.here.sdk.mapview.SceneError;
-import com.here.sdk.mapview.SetLayerStateCallback;
+import com.here.sdk.core.errors.EngineInstantiationException;
+import com.here.sdk.mapviewlite.Camera;
+import com.here.sdk.mapviewlite.LayerState;
+import com.here.sdk.mapviewlite.MapLayer;
+import com.here.sdk.mapviewlite.MapSceneException;
+import com.here.sdk.mapviewlite.MapViewLite;
 import com.here.sdk.traffic.Incident;
 import com.here.sdk.traffic.IncidentCategory;
 import com.here.sdk.traffic.IncidentImpact;
@@ -50,11 +49,11 @@ public class TrafficExample {
     private static final String TAG = TrafficExample.class.getSimpleName();
 
     private Context context;
-    private MapView mapView;
+    private MapViewLite mapView;
     private Camera camera;
     private TrafficEngine trafficEngine;
 
-    public void onMapSceneLoaded(Context context, MapView mapView) {
+    public TrafficExample(Context context, MapViewLite mapView) {
         this.context = context;
         this.mapView = mapView;
         camera = mapView.getCamera();
@@ -63,22 +62,22 @@ public class TrafficExample {
 
         try {
             trafficEngine = new TrafficEngine();
-        } catch (EngineInstantiationErrorException e) {
-            e.printStackTrace();
+        } catch (EngineInstantiationException e) {
+            new RuntimeException("Initialization of TrafficEngine failed: " + e.error.name());
         }
     }
 
-    public void enableAll() {
+    public void enableAllIncidentTypes() {
         // By default, incidents are localized in EN_US
         // and all impacts and categories are enabled.
         IncidentQueryOptions incidentQueryOptions = new IncidentQueryOptions();
-        logIncidentsInViewport(incidentQueryOptions);
+        queryIncidentsInViewport(incidentQueryOptions);
 
-        // Show real-time traffic lines on the map.
-        enableTrafficFlow();
+        // Show real-time traffic lines and incidents on the map.
+        enableTrafficVisualization();
     }
 
-    public void enableOnlyMinorRoadWorksVisualisation() {
+    public void queryOnlyMinorRoadWorks() {
         IncidentQueryOptions incidentQueryOptions = new IncidentQueryOptions(
                 new ArrayList<>(Collections.singletonList(
                         IncidentImpact.MINOR)),
@@ -86,38 +85,32 @@ public class TrafficExample {
                         IncidentCategory.CONSTRUCTION)),
                 LanguageCode.EN_GB);
 
-        logIncidentsInViewport(incidentQueryOptions);
+        queryIncidentsInViewport(incidentQueryOptions);
     }
 
     public void disableAll() {
-        disableTrafficFlow();
+        disableTrafficVisualization();
     }
 
-    private void enableTrafficFlow() {
-        mapView.getMapScene().setLayerState(
-                MapLayer.TRAFFIC_FLOW, LayerState.ENABLED, new SetLayerStateCallback() {
-                    @Override
-                    public void onSetLayerState(@Nullable SceneError sceneError) {
-                        if (sceneError != null) {
-                            Toast.makeText(context, "Error when enabling traffic flow.", Toast.LENGTH_LONG).show();
-                        }
-                    }
-                });
+    private void enableTrafficVisualization() {
+        try {
+            mapView.getMapScene().setLayerState(MapLayer.TRAFFIC_FLOW, LayerState.ENABLED);
+            mapView.getMapScene().setLayerState(MapLayer.TRAFFIC_INCIDENTS, LayerState.ENABLED);
+        } catch (MapSceneException e) {
+            Toast.makeText(context, "Exception when enabling traffic visualization.", Toast.LENGTH_LONG).show();
+        }
     }
 
-    private void disableTrafficFlow() {
-        mapView.getMapScene().setLayerState(
-                MapLayer.TRAFFIC_FLOW, LayerState.DISABLED, new SetLayerStateCallback() {
-                    @Override
-                    public void onSetLayerState(@Nullable SceneError sceneError) {
-                        if (sceneError != null) {
-                            Toast.makeText(context, "Error when disabling traffic flow.", Toast.LENGTH_LONG).show();
-                        }
-                    }
-                });
+    private void disableTrafficVisualization() {
+        try {
+            mapView.getMapScene().setLayerState(MapLayer.TRAFFIC_FLOW, LayerState.DISABLED);
+            mapView.getMapScene().setLayerState(MapLayer.TRAFFIC_INCIDENTS, LayerState.DISABLED);
+        } catch (MapSceneException e) {
+            Toast.makeText(context, "Exception when disabling traffic visualization.", Toast.LENGTH_LONG).show();
+        }
     }
 
-    private void logIncidentsInViewport(IncidentQueryOptions incidentQueryOptions) {
+    private void queryIncidentsInViewport(IncidentQueryOptions incidentQueryOptions) {
         trafficEngine.queryForIncidents(
                 camera.getBoundingRect(),
                 incidentQueryOptions,

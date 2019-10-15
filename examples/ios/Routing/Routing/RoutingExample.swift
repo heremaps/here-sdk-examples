@@ -22,15 +22,15 @@ import UIKit
 
 class RoutingExample {
 
-    private var viewController: UIViewController!
-    private var mapView: MapView!
+    private var viewController: UIViewController
+    private var mapView: MapViewLite
     private var mapMarkers = [MapMarker]()
     private var mapPolylineList = [MapPolyline]()
-    private var routingEngine: RoutingEngine!
+    private var routingEngine: RoutingEngine
     private var startGeoCoordinates: GeoCoordinates?
     private var destinationGeoCoordinates: GeoCoordinates?
 
-    func onMapSceneLoaded(viewController: UIViewController, mapView: MapView) {
+    init(viewController: UIViewController, mapView: MapViewLite) {
         self.viewController = viewController
         self.mapView = mapView
         let camera = mapView.camera
@@ -60,6 +60,7 @@ class RoutingExample {
                                             return
                                         }
 
+                                        // When routingError is nil, routes is guaranteed to contain at least one route.
                                         let route = routes!.first
                                         self.showRouteDetails(route: route!)
                                         self.showRouteOnMap(route: route!)
@@ -117,11 +118,9 @@ class RoutingExample {
         let maneuverInstructions = routeLeg.instructions
         for maneuverInstruction in maneuverInstructions {
             let maneuverAction = maneuverInstruction.action
-            let maneuverDirection = maneuverInstruction.direction
             let maneuverLocation = maneuverInstruction.coordinates
             let maneuverInfo = "\(maneuverInstruction.text)"
                 + ", Action: \(maneuverAction)"
-                + ", Direction: \(maneuverDirection)"
                 + ", Location: \(maneuverLocation)"
             print(maneuverInfo)
         }
@@ -144,8 +143,8 @@ class RoutingExample {
                          Waypoint(coordinates: destinationGeoCoordinates)]
 
         let carOptions = CarOptions()
-        routingEngine!.calculateRoute(with: waypoints,
-                                      carOptions: carOptions) { (routingError, routes) in
+        routingEngine.calculateRoute(with: waypoints,
+                                     carOptions: carOptions) { (routingError, routes) in
 
                                         if let error = routingError {
                                             self.showDialog(title: "Error while calculating a route:", message: "\(error)")
@@ -185,9 +184,9 @@ class RoutingExample {
     }
 
     private func createRandomGeoCoordinatesInViewport() -> GeoCoordinates {
-        let geoBoundingRect = mapView.camera.boundingRect
-        let northEast = geoBoundingRect.northEastCorner
-        let southWest = geoBoundingRect.southWestCorner
+        let geoBox = mapView.camera.boundingRect
+        let northEast = geoBox.northEastCorner
+        let southWest = geoBox.southWestCorner
 
         let minLat = southWest.latitude
         let maxLat = northEast.latitude
@@ -214,8 +213,8 @@ class RoutingExample {
     }
 
     private func showDialog(title: String, message: String) {
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: UIAlertController.Style.alert)
-        alertController.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil))
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
         viewController.present(alertController, animated: true, completion: nil)
     }
 }

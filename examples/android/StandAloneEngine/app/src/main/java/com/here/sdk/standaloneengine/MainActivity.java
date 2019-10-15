@@ -24,9 +24,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
 
-import com.here.sdk.core.GeoBoundingRect;
+import com.here.sdk.core.GeoBox;
 import com.here.sdk.core.GeoCoordinates;
-import com.here.sdk.core.errors.EngineInstantiationErrorException;
+import com.here.sdk.core.errors.EngineInstantiationException;
 import com.here.sdk.traffic.Incident;
 import com.here.sdk.traffic.IncidentQueryOptions;
 import com.here.sdk.traffic.TrafficEngine;
@@ -51,8 +51,8 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             trafficEngine = new TrafficEngine();
-        } catch (EngineInstantiationErrorException e) {
-            trafficInfoTextview.setText(e.getMessage());
+        } catch (EngineInstantiationException e) {
+            trafficInfoTextview.setText(e.error.name());
             return;
         }
 
@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void queryTrafficIncidents() {
         trafficEngine.queryForIncidents(
-                new GeoBoundingRect(new GeoCoordinates(52.373556,13.114358),
+                new GeoBox(new GeoCoordinates(52.373556,13.114358),
                         new GeoCoordinates(52.611022,13.479493)),
                 new IncidentQueryOptions(),
                 (incidentQueryError, incidents) -> {

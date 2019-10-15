@@ -26,17 +26,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 
-import com.here.sdk.mapview.LoadSceneCallback;
-import com.here.sdk.mapview.MapStyle;
-import com.here.sdk.mapview.MapView;
-import com.here.sdk.mapview.SceneError;
+import com.here.sdk.mapviewlite.LoadSceneCallback;
+import com.here.sdk.mapviewlite.MapStyle;
+import com.here.sdk.mapviewlite.MapViewLite;
+import com.here.sdk.mapviewlite.SceneError;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private PermissionsRequestor permissionsRequestor;
-    private MapView mapView;
+    private MapViewLite mapView;
     private TrafficExample trafficExample;
 
     @Override
@@ -78,8 +78,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onLoadScene(@Nullable SceneError sceneError) {
                 if (sceneError == null) {
-                    trafficExample = new TrafficExample();
-                    trafficExample.onMapSceneLoaded(MainActivity.this, mapView);
+                    trafficExample = new TrafficExample(MainActivity.this, mapView);
                 } else {
                     Log.d(TAG, "onLoadScene failed: " + sceneError.toString());
                 }
@@ -88,11 +87,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void enableAllIncidentsButtonClicked(View view) {
-        trafficExample.enableAll();
+        trafficExample.enableAllIncidentTypes();
     }
 
     public void enableOnlyMinorRoadWorksButtonClicked(View view) {
-        trafficExample.enableOnlyMinorRoadWorksVisualisation();
+        trafficExample.queryOnlyMinorRoadWorks();
     }
 
     public void disableAllIncidentsButtonClicked(View view) {

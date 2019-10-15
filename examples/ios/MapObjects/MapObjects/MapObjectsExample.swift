@@ -21,13 +21,13 @@ import heresdk
 
 class MapObjectsExample {
 
-    var mapScene: MapScene!
+    private var mapScene: MapScene
 
-    var mapPolyline: MapPolyline?
-    var mapPolygon: MapPolygon?
-    var mapCircle: MapCircle?
+    private var mapPolyline: MapPolyline?
+    private var mapPolygon: MapPolygon?
+    private var mapCircle: MapCircle?
 
-    func onMapSceneLoaded(mapView: MapView) {
+    init(mapView: MapViewLite) {
         let camera = mapView.camera
         camera.setTarget(GeoCoordinates(latitude: 52.530932, longitude: 13.384915))
         camera.setZoomLevel(14)
@@ -53,13 +53,13 @@ class MapObjectsExample {
         mapScene.addMapCircle(mapCircle!)
     }
 
-    func createMapPolyline() -> MapPolyline {
-        var coordinates = [GeoCoordinates]()
-        coordinates.append(GeoCoordinates(latitude: 52.53032, longitude: 13.37409))
-        coordinates.append(GeoCoordinates(latitude: 52.5309, longitude: 13.3946))
-        coordinates.append(GeoCoordinates(latitude: 52.53894, longitude: 13.39194))
-        coordinates.append(GeoCoordinates(latitude: 52.54014, longitude: 13.37958))
+    private func createMapPolyline() -> MapPolyline {
+        let coordinates = [GeoCoordinates(latitude: 52.53032, longitude: 13.37409),
+                           GeoCoordinates(latitude: 52.5309, longitude: 13.3946),
+                           GeoCoordinates(latitude: 52.53894, longitude: 13.39194),
+                           GeoCoordinates(latitude: 52.54014, longitude: 13.37958)]
 
+        // We are sure that the number of vertices is greater than two, so it will not crash.
         let geoPolyline = try! GeoPolyline(vertices: coordinates)
         let mapPolylineStyle = MapPolylineStyle()
         mapPolylineStyle.setWidth(inPixels: 20)
@@ -69,13 +69,13 @@ class MapObjectsExample {
         return mapPolyline
     }
 
-    func createMapPolygon() -> MapPolygon {
-        var coordinates = [GeoCoordinates]()
-        coordinates.append(GeoCoordinates(latitude: 52.53032, longitude: 13.37409))
-        coordinates.append(GeoCoordinates(latitude: 52.5309, longitude: 13.3946))
-        coordinates.append(GeoCoordinates(latitude: 52.53894, longitude: 13.39194))
-        coordinates.append(GeoCoordinates(latitude: 52.54014, longitude: 13.37958))
+    private func createMapPolygon() -> MapPolygon {
+        let coordinates = [GeoCoordinates(latitude: 52.53032, longitude: 13.37409),
+                           GeoCoordinates(latitude: 52.5309, longitude: 13.3946),
+                           GeoCoordinates(latitude: 52.53894, longitude: 13.39194),
+                           GeoCoordinates(latitude: 52.54014, longitude: 13.37958)]
 
+        // We are sure that the number of vertices is greater than three, so it will not crash.
         let geoPolygon = try! GeoPolygon(vertices: coordinates)
         let mapPolygonStyle = MapPolygonStyle()
         mapPolygonStyle.setFillColor(0x00908AA0, encoding: .rgba8888)
@@ -84,7 +84,7 @@ class MapObjectsExample {
         return mapPolygon
     }
 
-    func createMapCircle() -> MapCircle {
+    private func createMapCircle() -> MapCircle {
         let geoCircle = GeoCircle(center: GeoCoordinates(latitude: 52.530932, longitude: 13.384915),
                                   radiusInMeters: 300)
         let mapCircleStyle = MapCircleStyle()
@@ -94,7 +94,7 @@ class MapObjectsExample {
         return mapCircle
     }
 
-    func clearMap() {
+    private func clearMap() {
         if let line = mapPolyline {
             mapScene.removeMapPolyline(line)
         }

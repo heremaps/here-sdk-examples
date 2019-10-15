@@ -24,16 +24,16 @@ import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.GeoPolygon;
 import com.here.sdk.core.GeoPolyline;
 import com.here.sdk.core.errors.InstantiationErrorException;
-import com.here.sdk.mapview.Camera;
-import com.here.sdk.mapview.MapCircle;
-import com.here.sdk.mapview.MapCircleStyle;
-import com.here.sdk.mapview.MapPolygon;
-import com.here.sdk.mapview.MapPolygonStyle;
-import com.here.sdk.mapview.MapPolyline;
-import com.here.sdk.mapview.MapPolylineStyle;
-import com.here.sdk.mapview.MapScene;
-import com.here.sdk.mapview.MapView;
-import com.here.sdk.mapview.PixelFormat;
+import com.here.sdk.mapviewlite.Camera;
+import com.here.sdk.mapviewlite.MapCircle;
+import com.here.sdk.mapviewlite.MapCircleStyle;
+import com.here.sdk.mapviewlite.MapPolygon;
+import com.here.sdk.mapviewlite.MapPolygonStyle;
+import com.here.sdk.mapviewlite.MapPolyline;
+import com.here.sdk.mapviewlite.MapPolylineStyle;
+import com.here.sdk.mapviewlite.MapScene;
+import com.here.sdk.mapviewlite.MapViewLite;
+import com.here.sdk.mapviewlite.PixelFormat;
 
 import java.util.ArrayList;
 
@@ -44,7 +44,7 @@ public class MapObjectsExample {
     private MapPolygon mapPolygon;
     private MapCircle mapCircle;
 
-    public void onMapSceneLoaded(MapView mapView) {
+    public MapObjectsExample(MapViewLite mapView) {
         Camera mapViewCamera = mapView.getCamera();
         mapViewCamera.setTarget(new GeoCoordinates(52.530932, 13.384915));
         mapViewCamera.setZoomLevel(14);

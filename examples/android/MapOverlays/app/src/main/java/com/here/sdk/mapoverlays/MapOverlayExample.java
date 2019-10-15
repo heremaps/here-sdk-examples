@@ -26,13 +26,13 @@ import android.widget.TextView;
 
 import com.here.sdk.core.Anchor2D;
 import com.here.sdk.core.GeoCoordinates;
-import com.here.sdk.mapview.Camera;
-import com.here.sdk.mapview.MapImage;
-import com.here.sdk.mapview.MapImageFactory;
-import com.here.sdk.mapview.MapMarker;
-import com.here.sdk.mapview.MapMarkerImageStyle;
-import com.here.sdk.mapview.MapOverlay;
-import com.here.sdk.mapview.MapView;
+import com.here.sdk.mapviewlite.Camera;
+import com.here.sdk.mapviewlite.MapImage;
+import com.here.sdk.mapviewlite.MapImageFactory;
+import com.here.sdk.mapviewlite.MapMarker;
+import com.here.sdk.mapviewlite.MapMarkerImageStyle;
+import com.here.sdk.mapviewlite.MapOverlay;
+import com.here.sdk.mapviewlite.MapViewLite;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,17 +40,17 @@ import java.util.List;
 public class MapOverlayExample {
 
     private Context context;
-    private MapView mapView;
-    private GeoCoordinates mapCenterGeoCoordinates = new GeoCoordinates(52.520798, 13.409408);
+    private MapViewLite mapView;
+    private static final GeoCoordinates MAP_CENTER_GEO_COORDINATES = new GeoCoordinates(52.520798, 13.409408);
 
-    public void onMapSceneLoaded(Context context, MapView mapView) {
+    public MapOverlayExample(Context context, MapViewLite mapView) {
         this.context = context;
         this.mapView = mapView;
         Camera camera = mapView.getCamera();
         camera.setZoomLevel(15);
 
-        camera.setTarget(mapCenterGeoCoordinates);
-        addCircleMapMarker(mapCenterGeoCoordinates);
+        camera.setTarget(MAP_CENTER_GEO_COORDINATES);
+        addCircleMapMarker(MAP_CENTER_GEO_COORDINATES);
     }
 
     public void showMapOverlay() {
@@ -63,7 +63,7 @@ public class MapOverlayExample {
         linearLayout.setPadding(10, 10, 10, 10);
         linearLayout.addView(textView);
 
-        MapOverlay<LinearLayout> mapOverlay = new MapOverlay<>(linearLayout, mapCenterGeoCoordinates);
+        MapOverlay<LinearLayout> mapOverlay = new MapOverlay<>(linearLayout, MAP_CENTER_GEO_COORDINATES);
         mapView.addMapOverlay(mapOverlay);
     }
 
@@ -77,7 +77,7 @@ public class MapOverlayExample {
         linearLayout.setPadding(10, 10, 10, 10);
         linearLayout.addView(textView);
 
-        MapOverlay<LinearLayout> mapOverlay = new MapOverlay<>(linearLayout, mapCenterGeoCoordinates);
+        MapOverlay<LinearLayout> mapOverlay = new MapOverlay<>(linearLayout, MAP_CENTER_GEO_COORDINATES);
         mapOverlay.setAnchorPoint(new Anchor2D(0.5F, 1));
         mapView.addMapOverlay(mapOverlay);
     }

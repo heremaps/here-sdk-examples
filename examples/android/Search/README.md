@@ -1,3 +1,5 @@
+The Search example app shows how to search for places including autosuggestions, for the address that belongs to certain geographic coordinates (_reverse geocoding_) and for the geographic coordinates that belong to an address (_geocoding_). You can find how this is done in [SearchExample.java](guides/android/markdown/en-US/examples/Search/app/src/main/java/com/here/search/SearchExample.java).
+
 Build instructions:
 -------------------
 

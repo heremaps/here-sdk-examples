@@ -22,13 +22,13 @@ import UIKit
 
 class ViewController: UIViewController {
 
-    var mapView : MapView!
+    var mapView : MapViewLite!
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Initialize MapView without a storyboard.
-        mapView = MapView(frame: view.bounds)
+        // Initialize MapViewLite without a storyboard.
+        mapView = MapViewLite(frame: view.bounds)
         view.addSubview(mapView)
 
         // Load the map scene using a map style to render the map with.

@@ -1,3 +1,5 @@
+The MapOverlays example app shows how to pin a native UIView to the map. You can find how this is done in [MapOverlaysExample.swift](guides/ios/markdown/en-US/examples/MapOverlays/MapOverlays/MapOverlaysExample.swift).
+
 Build instructions:
 -------------------
 

@@ -26,19 +26,19 @@ package com.here.gestures;
 
  import com.here.sdk.core.GeoCoordinates;
  import com.here.sdk.core.Point2D;
- import com.here.sdk.mapview.Camera;
- import com.here.sdk.mapview.MapView;
- import com.here.sdk.mapview.gestures.DoubleTapListener;
- import com.here.sdk.mapview.gestures.GestureState;
- import com.here.sdk.mapview.gestures.GestureType;
- import com.here.sdk.mapview.gestures.LongPressListener;
- import com.here.sdk.mapview.gestures.TapListener;
+ import com.here.sdk.mapviewlite.Camera;
+ import com.here.sdk.mapviewlite.MapViewLite;
+ import com.here.sdk.mapviewlite.gestures.DoubleTapListener;
+ import com.here.sdk.mapviewlite.gestures.GestureState;
+ import com.here.sdk.mapviewlite.gestures.GestureType;
+ import com.here.sdk.mapviewlite.gestures.LongPressListener;
+ import com.here.sdk.mapviewlite.gestures.TapListener;
 
  public class GesturesExample {
 
      private static final String TAG = GesturesExample.class.getSimpleName();
 
-     public void onMapSceneLoaded(Context context, MapView mapView) {
+     public GesturesExample(Context context, MapViewLite mapView) {
          Camera camera = mapView.getCamera();
          camera.setTarget(new GeoCoordinates(52.530932, 13.384915));
          camera.setZoomLevel(14);
@@ -53,42 +53,41 @@ package com.here.gestures;
          Toast.makeText(context, "See logs for details. DoubleTap map action (zoom in) is disabled as an example.", Toast.LENGTH_LONG).show();
      }
 
-     private void setTapGestureHandler(MapView mapView) {
+     private void setTapGestureHandler(MapViewLite mapView) {
          mapView.getGestures().setTapListener(new TapListener() {
              @Override
-             public void onTap(@NonNull Point2D origin) {
-                 GeoCoordinates geoCoordinates = mapView.getCamera().viewToGeoCoordinates(origin);
+             public void onTap(@NonNull Point2D touchPoint) {
+                 GeoCoordinates geoCoordinates = mapView.getCamera().viewToGeoCoordinates(touchPoint);
                  Log.d(TAG, "Tap at: " + geoCoordinates);
              }
          });
      }
 
-     private void setDoubleTapGestureHandler(MapView mapView) {
+     private void setDoubleTapGestureHandler(MapViewLite mapView) {
          mapView.getGestures().setDoubleTapListener(new DoubleTapListener() {
              @Override
-             public void onDoubleTap(@NonNull Point2D origin) {
-                 GeoCoordinates geoCoordinates = mapView.getCamera().viewToGeoCoordinates(origin);
+             public void onDoubleTap(@NonNull Point2D touchPoint) {
+                 GeoCoordinates geoCoordinates = mapView.getCamera().viewToGeoCoordinates(touchPoint);
                  Log.d(TAG, "Zooming in is disabled. DoubleTap at: " + geoCoordinates);
              }
          });
      }
 
-     private void setLongPressGestureHandler(MapView mapView) {
+     private void setLongPressGestureHandler(MapViewLite mapView) {
          mapView.getGestures().setLongPressListener(new LongPressListener() {
              @Override
-             public void onLongPress(@NonNull GestureState gestureState, @NonNull Point2D origin) {
+             public void onLongPress(@NonNull GestureState gestureState, @NonNull Point2D touchPoint) {
+                 GeoCoordinates geoCoordinates = mapView.getCamera().viewToGeoCoordinates(touchPoint);
+
                  if (gestureState == GestureState.BEGIN) {
-                     GeoCoordinates geoCoordinates = mapView.getCamera().viewToGeoCoordinates(origin);
                      Log.d(TAG, "LongPress detected at: " + geoCoordinates);
                  }
 
                  if (gestureState == GestureState.UPDATE) {
-                     GeoCoordinates geoCoordinates = mapView.getCamera().viewToGeoCoordinates(origin);
                      Log.d(TAG, "LongPress update at: " + geoCoordinates);
                  }
 
                  if (gestureState == GestureState.END) {
-                     GeoCoordinates geoCoordinates = mapView.getCamera().viewToGeoCoordinates(origin);
                      Log.d(TAG, "LongPress finger lifted at: " + geoCoordinates);
                  }
              }
@@ -96,7 +95,7 @@ package com.here.gestures;
      }
 
      @SuppressWarnings("unused")
-     private void removeGestureHandler(MapView mapView) {
+     private void removeGestureHandler(MapViewLite mapView) {
          mapView.getGestures().setTapListener(null);
          mapView.getGestures().setDoubleTapListener(null);
          mapView.getGestures().setLongPressListener(null);
