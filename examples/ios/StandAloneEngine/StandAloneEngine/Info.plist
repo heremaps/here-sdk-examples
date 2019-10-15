@@ -20,10 +20,10 @@
 	<string>1</string>
 	<key>HERECredentials</key>
 	<dict>
-		<key>AccessKeyId</key>
-		<string>YOUR_APP_KEY</string>
-		<key>AccessKeySecret</key>
-		<string>YOUR_APP_SECRET</string>
+	    <key>AccessKeyId</key>
+	    <string>YOUR_ACCESS_KEY_ID</string>
+	    <key>AccessKeySecret</key>
+	    <string>YOUR_ACCESS_KEY_SECRET</string>
 	</dict>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>

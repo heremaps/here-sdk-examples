@@ -6,11 +6,11 @@
     android:layout_height="match_parent"
     tools:context="com.here.mapobjects.MainActivity">
 
-    <com.here.sdk.mapview.MapView
+    <com.here.sdk.mapviewlite.MapViewLite
         android:id="@+id/map_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-    </com.here.sdk.mapview.MapView>
+    </com.here.sdk.mapviewlite.MapViewLite>
 
     <LinearLayout
         app:layout_constraintTop_toTopOf="parent"

@@ -24,7 +24,7 @@ import UIKit
  * This example app shows how to use an engine without a MapView. In this case we use the
  * TrafficEngine to query traffic incidents in Berlin, Germany.
  */
-class ViewController: UIViewController {
+final class ViewController: UIViewController {
 
     private var trafficEngine: TrafficEngine!
 
@@ -44,11 +44,11 @@ class ViewController: UIViewController {
 
     private func queryTrafficIncidents() {
         let incidentOptions = IncidentQueryOptions(impactFilter: [.minor, .major, .low, .critical],
-                                                   categoryFilter: [IncidentCategory.construction, .accident, .congestion],
-                                                   languageCode: LanguageCode.enUs)
+                                                   categoryFilter: [.construction, .accident, .congestion],
+                                                   languageCode: .enUs)
 
-        trafficEngine.queryForIncidents(in: GeoBoundingRect(southWestCorner: GeoCoordinates(latitude: 52.373556, longitude: 13.114358),
-                                                            northEastCorner: GeoCoordinates(latitude: 52.611022, longitude: 13.479493)),
+        trafficEngine.queryForIncidents(in: GeoBox(southWestCorner: GeoCoordinates(latitude: 52.373556, longitude: 13.114358),
+                                                   northEastCorner: GeoCoordinates(latitude: 52.611022, longitude: 13.479493)),
                                         options: incidentOptions) { (incidentQueryError, incidents) in
 
                                             if let error = incidentQueryError {
@@ -67,8 +67,8 @@ class ViewController: UIViewController {
     }
 
     private func showDialog(title: String, message: String) {
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: UIAlertController.Style.alert)
-        alertController.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil))
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
         present(alertController, animated: true, completion: nil)
     }
 }

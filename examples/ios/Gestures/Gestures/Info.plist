@@ -3,12 +3,12 @@
 <plist version="1.0">
 <dict>
   <key>HERECredentials</key>
-  <dict>
-      <key>AccessKeyId</key>
-      <string>YOUR_APP_KEY</string>
-      <key>AccessKeySecret</key>
-      <string>YOUR_APP_SECRET</string>
-  </dict>
+	<dict>
+	    <key>AccessKeyId</key>
+	    <string>YOUR_ACCESS_KEY_ID</string>
+	    <key>AccessKeySecret</key>
+	    <string>YOUR_ACCESS_KEY_SECRET</string>
+	</dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleExecutable</key>

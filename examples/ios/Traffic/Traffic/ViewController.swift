@@ -20,10 +20,10 @@
 import heresdk
 import UIKit
 
-class ViewController: UIViewController {
+final class ViewController: UIViewController {
 
-    @IBOutlet var mapView: MapView!
-    private let trafficExample = TrafficExample()
+    @IBOutlet private var mapView: MapViewLite!
+    private var trafficExample: TrafficExample!
     private var isMapSceneLoaded = false
 
     override func viewDidLoad() {
@@ -31,13 +31,14 @@ class ViewController: UIViewController {
 
         // Load the map scene using a map style to render the map with.
         mapView.mapScene.loadScene(mapStyle: .normalDay) { (sceneError) in
-            if let error = sceneError {
-                print("Error: Map scene not loaded, \(error)")
-            } else {
-                // Start the example.
-                self.trafficExample.onMapSceneLoaded(viewController: self, mapView: self.mapView!)
-                self.isMapSceneLoaded = true
+            guard sceneError == nil else {
+                print("Error: Map scene not loaded, \(String(describing: sceneError))")
+                return
             }
+
+            // Start the example.
+            self.trafficExample = TrafficExample(viewController: self, mapView: self.mapView!)
+            self.isMapSceneLoaded = true
         }
     }
 

@@ -22,16 +22,15 @@ import UIKit
 
 class GesturesExample: TapDelegate, DoubleTapDelegate, LongPressDelegate {
 
-    private var viewController: UIViewController?
-    private var mapView: MapView!
-    private var camera: Camera!
+    private var viewController: UIViewController
+    private var mapView: MapViewLite
 
-    func onMapSceneLoaded(viewController: UIViewController, mapView: MapView) {
+    init(viewController: UIViewController, mapView: MapViewLite) {
         self.viewController = viewController
         self.mapView = mapView
-        camera = mapView.camera
-        camera.setTarget(GeoCoordinates(latitude: 52.530932, longitude: 13.384915))
-        camera.setZoomLevel(14)
+
+        mapView.camera.setTarget(GeoCoordinates(latitude: 52.530932, longitude: 13.384915))
+        mapView.camera.setZoomLevel(14)
 
         mapView.gestures.tapDelegate = self
         mapView.gestures.doubleTapDelegate = self
@@ -75,7 +74,7 @@ class GesturesExample: TapDelegate, DoubleTapDelegate, LongPressDelegate {
     }
 
     // Unused - it's just an example how to clean up.
-    private func removeGestureHandler(mapView: MapView) {
+    private func removeGestureHandler(mapView: MapViewLite) {
         mapView.gestures.tapDelegate = nil
         mapView.gestures.doubleTapDelegate = nil
         mapView.gestures.longPressDelegate = nil
@@ -86,8 +85,8 @@ class GesturesExample: TapDelegate, DoubleTapDelegate, LongPressDelegate {
     }
 
     private func showDialog(title: String, message: String) {
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: UIAlertController.Style.alert)
-        alertController.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil))
-        viewController?.present(alertController, animated: true, completion: nil)
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        viewController.present(alertController, animated: true, completion: nil)
     }
 }

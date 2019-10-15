@@ -24,23 +24,24 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 
-import com.here.sdk.core.GeoBoundingRect;
+import com.here.sdk.core.GeoBox;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.GeoPolyline;
-import com.here.sdk.core.errors.EngineInstantiationErrorException;
+import com.here.sdk.core.errors.EngineInstantiationException;
 import com.here.sdk.core.errors.InstantiationErrorException;
-import com.here.sdk.mapview.Camera;
-import com.here.sdk.mapview.MapImage;
-import com.here.sdk.mapview.MapImageFactory;
-import com.here.sdk.mapview.MapMarker;
-import com.here.sdk.mapview.MapMarkerImageStyle;
-import com.here.sdk.mapview.MapPolyline;
-import com.here.sdk.mapview.MapPolylineStyle;
-import com.here.sdk.mapview.MapView;
-import com.here.sdk.mapview.PixelFormat;
+import com.here.sdk.mapviewlite.Camera;
+import com.here.sdk.mapviewlite.MapImage;
+import com.here.sdk.mapviewlite.MapImageFactory;
+import com.here.sdk.mapviewlite.MapMarker;
+import com.here.sdk.mapviewlite.MapMarkerImageStyle;
+import com.here.sdk.mapviewlite.MapPolyline;
+import com.here.sdk.mapviewlite.MapPolylineStyle;
+import com.here.sdk.mapviewlite.MapViewLite;
+import com.here.sdk.mapviewlite.PixelFormat;
 import com.here.sdk.routing.CalculateRouteCallback;
 import com.here.sdk.routing.CarOptions;
 import com.here.sdk.routing.Instruction;
+import com.here.sdk.routing.ManeuverAction;
 import com.here.sdk.routing.Route;
 import com.here.sdk.routing.RouteLeg;
 import com.here.sdk.routing.RoutingEngine;
@@ -57,14 +58,14 @@ public class RoutingExample {
     private static final String TAG = RoutingExample.class.getName();
 
     private Context context;
-    private MapView mapView;
+    private MapViewLite mapView;
     private final List<MapMarker> mapMarkerList = new ArrayList<>();
     private final List<MapPolyline> mapPolylines = new ArrayList<>();
     private RoutingEngine routingEngine;
     private GeoCoordinates startGeoCoordinates;
     private GeoCoordinates destinationGeoCoordinates;
 
-    public void onMapSceneLoaded(Context context, MapView mapView) {
+    public RoutingExample(Context context, MapViewLite mapView) {
         this.context = context;
         this.mapView = mapView;
         Camera camera = mapView.getCamera();
@@ -73,8 +74,8 @@ public class RoutingExample {
 
         try {
             routingEngine = new RoutingEngine();
-        } catch (EngineInstantiationErrorException e) {
-            e.printStackTrace();
+        } catch (EngineInstantiationException e) {
+            new RuntimeException("Initialization of RoutingEngine failed: " + e.error.name());
         }
     }
 
@@ -162,12 +163,10 @@ public class RoutingExample {
         Log.d(TAG, "Log maneuver instructions per route leg:");
         List<Instruction> maneuverInstructions = routeLeg.getInstructions();
         for (Instruction maneuverInstruction : maneuverInstructions) {
-            Instruction.Action maneuverAction = maneuverInstruction.getAction();
-            Instruction.Direction maneuverDirection = maneuverInstruction.getDirection();
-            GeoCoordinates maneuverLocation = maneuverInstruction.getCoordinates();
-            String maneuverInfo = maneuverInstruction.getText()
+            ManeuverAction maneuverAction = maneuverInstruction.action;
+            GeoCoordinates maneuverLocation = maneuverInstruction.coordinates;
+            String maneuverInfo = maneuverInstruction.text
                     + ", Action: " + maneuverAction.name()
-                    + ", Direction: " + maneuverDirection.name()
                     + ", Location: " + maneuverLocation.toString();
             Log.d(TAG, maneuverInfo);
         }
@@ -231,9 +230,9 @@ public class RoutingExample {
     }
 
     private GeoCoordinates createRandomGeoCoordinatesInViewport() {
-        GeoBoundingRect geoBoundingRect = mapView.getCamera().getBoundingRect();
-        GeoCoordinates northEast = geoBoundingRect.northEastCorner;
-        GeoCoordinates southWest = geoBoundingRect.southWestCorner;
+        GeoBox geoBox = mapView.getCamera().getBoundingRect();
+        GeoCoordinates northEast = geoBox.northEastCorner;
+        GeoCoordinates southWest = geoBox.southWestCorner;
 
         double minLat = southWest.latitude;
         double maxLat = northEast.latitude;

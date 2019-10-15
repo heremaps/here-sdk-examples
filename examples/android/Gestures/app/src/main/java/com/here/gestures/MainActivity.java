@@ -26,16 +26,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import com.here.gestures.PermissionsRequestor.ResultListener;
-import com.here.sdk.mapview.LoadSceneCallback;
-import com.here.sdk.mapview.MapStyle;
-import com.here.sdk.mapview.MapView;
-import com.here.sdk.mapview.SceneError;
+import com.here.sdk.mapviewlite.LoadSceneCallback;
+import com.here.sdk.mapviewlite.MapStyle;
+import com.here.sdk.mapviewlite.MapViewLite;
+import com.here.sdk.mapviewlite.SceneError;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private PermissionsRequestor permissionsRequestor;
-    private MapView mapView;
+    private MapViewLite mapView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onLoadScene(@Nullable SceneError sceneError) {
                 if (sceneError == null) {
-                    new GesturesExample().onMapSceneLoaded(MainActivity.this, mapView);
+                    new GesturesExample(MainActivity.this, mapView);
                 } else {
                     Log.d(TAG, "onLoadScene failed: " + sceneError.toString());
                 }

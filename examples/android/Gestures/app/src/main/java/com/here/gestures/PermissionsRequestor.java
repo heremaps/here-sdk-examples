@@ -89,6 +89,12 @@ public class PermissionsRequestor {
         if (resultListener == null) {
             return;
         }
+
+        if (grantResults.length == 0) {
+            // Request was cancelled.
+            return;
+        }
+
         if (requestCode == PERMISSIONS_REQUEST_CODE) {
             boolean allGranted = true;
             for (int result : grantResults) {

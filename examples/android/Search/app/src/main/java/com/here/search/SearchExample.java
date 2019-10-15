@@ -20,57 +20,68 @@
 package com.here.search;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.here.sdk.core.Anchor2D;
 import com.here.sdk.core.CustomMetadataValue;
-import com.here.sdk.core.GeoBoundingRect;
+import com.here.sdk.core.GeoBox;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.LanguageCode;
 import com.here.sdk.core.Metadata;
 import com.here.sdk.core.Point2D;
-import com.here.sdk.core.errors.EngineInstantiationErrorException;
-import com.here.sdk.mapview.Camera;
-import com.here.sdk.mapview.MapImage;
-import com.here.sdk.mapview.MapImageFactory;
-import com.here.sdk.mapview.MapMarker;
-import com.here.sdk.mapview.MapMarkerImageStyle;
-import com.here.sdk.mapview.MapView;
-import com.here.sdk.mapview.PickMapItemsCallback;
-import com.here.sdk.mapview.PickMapItemsResult;
-import com.here.sdk.mapview.gestures.GestureState;
+import com.here.sdk.core.TextFormat;
+import com.here.sdk.core.errors.EngineInstantiationException;
+import com.here.sdk.mapviewlite.Camera;
+import com.here.sdk.mapviewlite.MapImage;
+import com.here.sdk.mapviewlite.MapImageFactory;
+import com.here.sdk.mapviewlite.MapMarker;
+import com.here.sdk.mapviewlite.MapMarkerImageStyle;
+import com.here.sdk.mapviewlite.MapViewLite;
+import com.here.sdk.mapviewlite.PickMapItemsCallback;
+import com.here.sdk.mapviewlite.PickMapItemsResult;
+import com.here.sdk.mapviewlite.gestures.GestureState;
 import com.here.sdk.search.Address;
+import com.here.sdk.search.AutosuggestCallback;
+import com.here.sdk.search.AutosuggestEngine;
+import com.here.sdk.search.AutosuggestOptions;
+import com.here.sdk.search.AutosuggestResult;
+import com.here.sdk.search.AutosuggestResultType;
 import com.here.sdk.search.GeocodingCallback;
 import com.here.sdk.search.GeocodingEngine;
-import com.here.sdk.search.GeocodingError;
 import com.here.sdk.search.GeocodingOptions;
 import com.here.sdk.search.GeocodingResult;
 import com.here.sdk.search.ReverseGeocodingCallback;
 import com.here.sdk.search.ReverseGeocodingEngine;
-import com.here.sdk.search.ReverseGeocodingError;
 import com.here.sdk.search.ReverseGeocodingOptions;
 import com.here.sdk.search.SearchCallback;
+import com.here.sdk.search.SearchCategory;
 import com.here.sdk.search.SearchEngine;
 import com.here.sdk.search.SearchError;
 import com.here.sdk.search.SearchItem;
 import com.here.sdk.search.SearchOptions;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class SearchExample {
 
+    private static final String LOG_TAG = SearchExample.class.getName();
+
     private Context context;
-    private MapView mapView;
+    private MapViewLite mapView;
     private Camera camera;
     private List<MapMarker> mapMarkerList = new ArrayList<>();
     private SearchEngine searchEngine;
+    private AutosuggestEngine autosuggestEngine;
     private GeocodingEngine geocodingEngine;
     private ReverseGeocodingEngine reverseGeocodingEngine;
 
-    public void onMapSceneLoaded(Context context, MapView mapView) {
+    public SearchExample(Context context, MapViewLite mapView) {
         this.context = context;
         this.mapView = mapView;
         camera = mapView.getCamera();
@@ -79,20 +90,26 @@ public class SearchExample {
 
         try {
             searchEngine = new SearchEngine();
-        } catch (EngineInstantiationErrorException e) {
-            e.printStackTrace();
+        } catch (EngineInstantiationException e) {
+            new RuntimeException("Initialization of SearchEngine failed: " + e.error.name());
+        }
+
+        try {
+            autosuggestEngine = new AutosuggestEngine();
+        } catch (EngineInstantiationException e) {
+            new RuntimeException("Initialization of AutosuggestEngine failed: " + e.error.name());
         }
 
         try {
             geocodingEngine = new GeocodingEngine();
-        } catch (EngineInstantiationErrorException e) {
-            e.printStackTrace();
+        } catch (EngineInstantiationException e) {
+            new RuntimeException("Initialization of GeocodingEngine failed: " + e.error.name());
         }
 
         try {
             reverseGeocodingEngine = new ReverseGeocodingEngine();
-        } catch (EngineInstantiationErrorException e) {
-            e.printStackTrace();
+        } catch (EngineInstantiationException e) {
+            new RuntimeException("Initialization of ReverseGeocodingEngine failed: " + e.error.name());
         }
 
         setTapGestureHandler();
@@ -101,14 +118,27 @@ public class SearchExample {
         Toast.makeText(context,"Long press on map to get the address for that position using reverse geocoding.", Toast.LENGTH_LONG).show();
     }
 
-    public void searchExample() {
-        String searchTerm = "Pizza";
+    public void onSearchButtonClicked() {
+        // Search for "Pizza" and show the results on the map.
+        searchExample();
 
-        Toast.makeText(context,"Searching around current map center location: " + searchTerm, Toast.LENGTH_LONG).show();
-        searchAtMapCenter(searchTerm);
+        // Search for auto suggestions and log the results to the console.
+        autoSuggestExample();
     }
 
-    public void geocodeAnAddress() {
+    public void onGeocodeButtonClicked() {
+        // Search for the location that belongs to an address and show it on the map.
+        geocodeAnAddress();
+    }
+
+    private void searchExample() {
+        String searchTerm = "Pizza";
+
+        Toast.makeText(context,"Searching in viewport: " + searchTerm, Toast.LENGTH_LONG).show();
+        searchInViewport(searchTerm);
+    }
+
+    private void geocodeAnAddress() {
         // Set map to expected location.
         camera.setTarget(new GeoCoordinates(52.530932, 13.384915));
 
@@ -121,13 +151,13 @@ public class SearchExample {
     }
 
     private void setTapGestureHandler() {
-        mapView.getGestures().setTapListener(origin -> pickMapMarker(origin));
+        mapView.getGestures().setTapListener(touchPoint -> pickMapMarker(touchPoint));
     }
 
     private void setLongPressGestureHandler() {
-        mapView.getGestures().setLongPressListener((gestureState, origin) -> {
+        mapView.getGestures().setLongPressListener((gestureState, touchPoint) -> {
             if (gestureState == GestureState.BEGIN) {
-                GeoCoordinates geoCoordinates = mapView.getCamera().viewToGeoCoordinates(origin);
+                GeoCoordinates geoCoordinates = mapView.getCamera().viewToGeoCoordinates(touchPoint);
                 addPoiMapMarker(geoCoordinates);
                 getAddressForCoordinates(geoCoordinates);
             }
@@ -141,10 +171,10 @@ public class SearchExample {
         reverseGeocodingEngine.searchAddress(
                 geoCoordinates, reverseGeocodingOptions, new ReverseGeocodingCallback() {
             @Override
-            public void onSearchCompleted(@Nullable ReverseGeocodingError reverseGeocodingError,
+            public void onSearchCompleted(@Nullable SearchError searchError,
                                           @Nullable Address address) {
-                if (reverseGeocodingError != null) {
-                    showDialog("Reverse geocoding", "Error: " + reverseGeocodingError.toString());
+                if (searchError != null) {
+                    showDialog("Reverse geocoding", "Error: " + searchError.toString());
                     return;
                 }
                 showDialog("Reverse geocoded address:", address.addressText);
@@ -173,8 +203,9 @@ public class SearchExample {
                         SearchItemMetadata searchItemMetadata = (SearchItemMetadata) customMetadataValue;
                         String title = searchItemMetadata.searchItem.title;
                         String vicinity = searchItemMetadata.searchItem.vicinity;
+                        SearchCategory category = searchItemMetadata.searchItem.category;
                         showDialog("Picked Search Result",
-                                title + ", " + vicinity);
+                                title + ", " + vicinity + ". Category: " + category.localizedName);
                         return;
                     }
                 }
@@ -187,16 +218,17 @@ public class SearchExample {
         });
     }
 
-    private void searchAtMapCenter(String queryString) {
+    private void searchInViewport(String queryString) {
         clearMap();
 
         int maxSearchResults = 30;
         SearchOptions searchOptions = new SearchOptions(
                 LanguageCode.EN_US,
+                TextFormat.PLAIN,
                 maxSearchResults);
 
-        GeoCoordinates mapCenterGeoCoordinates = mapView.getCamera().getTarget();
-        searchEngine.search(mapCenterGeoCoordinates, queryString, searchOptions, new SearchCallback() {
+        GeoBox viewportGeoBox = mapView.getCamera().getBoundingRect();
+        searchEngine.search(viewportGeoBox, queryString, searchOptions, new SearchCallback() {
             @Override
             public void onSearchCompleted(@Nullable SearchError searchError, @Nullable List<SearchItem> list) {
                 if (searchError != null) {
@@ -220,7 +252,7 @@ public class SearchExample {
         });
     }
 
-    private class SearchItemMetadata implements CustomMetadataValue {
+    private static class SearchItemMetadata implements CustomMetadataValue {
 
         public SearchItem searchItem;
 
@@ -228,26 +260,75 @@ public class SearchExample {
             this.searchItem = searchItem;
         }
 
+        @NonNull
         @Override
         public String getTag() {
             return "SearchItem Metadata";
         }
     }
 
+    private final AutosuggestCallback autosuggestCallback = new AutosuggestCallback() {
+        @Override
+        public void onSearchCompleted(@Nullable SearchError searchError, @Nullable List<AutosuggestResult> list) {
+            if (searchError != null) {
+                Log.d(LOG_TAG, "Autosuggest Error: " + searchError.name());
+                return;
+            }
+
+            if (list.isEmpty()) {
+                Log.d(LOG_TAG, "Autosuggest: No results found");
+            } else {
+                Log.d(LOG_TAG, "Autosuggest results: " + list.size());
+            }
+
+            for (AutosuggestResult autosuggestResult : list) {
+                Log.d(LOG_TAG, "Autosuggest result: " + autosuggestResult.title +
+                    "Highlighted: " + autosuggestResult.highlightedTitle);
+            }
+        }
+    };
+
+    private void autoSuggestExample() {
+        GeoCoordinates centerGeoCoordinates = mapView.getCamera().getTarget();
+        int maxSearchResults = 5;
+        AutosuggestOptions autosuggestOptions = new AutosuggestOptions(
+                LanguageCode.EN_US,
+                TextFormat.PLAIN,
+                maxSearchResults,
+                new ArrayList<>(Collections.singletonList(
+                        AutosuggestResultType.PLACE)));
+
+        // Simulate a user typing a search term.
+        autosuggestEngine.suggest(centerGeoCoordinates,
+                "p",
+                autosuggestOptions,
+                autosuggestCallback);
+
+        autosuggestEngine.suggest(centerGeoCoordinates,
+                "pi",
+                autosuggestOptions,
+                autosuggestCallback);
+
+        autosuggestEngine.suggest(centerGeoCoordinates,
+                "piz",
+                autosuggestOptions,
+                autosuggestCallback);
+    }
+
     private void geocodeAddressInViewport(String queryString) {
         clearMap();
 
-        GeoBoundingRect geoBoundingRect = mapView.getCamera().getBoundingRect();
+        GeoBox geoBox = mapView.getCamera().getBoundingRect();
         long maxResultCount = 30;
         GeocodingOptions geocodingOptions = new GeocodingOptions(
                  LanguageCode.DE_DE, maxResultCount);
 
-        geocodingEngine.searchLocations(geoBoundingRect, queryString, geocodingOptions, new GeocodingCallback() {
+        geocodingEngine.searchLocations(geoBox, queryString, geocodingOptions, new GeocodingCallback() {
             @Override
-            public void onSearchCompleted(@Nullable GeocodingError geocodingError,
+            public void onSearchCompleted(@Nullable SearchError searchError,
                                           @Nullable List<GeocodingResult> list) {
-                if (geocodingError != null) {
-                    showDialog("Geocoding", "Error: " + geocodingError.toString());
+                if (searchError != null) {
+                    showDialog("Geocoding", "Error: " + searchError.toString());
                     return;
                 }
 
@@ -256,39 +337,38 @@ public class SearchExample {
                     return;
                 }
 
-                String locationDetails = "";
                 for (GeocodingResult geocodingResult : list) {
                     GeoCoordinates geoCoordinates = geocodingResult.geoCoordinates;
                     Address address = geocodingResult.address;
-                    if (geoCoordinates != null && address != null) {
-                        locationDetails = address.addressText
+                    if (address != null) {
+                        String locationDetails = address.addressText
                                 + ". GeoCoordinates: " + geoCoordinates.latitude
                                 + ", " + geoCoordinates.longitude;
 
+                        Log.d(LOG_TAG, "GeocodingResult: " + locationDetails);
                         addPoiMapMarker(geoCoordinates);
                     }
                 }
 
-                showDialog("Geocoding result",
-                        "Size: " + list.size() + ", Details: " + locationDetails);
+                showDialog("Geocoding result","Size: " + list.size());
             }
         });
     }
 
     private void addPoiMapMarker(GeoCoordinates geoCoordinates) {
-        MapMarker mapMarker = createMPoiapMarker(geoCoordinates);
+        MapMarker mapMarker = createPoiMapMarker(geoCoordinates);
         mapView.getMapScene().addMapMarker(mapMarker);
         mapMarkerList.add(mapMarker);
     }
 
     private void addPoiMapMarker(GeoCoordinates geoCoordinates, Metadata metadata) {
-        MapMarker mapMarker = createMPoiapMarker(geoCoordinates);
+        MapMarker mapMarker = createPoiMapMarker(geoCoordinates);
         mapMarker.setMetadata(metadata);
         mapView.getMapScene().addMapMarker(mapMarker);
         mapMarkerList.add(mapMarker);
     }
 
-    private MapMarker createMPoiapMarker(GeoCoordinates geoCoordinates) {
+    private MapMarker createPoiMapMarker(GeoCoordinates geoCoordinates) {
         MapImage mapImage = MapImageFactory.fromResource(context.getResources(), R.drawable.poi);
         MapMarker mapMarker = new MapMarker(geoCoordinates);
         MapMarkerImageStyle mapMarkerImageStyle = new MapMarkerImageStyle();

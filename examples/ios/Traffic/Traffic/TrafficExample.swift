@@ -20,13 +20,13 @@
 import heresdk
 import UIKit
 
-class TrafficExample: SetLayerStateCallback {
+class TrafficExample {
 
-    private var viewController: UIViewController!
-    private var mapView: MapView!
-    private var trafficEngine: TrafficEngine!
+    private var viewController: UIViewController
+    private var mapView: MapViewLite
+    private var trafficEngine: TrafficEngine
 
-    func onMapSceneLoaded(viewController: UIViewController, mapView: MapView) {
+    init(viewController: UIViewController, mapView: MapViewLite) {
         self.mapView = mapView
         self.viewController = viewController
         let camera = mapView.camera
@@ -46,8 +46,8 @@ class TrafficExample: SetLayerStateCallback {
         let incidentQueryOptions = IncidentQueryOptions()
         logIncidentsInViewport(incidentQueryOptions: incidentQueryOptions)
 
-        // Show real-time traffic lines on the map.
-        enableTrafficFlow()
+        // Show real-time traffic lines and incidents on the map.
+        enableTrafficVisualization()
     }
 
     func onRoadWorksButtonClicked() {
@@ -60,21 +60,24 @@ class TrafficExample: SetLayerStateCallback {
     }
 
     func onDisableAllButtonClicked() {
-        disableTrafficFlow()
+        disableTrafficVisualization()
     }
 
-    private func enableTrafficFlow() {
-        mapView.mapScene.setLayerState(layer: MapLayer.trafficFlow, newState: LayerState.enabled, callback: self)
+    private func enableTrafficVisualization() {
+        do {
+            try mapView.mapScene.setLayerState(layer: MapLayer.trafficFlow, newState: LayerState.enabled)
+            try mapView.mapScene.setLayerState(layer: MapLayer.trafficIncidents, newState: LayerState.enabled)
+        } catch let mapSceneError {
+            print("Failed to enable traffic visualization. Cause: \(mapSceneError)")
+        }
     }
 
-    private func disableTrafficFlow() {
-        mapView.mapScene.setLayerState(layer: MapLayer.trafficFlow, newState: LayerState.disabled, callback: self)
-    }
-
-    // Conforming to SetLayerStateCallback protocol.
-    func onSetLayerState(sceneError: SceneError?) {
-        if let error = sceneError {
-            print("Error when setting a new layer state: \(error)")
+    private func disableTrafficVisualization() {
+        do {
+            try mapView.mapScene.setLayerState(layer: MapLayer.trafficFlow, newState: LayerState.disabled)
+            try mapView.mapScene.setLayerState(layer: MapLayer.trafficIncidents, newState: LayerState.disabled)
+        } catch let mapSceneError {
+            print("Failed to disable traffic visualization. Cause: \(mapSceneError)")
         }
     }
 
@@ -89,6 +92,7 @@ class TrafficExample: SetLayerStateCallback {
                     return
                 }
 
+                // When incidentQueryError is nil, incidents is guaranteed to be not nil.
                 for incident in incidents! {
                     print("Incident: \(incident.category)"
                         + ", info: \(incident.description)"
@@ -102,8 +106,8 @@ class TrafficExample: SetLayerStateCallback {
     }
 
     private func showDialog(title: String, message: String) {
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: UIAlertController.Style.alert)
-        alertController.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil))
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
         viewController.present(alertController, animated: true, completion: nil)
     }
 }

@@ -22,12 +22,12 @@ import UIKit
 
 class MapMarkerExample: TapDelegate, PickMapItemsCallback {
 
-    private var viewController: UIViewController!
-    private var mapView: MapView!
+    private var viewController: UIViewController
+    private var mapView: MapViewLite
     private var mapMarkers = [MapMarker]()
     private let mapCenterGeoCoordinates = GeoCoordinates(latitude: 52.520798, longitude: 13.409408)
 
-    func onMapSceneLoaded(viewController: UIViewController, mapView: MapView) {
+    init(viewController: UIViewController, mapView: MapViewLite) {
         self.viewController = viewController
         self.mapView = mapView
         let camera = mapView.camera
@@ -79,11 +79,12 @@ class MapMarkerExample: TapDelegate, PickMapItemsCallback {
         let mapMarkerImageStyle = MapMarkerImageStyle()
         mapMarkerImageStyle.setAnchorPoint(Anchor2D(horizontal: 0.5, vertical: 1))
 
+        mapMarker.addImage(mapImage!, style: mapMarkerImageStyle)
+
         let metadata = Metadata()
         metadata.setString(key: "key_poi", value: "This is a POI.")
         mapMarker.metadata = metadata
 
-        mapMarker.addImage(mapImage!, style: mapMarkerImageStyle)
         mapView.mapScene.addMapMarker(mapMarker)
         mapMarkers.append(mapMarker)
     }
@@ -117,19 +118,11 @@ class MapMarkerExample: TapDelegate, PickMapItemsCallback {
 
     // Conform to the PickMapItemsCallback protocol.
     func onMapItemsPicked(pickedMapItems: PickMapItemsResult?) {
-        guard let mapItems = pickedMapItems else {
+        guard let topmostMapMarker = pickedMapItems?.topmostMarker else {
             return
         }
 
-        guard let topmostMapMarker = mapItems.topmostMarker else {
-            return
-        }
-
-        if let metadata = topmostMapMarker.metadata {
-            var message = "No message found."
-            if let string = metadata.getString(key: "key_poi") {
-                message = string
-            }
+        if let message = topmostMapMarker.metadata?.getString(key: "key_poi") {
             showDialog(title: "Map Marker picked", message: message);
             return
         }
@@ -138,9 +131,9 @@ class MapMarkerExample: TapDelegate, PickMapItemsCallback {
     }
 
     private func createRandomGeoCoordinatesInViewport() -> GeoCoordinates {
-        let geoBoundingRect = mapView.camera.boundingRect
-        let northEast = geoBoundingRect.northEastCorner
-        let southWest = geoBoundingRect.southWestCorner
+        let geoBox = mapView.camera.boundingRect
+        let northEast = geoBox.northEastCorner
+        let southWest = geoBox.southWestCorner
 
         let minLat = southWest.latitude
         let maxLat = northEast.latitude
@@ -158,8 +151,8 @@ class MapMarkerExample: TapDelegate, PickMapItemsCallback {
     }
 
     private func showDialog(title: String, message: String) {
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: UIAlertController.Style.alert)
-        alertController.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil))
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
         viewController.present(alertController, animated: true, completion: nil)
     }
 

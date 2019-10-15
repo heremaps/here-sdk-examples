@@ -25,19 +25,19 @@ import android.support.v7.app.AlertDialog;
 import android.widget.Toast;
 
 import com.here.sdk.core.Anchor2D;
-import com.here.sdk.core.GeoBoundingRect;
+import com.here.sdk.core.GeoBox;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.Metadata;
 import com.here.sdk.core.Point2D;
-import com.here.sdk.mapview.Camera;
-import com.here.sdk.mapview.MapImage;
-import com.here.sdk.mapview.MapImageFactory;
-import com.here.sdk.mapview.MapMarker;
-import com.here.sdk.mapview.MapMarkerImageStyle;
-import com.here.sdk.mapview.MapView;
-import com.here.sdk.mapview.PickMapItemsCallback;
-import com.here.sdk.mapview.PickMapItemsResult;
-import com.here.sdk.mapview.gestures.TapListener;
+import com.here.sdk.mapviewlite.Camera;
+import com.here.sdk.mapviewlite.MapImage;
+import com.here.sdk.mapviewlite.MapImageFactory;
+import com.here.sdk.mapviewlite.MapMarker;
+import com.here.sdk.mapviewlite.MapMarkerImageStyle;
+import com.here.sdk.mapviewlite.MapViewLite;
+import com.here.sdk.mapviewlite.PickMapItemsCallback;
+import com.here.sdk.mapviewlite.PickMapItemsResult;
+import com.here.sdk.mapviewlite.gestures.TapListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,10 +45,10 @@ import java.util.List;
 public class MapMarkerExample {
 
     private Context context;
-    private MapView mapView;
+    private MapViewLite mapView;
     private final List<MapMarker> mapMarkerList = new ArrayList<>();
 
-    public void onMapSceneLoaded(Context context, MapView mapView) {
+    public MapMarkerExample(Context context, MapViewLite mapView) {
         this.context = context;
         this.mapView = mapView;
         Camera camera = mapView.getCamera();
@@ -91,9 +91,9 @@ public class MapMarkerExample {
     }
 
     private GeoCoordinates createRandomLatLonInViewport() {
-        GeoBoundingRect geoBoundingRect = mapView.getCamera().getBoundingRect();
-        GeoCoordinates northEast = geoBoundingRect.northEastCorner;
-        GeoCoordinates southWest = geoBoundingRect.southWestCorner;
+        GeoBox geoBox = mapView.getCamera().getBoundingRect();
+        GeoCoordinates northEast = geoBox.northEastCorner;
+        GeoCoordinates southWest = geoBox.southWestCorner;
 
         double minLat = southWest.latitude;
         double maxLat = northEast.latitude;
@@ -113,15 +113,15 @@ public class MapMarkerExample {
     private void setTapGestureHandler() {
         mapView.getGestures().setTapListener(new TapListener() {
             @Override
-            public void onTap(Point2D origin) {
-                pickMapMarker(origin);
+            public void onTap(Point2D touchPoint) {
+                pickMapMarker(touchPoint);
             }
         });
     }
 
-    private void pickMapMarker(final Point2D origin) {
+    private void pickMapMarker(final Point2D touchPoint) {
         float radiusInPixel = 2;
-        mapView.pickMapItems(origin, radiusInPixel, new PickMapItemsCallback() {
+        mapView.pickMapItems(touchPoint, radiusInPixel, new PickMapItemsCallback() {
             @Override
             public void onMapItemsPicked(@Nullable PickMapItemsResult pickMapItemsResult) {
                 if (pickMapItemsResult == null) {

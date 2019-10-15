@@ -1,3 +1,5 @@
+The StandAloneEngine example app shows how to use an engine without a map view while building your app. You can find how this is done in [MainActivity.java](guides/android/markdown/en-US/examples/StandAloneEngine/app/src/main/java/com/here/sdk/standaloneengine/MainActivity.java).
+
 Build instructions:
 -------------------
 

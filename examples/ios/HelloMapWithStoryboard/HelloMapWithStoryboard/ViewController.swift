@@ -22,7 +22,7 @@ import UIKit
 
 class ViewController: UIViewController {
 
-    @IBOutlet var mapView: MapView!
+    @IBOutlet var mapView: MapViewLite!
 
     override func viewDidLoad() {
         super.viewDidLoad()

@@ -22,13 +22,13 @@ import UIKit
 
 class MapOverlaysExample {
 
-    private var mapView: MapView!
+    private var mapView: MapViewLite
     private let mapCenterGeoCoordinates = GeoCoordinates(latitude: 52.520798, longitude: 13.409408)
 
-    func onMapSceneLoaded(mapView: MapView) {
+    init(mapView: MapViewLite) {
         self.mapView = mapView
         let camera = mapView.camera
-        camera.setZoomLevel(15)
+        camera.setZoomLevel(12)
 
         camera.setTarget(mapCenterGeoCoordinates)
         addCircleMapMarker(geoCoordinates: mapCenterGeoCoordinates)
@@ -48,11 +48,11 @@ class MapOverlaysExample {
 
     private func showMapOverlay() {
         let textView = UITextView(frame: CGRect(x: 0, y: 0, width: 200, height: 40))
-        textView.textAlignment = NSTextAlignment.center
+        textView.textAlignment = .center
         textView.isEditable = false
         textView.backgroundColor = UIColor(red: 72/255, green: 218/255, blue: 208/255, alpha: 1)
-        textView.textColor = UIColor.white
-        textView.font = UIFont.systemFont(ofSize: 17)
+        textView.textColor = .white
+        textView.font = .systemFont(ofSize: 17)
         textView.text = "Centered MapOverlay"
 
         let mapOverlay = MapOverlay(view: textView, geoCoordinates: mapCenterGeoCoordinates)
@@ -61,11 +61,11 @@ class MapOverlaysExample {
 
     private func showAnchoredMapOverlay() {
         let textView = UITextView(frame: CGRect(x: 0, y: 0, width: 200, height: 40))
-        textView.textAlignment = NSTextAlignment.center
+        textView.textAlignment = .center
         textView.isEditable = false
         textView.backgroundColor = UIColor(red: 0/255, green: 144/255, blue: 138/255, alpha: 1)
-        textView.textColor = UIColor.white
-        textView.font = UIFont.systemFont(ofSize: 17)
+        textView.textColor = .white
+        textView.font = .systemFont(ofSize: 17)
         textView.text = "Anchored MapOverlay"
         textView.layer.anchorPoint = CGPoint(x: 0.5, y: 1)
 
@@ -74,9 +74,8 @@ class MapOverlaysExample {
     }
 
     private func clearMap() {
-        let mapOverlays = mapView.overlays
-        for mapOverlay in mapOverlays {
-            mapView.removeMapOverlay(mapOverlay)
+        mapView.overlays.forEach {
+            mapView.removeMapOverlay($0)
         }
     }
 

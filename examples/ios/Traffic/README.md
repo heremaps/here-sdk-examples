@@ -1,3 +1,5 @@
+The Traffic example app shows how to toggle traffic flow and traffic incidents visualization on a map and how to log details about traffic incidents nearby. You can find how this is done in [TrafficExample.swift](guides/ios/markdown/en-US/examples/Traffic/Traffic/TrafficExample.swift).
+
 Build instructions:
 -------------------
 

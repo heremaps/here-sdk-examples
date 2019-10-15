@@ -22,31 +22,37 @@ import UIKit
 
 class SearchExample: TapDelegate,
                      LongPressDelegate,
+                     SearchCallback,
+                     AutosuggestCallback,
                      GeocodingCallback,
                      ReverseGeocodingCallback,
                      PickMapItemsCallback {
 
-    private var viewController: UIViewController!
-    private var mapView: MapView!
+    private var viewController: UIViewController
+    private var mapView: MapViewLite
     private var mapMarkers = [MapMarker]()
-    private var searchEngine: SearchEngine!
-    private var geocodingEngine: GeocodingEngine!
-    private var reverseGeocodingEngine: ReverseGeocodingEngine!
+    private var searchEngine: SearchEngine
+    private var autosuggestEngine: AutosuggestEngine
+    private var geocodingEngine: GeocodingEngine
+    private var reverseGeocodingEngine: ReverseGeocodingEngine
 
-    func onMapSceneLoaded(viewController: UIViewController, mapView: MapView) {
+    init(viewController: UIViewController, mapView: MapViewLite) {
         self.viewController = viewController
         self.mapView = mapView
         let camera = mapView.camera
         camera.setTarget(GeoCoordinates(latitude: 52.530932, longitude: 13.384915))
         camera.setZoomLevel(14)
 
-        mapView.gestures.tapDelegate = self
-        mapView.gestures.longPressDelegate = self
-
         do {
             try searchEngine = SearchEngine()
         } catch let engineInstantiationError {
             fatalError("Failed to initialize SearchEngine. Cause: \(engineInstantiationError)")
+        }
+
+        do {
+            try autosuggestEngine = AutosuggestEngine()
+        } catch let engineInstantiationError {
+            fatalError("Failed to initialize AutosuggestEngine. Cause: \(engineInstantiationError)")
         }
 
         do {
@@ -61,52 +67,65 @@ class SearchExample: TapDelegate,
             fatalError("Failed to initialize ReverseGeocodingEngine. Cause: \(engineInstantiationError)")
         }
 
+        mapView.gestures.tapDelegate = self
+        mapView.gestures.longPressDelegate = self
+
         showDialog(title: "Note", message: "Long press on map to get the address for that position using reverse geocoding.")
     }
 
     func onSearchButtonClicked() {
+        // Search for "Pizza" and show the results on the map.
         searchExample()
+
+        // Search for auto suggestions and log the results to the console.
+        autoSuggestExample()
     }
 
     func onGeoCodeButtonClicked() {
+        // Search for the location that belongs to an address and show it on the map.
         geocodeAnAddress()
     }
 
-    public func searchExample() {
+    private func searchExample() {
         let searchTerm = "Pizza"
-        searchAtMapCenter(queryString: searchTerm)
+        searchInViewport(queryString: searchTerm)
     }
 
-    private func searchAtMapCenter(queryString: String) {
+    private func searchInViewport(queryString: String) {
         clearMap()
 
         let searchOptions = SearchOptions(
             languageCode: LanguageCode.enUs,
+            textFormat: TextFormat.plain,
             maxItems: 30)
 
-        searchEngine.search(at: mapView.camera.getTarget(),
+        searchEngine.search(in: mapView.camera.boundingRect,
                             query: queryString,
-                            options: searchOptions) { (searchError, searchItems) in
+                            options: searchOptions,
+                            callback: self)
+    }
 
-                                if let error = searchError {
-                                    self.showDialog(title: "Search", message: "Error: \(error)")
-                                    return
-                                }
+    // Conforming to SearchCallback protocol.
+    func onSearchCompleted(error: SearchError?, items: [SearchItem]?) {
+        if let searchError = error {
+            showDialog(title: "Search", message: "Error: \(searchError)")
+            return
+        }
 
-                                if searchItems!.isEmpty {
-                                    self.showDialog(title: "Search", message: "No results found")
-                                    return
-                                }
+        // If error is nil, it is guaranteed that the items will not be nil.
+        if items!.isEmpty {
+            showDialog(title: "Search", message: "No results found")
+            return
+        }
 
-                                self.showDialog(title: "Search around current map center for: 'Pizza'.",
-                                                message: "Found  \(searchItems!.count) results.")
+        showDialog(title: "Search in viewport for: 'Pizza'.",
+                   message: "Found  \(items!.count) results.")
 
-                                // Add new marker for each search result on map.
-                                for searchItem in searchItems! {
-                                    let metadata = Metadata()
-                                    metadata.setCustomValue(key: "key_search_item", value: SearchItemMetadata(searchItem))
-                                    self.addPoiMapMarker(geoCoordinates: searchItem.coordinates, metadata: metadata)
-                                }
+        // Add a new marker for each search result on map.
+        for searchItem in items! {
+            let metadata = Metadata()
+            metadata.setCustomValue(key: "key_search_item", value: SearchItemMetadata(searchItem))
+            addPoiMapMarker(geoCoordinates: searchItem.coordinates, metadata: metadata)
         }
     }
 
@@ -120,6 +139,51 @@ class SearchExample: TapDelegate,
 
         func getTag() -> String {
             return "SearchItem Metadata"
+        }
+    }
+
+    private func autoSuggestExample() {
+        let centerGeoCoordinates = mapView.camera.getTarget()
+        let autosuggestOptions = AutosuggestOptions(
+            languageCode: LanguageCode.enUs,
+            textFormat: TextFormat.plain,
+            maxItems: 5,
+            requestedTypes: [AutosuggestResultType.place])
+
+        // Simulate a user typing a search term.
+        _ = autosuggestEngine.suggest(at: centerGeoCoordinates,
+                                  query: "p",
+                                  options: autosuggestOptions,
+                                  callback: self);
+
+        _ = autosuggestEngine.suggest(at: centerGeoCoordinates,
+                                  query: "pi",
+                                  options: autosuggestOptions,
+                                  callback: self);
+
+        _ = autosuggestEngine.suggest(at: centerGeoCoordinates,
+                                  query: "piz",
+                                  options: autosuggestOptions,
+                                  callback: self);
+    }
+
+    // Conforming to AutosuggestCallback protocol.
+    func onSearchCompleted(error: SearchError?, items: [AutosuggestResult]?) {
+        if let searchError = error {
+            print("Autosuggest Error: \(searchError)")
+            return
+        }
+
+        // If error is nil, it is guaranteed that the items will not be nil.
+        if items!.isEmpty {
+            print("Autosuggest: No results found")
+            return
+        }
+
+        print("Autosuggest:Found  \(items!.count) result(s).")
+
+        for autosuggestResult in items! {
+            print("Autosuggest result: \(autosuggestResult.title), Highlighted: \(autosuggestResult.highlightedTitle)")
         }
     }
 
@@ -145,19 +209,21 @@ class SearchExample: TapDelegate,
     }
 
     // Conforming to GeocodingCallback protocol.
-    func onSearchCompleted(geocodingError: GeocodingError?, items: [GeocodingResult]?) {
-        if let error = geocodingError {
-            showDialog(title: "Geocoding", message: "Error: \(error)")
+    func onSearchCompleted(error: SearchError?, items: [GeocodingResult]?) {
+        if let searchError = error {
+            showDialog(title: "Geocoding", message: "Error: \(searchError)")
             return
         }
 
+        // If error is nil, it is guaranteed that the items will not be nil.
         if items!.isEmpty {
             showDialog(title: "Geocoding", message: "No geocoding results found.")
             return
         }
 
         for geocodingResult in items! {
-            if let geoCoordinates = geocodingResult.geoCoordinates, let address = geocodingResult.address {
+            let geoCoordinates = geocodingResult.geoCoordinates
+            if let address = geocodingResult.address {
                 let locationDetails = address.addressText
                     + ". Coordinates: \(geoCoordinates.latitude)"
                     + ", \(geoCoordinates.longitude)"
@@ -177,24 +243,19 @@ class SearchExample: TapDelegate,
 
     // Conforming to PickMapItemsCallback protocol.
     func onMapItemsPicked(pickedMapItems: PickMapItemsResult?) {
-        guard let mapItems = pickedMapItems else {
+        guard let topmostMapMarker = pickedMapItems?.topmostMarker else {
             return
         }
 
-        guard let topmostMapMarker = mapItems.topmostMarker else {
-            return
-        }
+        if let searchItemMetadata =
+            topmostMapMarker.metadata?.getCustomValue(key: "key_search_item") as? SearchItemMetadata {
 
-        if let metadata = topmostMapMarker.metadata {
-            if let customMetadataValue = metadata.getCustomValue(key: "key_search_item") {
-                if let searchItemMetadata = customMetadataValue as? SearchItemMetadata {
-                    let title = searchItemMetadata.searchItem.title
-                    let vicinity = searchItemMetadata.searchItem.vicinity ?? "nil"
-                    showDialog(title: "Picked Search Result",
-                               message: title + ", " + vicinity)
-                    return
-                }
-            }
+            let title = searchItemMetadata.searchItem.title
+            let vicinity = searchItemMetadata.searchItem.vicinity ?? "nil"
+            let category = searchItemMetadata.searchItem.category
+            showDialog(title: "Picked Search Result",
+                       message: "\(title), \(vicinity). Category: \(category.localizedName)")
+            return
         }
 
         showDialog(title: "Map Marker picked at: ",
@@ -220,13 +281,14 @@ class SearchExample: TapDelegate,
     }
 
     // Conforming to ReverseGeocodingCallback protocol.
-    func onSearchCompleted(reverseGeocodingError: ReverseGeocodingError?,
+    func onSearchCompleted(error: SearchError?,
                            address: Address?) {
-        if let error = reverseGeocodingError {
-            showDialog(title: "ReverseGeocodingError", message: "Error: \(error)")
+        if let searchError = error {
+            showDialog(title: "ReverseGeocodingError", message: "Error: \(searchError)")
             return
         }
 
+        // If error is nil, it is guaranteed that the address will not be nil.
         let addressText = address!.addressText
         showDialog(title: "Reverse geocoded address:", message: addressText)
     }
@@ -255,8 +317,8 @@ class SearchExample: TapDelegate,
     }
 
     private func showDialog(title: String, message: String) {
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: UIAlertController.Style.alert)
-        alertController.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil))
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
         viewController.present(alertController, animated: true, completion: nil)
     }
 

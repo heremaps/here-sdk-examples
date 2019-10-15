@@ -20,27 +20,27 @@
 import heresdk
 import UIKit
 
-class ViewController: UIViewController {
+final class ViewController: UIViewController {
 
-    @IBOutlet var mapView: MapView!
-    var mapObjectsExample: MapObjectsExample!
+    @IBOutlet private var mapView: MapViewLite!
+    private var mapObjectsExample: MapObjectsExample!
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         // Load the map scene using a map style to render the map with.
         mapView.mapScene.loadScene(mapStyle: .normalDay) { (sceneError) in
-            if let error = sceneError {
-                print("Error: Map scene not loaded, \(error)")
-            } else {
-                // Configure the map.
-                self.mapView.camera.setTarget(GeoCoordinates(latitude: 52.518043, longitude: 13.405991))
-                self.mapView.camera.setZoomLevel(13)
-
-                // Start the example.
-                self.mapObjectsExample = MapObjectsExample()
-                self.mapObjectsExample.onMapSceneLoaded(mapView: self.mapView)
+            guard sceneError == nil else {
+                print("Error: Map scene not loaded, \(String(describing: sceneError))")
+                return
             }
+
+            // Configure the map.
+            self.mapView.camera.setTarget(GeoCoordinates(latitude: 52.518043, longitude: 13.405991))
+            self.mapView.camera.setZoomLevel(13)
+
+            // Start the example.
+            self.mapObjectsExample = MapObjectsExample(mapView: self.mapView)
         }
     }
 
