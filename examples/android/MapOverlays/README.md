@@ -1,4 +1,4 @@
-The MapOverlays example app shows how to pin a native Android view to the map. You can find how this is done in [MapOverlayExample.java](guides/android/markdown/en-US/examples/MapOverlays/app/src/main/java/com/here/sdk/mapoverlays/MapOverlayExample.java).
+The MapOverlays example app shows how to pin a native Android view to the map. You can find how this is done in [MapOverlayExample.java](app/src/main/java/com/here/sdk/mapoverlays/MapOverlayExample.java).
 
 Build instructions:
 -------------------

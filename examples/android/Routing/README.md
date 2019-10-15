@@ -1,4 +1,4 @@
-The Routing example app shows how to calculate a route from A to B with a number of waypoints in between that is visualized on the map. You can find how this is done in [RoutingExample.java](guides/android/markdown/en-US/examples/Routing/app/src/main/java/com/here/routing/RoutingExample.java).
+The Routing example app shows how to calculate a route from A to B with a number of waypoints in between that is visualized on the map. You can find how this is done in [RoutingExample.java](app/src/main/java/com/here/routing/RoutingExample.java).
 
 Build instructions:
 -------------------

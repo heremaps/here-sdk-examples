@@ -1,4 +1,4 @@
-The MapObject example app shows how to add `MapPolyline`, `MapPolygon`, and `MapCircle` instances to the map. You can find how this is done in [MapObjectsExample.swift](guides/ios/markdown/en-US/examples/MapObjects/MapObjects/MapObjectsExample.swift).
+The MapObject example app shows how to add `MapPolyline`, `MapPolygon`, and `MapCircle` instances to the map. You can find how this is done in [MapObjectsExample.swift](MapObjects/MapObjectsExample.swift).
 
 Build instructions:
 -------------------
