@@ -1,8 +1,8 @@
 # Introduction
 
-The team behind the [Flexible Polyline](https://github.com/heremaps/flexible-polyline) gratefully accepts contributions via
+The team behind the [HERE SDK](https://github.com/heremaps/here-sdk-examples) gratefully accepts contributions via
 [pull requests](https://help.github.com/articles/about-pull-requests/) filed against the
-[GitHub project](https://github.com/heremaps/flexible-polyline/pulls).
+[GitHub project](https://github.com/heremaps/here-sdk-examples/pulls).
 
 # Signing each Commit
 
