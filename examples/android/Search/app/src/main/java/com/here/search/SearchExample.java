@@ -35,6 +35,7 @@ import com.here.sdk.core.Metadata;
 import com.here.sdk.core.Point2D;
 import com.here.sdk.core.TextFormat;
 import com.here.sdk.core.errors.EngineInstantiationException;
+import com.here.sdk.gestures.GestureState;
 import com.here.sdk.mapviewlite.Camera;
 import com.here.sdk.mapviewlite.MapImage;
 import com.here.sdk.mapviewlite.MapImageFactory;
@@ -43,7 +44,6 @@ import com.here.sdk.mapviewlite.MapMarkerImageStyle;
 import com.here.sdk.mapviewlite.MapViewLite;
 import com.here.sdk.mapviewlite.PickMapItemsCallback;
 import com.here.sdk.mapviewlite.PickMapItemsResult;
-import com.here.sdk.mapviewlite.gestures.GestureState;
 import com.here.sdk.search.Address;
 import com.here.sdk.search.AutosuggestCallback;
 import com.here.sdk.search.AutosuggestEngine;
@@ -61,8 +61,8 @@ import com.here.sdk.search.SearchCallback;
 import com.here.sdk.search.SearchCategory;
 import com.here.sdk.search.SearchEngine;
 import com.here.sdk.search.SearchError;
-import com.here.sdk.search.SearchItem;
 import com.here.sdk.search.SearchOptions;
+import com.here.sdk.search.SearchResult;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -198,12 +198,12 @@ public class SearchExample {
 
                 Metadata metadata = topmostMapMarker.getMetadata();
                 if (metadata != null) {
-                    CustomMetadataValue customMetadataValue = metadata.getCustomValue("key_search_item");
+                    CustomMetadataValue customMetadataValue = metadata.getCustomValue("key_search_result");
                     if (customMetadataValue != null) {
-                        SearchItemMetadata searchItemMetadata = (SearchItemMetadata) customMetadataValue;
-                        String title = searchItemMetadata.searchItem.title;
-                        String vicinity = searchItemMetadata.searchItem.vicinity;
-                        SearchCategory category = searchItemMetadata.searchItem.category;
+                        SearchResultMetadata searchResultMetadata = (SearchResultMetadata) customMetadataValue;
+                        String title = searchResultMetadata.searchResult.title;
+                        String vicinity = searchResultMetadata.searchResult.vicinity;
+                        SearchCategory category = searchResultMetadata.searchResult.category;
                         showDialog("Picked Search Result",
                                 title + ", " + vicinity + ". Category: " + category.localizedName);
                         return;
@@ -230,7 +230,7 @@ public class SearchExample {
         GeoBox viewportGeoBox = mapView.getCamera().getBoundingRect();
         searchEngine.search(viewportGeoBox, queryString, searchOptions, new SearchCallback() {
             @Override
-            public void onSearchCompleted(@Nullable SearchError searchError, @Nullable List<SearchItem> list) {
+            public void onSearchCompleted(@Nullable SearchError searchError, @Nullable List<SearchResult> list) {
                 if (searchError != null) {
                     showDialog("Search", "Error: " + searchError.toString());
                     return;
@@ -243,27 +243,27 @@ public class SearchExample {
                 }
 
                 // Add new marker for each search result on map.
-                for (SearchItem searchItem : list) {
+                for (SearchResult searchResult : list) {
                     Metadata metadata = new Metadata();
-                    metadata.setCustomValue("key_search_item", new SearchItemMetadata(searchItem));
-                    addPoiMapMarker(searchItem.coordinates, metadata);
+                    metadata.setCustomValue("key_search_result", new SearchResultMetadata(searchResult));
+                    addPoiMapMarker(searchResult.coordinates, metadata);
                 }
             }
         });
     }
 
-    private static class SearchItemMetadata implements CustomMetadataValue {
+    private static class SearchResultMetadata implements CustomMetadataValue {
 
-        public SearchItem searchItem;
+        public SearchResult searchResult;
 
-        public SearchItemMetadata(SearchItem searchItem) {
-            this.searchItem = searchItem;
+        public SearchResultMetadata(SearchResult searchResult) {
+            this.searchResult = searchResult;
         }
 
         @NonNull
         @Override
         public String getTag() {
-            return "SearchItem Metadata";
+            return "SearchResult Metadata";
         }
     }
 
@@ -338,7 +338,7 @@ public class SearchExample {
                 }
 
                 for (GeocodingResult geocodingResult : list) {
-                    GeoCoordinates geoCoordinates = geocodingResult.geoCoordinates;
+                    GeoCoordinates geoCoordinates = geocodingResult.coordinates;
                     Address address = geocodingResult.address;
                     if (address != null) {
                         String locationDetails = address.addressText

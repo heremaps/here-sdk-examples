@@ -29,6 +29,7 @@ import com.here.sdk.core.GeoBox;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.Metadata;
 import com.here.sdk.core.Point2D;
+import com.here.sdk.gestures.TapListener;
 import com.here.sdk.mapviewlite.Camera;
 import com.here.sdk.mapviewlite.MapImage;
 import com.here.sdk.mapviewlite.MapImageFactory;
@@ -37,7 +38,6 @@ import com.here.sdk.mapviewlite.MapMarkerImageStyle;
 import com.here.sdk.mapviewlite.MapViewLite;
 import com.here.sdk.mapviewlite.PickMapItemsCallback;
 import com.here.sdk.mapviewlite.PickMapItemsResult;
-import com.here.sdk.mapviewlite.gestures.TapListener;
 
 import java.util.ArrayList;
 import java.util.List;

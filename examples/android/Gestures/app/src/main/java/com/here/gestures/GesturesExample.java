@@ -26,13 +26,13 @@ package com.here.gestures;
 
  import com.here.sdk.core.GeoCoordinates;
  import com.here.sdk.core.Point2D;
+ import com.here.sdk.gestures.DoubleTapListener;
+ import com.here.sdk.gestures.GestureState;
+ import com.here.sdk.gestures.GestureType;
+ import com.here.sdk.gestures.LongPressListener;
+ import com.here.sdk.gestures.TapListener;
  import com.here.sdk.mapviewlite.Camera;
  import com.here.sdk.mapviewlite.MapViewLite;
- import com.here.sdk.mapviewlite.gestures.DoubleTapListener;
- import com.here.sdk.mapviewlite.gestures.GestureState;
- import com.here.sdk.mapviewlite.gestures.GestureType;
- import com.here.sdk.mapviewlite.gestures.LongPressListener;
- import com.here.sdk.mapviewlite.gestures.TapListener;
 
  public class GesturesExample {
 
