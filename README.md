@@ -8,8 +8,8 @@ The HERE SDK enables you to build powerful location-aware applications. Explore 
 The HERE SDK is consuming [Open Location Platform](https://developer.here.com/products/open-location-platform) (OLP) data and it is following modern design principles incorporating microservices and highly modularized components. Currently, the HERE SDK supports two platforms, Android and iOS.
 
 For an overview of the existing features, please check our _Developer's Guide_:
-- [HERE SDK for Android: Developer's Guide](https://developer.here.com/documentation/android-sdk/dev_guide/index.html)
-- [HERE SDK for iOS: Developer's Guide](https://developer.here.com/documentation/ios-sdk/dev_guide/index.html)
+- [HERE SDK for Android (Lite Edition): Developer's Guide](https://developer.here.com/documentation/android-sdk/dev_guide/index.html)
+- [HERE SDK for iOS (Lite Edition): Developer's Guide](https://developer.here.com/documentation/ios-sdk/dev_guide/index.html)
 
 ## List of Available Example Apps
 In this repository you can find the latest example apps that show key features of the HERE SDK in ready-to-use applications:
@@ -32,7 +32,7 @@ Each example app contains a file named "XY-Example" where XY stands for the feat
 2. Download the latest HERE SDK framework artifact for your desired platform. It can be found on [developer.here.com](https://developer.here.com/).
 3. Please refer to the minimum requirements as listed in our _Developer's Guide_ for [Android](https://developer.here.com/documentation/android-sdk/dev_guide/topics/quick-start.html#minimum-requirements) and [iOS](https://developer.here.com/documentation/ios-sdk/dev_guide/topics/quick-start.html#minimum-requirements).
 
-> All examples apps work with the latest HERE SDK for Android and iOS, **Version 4.1.1.0**.
+> All examples apps work with the latest HERE SDK for Android and iOS (Lite Edition), **Version 4.1.1.0**.
 
 ## Get Started for Android
 1. Copy the AAR file of the HERE SDK for Android to your app's `app/libs` folder.
@@ -47,8 +47,8 @@ Please do not forget: To run the app, you need to add your HERE SDK credentials 
 Please do not forget: To run the app, you need to add your HERE SDK credentials to the `Info.plist` file. More information can be found in the _Get Started_-section of the _Developer's Guide_.
 
 ## Documentation
-- **HERE SDK for Android**: [API Reference](https://developer.here.com/documentation/Android-sdk/api_reference/index.html), [Developer's Guide](https://developer.here.com/documentation/android-sdk/dev_guide/index.html)
-- **HERE SDK for iOS**: [API Reference](https://developer.here.com/documentation/ios-sdk/api_reference/index.html), [Developer's Guide](https://developer.here.com/documentation/ios-sdk/dev_guide/index.html)
+- **HERE SDK for Android (Lite Edition)**: [API Reference](https://developer.here.com/documentation/Android-sdk/api_reference/index.html), [Developer's Guide](https://developer.here.com/documentation/android-sdk/dev_guide/index.html)
+- **HERE SDK for iOS (Lite Edition)**: [API Reference](https://developer.here.com/documentation/ios-sdk/api_reference/index.html), [Developer's Guide](https://developer.here.com/documentation/ios-sdk/dev_guide/index.html)
 - Release Notes: All recent additions, more details about the current release and the differences to previous versions can be found in the included _Release Notes_ of your downloaded package.
 
 ## Get in Touch
