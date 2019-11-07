@@ -32,7 +32,7 @@ Each example app contains a file named "XY-Example" where XY stands for the feat
 2. Download the latest HERE SDK framework artifact for your desired platform. It can be found on [developer.here.com](https://developer.here.com/).
 3. Please refer to the minimum requirements as listed in our _Developer's Guide_ for [Android](https://developer.here.com/documentation/android-sdk/dev_guide/topics/quick-start.html#minimum-requirements) and [iOS](https://developer.here.com/documentation/ios-sdk/dev_guide/topics/quick-start.html#minimum-requirements).
 
-> All examples apps work with the latest HERE SDK for Android and iOS (Lite Edition), **Version 4.1.1.0**.
+> All examples apps work with the latest HERE SDK for Android and iOS (Lite Edition), **Version 4.1.2.0**.
 
 ## Get Started for Android
 1. Copy the AAR file of the HERE SDK for Android to your app's `app/libs` folder.

@@ -106,7 +106,7 @@ class SearchExample: TapDelegate,
     }
 
     // Conforming to SearchCallback protocol.
-    func onSearchCompleted(error: SearchError?, items: [SearchItem]?) {
+    func onSearchCompleted(error: SearchError?, items: [SearchResult]?) {
         if let searchError = error {
             showDialog(title: "Search", message: "Error: \(searchError)")
             return
@@ -122,23 +122,23 @@ class SearchExample: TapDelegate,
                    message: "Found  \(items!.count) results.")
 
         // Add a new marker for each search result on map.
-        for searchItem in items! {
+        for searchResult in items! {
             let metadata = Metadata()
-            metadata.setCustomValue(key: "key_search_item", value: SearchItemMetadata(searchItem))
-            addPoiMapMarker(geoCoordinates: searchItem.coordinates, metadata: metadata)
+            metadata.setCustomValue(key: "key_search_result", value: SearchResultMetadata(searchResult))
+            addPoiMapMarker(geoCoordinates: searchResult.coordinates, metadata: metadata)
         }
     }
 
-    private class SearchItemMetadata : CustomMetadataValue {
+    private class SearchResultMetadata : CustomMetadataValue {
 
-        var searchItem: SearchItem
+        var searchResult: SearchResult
 
-        init(_ searchItem: SearchItem) {
-            self.searchItem = searchItem
+        init(_ searchResult: SearchResult) {
+            self.searchResult = searchResult
         }
 
         func getTag() -> String {
-            return "SearchItem Metadata"
+            return "SearchResult Metadata"
         }
     }
 
@@ -222,7 +222,7 @@ class SearchExample: TapDelegate,
         }
 
         for geocodingResult in items! {
-            let geoCoordinates = geocodingResult.geoCoordinates
+            let geoCoordinates = geocodingResult.coordinates
             if let address = geocodingResult.address {
                 let locationDetails = address.addressText
                     + ". Coordinates: \(geoCoordinates.latitude)"
@@ -247,12 +247,12 @@ class SearchExample: TapDelegate,
             return
         }
 
-        if let searchItemMetadata =
-            topmostMapMarker.metadata?.getCustomValue(key: "key_search_item") as? SearchItemMetadata {
+        if let searchResultMetadata =
+            topmostMapMarker.metadata?.getCustomValue(key: "key_search_result") as? SearchResultMetadata {
 
-            let title = searchItemMetadata.searchItem.title
-            let vicinity = searchItemMetadata.searchItem.vicinity ?? "nil"
-            let category = searchItemMetadata.searchItem.category
+            let title = searchResultMetadata.searchResult.title
+            let vicinity = searchResultMetadata.searchResult.vicinity ?? "nil"
+            let category = searchResultMetadata.searchResult.category
             showDialog(title: "Picked Search Result",
                        message: "\(title), \(vicinity). Category: \(category.localizedName)")
             return
