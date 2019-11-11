@@ -1,4 +1,4 @@
-# HERE SDK - Examples for Android and iOS
+# HERE SDK 4.x - Examples for Android and iOS
 The HERE SDK enables you to build powerful location-aware applications. Explore maps that are fast and smooth to interact with, pan/zoom across map views of varying resolutions, and enable the display of various elements such as routes and POIs on highly customizable map views.
 
 <center><p>
