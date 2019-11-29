@@ -40,7 +40,7 @@ import com.here.sdk.mapviewlite.MapViewLite;
 import com.here.sdk.mapviewlite.PixelFormat;
 import com.here.sdk.routing.CalculateRouteCallback;
 import com.here.sdk.routing.CarOptions;
-import com.here.sdk.routing.Instruction;
+import com.here.sdk.routing.Maneuver;
 import com.here.sdk.routing.ManeuverAction;
 import com.here.sdk.routing.Route;
 import com.here.sdk.routing.RouteLeg;
@@ -161,11 +161,11 @@ public class RoutingExample {
 
     private void logManeuverInstructions(RouteLeg routeLeg) {
         Log.d(TAG, "Log maneuver instructions per route leg:");
-        List<Instruction> maneuverInstructions = routeLeg.getInstructions();
-        for (Instruction maneuverInstruction : maneuverInstructions) {
-            ManeuverAction maneuverAction = maneuverInstruction.action;
-            GeoCoordinates maneuverLocation = maneuverInstruction.coordinates;
-            String maneuverInfo = maneuverInstruction.text
+        List<Maneuver> maneuverInstructions = routeLeg.getManeuvers();
+        for (Maneuver maneuverInstruction : maneuverInstructions) {
+            ManeuverAction maneuverAction = maneuverInstruction.getAction();
+            GeoCoordinates maneuverLocation = maneuverInstruction.getCoordinates();
+            String maneuverInfo = maneuverInstruction.getText()
                     + ", Action: " + maneuverAction.name()
                     + ", Location: " + maneuverLocation.toString();
             Log.d(TAG, maneuverInfo);

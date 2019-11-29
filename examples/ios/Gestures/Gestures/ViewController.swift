@@ -32,19 +32,21 @@ final class ViewController: UIViewController {
         view.addSubview(mapView)
 
         // Load the map scene using a map style to render the map with.
-        mapView.mapScene.loadScene(mapStyle: .normalDay) { (sceneError) in
-            guard sceneError == nil else {
-                print("Error: Map scene not loaded, \(String(describing: sceneError))")
-                return
-            }
+        mapView.mapScene.loadScene(mapStyle: .normalDay, callback: onLoadScene)
+    }
 
-            // Configure the map.
-            self.mapView.camera.setTarget(GeoCoordinates(latitude: 52.518043, longitude: 13.405991))
-            self.mapView.camera.setZoomLevel(13)
-
-            // Start the example.
-            _ = GesturesExample(viewController: self, mapView: self.mapView)
+    func onLoadScene(errorCode: MapLiteScene.ErrorCode?) {
+        guard errorCode == nil else {
+            print("Error: Map scene not loaded, \(String(describing: errorCode))")
+            return
         }
+
+        // Configure the map.
+        mapView.camera.setTarget(GeoCoordinates(latitude: 52.518043, longitude: 13.405991))
+        mapView.camera.setZoomLevel(13)
+
+        // Start the example.
+        _ = GesturesExample(viewController: self, mapView: mapView)
     }
 
     override func didReceiveMemoryWarning() {

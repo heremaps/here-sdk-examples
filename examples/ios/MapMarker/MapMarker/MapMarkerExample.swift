@@ -24,7 +24,7 @@ class MapMarkerExample: TapDelegate, PickMapItemsCallback {
 
     private var viewController: UIViewController
     private var mapView: MapViewLite
-    private var mapMarkers = [MapMarker]()
+    private var mapMarkers = [MapLiteMarker]()
     private let mapCenterGeoCoordinates = GeoCoordinates(latitude: 52.520798, longitude: 13.409408)
 
     init(viewController: UIViewController, mapView: MapViewLite) {
@@ -67,7 +67,7 @@ class MapMarkerExample: TapDelegate, PickMapItemsCallback {
     }
 
     private func addPOIMapMarker(geoCoordinates: GeoCoordinates) {
-        let mapMarker = MapMarker(at: geoCoordinates)
+        let mapMarker = MapLiteMarker(at: geoCoordinates)
         // Drag & Drop the image to Assets.xcassets (or simply add the image as file to the project).
         // You can add multiple resolutions to Assets.xcassets that will be used depending on the
         // display size.
@@ -91,7 +91,7 @@ class MapMarkerExample: TapDelegate, PickMapItemsCallback {
 
     @discardableResult
     private func addPhotoMapMarker(geoCoordinates: GeoCoordinates) -> (width: Int32, height: Int32) {
-        let mapMarker = MapMarker(at: geoCoordinates)
+        let mapMarker = MapLiteMarker(at: geoCoordinates)
         let image = UIImage(named: "here_car.png")
         let mapImage = MapImage(image!)
         mapMarker.addImage(mapImage!, style: MapMarkerImageStyle())
@@ -103,7 +103,7 @@ class MapMarkerExample: TapDelegate, PickMapItemsCallback {
     }
 
     private func addCircleMapMarker(geoCoordinates: GeoCoordinates) {
-        let mapMarker = MapMarker(at: geoCoordinates)
+        let mapMarker = MapLiteMarker(at: geoCoordinates)
         let image = UIImage(named: "circle.png")
         let mapImage = MapImage(image!)
         mapMarker.addImage(mapImage!, style: MapMarkerImageStyle())

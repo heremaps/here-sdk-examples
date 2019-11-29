@@ -28,14 +28,21 @@ class ViewController: UIViewController {
         super.viewDidLoad()
 
         // Load the map scene using a map style to render the map with.
-        mapView.mapScene.loadScene(mapStyle: .normalDay) { (sceneError) in
-            if let error = sceneError {
-                print("Error: Map scene not loaded, \(error)")
-            } else {
-                // Configure the map.
-                self.mapView.camera.setTarget(GeoCoordinates(latitude: 52.518043, longitude: 13.405991))
-                self.mapView.camera.setZoomLevel(13)
-            }
+        mapView.mapScene.loadScene(mapStyle: .normalDay, callback: onLoadScene)
+    }
+
+    func onLoadScene(errorCode: MapLiteScene.ErrorCode?) {
+        if let error = errorCode {
+            print("Error: Map scene not loaded, \(error)")
+        } else {
+            // Configure the map.
+            mapView.camera.setTarget(GeoCoordinates(latitude: 52.518043, longitude: 13.405991))
+            mapView.camera.setZoomLevel(13)
         }
+    }
+
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        mapView.handleLowMemory()
     }
 }

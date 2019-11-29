@@ -21,11 +21,11 @@ import heresdk
 
 class MapObjectsExample {
 
-    private var mapScene: MapScene
+    private var mapScene: MapLiteScene
 
-    private var mapPolyline: MapPolyline?
-    private var mapPolygon: MapPolygon?
-    private var mapCircle: MapCircle?
+    private var mapPolyline: MapLitePolyline?
+    private var mapPolygon: MapLitePolygon?
+    private var mapCircle: MapLiteCircle?
 
     init(mapView: MapViewLite) {
         let camera = mapView.camera
@@ -53,7 +53,7 @@ class MapObjectsExample {
         mapScene.addMapCircle(mapCircle!)
     }
 
-    private func createMapPolyline() -> MapPolyline {
+    private func createMapPolyline() -> MapLitePolyline {
         let coordinates = [GeoCoordinates(latitude: 52.53032, longitude: 13.37409),
                            GeoCoordinates(latitude: 52.5309, longitude: 13.3946),
                            GeoCoordinates(latitude: 52.53894, longitude: 13.39194),
@@ -64,12 +64,12 @@ class MapObjectsExample {
         let mapPolylineStyle = MapPolylineStyle()
         mapPolylineStyle.setWidth(inPixels: 20)
         mapPolylineStyle.setColor(0x00908AA0, encoding: .rgba8888)
-        let mapPolyline = MapPolyline(geometry: geoPolyline, style: mapPolylineStyle)
+        let mapPolyline = MapLitePolyline(geometry: geoPolyline, style: mapPolylineStyle)
 
         return mapPolyline
     }
 
-    private func createMapPolygon() -> MapPolygon {
+    private func createMapPolygon() -> MapLitePolygon {
         let coordinates = [GeoCoordinates(latitude: 52.53032, longitude: 13.37409),
                            GeoCoordinates(latitude: 52.5309, longitude: 13.3946),
                            GeoCoordinates(latitude: 52.53894, longitude: 13.39194),
@@ -79,17 +79,17 @@ class MapObjectsExample {
         let geoPolygon = try! GeoPolygon(vertices: coordinates)
         let mapPolygonStyle = MapPolygonStyle()
         mapPolygonStyle.setFillColor(0x00908AA0, encoding: .rgba8888)
-        let mapPolygon = MapPolygon(geometry: geoPolygon, style: mapPolygonStyle)
+        let mapPolygon = MapLitePolygon(geometry: geoPolygon, style: mapPolygonStyle)
 
         return mapPolygon
     }
 
-    private func createMapCircle() -> MapCircle {
+    private func createMapCircle() -> MapLiteCircle {
         let geoCircle = GeoCircle(center: GeoCoordinates(latitude: 52.530932, longitude: 13.384915),
                                   radiusInMeters: 300)
         let mapCircleStyle = MapCircleStyle()
         mapCircleStyle.setFillColor(0x00908AA0, encoding: .rgba8888)
-        let mapCircle = MapCircle(geometry: geoCircle, style: mapCircleStyle)
+        let mapCircle = MapLiteCircle(geometry: geoCircle, style: mapCircleStyle)
 
         return mapCircle
     }

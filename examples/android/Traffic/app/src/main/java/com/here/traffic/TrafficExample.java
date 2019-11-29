@@ -30,7 +30,7 @@ import com.here.sdk.core.errors.EngineInstantiationException;
 import com.here.sdk.mapviewlite.Camera;
 import com.here.sdk.mapviewlite.LayerState;
 import com.here.sdk.mapviewlite.MapLayer;
-import com.here.sdk.mapviewlite.MapSceneException;
+import com.here.sdk.mapviewlite.MapScene;
 import com.here.sdk.mapviewlite.MapViewLite;
 import com.here.sdk.traffic.Incident;
 import com.here.sdk.traffic.IncidentCategory;
@@ -96,7 +96,7 @@ public class TrafficExample {
         try {
             mapView.getMapScene().setLayerState(MapLayer.TRAFFIC_FLOW, LayerState.ENABLED);
             mapView.getMapScene().setLayerState(MapLayer.TRAFFIC_INCIDENTS, LayerState.ENABLED);
-        } catch (MapSceneException e) {
+        } catch (MapScene.MapSceneException e) {
             Toast.makeText(context, "Exception when enabling traffic visualization.", Toast.LENGTH_LONG).show();
         }
     }
@@ -105,7 +105,7 @@ public class TrafficExample {
         try {
             mapView.getMapScene().setLayerState(MapLayer.TRAFFIC_FLOW, LayerState.DISABLED);
             mapView.getMapScene().setLayerState(MapLayer.TRAFFIC_INCIDENTS, LayerState.DISABLED);
-        } catch (MapSceneException e) {
+        } catch (MapScene.MapSceneException e) {
             Toast.makeText(context, "Exception when disabling traffic visualization.", Toast.LENGTH_LONG).show();
         }
     }
