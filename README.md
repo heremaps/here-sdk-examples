@@ -1,5 +1,5 @@
 # HERE SDK 4.x - Examples for Android and iOS
-The HERE SDK enables you to build powerful location-aware applications. Explore maps that are fast and smooth to interact with, pan/zoom across map views of varying resolutions, and enable the display of various elements such as routes and POIs on highly customizable map views.
+The [HERE SDK](https://developer.here.com/products/here-sdk) enables you to build powerful location-aware applications. Explore maps that are fast and smooth to interact with, pan/zoom across map views of varying resolutions, and enable the display of various elements such as routes and POIs on highly customizable map views.
 
 <center><p>
   <img src="images/here_sdk.jpg" width="500" />
@@ -32,7 +32,7 @@ Each example app contains a file named "XY-Example" where XY stands for the feat
 2. Download the latest HERE SDK framework artifact for your desired platform. It can be found on [developer.here.com](https://developer.here.com/).
 3. Please refer to the minimum requirements as listed in our _Developer's Guide_ for [Android](https://developer.here.com/documentation/android-sdk/dev_guide/topics/quick-start.html#minimum-requirements) and [iOS](https://developer.here.com/documentation/ios-sdk/dev_guide/topics/quick-start.html#minimum-requirements).
 
-> All examples apps work with the latest HERE SDK for Android and iOS (Lite Edition), **Version 4.1.2.0**.
+> All examples apps work with the latest HERE SDK for Android and iOS (Lite Edition), **Version 4.1.4.0**.
 
 ## Get Started for Android
 1. Copy the AAR file of the HERE SDK for Android to your app's `app/libs` folder.

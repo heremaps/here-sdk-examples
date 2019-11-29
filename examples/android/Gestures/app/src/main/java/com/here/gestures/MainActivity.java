@@ -26,10 +26,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import com.here.gestures.PermissionsRequestor.ResultListener;
-import com.here.sdk.mapviewlite.LoadSceneCallback;
+import com.here.sdk.mapviewlite.MapScene;
 import com.here.sdk.mapviewlite.MapStyle;
 import com.here.sdk.mapviewlite.MapViewLite;
-import com.here.sdk.mapviewlite.SceneError;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -72,13 +71,13 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadMapScene() {
         // Load a scene from the SDK to render the map with a map style.
-        mapView.getMapScene().loadScene(MapStyle.NORMAL_DAY, new LoadSceneCallback() {
+        mapView.getMapScene().loadScene(MapStyle.NORMAL_DAY, new MapScene.LoadSceneCallback() {
             @Override
-            public void onLoadScene(@Nullable SceneError sceneError) {
-                if (sceneError == null) {
+            public void onLoadScene(@Nullable MapScene.ErrorCode errorCode) {
+                if (errorCode == null) {
                     new GesturesExample(MainActivity.this, mapView);
                 } else {
-                    Log.d(TAG, "onLoadScene failed: " + sceneError.toString());
+                    Log.d(TAG, "onLoadScene failed: " + errorCode.toString());
                 }
             }
         });

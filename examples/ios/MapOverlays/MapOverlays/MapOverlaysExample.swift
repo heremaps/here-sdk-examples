@@ -80,7 +80,7 @@ class MapOverlaysExample {
     }
 
     private func addCircleMapMarker(geoCoordinates: GeoCoordinates) {
-        let mapMarker = MapMarker(at: geoCoordinates)
+        let mapMarker = MapLiteMarker(at: geoCoordinates)
         let image = UIImage(named: "red_dot")
         let mapImage = MapImage(image!)
         mapMarker.addImage(mapImage!, style: MapMarkerImageStyle())

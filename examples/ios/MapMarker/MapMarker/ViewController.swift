@@ -30,16 +30,18 @@ final class ViewController: UIViewController {
         super.viewDidLoad()
 
         // Load the map scene using a map style to render the map with.
-        mapView.mapScene.loadScene(mapStyle: .normalDay) { (sceneError) in
-            guard sceneError == nil else {
-                print("Error: Map scene not loaded, \(String(describing: sceneError))")
-                return
-            }
+        mapView.mapScene.loadScene(mapStyle: .normalDay, callback: onLoadScene)
+    }
 
-            // Start the example.
-            self.mapMarkerExample = MapMarkerExample(viewController: self, mapView: self.mapView)
-            self.isMapSceneLoaded = true
+    func onLoadScene(errorCode: MapLiteScene.ErrorCode?) {
+        guard errorCode == nil else {
+            print("Error: Map scene not loaded, \(String(describing: errorCode))")
+            return
         }
+
+        // Start the example.
+        mapMarkerExample = MapMarkerExample(viewController: self, mapView: mapView)
+        isMapSceneLoaded = true
     }
 
     @IBAction func onAnchoredButtonClicked(_ sender: Any) {

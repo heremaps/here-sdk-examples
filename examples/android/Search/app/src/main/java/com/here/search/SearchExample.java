@@ -44,7 +44,6 @@ import com.here.sdk.mapviewlite.MapMarkerImageStyle;
 import com.here.sdk.mapviewlite.MapViewLite;
 import com.here.sdk.mapviewlite.PickMapItemsCallback;
 import com.here.sdk.mapviewlite.PickMapItemsResult;
-import com.here.sdk.search.Address;
 import com.here.sdk.search.AutosuggestCallback;
 import com.here.sdk.search.AutosuggestEngine;
 import com.here.sdk.search.AutosuggestOptions;
@@ -63,6 +62,7 @@ import com.here.sdk.search.SearchEngine;
 import com.here.sdk.search.SearchError;
 import com.here.sdk.search.SearchOptions;
 import com.here.sdk.search.SearchResult;
+import com.here.sdk.searchcommon.Address;
 
 import java.util.ArrayList;
 import java.util.Collections;

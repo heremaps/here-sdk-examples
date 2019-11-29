@@ -30,7 +30,7 @@ class SearchExample: TapDelegate,
 
     private var viewController: UIViewController
     private var mapView: MapViewLite
-    private var mapMarkers = [MapMarker]()
+    private var mapMarkers = [MapLiteMarker]()
     private var searchEngine: SearchEngine
     private var autosuggestEngine: AutosuggestEngine
     private var geocodingEngine: GeocodingEngine
@@ -306,8 +306,8 @@ class SearchExample: TapDelegate,
         mapMarkers.append(mapMarker)
     }
 
-    private func createPoiMapMarker(geoCoordinates: GeoCoordinates) -> MapMarker {
-        let mapMarker = MapMarker(at: geoCoordinates)
+    private func createPoiMapMarker(geoCoordinates: GeoCoordinates) -> MapLiteMarker {
+        let mapMarker = MapLiteMarker(at: geoCoordinates)
         let image = UIImage(named: "poi")
         let mapImage = MapImage(image!)
         let mapMarkerImageStyle = MapMarkerImageStyle()

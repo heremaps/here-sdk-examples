@@ -24,8 +24,8 @@ class RoutingExample {
 
     private var viewController: UIViewController
     private var mapView: MapViewLite
-    private var mapMarkers = [MapMarker]()
-    private var mapPolylineList = [MapPolyline]()
+    private var mapMarkers = [MapLiteMarker]()
+    private var mapPolylineList = [MapLitePolyline]()
     private var routingEngine: RoutingEngine
     private var startGeoCoordinates: GeoCoordinates?
     private var destinationGeoCoordinates: GeoCoordinates?
@@ -98,7 +98,7 @@ class RoutingExample {
         let mapPolylineStyle = MapPolylineStyle()
         mapPolylineStyle.setColor(0x00908AA0, encoding: .rgba8888)
         mapPolylineStyle.setWidth(inPixels: 10)
-        let routeMapPolyline = MapPolyline(geometry: routeGeoPolyline, style: mapPolylineStyle)
+        let routeMapPolyline = MapLitePolyline(geometry: routeGeoPolyline, style: mapPolylineStyle)
         mapView.mapScene.addMapPolyline(routeMapPolyline)
         mapPolylineList.append(routeMapPolyline)
 
@@ -115,7 +115,7 @@ class RoutingExample {
 
     private func logManeuverInstructions(routeLeg: RouteLeg) {
         print("Log maneuver instructions per route leg:")
-        let maneuverInstructions = routeLeg.instructions
+        let maneuverInstructions = routeLeg.maneuvers
         for maneuverInstruction in maneuverInstructions {
             let maneuverAction = maneuverInstruction.action
             let maneuverLocation = maneuverInstruction.coordinates
@@ -204,7 +204,7 @@ class RoutingExample {
     }
 
     private func addCircleMapMarker(geoCoordinates: GeoCoordinates, imageName: String) {
-        let mapMarker = MapMarker(at: geoCoordinates)
+        let mapMarker = MapLiteMarker(at: geoCoordinates)
         let image = UIImage(named: imageName)
         let mapImage = MapImage(image!)
         mapMarker.addImage(mapImage!, style: MapMarkerImageStyle())
