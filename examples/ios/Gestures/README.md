@@ -1,4 +1,4 @@
-The Gesture example app shows how to handle common map interactions and gestures, for example, double tap to zoom in. You can find how this is done in [GesturesExample.swift](Gestures/GesturesExample.swift).
+The Gesture example app shows how to handle common map interactions and gestures, for example, double tap to zoom in. It also shows a custom zoom animation. You can find how this is done in [GesturesExample.swift](Gestures/GesturesExample.swift).
 
 Build instructions:
 -------------------

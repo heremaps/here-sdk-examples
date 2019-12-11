@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		C828881B224BD337004903B8 /* heresdk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C828881A224BD337004903B8 /* heresdk.framework */; };
 		C828881C224BD337004903B8 /* heresdk.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = C828881A224BD337004903B8 /* heresdk.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		C84D075B2376CEBA0001895D /* GestureMapAnimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C84D075A2376CEBA0001895D /* GestureMapAnimator.swift */; };
 		C865247F20B81A8900392D48 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C865247E20B81A8900392D48 /* AppDelegate.swift */; };
 		C865248120B81A8900392D48 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C865248020B81A8900392D48 /* ViewController.swift */; };
 		C865248420B81A8900392D48 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C865248220B81A8900392D48 /* Main.storyboard */; };
@@ -33,6 +34,7 @@
 
 /* Begin PBXFileReference section */
 		C828881A224BD337004903B8 /* heresdk.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = heresdk.framework; sourceTree = "<group>"; };
+		C84D075A2376CEBA0001895D /* GestureMapAnimator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GestureMapAnimator.swift; sourceTree = "<group>"; };
 		C865247B20B81A8900392D48 /* Gestures.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Gestures.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C865247E20B81A8900392D48 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C865248020B81A8900392D48 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -78,6 +80,7 @@
 				C865247E20B81A8900392D48 /* AppDelegate.swift */,
 				C865248020B81A8900392D48 /* ViewController.swift */,
 				C865249420B83D7600392D48 /* GesturesExample.swift */,
+				C84D075A2376CEBA0001895D /* GestureMapAnimator.swift */,
 				C865248220B81A8900392D48 /* Main.storyboard */,
 				C865248520B81A8B00392D48 /* Assets.xcassets */,
 				C865248720B81A8B00392D48 /* LaunchScreen.storyboard */,
@@ -162,6 +165,7 @@
 			files = (
 				C865248120B81A8900392D48 /* ViewController.swift in Sources */,
 				C865249520B83D7600392D48 /* GesturesExample.swift in Sources */,
+				C84D075B2376CEBA0001895D /* GestureMapAnimator.swift in Sources */,
 				C865247F20B81A8900392D48 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

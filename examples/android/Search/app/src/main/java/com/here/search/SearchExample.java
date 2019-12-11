@@ -34,7 +34,7 @@ import com.here.sdk.core.LanguageCode;
 import com.here.sdk.core.Metadata;
 import com.here.sdk.core.Point2D;
 import com.here.sdk.core.TextFormat;
-import com.here.sdk.core.errors.EngineInstantiationException;
+import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.gestures.GestureState;
 import com.here.sdk.mapviewlite.Camera;
 import com.here.sdk.mapviewlite.MapImage;
@@ -90,25 +90,25 @@ public class SearchExample {
 
         try {
             searchEngine = new SearchEngine();
-        } catch (EngineInstantiationException e) {
+        } catch (InstantiationErrorException e) {
             new RuntimeException("Initialization of SearchEngine failed: " + e.error.name());
         }
 
         try {
             autosuggestEngine = new AutosuggestEngine();
-        } catch (EngineInstantiationException e) {
+        } catch (InstantiationErrorException e) {
             new RuntimeException("Initialization of AutosuggestEngine failed: " + e.error.name());
         }
 
         try {
             geocodingEngine = new GeocodingEngine();
-        } catch (EngineInstantiationException e) {
+        } catch (InstantiationErrorException e) {
             new RuntimeException("Initialization of GeocodingEngine failed: " + e.error.name());
         }
 
         try {
             reverseGeocodingEngine = new ReverseGeocodingEngine();
-        } catch (EngineInstantiationException e) {
+        } catch (InstantiationErrorException e) {
             new RuntimeException("Initialization of ReverseGeocodingEngine failed: " + e.error.name());
         }
 
@@ -144,8 +144,8 @@ public class SearchExample {
 
         String streetName = "Invalidenstraße 116";
 
-        Toast.makeText(context,"Finding locations for: " + streetName
-               + ". Tap marker to see the coordinates.", Toast.LENGTH_LONG).show();
+        Toast.makeText(context,"Finding locations in viewport for: " + streetName
+               + ". Tap marker to see the coordinates. Check the logs for the address.", Toast.LENGTH_LONG).show();
 
         geocodeAddressInViewport(streetName);
     }

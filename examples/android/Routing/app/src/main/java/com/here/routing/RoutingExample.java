@@ -27,7 +27,6 @@ import android.util.Log;
 import com.here.sdk.core.GeoBox;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.GeoPolyline;
-import com.here.sdk.core.errors.EngineInstantiationException;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.mapviewlite.Camera;
 import com.here.sdk.mapviewlite.MapImage;
@@ -39,12 +38,12 @@ import com.here.sdk.mapviewlite.MapPolylineStyle;
 import com.here.sdk.mapviewlite.MapViewLite;
 import com.here.sdk.mapviewlite.PixelFormat;
 import com.here.sdk.routing.CalculateRouteCallback;
-import com.here.sdk.routing.CarOptions;
 import com.here.sdk.routing.Maneuver;
 import com.here.sdk.routing.ManeuverAction;
 import com.here.sdk.routing.Route;
 import com.here.sdk.routing.RouteLeg;
 import com.here.sdk.routing.RoutingEngine;
+import com.here.sdk.routing.RoutingEngine.CarOptions;
 import com.here.sdk.routing.RoutingError;
 import com.here.sdk.routing.Waypoint;
 
@@ -74,7 +73,7 @@ public class RoutingExample {
 
         try {
             routingEngine = new RoutingEngine();
-        } catch (EngineInstantiationException e) {
+        } catch (InstantiationErrorException e) {
             new RuntimeException("Initialization of RoutingEngine failed: " + e.error.name());
         }
     }
@@ -210,9 +209,6 @@ public class RoutingExample {
     public void clearMap() {
         clearWaypointMapMarker();
         clearRoute();
-
-        startGeoCoordinates = null;
-        destinationGeoCoordinates = null;
     }
 
     private void clearWaypointMapMarker() {

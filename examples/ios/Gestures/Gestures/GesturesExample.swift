@@ -20,27 +20,35 @@
 import heresdk
 import UIKit
 
-class GesturesExample: TapDelegate, DoubleTapDelegate, LongPressDelegate {
+class GesturesExample: TapDelegate,
+                       DoubleTapDelegate,
+                       TwoFingerTapDelegate,
+                       LongPressDelegate {
 
     private var viewController: UIViewController
     private var mapView: MapViewLite
+
+    private lazy var gestureMapAnimator = GestureMapAnimator(mapView.camera)
 
     init(viewController: UIViewController, mapView: MapViewLite) {
         self.viewController = viewController
         self.mapView = mapView
 
-        mapView.camera.setTarget(GeoCoordinates(latitude: 52.530932, longitude: 13.384915))
+        mapView.camera.setTarget(GeoCoordinates(latitude: 51.530932, longitude: 13.384915))
         mapView.camera.setZoomLevel(14)
 
         mapView.gestures.tapDelegate = self
         mapView.gestures.doubleTapDelegate = self
+        mapView.gestures.twoFingerTapDelegate = self
         mapView.gestures.longPressDelegate = self
 
-        // Disabling the default map gesture behavior for a double tap (zooms in).
+        // Disable the default map gesture behavior for DoubleTap (zooms in) and TwoFingerTap (zooms out)
+        // as we want to enable custom map animations when such gestures are detected.
         mapView.gestures.disableDefaultAction(forGesture: .doubleTap)
+        mapView.gestures.disableDefaultAction(forGesture: .twoFingerTap)
 
-        showDialog(title: "Note", message: "Shows Tap, DoubleTap and LongPress gesture handling. "
-            + "See log for details. DoubleTap map action (zoom in) is disabled as an example.")
+        showDialog(title: "Note", message: "Shows Tap and LongPress gesture handling. "
+            + "See log for details. DoubleTap / TwoFingerTap map action (zoom in/out) is disabled and replaced with a custom animation.")
     }
 
     // Conform to the TapDelegate protocol.
@@ -52,7 +60,19 @@ class GesturesExample: TapDelegate, DoubleTapDelegate, LongPressDelegate {
     // Conform to the DoubleTapDelegate protocol.
     func onDoubleTap(origin: Point2D) {
         let geoCoordinates = mapView.camera.viewToGeoCoordinates(viewCoordinates: origin)
-        print("Zooming in is disabled. DoubleTap at: \(String(describing: geoCoordinates))")
+        print("Default zooming in is disabled. DoubleTap at: \(String(describing: geoCoordinates))")
+
+        // Start our custom zoom in animation.
+        gestureMapAnimator.zoomIn()
+    }
+
+    // Conform to the TwoFingerTapDelegate protocol.
+    func onTwoFingerTap(origin: Point2D) {
+        let geoCoordinates = mapView.camera.viewToGeoCoordinates(viewCoordinates: origin)
+        print("Default zooming in is disabled. TwoFingerTap at: \(String(describing: geoCoordinates))")
+
+        // Start our custom zoom out animation.
+        gestureMapAnimator.zoomOut()
     }
 
     // Conform to the LongPressDelegate protocol.
@@ -73,15 +93,18 @@ class GesturesExample: TapDelegate, DoubleTapDelegate, LongPressDelegate {
         }
     }
 
-    // Unused - it's just an example how to clean up.
+    // Unused. This is just an example how to clean up.
     private func removeGestureHandler(mapView: MapViewLite) {
+        // Stop listening.
         mapView.gestures.tapDelegate = nil
         mapView.gestures.doubleTapDelegate = nil
+        mapView.gestures.twoFingerTapDelegate = nil
         mapView.gestures.longPressDelegate = nil
 
-        // Enabling the default map gesture behavior for a double tap (zooms in).
-        // It was disabled for this example, see above.
+        // Bring back the default map gesture behavior for DoubleTap (zooms in)
+        // and TwoFingerTap (zooms out). These actions were disabled above.
         mapView.gestures.enableDefaultAction(forGesture: .doubleTap)
+        mapView.gestures.enableDefaultAction(forGesture: .twoFingerTap)
     }
 
     private func showDialog(title: String, message: String) {

@@ -228,7 +228,7 @@ class SearchExample: TapDelegate,
                     + ". Coordinates: \(geoCoordinates.latitude)"
                     + ", \(geoCoordinates.longitude)"
 
-                showDialog(title: "Geocoding - Locations for 'Invalidenstraße 116':",
+                showDialog(title: "Geocoding - Locations in viewport for 'Invalidenstraße 116':",
                            message: "Found: \(items!.count) result(s): \(locationDetails)")
 
                 self.addPoiMapMarker(geoCoordinates: geoCoordinates)

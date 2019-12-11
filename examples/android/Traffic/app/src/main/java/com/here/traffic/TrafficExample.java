@@ -26,7 +26,7 @@ import android.widget.Toast;
 
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.LanguageCode;
-import com.here.sdk.core.errors.EngineInstantiationException;
+import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.mapviewlite.Camera;
 import com.here.sdk.mapviewlite.LayerState;
 import com.here.sdk.mapviewlite.MapLayer;
@@ -62,7 +62,7 @@ public class TrafficExample {
 
         try {
             trafficEngine = new TrafficEngine();
-        } catch (EngineInstantiationException e) {
+        } catch (InstantiationErrorException e) {
             new RuntimeException("Initialization of TrafficEngine failed: " + e.error.name());
         }
     }
