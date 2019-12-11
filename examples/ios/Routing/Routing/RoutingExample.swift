@@ -50,7 +50,7 @@ class RoutingExample {
         startGeoCoordinates = createRandomGeoCoordinatesInViewport()
         destinationGeoCoordinates = createRandomGeoCoordinatesInViewport()
 
-        let carOptions = CarOptions()
+        let carOptions = RoutingEngine.CarOptions()
         routingEngine.calculateRoute(with: [Waypoint(coordinates: startGeoCoordinates!),
                                             Waypoint(coordinates: destinationGeoCoordinates!)],
                                      carOptions: carOptions) { (routingError, routes) in
@@ -142,7 +142,7 @@ class RoutingExample {
                          Waypoint(coordinates: waypoint2GeoCoordinates),
                          Waypoint(coordinates: destinationGeoCoordinates)]
 
-        let carOptions = CarOptions()
+        let carOptions = RoutingEngine.CarOptions()
         routingEngine.calculateRoute(with: waypoints,
                                      carOptions: carOptions) { (routingError, routes) in
 
@@ -164,9 +164,6 @@ class RoutingExample {
     func clearMap() {
         clearWaypointMapMarker()
         clearRoute()
-
-        startGeoCoordinates = nil
-        destinationGeoCoordinates = nil
     }
 
     private func clearWaypointMapMarker() {

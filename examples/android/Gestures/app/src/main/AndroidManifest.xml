@@ -3,6 +3,7 @@
     package="com.here.gestures">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
@@ -15,8 +16,8 @@
         android:theme="@style/AppTheme">
 
         <!-- Set your credentials for the HERE SDK. -->
-        <meta-data android:name="com.here.sdk.access_key_id" android:value="YOUR_ACCESS_KEY_ID"/>
-        <meta-data android:name="com.here.sdk.access_key_secret" android:value="YOUR_ACCESS_KEY_SECRET"/>
+        <meta-data android:name="com.here.sdk.access_key_id" android:value="YOUR_ACCESS_KEY_ID" />
+        <meta-data android:name="com.here.sdk.access_key_secret" android:value="YOUR_ACCESS_KEY_SECRET" />
 
         <activity android:name=".MainActivity">
             <intent-filter>

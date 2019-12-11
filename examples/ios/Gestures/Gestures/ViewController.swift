@@ -23,6 +23,7 @@ import UIKit
 final class ViewController: UIViewController {
 
     private var mapView: MapViewLite!
+    private var gesturesExample: GesturesExample!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -37,16 +38,12 @@ final class ViewController: UIViewController {
 
     func onLoadScene(errorCode: MapLiteScene.ErrorCode?) {
         guard errorCode == nil else {
-            print("Error: Map scene not loaded, \(String(describing: errorCode))")
-            return
+          print("Error: Map scene not loaded, \(String(describing: errorCode))")
+          return
         }
 
-        // Configure the map.
-        mapView.camera.setTarget(GeoCoordinates(latitude: 52.518043, longitude: 13.405991))
-        mapView.camera.setZoomLevel(13)
-
         // Start the example.
-        _ = GesturesExample(viewController: self, mapView: mapView)
+        gesturesExample = GesturesExample(viewController: self, mapView: mapView)
     }
 
     override func didReceiveMemoryWarning() {

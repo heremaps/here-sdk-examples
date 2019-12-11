@@ -26,7 +26,7 @@ import android.widget.TextView;
 
 import com.here.sdk.core.GeoBox;
 import com.here.sdk.core.GeoCoordinates;
-import com.here.sdk.core.errors.EngineInstantiationException;
+import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.traffic.Incident;
 import com.here.sdk.traffic.IncidentQueryOptions;
 import com.here.sdk.traffic.TrafficEngine;
@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             trafficEngine = new TrafficEngine();
-        } catch (EngineInstantiationException e) {
+        } catch (InstantiationErrorException e) {
             trafficInfoTextview.setText(e.error.name());
             return;
         }
