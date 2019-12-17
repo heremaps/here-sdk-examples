@@ -8,7 +8,7 @@ The team behind the [HERE SDK](https://github.com/heremaps/here-sdk-examples) gr
 
 As part of filing a pull request we ask you to sign off the
 [Developer Certificate of Origin](https://developercertificate.org/) (DCO) in each commit.
-Any Pull Request with commits that are not signed off will be reject by the
+Any Pull Request with commits that are not signed off will be rejected by the
 [DCO check](https://probot.github.io/apps/dco/).
 
 A DCO is lightweight way for a contributor to confirm that they wrote or otherwise have the right
