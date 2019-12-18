@@ -1,4 +1,4 @@
-# HERE SDK 4.x - Examples for Android and iOS
+# HERE SDK 4.x (Lite Edition) - Examples for Android and iOS
 ![License](https://img.shields.io/badge/license-Apache%202-blue)
 ![Platform](https://img.shields.io/badge/platform-Android-green.svg)
 ![Language](https://img.shields.io/badge/language-Java%208-orange.svg)
@@ -11,7 +11,7 @@ The [HERE SDK](https://developer.here.com/products/here-sdk) enables you to buil
   <img src="images/here_sdk.jpg" width="500" />
 </p></center>
 
-The HERE SDK consumes data from the [HERE Platform](https://www.here.com/products/platform) (HP) and follows modern design principles incorporating microservices and highly modularized components. Currently, the HERE SDK supports two platforms, Android and iOS.
+The HERE SDK (Lite Edition) consumes data from the [HERE Platform](https://www.here.com/products/platform) and follows modern design principles incorporating microservices and highly modularized components. Currently, the HERE SDK supports two platforms, Android and iOS.
 
 For an overview of the existing features, please check our _Developer's Guide_:
 - [HERE SDK for Android (Lite Edition): Developer's Guide](https://developer.here.com/documentation/android-sdk/dev_guide/index.html)
