@@ -53,7 +53,7 @@ Please do not forget: To run the app, you need to add your HERE SDK credentials 
 Please do not forget: To run the app, you need to add your HERE SDK credentials to the `Info.plist` file. More information can be found in the _Get Started_-section of the _Developer's Guide_.
 
 ## Documentation
-- **HERE SDK for Android (Lite Edition)**: [API Reference](https://developer.here.com/documentation/Android-sdk/api_reference/index.html), [Developer's Guide](https://developer.here.com/documentation/android-sdk/dev_guide/index.html)
+- **HERE SDK for Android (Lite Edition)**: [API Reference](https://developer.here.com/documentation/android-sdk/api_reference/index.html), [Developer's Guide](https://developer.here.com/documentation/android-sdk/dev_guide/index.html)
 - **HERE SDK for iOS (Lite Edition)**: [API Reference](https://developer.here.com/documentation/ios-sdk/api_reference/index.html), [Developer's Guide](https://developer.here.com/documentation/ios-sdk/dev_guide/index.html)
 - Release Notes: All recent additions, more details about the current release and the differences to previous versions can be found in the included _Release Notes_ of your downloaded package.
 
