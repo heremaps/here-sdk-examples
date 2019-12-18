@@ -1,4 +1,4 @@
-# HERE SDK 4.x - Examples for Android and iOS
+# HERE SDK 4.x (Lite Edition) - Examples for Android and iOS
 ![License](https://img.shields.io/badge/license-Apache%202-blue)
 ![Platform](https://img.shields.io/badge/platform-Android-green.svg)
 ![Language](https://img.shields.io/badge/language-Java%208-orange.svg)
@@ -11,7 +11,7 @@ The [HERE SDK](https://developer.here.com/products/here-sdk) enables you to buil
   <img src="images/here_sdk.jpg" width="500" />
 </p></center>
 
-The HERE SDK is consuming [Open Location Platform](https://developer.here.com/products/open-location-platform) (OLP) data and it is following modern design principles incorporating microservices and highly modularized components. Currently, the HERE SDK supports two platforms, Android and iOS.
+The HERE SDK (Lite Edition) consumes data from the [HERE Platform](https://www.here.com/products/platform) and follows modern design principles incorporating microservices and highly modularized components. Currently, the HERE SDK supports two platforms, Android and iOS.
 
 For an overview of the existing features, please check our _Developer's Guide_:
 - [HERE SDK for Android (Lite Edition): Developer's Guide](https://developer.here.com/documentation/android-sdk/dev_guide/index.html)
@@ -24,7 +24,7 @@ In this repository you can find the latest example apps that show key features o
 - **HelloMapWithStoryboard** ([iOS](examples/ios/HelloMapWithStoryboard)): Shows the classic 'Hello World' using a Storyboard.
 - **Gestures** ([Android](examples/android/Gestures) | [iOS](examples/ios/Gestures)): Shows how to handle gestures.
 - **MapMarker** ([Android](examples/android/MapMarker) | [iOS](examples/ios/MapMarker)): Shows how to add POI marker to the map.
-- **MapObjects** ([Android](examples/android/MapObjects) | [iOS](examples/ios/MapObjects)): Shows how to add circles, polygones and polylines to the map.
+- **MapObjects** ([Android](examples/android/MapObjects) | [iOS](examples/ios/MapObjects)): Shows how to add circles, polygons and polylines to the map.
 - **MapOverlays** ([Android](examples/android/MapOverlays) | [iOS](examples/ios/MapOverlays)): Shows how to add standard platform views to the map.
 - **Routing** ([Android](examples/android/Routing) | [iOS](examples/ios/Routing)): Shows how to calculate routes and add them to the map.
 - **Search** ([Android](examples/android/Search) | [iOS](examples/ios/Search)): Shows how to search POIs and add them to the map.
