@@ -1,4 +1,4 @@
-# HERE SDK 4.x (Lite Edition) - Examples for Android and iOS
+# HERE SDK 4.x (Lite Edition, Explore Edition) - Examples for Android and iOS
 ![License](https://img.shields.io/badge/license-Apache%202-blue)
 ![Platform](https://img.shields.io/badge/platform-Android-green.svg)
 ![Language](https://img.shields.io/badge/language-Java%208-orange.svg)
@@ -17,28 +17,33 @@ For an overview of the existing features, please check our _Developer's Guide_:
 - [HERE SDK for Android (Lite Edition): Developer's Guide](https://developer.here.com/documentation/android-sdk/dev_guide/index.html)
 - [HERE SDK for iOS (Lite Edition): Developer's Guide](https://developer.here.com/documentation/ios-sdk/dev_guide/index.html)
 
-## List of Available Example Apps
+## List of Available Example Apps (Lite Edition, Version 4.2.0.0)
 In this repository you can find the latest example apps that show key features of the HERE SDK in ready-to-use applications:
 
-- **HelloMap** ([Android](examples/android/HelloMapLite) |[iOS](examples/ios/HelloMapLite)): Shows the classic 'Hello World'.
-- **HelloMapWithStoryboard** ([iOS](examples/ios/HelloMapWithStoryboardLite)): Shows the classic 'Hello World' using a Storyboard.
-- **Gestures** ([Android](examples/android/GesturesLite) | [iOS](examples/ios/GesturesLite)): Shows how to handle gestures.
-- **MapMarker** ([Android](examples/android/MapMarkerLite) | [iOS](examples/ios/MapMarkerLite)): Shows how to add POI marker to the map.
-- **MapObjects** ([Android](examples/android/MapObjectsLite) | [iOS](examples/ios/MapObjectsLite)): Shows how to add circles, polygons and polylines to the map.
-- **MapOverlays** ([Android](examples/android/MapOverlaysLite) | [iOS](examples/ios/MapOverlaysLite)): Shows how to add standard platform views to the map.
-- **Routing** ([Android](examples/android/RoutingLite) | [iOS](examples/ios/RoutingLite)): Shows how to calculate routes and add them to the map.
-- **Search** ([Android](examples/android/SearchLite) | [iOS](examples/ios/SearchLite)): Shows how to search POIs and add them to the map.
-- **Traffic** ([Android](examples/android/TrafficLite) | [iOS](examples/ios/TrafficLite)): Shows how to search for real-time traffic and how to visualize it on the map.
-- **StandAloneEngine** ([Android](examples/android/StandAloneEngineLite) | [iOS](examples/ios/StandAloneEngineLite)): Shows how to use the HERE SDK headless without setting hardcoded credentials.
+- **HelloMap** ([Android](examples/4.2.0.0/lite/android/HelloMapLite) |[iOS](examples/4.2.0.0/lite/ios/HelloMapLite)): Shows the classic 'Hello World'.
+- **HelloMapWithStoryboard** ([iOS](examples/4.2.0.0/lite/ios/HelloMapWithStoryboardLite)): Shows the classic 'Hello World' using a Storyboard.
+- **Gestures** ([Android](examples/4.2.0.0/lite/android/GesturesLite) | [iOS](examples/4.2.0.0/lite/ios/GesturesLite)): Shows how to handle gestures.
+- **MapMarker** ([Android](examples/4.2.0.0/lite/android/MapMarkerLite) | [iOS](examples/4.2.0.0/lite/ios/MapMarkerLite)): Shows how to add POI marker to the map.
+- **MapObjects** ([Android](examples/4.2.0.0/lite/android/MapObjectsLite) | [iOS](examples/4.2.0.0/lite/ios/MapObjectsLite)): Shows how to add circles, polygons and polylines to the map.
+- **MapOverlays** ([Android](examples/4.2.0.0/lite/android/MapOverlaysLite) | [iOS](examples/4.2.0.0/lite/ios/MapOverlaysLite)): Shows how to add standard platform views to the map.
+- **Routing** ([Android](examples/4.2.0.0/lite/android/RoutingLite) | [iOS](examples/4.2.0.0/lite/ios/RoutingLite)): Shows how to calculate routes and add them to the map.
+- **Search** ([Android](examples/4.2.0.0/lite/android/SearchLite) | [iOS](examples/4.2.0.0/lite/ios/SearchLite)): Shows how to search POIs and add them to the map.
+- **Traffic** ([Android](examples/4.2.0.0/lite/android/TrafficLite) | [iOS](examples/4.2.0.0/lite/ios/TrafficLite)): Shows how to search for real-time traffic and how to visualize it on the map.
+- **StandAloneEngine** ([Android](examples/4.2.0.0/lite/android/StandAloneEngineLite) | [iOS](examples/4.2.0.0/lite/ios/StandAloneEngineLite)): Shows how to use the HERE SDK headless without setting hardcoded credentials.
 
 Each example app contains a file named "XY-Example" where XY stands for the feature, which is in most cases equal to the name of the app. If you are looking for example code that shows how to use a certain HERE SDK feature, then please look for this file as it contains all the details.
 
 ## What You Need
 1. Acquire a set of credentials by registering yourself on [developer.here.com](https://developer.here.com/) - or ask your HERE representative.
 2. Download the latest HERE SDK framework artifact for your desired platform. It can be found on [developer.here.com](https://developer.here.com/).
-3. Please refer to the minimum requirements as listed in our _Developer's Guide_ for [Android](https://developer.here.com/documentation/android-sdk/dev_guide/topics/quick-start.html#minimum-requirements) and [iOS](https://developer.here.com/documentation/ios-sdk/dev_guide/topics/quick-start.html#minimum-requirements).
+3. Please refer to the minimum requirements as listed in our _Developer's Guide_ for [Android](https://developer.here.com/documentation/android-sdk/dev_guide/#minimum-requirements) and [iOS](https://developer.here.com/documentation/ios-sdk/dev_guide/#minimum-requirements).
 
-> All examples apps work with the latest HERE SDK for Android and iOS (Lite Edition), **Version 4.2.0.0**.
+> All examples apps listed above work with the HERE SDK for Android and iOS (Lite Edition), **Version 4.2.0.0**.
+
+## Example Apps for Version 4.2.2.0 (Lite Edition, Explore Edition)
+In addition to the apps above, this repo also contains example apps for the following HERE SDK editions which are not yet available on [developer.here.com](https://developer.here.com/products/here-sdk):
+- Lite Edition, Version 4.2.2.0 ([Android](examples/4.2.2.0/lite/android/), [iOS](examples/4.2.2.0/lite/ios/))
+- Explore Edition, Version 4.2.2.0 ([Android](examples/4.2.2.0/explore/android/), [iOS](examples/4.2.2.0/explore/ios/))
 
 ## Get Started for Android
 1. Copy the AAR file of the HERE SDK for Android to your app's `app/libs` folder.
