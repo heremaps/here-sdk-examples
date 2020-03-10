@@ -1,5 +1,5 @@
-# This file is meant for internal use only, it lists folders
-# files that should be excluded from OSS scan.
+# This file is meant for internal use only. It lists folders
+# and files that should be excluded from OSS scan.
 
 excludes:
   scopes:
