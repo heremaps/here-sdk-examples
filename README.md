@@ -40,10 +40,10 @@ Each example app contains a file named "XY-Example" where XY stands for the feat
 
 > All examples apps listed above work with the HERE SDK for Android and iOS (Lite Edition), **Version 4.2.0.0**.
 
-## Example Apps for Version 4.2.2.0 (Lite Edition, Explore Edition)
+## Example Apps for Version 4.2.1.0 (Lite Edition, Explore Edition)
 In addition to the apps above, this repo also contains example apps for the following HERE SDK editions which are not yet available on [developer.here.com](https://developer.here.com/products/here-sdk):
-- Lite Edition, Version 4.2.2.0 ([Android](examples/4.2.2.0/lite/android/), [iOS](examples/4.2.2.0/lite/ios/))
-- Explore Edition, Version 4.2.2.0 ([Android](examples/4.2.2.0/explore/android/), [iOS](examples/4.2.2.0/explore/ios/))
+- Lite Edition, Version 4.2.1.0 ([Android](examples/4.2.1.0/lite/android/), [iOS](examples/4.2.1.0/lite/ios/))
+- Explore Edition, Version 4.2.1.0 ([Android](examples/4.2.1.0/explore/android/), [iOS](examples/4.2.1.0/explore/ios/))
 
 ## Get Started for Android
 1. Copy the AAR file of the HERE SDK for Android to your app's `app/libs` folder.
