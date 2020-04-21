@@ -15,9 +15,9 @@ The HERE SDK consumes data from the [HERE Platform](https://www.here.com/product
 
 For an overview of the existing features, please check the _Developer's Guide_ for the platform of your choice. Here you will also find numerous code snippets, detailed tutorials, the _API Reference_ and the latest _Release Notes_:
 
-- HERE SDK for Android ([Lite Edition](https://developer.here.com/documentation/android-sdk/dev_guide/index.html), Explore Edition, Navigate Edition)
-- HERE SDK for iOS ([Lite Edition](https://developer.here.com/documentation/ios-sdk/dev_guide/index.html), Explore Edition, Navigate Edition)
-- HERE SDK for Flutter (Explore Edition, Navigate Edition)
+- HERE SDK for Android ([Lite Edition](https://developer.here.com/documentation/android-sdk/dev_guide/index.html), [Explore Edition](https://developer.here.com/documentation/android-sdk-explore), [Navigate Edition]( https://developer.here.com/documentation/android-sdk-navigate))
+- HERE SDK for iOS ([Lite Edition](https://developer.here.com/documentation/ios-sdk/dev_guide/index.html), [Explore Edition]( https://developer.here.com/documentation/ios-sdk-explore), [Navigate Edition]( https://developer.here.com/documentation/ios-sdk-navigate))
+- HERE SDK for Flutter ([Explore Edition](https://developer.here.com/documentation/flutter-sdk-explore), [Navigate Edition](https://developer.here.com/documentation/flutter-sdk-navigate))
 
 > For now, the _Explore Edition_ and the _Navigate Edition_ are only available upon request. Please contact your HERE representative to receive access including a set of evaluation credentials.
 
