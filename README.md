@@ -34,7 +34,7 @@ In this repository you can find the latest example apps that show key features o
 - **Navigation**: Shows turn-by-turn navigation and tracking. Exclusively available for the _Navigate Edition_.
 - **Search**: Shows how to search POIs and add them to the map.
 - **Traffic**: Shows how to search for real-time traffic and how to visualize it on the map.
-- **StandAloneEngine**: Shows how to use the HERE SDK headless without setting hardcoded credentials.
+- **StandAloneEngine**: Shows how to use an engine without a map view.
 
 Most example apps contain a class named "XY-Example" where XY stands for the feature, which is in most cases equal to the name of the app. If you are looking for example code that shows how to use a certain HERE SDK feature, then please look for this class as it contains the most interesting parts.
 
