@@ -1,4 +1,4 @@
-The StandAloneEngine example app shows how to use an engine without a map view while building your app. You can find how this is done in [MainActivity.java](app/src/main/java/com/here/sdk/standaloneengine/MainActivity.java).
+The StandAloneEngine example app shows how to use an engine without a map view. You can find out how this is done in [MainActivity.java](app/src/main/java/com/here/sdk/standaloneengine/MainActivity.java).
 
 Build instructions:
 -------------------
