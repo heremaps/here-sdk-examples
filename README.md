@@ -21,7 +21,7 @@ For an overview of the existing features, please check the _Developer's Guide_ f
 
 > For now, the _Explore Edition_ and the _Navigate Edition_ are only available upon request. Please contact your HERE representative to receive access including a set of evaluation credentials.
 
-## List of Available Example Apps (Version 4.3.0.0)
+## List of Available Example Apps (Version 4.3.1.0)
 In this repository you can find the latest example apps that show key features of the HERE SDK in ready-to-use applications:
 
 - **HelloMap**: Shows the classic 'Hello World'.
@@ -42,14 +42,15 @@ Most example apps contain a class named "XY-Example" where XY stands for the fea
 
 Find the examples for the edition and platform of your choice:
 
-- HERE SDK for Android ([Lite Edition](examples/4.3.0.0/lite/android/), [Explore Edition](examples/4.3.0.0/explore/android/), [Navigate Edition](examples/4.3.0.0/navigate/android/))
-- HERE SDK for iOS ([Lite Edition](examples/4.3.0.0/lite/ios/), [Explore Edition](examples/4.3.0.0/explore/ios/), [Navigate Edition](examples/4.3.0.0/navigate/ios/))
-- HERE SDK for Flutter ([Explore Edition](examples/4.3.0.0/explore/flutter/), [Navigate Edition](examples/4.3.0.0/navigate/flutter/))
+- HERE SDK for Android ([Lite Edition](examples/latest/lite/android/), [Explore Edition](examples/latest/explore/android/), [Navigate Edition](examples/latest/navigate/android/))
+- HERE SDK for iOS ([Lite Edition](examples/latest/lite/ios/), [Explore Edition](examples/latest/explore/ios/), [Navigate Edition](examples/latest/navigate/ios/))
+- HERE SDK for Flutter ([Explore Edition](examples/latest/explore/flutter/), [Navigate Edition](examples/latest/navigate/flutter/))
 
 ## Example Apps for Other Versions
 In addition to the apps above, this repo also contains example apps for the following HERE SDK versions:
-- [Version 4.2.0.0](examples/4.2.0.0/)
+- [Version 4.3.0.0](examples/4.3.0.0/)
 - [Version 4.2.1.0](examples/4.2.1.0/)
+- [Version 4.2.0.0](examples/4.2.0.0/)
 
 ## What You Need to Execute the Example Apps
 1. Acquire a set of credentials by registering yourself on [developer.here.com](https://developer.here.com/) - or ask your HERE representative.
@@ -67,7 +68,7 @@ In addition to the apps above, this repo also contains example apps for the foll
 3. To run the app, you need to add your HERE SDK credentials to the `Info.plist` file.
 
 ### Get Started for Flutter
-1. Unzip the HERE SDK plugin folder. Then open `pubspec.yaml` of the example app and adapt the path to the plugin folder.
+1. Unzip the HERE SDK for Flutter plugin to the `plugins` folder that can be found inside the example app project. Renname the folder to 'here_sdk': hello_map/plugins/here_sdk
 2. Set your HERE SDK credentials to
   - `hello_map/android/app/src/main/AndroidManifest.xml`
   - `hello_map/ios/Runner/Info.plist`
