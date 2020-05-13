@@ -20,7 +20,7 @@
 package com.here.mapmarker;
 
 import android.content.Context;
-import android.support.annotation.Nullable;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.widget.Toast;
 
@@ -53,7 +53,7 @@ public class MapMarkerExample {
         double distanceInMeters = 1000 * 10;
         camera.lookAt(new GeoCoordinates(52.520798, 13.409408), distanceInMeters);
 
-        // Setting a tap handler to pick markers from map
+        // Setting a tap handler to pick markers from map.
         setTapGestureHandler();
 
         Toast.makeText(context,"You can tap markers.", Toast.LENGTH_LONG).show();
@@ -64,6 +64,7 @@ public class MapMarkerExample {
             GeoCoordinates geoCoordinates = createRandomGeoCoordinatesAroundMapCenter();
 
             // Centered on location. Shown below the POI image to indicate the location.
+            // The draw order is determined from what is first added to the map.
             addCircleMapMarker(geoCoordinates);
 
             // Anchored, pointing to location.
@@ -119,11 +120,7 @@ public class MapMarkerExample {
         float radiusInPixel = 2;
         mapView.pickMapItems(touchPoint, radiusInPixel, new MapViewBase.PickMapItemsCallback() {
             @Override
-            public void onPickMapItems(@Nullable PickMapItemsResult pickMapItemsResult) {
-                if (pickMapItemsResult == null) {
-                    return;
-                }
-
+            public void onPickMapItems(@NonNull PickMapItemsResult pickMapItemsResult) {
                 List<MapMarker> mapMarkerList = pickMapItemsResult.getMarkers();
                 if (mapMarkerList.size() == 0) {
                     return;

@@ -23,6 +23,8 @@ class MapObjectsExample {
 
     private var mapScene: MapScene
     private var mapPolyline: MapPolyline?
+    private var mapPolygon: MapPolygon?
+    private var mapCircle: MapPolygon?
 
     init(mapView: MapView) {
         // Configure the map.
@@ -37,6 +39,18 @@ class MapObjectsExample {
         clearMap()
         mapPolyline = createMapPolyline()
         mapScene.addMapPolyline(mapPolyline!)
+    }
+
+    func onMapPolygonClicked() {
+        clearMap()
+        mapPolygon = createMapPolygon()
+        mapScene.addMapPolygon(mapPolygon!)
+    }
+
+    func onMapCircleClicked() {
+        clearMap()
+        mapCircle = createMapCircle()
+        mapScene.addMapPolygon(mapCircle!)
     }
 
     func onClearButtonClicked() {
@@ -58,9 +72,43 @@ class MapObjectsExample {
         return mapPolyline
     }
 
+    private func createMapPolygon() -> MapPolygon {
+        // Note that a polygon requires a clockwise order of the coordinates.
+        let coordinates = [GeoCoordinates(latitude: 52.54014, longitude: 13.37958),
+                           GeoCoordinates(latitude: 52.53894, longitude: 13.39194),
+                           GeoCoordinates(latitude: 52.5309, longitude: 13.3946),
+                           GeoCoordinates(latitude: 52.53032, longitude: 13.37409)]
+
+        // We are sure that the number of vertices is greater than three, so it will not crash.
+        let geoPolygon = try! GeoPolygon(vertices: coordinates)
+        let fillColor = Color(red: 0x00, green: 0x90, blue: 0x8A, alpha: 0xA0)
+        let mapPolygon = MapPolygon(geometry: geoPolygon, color: fillColor)
+
+        return mapPolygon
+    }
+
+    private func createMapCircle() -> MapPolygon {
+        let geoCircle = GeoCircle(center: GeoCoordinates(latitude: 52.530932, longitude: 13.384915),
+                                  radiusInMeters: 300.0)
+
+        let geoPolygon = GeoPolygon(geoCircle: geoCircle)
+        let fillColor = Color(red: 0x00, green: 0x90, blue: 0x8A, alpha: 0xA0)
+        let mapPolygon = MapPolygon(geometry: geoPolygon, color: fillColor)
+
+        return mapPolygon
+    }
+
     private func clearMap() {
         if let line = mapPolyline {
             mapScene.removeMapPolyline(line)
+        }
+
+        if let area = mapPolygon {
+            mapScene.removeMapPolygon(area)
+        }
+
+        if let circle = mapCircle {
+            mapScene.removeMapPolygon(circle)
         }
     }
 }

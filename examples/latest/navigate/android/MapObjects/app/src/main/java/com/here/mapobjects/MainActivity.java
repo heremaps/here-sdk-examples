@@ -108,6 +108,14 @@ public class MainActivity extends AppCompatActivity {
         mapObjectsExample.showMapPolyline();
     }
 
+    public void onMapPolygonButtonClicked(View view) {
+        mapObjectsExample.showMapPolygon();
+    }
+
+    public void onMapCircleButtonClicked(View view) {
+        mapObjectsExample.showMapCircle();
+    }
+
     public void onClearMapButtonClicked(View view) {
         mapObjectsExample.clearMapButtonClicked();
     }

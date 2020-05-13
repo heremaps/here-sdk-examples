@@ -21,7 +21,7 @@ For an overview of the existing features, please check the _Developer's Guide_ f
 
 > For now, the _Explore Edition_ and the _Navigate Edition_ are only available upon request. Please contact your HERE representative to receive access including a set of evaluation credentials.
 
-## List of Available Example Apps (Version 4.3.1.0)
+## List of Available Example Apps (Version 4.3.2.0)
 In this repository you can find the latest example apps that show key features of the HERE SDK in ready-to-use applications:
 
 - **HelloMap**: Shows the classic 'Hello World'.
@@ -48,6 +48,7 @@ Find the examples for the edition and platform of your choice:
 
 ## Example Apps for Other Versions
 In addition to the apps above, this repo also contains example apps for the following HERE SDK versions:
+- [Version 4.3.1.0](examples/4.3.1.0/)
 - [Version 4.3.0.0](examples/4.3.0.0/)
 - [Version 4.2.1.0](examples/4.2.1.0/)
 - [Version 4.2.0.0](examples/4.2.0.0/)

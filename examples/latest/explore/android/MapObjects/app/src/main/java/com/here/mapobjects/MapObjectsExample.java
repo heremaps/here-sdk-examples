@@ -20,10 +20,13 @@
 package com.here.mapobjects;
 
 import com.here.sdk.core.Color;
+import com.here.sdk.core.GeoCircle;
 import com.here.sdk.core.GeoCoordinates;
+import com.here.sdk.core.GeoPolygon;
 import com.here.sdk.core.GeoPolyline;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.mapview.MapCamera;
+import com.here.sdk.mapview.MapPolygon;
 import com.here.sdk.mapview.MapPolyline;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapView;
@@ -34,6 +37,8 @@ public class MapObjectsExample {
 
     private MapScene mapScene;
     private MapPolyline mapPolyline;
+    private MapPolygon mapPolygon;
+    private MapPolygon mapCircle;
 
     public MapObjectsExample(MapView mapView) {
         MapCamera camera = mapView.getCamera();
@@ -44,9 +49,18 @@ public class MapObjectsExample {
     }
 
     public void showMapPolyline() {
-        clearMap();
         mapPolyline = createPolyline();
         mapScene.addMapPolyline(mapPolyline);
+    }
+
+    public void showMapPolygon() {
+        mapPolygon = createPolygon();
+        mapScene.addMapPolygon(mapPolygon);
+    }
+
+    public void showMapCircle() {
+        mapCircle = createMapCircle();
+        mapScene.addMapPolygon(mapCircle);
     }
 
     public void clearMapButtonClicked() {
@@ -75,9 +89,50 @@ public class MapObjectsExample {
         return mapPolyline;
     }
 
+    private MapPolygon createPolygon() {
+        ArrayList<GeoCoordinates> coordinates = new ArrayList<>();
+        // Note that a polygon requires a clockwise order of the coordinates.
+        coordinates.add(new GeoCoordinates(52.54014, 13.37958));
+        coordinates.add(new GeoCoordinates(52.53894, 13.39194));
+        coordinates.add(new GeoCoordinates(52.5309, 13.3946));
+        coordinates.add(new GeoCoordinates(52.53032, 13.37409));
+
+        GeoPolygon geoPolygon;
+        try {
+            geoPolygon = new GeoPolygon(coordinates);
+        } catch (InstantiationErrorException e) {
+            // Less than three vertices.
+            return null;
+        }
+
+        Color fillColor = new Color((short) 0x00, (short) 0x90, (short) 0x8A, (short) 0xA0);
+        MapPolygon mapPolygon = new MapPolygon(geoPolygon, fillColor);
+
+        return mapPolygon;
+    }
+
+    private MapPolygon createMapCircle() {
+        float radiusInMeters = 300;
+        GeoCircle geoCircle = new GeoCircle(new GeoCoordinates(52.530932, 13.384915), radiusInMeters);
+
+        GeoPolygon geoPolygon = new GeoPolygon(geoCircle);
+        Color fillColor = new Color((short) 0x00, (short) 0x90, (short) 0x8A, (short) 0xA0);
+        MapPolygon mapPolygon = new MapPolygon(geoPolygon, fillColor);
+
+        return mapPolygon;
+    }
+
     private void clearMap() {
         if (mapPolyline != null) {
             mapScene.removeMapPolyline(mapPolyline);
+        }
+
+        if (mapPolygon != null) {
+            mapScene.removeMapPolygon(mapPolygon);
+        }
+
+        if (mapCircle != null) {
+            mapScene.removeMapPolygon(mapCircle);
         }
     }
 }

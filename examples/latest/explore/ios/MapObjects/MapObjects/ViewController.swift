@@ -46,6 +46,14 @@ final class ViewController: UIViewController {
         mapObjectsExample.onMapPolylineClicked()
     }
 
+    @IBAction func onMapPolygonClicked(_ sender: Any) {
+        mapObjectsExample.onMapPolygonClicked()
+    }
+
+    @IBAction func onMapCircleClicked(_ sender: Any) {
+        mapObjectsExample.onMapCircleClicked()
+    }
+
     @IBAction func onMapClearClicked(_ sender: Any) {
         mapObjectsExample.onClearButtonClicked()
     }
