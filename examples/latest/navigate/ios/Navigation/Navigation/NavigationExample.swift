@@ -142,17 +142,15 @@ class NavigationExample : NavigableLocationDelegate,
             return
         }
 
-        var currentGeoCoordinates: GeoCoordinates
+        var currentGeoCoordinates = routeDeviation.currentLocation.originalLocation.coordinates
         if let currentMapMatchedLocation = routeDeviation.currentLocation.mapMatchedLocation {
             currentGeoCoordinates = currentMapMatchedLocation.coordinates
         }
-        currentGeoCoordinates = routeDeviation.currentLocation.originalLocation.coordinates
 
-        var lastGeoCoordinates: GeoCoordinates
+        var lastGeoCoordinates = lastLocationOnRoute.originalLocation.coordinates
         if let lastMapMatchedLocationOnRoute = lastLocationOnRoute.mapMatchedLocation {
             lastGeoCoordinates = lastMapMatchedLocationOnRoute.coordinates
         }
-        lastGeoCoordinates = lastLocationOnRoute.originalLocation.coordinates
 
         let distanceInMeters = currentGeoCoordinates.distance(to: lastGeoCoordinates)
         print("RouteDeviation in meters is \(distanceInMeters)")

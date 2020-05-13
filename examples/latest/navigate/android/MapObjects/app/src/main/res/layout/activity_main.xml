@@ -21,8 +21,22 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="MapPolyline"
+            android:text="Polyline"
             android:onClick="onMapPolylineButtonClicked" />
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Polygon"
+            android:onClick="onMapPolygonButtonClicked" />
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Circle"
+            android:onClick="onMapCircleButtonClicked" />
 
         <Button
             android:layout_width="0dp"

@@ -1,4 +1,4 @@
-The MapObject example app shows how to add `MapPolyline` instances to the map. You can find how this is done in [MapObjectsExample.swift](MapObjects/MapObjectsExample.swift).
+The MapObject example app shows how to add polyline, polygon and circle instances to the map. You can find how this is done in [MapObjectsExample.swift](MapObjects/MapObjectsExample.swift).
 
 Build instructions:
 -------------------

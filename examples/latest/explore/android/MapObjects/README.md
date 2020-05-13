@@ -1,4 +1,4 @@
-The MapObject example app shows how to add `MapPolyline` instances to the map. You can find how this is done in [MapObjectsExample.java](app/src/main/java/com/here/mapobjects/MapObjectsExample.java).
+The MapObject example app shows how to draw polylines, polygons and circles on the map. You can find how this is done in [MapObjectsExample.java](app/src/main/java/com/here/mapobjects/MapObjectsExample.java).
 
 Build instructions:
 -------------------
