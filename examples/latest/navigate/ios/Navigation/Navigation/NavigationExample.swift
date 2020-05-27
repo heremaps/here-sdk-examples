@@ -84,29 +84,36 @@ class NavigationExample : NavigableLocationDelegate,
         let trafficDelayAhead = routeProgress.sectionProgress.last!.trafficDelayInSeconds
         print("Traffic delay ahead in seconds: \(trafficDelayAhead)")
 
-        let maneuverIndex = routeProgress.currentManeuverIndex
-        guard let maneuver = navigator.getManeuver(index: maneuverIndex) else {
-            print("No maneuver available.")
+        // Contains the progress for the next maneuver ahead and the next-next maneuvers, if any.
+        let nextManeuverList = routeProgress.maneuverProgress
+        guard let nextManeuverProgress = nextManeuverList.first else {
+            print("No next maneuver available.")
             return
         }
 
-        let action = maneuver.action
-        let nextRoadName = maneuver.nextRoadName
-        var road = nextRoadName == nil ? maneuver.nextRoadNumber : nextRoadName
-        if action == ManeuverAction.arrive {
-            // We are reaching destination, so there's no next road.
-            let roadName = maneuver.roadName
-            road = roadName == nil ? maneuver.roadNumber : roadName
+        let nextManeuverIndex = nextManeuverProgress.maneuverIndex
+        guard let nextManeuver = navigator.getManeuver(index: nextManeuverIndex) else {
+            // Should never happen as we retrieved the next maneuver progress above.
+            return
         }
 
-        let logMessage = "'\(String(describing: action))' on \(road ?? "unnamed road") in \(routeProgress.currentManeuverRemainingDistanceInMeters) meters."
+        let action = nextManeuver.action
+        let nextRoadName = nextManeuver.nextRoadName
+        var road = nextRoadName == nil ? nextManeuver.nextRoadNumber : nextRoadName
+        if action == ManeuverAction.arrive {
+            // We are reaching destination, so there's no next road.
+            let currentRoadName = nextManeuver.roadName
+            road = currentRoadName == nil ? nextManeuver.roadNumber : currentRoadName
+        }
 
-        if previousManeuverIndex != maneuverIndex {
+        let logMessage = "'\(String(describing: action))' on \(road ?? "unnamed road") in \(nextManeuverProgress.remainingDistanceInMeters) meters."
+
+        if previousManeuverIndex != nextManeuverIndex {
             // Log only new maneuvers and ignore changes in distance.
             showMessage("New maneuver: " + logMessage)
         }
 
-        previousManeuverIndex = maneuverIndex
+        previousManeuverIndex = nextManeuverIndex
     }
 
     // Conform to NavigableLocationDelegate.

@@ -31,6 +31,7 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
+  // Use _context only within the scope of this widget.
   BuildContext _context;
   RoutingExample _routingExample;
 

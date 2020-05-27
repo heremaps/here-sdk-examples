@@ -29,6 +29,7 @@ class LocationProviderImplementation : LocationProvider,
 
     // Conforms to the LocationProvider protocol.
     // Set by the Navigator instance to listen to location updates.
+    // Note: Must be declared as strong reference.
     var delegate: LocationDelegate?
 
     var lastKnownLocation: Location?

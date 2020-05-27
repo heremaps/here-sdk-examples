@@ -39,10 +39,11 @@ class MyApp extends StatelessWidget {
     hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay,
         (MapError error) {
       if (error != null) {
-        print("Map scene not loaded. MapError: " + error.toString());
+        print('Map scene not loaded. MapError: ${error.toString()}');
+        return;
       }
 
-      double distanceToEarthInMeters = 8000;
+      const double distanceToEarthInMeters = 8000;
       hereMapController.camera.lookAtPointWithDistance(
           GeoCoordinates(52.530932, 13.384915), distanceToEarthInMeters);
     });
