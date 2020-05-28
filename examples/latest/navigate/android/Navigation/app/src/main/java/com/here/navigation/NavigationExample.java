@@ -36,6 +36,7 @@ import com.here.sdk.mapview.MapMarker;
 import com.here.sdk.mapview.MapView;
 import com.here.sdk.navigation.ManeuverNotificationListener;
 import com.here.sdk.navigation.ManeuverNotificationOptions;
+import com.here.sdk.navigation.ManeuverProgress;
 import com.here.sdk.navigation.MapMatchedLocation;
 import com.here.sdk.navigation.NavigableLocation;
 import com.here.sdk.navigation.NavigableLocationListener;
@@ -112,22 +113,30 @@ public class NavigationExample {
                 Log.d(TAG, "Distance to destination in meters: " + lastSectionProgress.remainingDistanceInMeters);
                 Log.d(TAG, "Traffic delay ahead in seconds: " + lastSectionProgress.trafficDelayInSeconds);
 
-                int maneuverIndex = routeProgress.currentManeuverIndex;
-                Maneuver maneuver = navigator.getManeuver(maneuverIndex);
+                // Contains the progress for the next maneuver ahead and the next-next maneuvers, if any.
+                List<ManeuverProgress> nextManeuverList = routeProgress.maneuverProgress;
 
-                if (maneuver == null) {
-                    Log.d(TAG, "No maneuver available.");
+                ManeuverProgress nextManeuverProgress = nextManeuverList.get(0);
+                if (nextManeuverProgress == null) {
+                    Log.d(TAG, "No next maneuver available.");
                     return;
                 }
 
-                ManeuverAction action = maneuver.getAction();
-                String nextRoadName = maneuver.getNextRoadName();
-                String road = nextRoadName == null ? maneuver.getNextRoadNumber() : nextRoadName;
+                int nextManeuverIndex = nextManeuverProgress.maneuverIndex;
+                Maneuver nextManeuver = navigator.getManeuver(nextManeuverIndex);
+                if (nextManeuver == null) {
+                    // Should never happen as we retrieved the next maneuver progress above.
+                    return;
+                }
+
+                ManeuverAction action = nextManeuver.getAction();
+                String nextRoadName = nextManeuver.getNextRoadName();
+                String road = nextRoadName == null ? nextManeuver.getNextRoadNumber() : nextRoadName;
 
                 if (action == ManeuverAction.ARRIVE) {
                     // We are approaching the destination, so there's no next road.
-                    String roadName = maneuver.getRoadName();
-                    road = roadName == null ? maneuver.getRoadNumber() : roadName;
+                    String currentRoadName = nextManeuver.getRoadName();
+                    road = currentRoadName == null ? nextManeuver.getRoadNumber() : currentRoadName;
                 }
 
                 if (road == null) {
@@ -136,21 +145,21 @@ public class NavigationExample {
                 }
 
                 String logMessage = action.name() + " on " + road +
-                        " in " + routeProgress.currentManeuverRemainingDistanceInMeters + " meters.";
+                        " in " + nextManeuverProgress.remainingDistanceInMeters + " meters.";
 
-                if (previousManeuverIndex != maneuverIndex) {
+                if (previousManeuverIndex != nextManeuverIndex) {
                     // Show only new maneuvers and ignore changes in distance.
                     Snackbar.make(mapView, "New maneuver: " + logMessage, Snackbar.LENGTH_LONG).show();
                 }
 
-                previousManeuverIndex = maneuverIndex;
+                previousManeuverIndex = nextManeuverIndex;
             }
         });
 
         // Notifies on the current map-matched location and other useful information while driving or walking.
         navigator.setNavigableLocationListener(new NavigableLocationListener() {
             @Override
-            public void onNavigableLocationUpdated(NavigableLocation currentNavigableLocation) {
+            public void onNavigableLocationUpdated(@NonNull NavigableLocation currentNavigableLocation) {
                 MapMatchedLocation mapMatchedLocation = currentNavigableLocation.mapMatchedLocation;
                 if (mapMatchedLocation == null) {
                     Snackbar.make(mapView,

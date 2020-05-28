@@ -43,28 +43,24 @@ class MapMarkerExample {
         GeoCoordinates(52.530932, 13.384915), distanceToEarthInMeters);
 
     // Setting a tap handler to pick markers from map.
-    setTapGestureHandler();
+    _setTapGestureHandler();
   }
 
   void showAnchoredMapMarkers() {
-    for (int i = 0; i < 10; i++) {
-      GeoCoordinates geoCoordinates =
-          _createRandomGeoCoordinatesAroundMapCenter();
+    GeoCoordinates geoCoordinates = _createRandomGeoCoordinatesInViewport();
 
-      // Centered on location. Shown below the POI image to indicate the location.
-      // The draw order is determined from what is first added to the map,
-      // but since loading images is done async, we can make this explicit by setting
-      // a draw order. High numbers are drawn on top of lower numbers.
-      _addCircleMapMarker(geoCoordinates, 0);
+    // Centered on location. Shown below the POI image to indicate the location.
+    // The draw order is determined from what is first added to the map,
+    // but since loading images is done async, we can make this explicit by setting
+    // a draw order. High numbers are drawn on top of lower numbers.
+    _addCircleMapMarker(geoCoordinates, 0);
 
-      // Anchored, pointing to location.
-      _addPOIMapMarker(geoCoordinates, 1);
-    }
+    // Anchored, pointing to location.
+    _addPOIMapMarker(geoCoordinates, 1);
   }
 
   void showCenteredMapMarkers() {
-    GeoCoordinates geoCoordinates =
-        _createRandomGeoCoordinatesAroundMapCenter();
+    GeoCoordinates geoCoordinates = _createRandomGeoCoordinatesInViewport();
 
     // Centered on location.
     _addPhotoMapMarker(geoCoordinates, 0);
@@ -84,7 +80,7 @@ class MapMarkerExample {
       GeoCoordinates geoCoordinates, int drawOrder) async {
     // Reuse existing MapImage for new map markers.
     if (_poiMapImage == null) {
-      Uint8List imagePixelData = await loadFileAsUint8List('poi.png');
+      Uint8List imagePixelData = await _loadFileAsUint8List('poi.png');
       _poiMapImage =
           MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
     }
@@ -109,7 +105,7 @@ class MapMarkerExample {
       GeoCoordinates geoCoordinates, int drawOrder) async {
     // Reuse existing MapImage for new map markers.
     if (_photoMapImage == null) {
-      Uint8List imagePixelData = await loadFileAsUint8List('here_car.png');
+      Uint8List imagePixelData = await _loadFileAsUint8List('here_car.png');
       _photoMapImage =
           MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
     }
@@ -125,7 +121,7 @@ class MapMarkerExample {
       GeoCoordinates geoCoordinates, int drawOrder) async {
     // Reuse existing MapImage for new map markers.
     if (_circleMapImage == null) {
-      Uint8List imagePixelData = await loadFileAsUint8List('circle.png');
+      Uint8List imagePixelData = await _loadFileAsUint8List('circle.png');
       _circleMapImage =
           MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
     }
@@ -137,20 +133,20 @@ class MapMarkerExample {
     _mapMarkerList.add(mapMarker);
   }
 
-  Future<Uint8List> loadFileAsUint8List(String fileName) async {
+  Future<Uint8List> _loadFileAsUint8List(String fileName) async {
     // The path refers to the assets directory as specified in pubspec.yaml.
     ByteData fileData = await rootBundle.load('assets/' + fileName);
     return Uint8List.view(fileData.buffer);
   }
 
-  void setTapGestureHandler() {
+  void _setTapGestureHandler() {
     _hereMapController.gestures.tapListener =
         TapListener.fromLambdas(lambda_onTap: (Point2D touchPoint) {
-      pickMapMarker(touchPoint);
+      _pickMapMarker(touchPoint);
     });
   }
 
-  void pickMapMarker(Point2D touchPoint) {
+  void _pickMapMarker(Point2D touchPoint) {
     double radiusInPixel = 2;
     _hereMapController.pickMapItems(touchPoint, radiusInPixel,
         (pickMapItemsResult) {
@@ -163,11 +159,7 @@ class MapMarkerExample {
       MapMarker topmostMapMarker = mapMarkerList.first;
       Metadata metadata = topmostMapMarker.metadata;
       if (metadata != null) {
-        String message = "No message found.";
-        String string = metadata.getString("key_poi");
-        if (string != null) {
-          message = string;
-        }
+        String message = metadata.getString("key_poi") ?? "No message found.";
         _showDialog("Map Marker picked", message);
         return;
       }
@@ -176,7 +168,7 @@ class MapMarkerExample {
     });
   }
 
-  GeoCoordinates _createRandomGeoCoordinatesAroundMapCenter() {
+  GeoCoordinates _createRandomGeoCoordinatesInViewport() {
     GeoBox geoBox = _hereMapController.camera.boundingBox;
     if (geoBox == null) {
       // Happens only when map is not fully covering the viewport.
