@@ -20,6 +20,9 @@
 package com.here.navigation;
 
 import android.content.Context;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
@@ -34,10 +37,13 @@ import com.here.sdk.mapview.MapImage;
 import com.here.sdk.mapview.MapImageFactory;
 import com.here.sdk.mapview.MapMarker;
 import com.here.sdk.mapview.MapView;
+import com.here.sdk.navigation.DestinationReachedListener;
 import com.here.sdk.navigation.ManeuverNotificationListener;
 import com.here.sdk.navigation.ManeuverNotificationOptions;
 import com.here.sdk.navigation.ManeuverProgress;
 import com.here.sdk.navigation.MapMatchedLocation;
+import com.here.sdk.navigation.Milestone;
+import com.here.sdk.navigation.MilestoneReachedListener;
 import com.here.sdk.navigation.NavigableLocation;
 import com.here.sdk.navigation.NavigableLocationListener;
 import com.here.sdk.navigation.Navigator;
@@ -46,6 +52,10 @@ import com.here.sdk.navigation.RouteDeviationListener;
 import com.here.sdk.navigation.RouteProgress;
 import com.here.sdk.navigation.RouteProgressListener;
 import com.here.sdk.navigation.SectionProgress;
+import com.here.sdk.navigation.SpeedLimitOffset;
+import com.here.sdk.navigation.SpeedWarningListener;
+import com.here.sdk.navigation.SpeedWarningOptions;
+import com.here.sdk.navigation.SpeedWarningStatus;
 import com.here.sdk.routing.Maneuver;
 import com.here.sdk.routing.ManeuverAction;
 import com.here.sdk.routing.Route;
@@ -156,6 +166,48 @@ public class NavigationExample {
             }
         });
 
+        // Notifies when the destination of the route is reached.
+        navigator.setDestinationReachedListener(new DestinationReachedListener() {
+            @Override
+            public void onDestinationReached() {
+                String message = "Destination reached. Stopping turn-by-turn navigation.";
+                Snackbar.make(mapView, message, Snackbar.LENGTH_LONG).show();
+                stopNavigation();
+            }
+        });
+
+        // Notifies when a waypoint on the route is reached.
+        navigator.setMilestoneReachedListener(new MilestoneReachedListener() {
+            @Override
+            public void onMilestoneReached(Milestone milestone) {
+                if (milestone.waypointIndex != null) {
+                    Log.d(TAG, "A user-defined waypoint was reached, index of waypoint: " + milestone.waypointIndex);
+                    Log.d(TAG,"Original coordinates: " + milestone.originalCoordinates);
+                } else {
+                    // For example, when transport mode changes due to a ferry.
+                    Log.d(TAG,"A system defined waypoint was reached at " + milestone.mapMatchedCoordinates);
+                }
+            }
+        });
+
+        // Notifies when the current speed limits are exceeded.
+        navigator.setSpeedWarningListener(new SpeedWarningListener() {
+            @Override
+            public void onSpeedWarningStatusChanged(SpeedWarningStatus speedWarningStatus) {
+                if (speedWarningStatus == SpeedWarningStatus.SPEED_LIMIT_EXCEEDED) {
+                    // Driver is faster than current speed limit (plus an optional offset).
+                    // Play a notification sound to alert the driver.
+                    Uri ringtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                    Ringtone ringtone = RingtoneManager.getRingtone(context, ringtoneUri);
+                    ringtone.play();
+                }
+
+                if (speedWarningStatus == SpeedWarningStatus.SPEED_LIMIT_RESTORED) {
+                    Log.d(TAG, "Driver is again slower than current speed limit (plus an optional offset).");
+                }
+            }
+        });
+
         // Notifies on the current map-matched location and other useful information while driving or walking.
         navigator.setNavigableLocationListener(new NavigableLocationListener() {
             @Override
@@ -231,6 +283,7 @@ public class NavigationExample {
     public void startNavigation(Route route, boolean isSimulated) {
         navigator.setRoute(route);
 
+        setupSpeedWarnings();
         setupVoiceGuidance();
 
         if (isSimulated) {
@@ -278,6 +331,16 @@ public class NavigationExample {
     @Nullable
     public GeoCoordinates getLastKnownGeoCoordinates() {
         return locationProvider.lastKnownLocation == null ? null : locationProvider.lastKnownLocation.coordinates;
+    }
+
+    private void setupSpeedWarnings() {
+        double lowSpeedOffsetInMetersPerSecond = 2;
+        double highSpeedOffsetInMetersPerSecond = 4;
+        double highSpeedBoundaryInMetersPerSecond = 25;
+        SpeedLimitOffset speedLimitOffset = new SpeedLimitOffset(
+                lowSpeedOffsetInMetersPerSecond, highSpeedOffsetInMetersPerSecond, highSpeedBoundaryInMetersPerSecond);
+
+        navigator.setSpeedWarningOptions(new SpeedWarningOptions(speedLimitOffset));
     }
 
     private void setupVoiceGuidance() {
