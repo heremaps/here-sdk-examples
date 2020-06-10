@@ -49,16 +49,19 @@ public class MapObjectsExample {
     }
 
     public void showMapPolyline() {
+        clearMap();
         mapPolyline = createPolyline();
         mapScene.addMapPolyline(mapPolyline);
     }
 
     public void showMapPolygon() {
+        clearMap();
         mapPolygon = createPolygon();
         mapScene.addMapPolygon(mapPolygon);
     }
 
     public void showMapCircle() {
+        clearMap();
         mapCircle = createMapCircle();
         mapScene.addMapPolygon(mapCircle);
     }

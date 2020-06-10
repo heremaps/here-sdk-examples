@@ -19,9 +19,9 @@ For an overview of the existing features, please check the _Developer's Guide_ f
 - HERE SDK for iOS ([Lite Edition](https://developer.here.com/documentation/ios-sdk/dev_guide/index.html), [Explore Edition]( https://developer.here.com/documentation/ios-sdk-explore), [Navigate Edition]( https://developer.here.com/documentation/ios-sdk-navigate))
 - HERE SDK for Flutter ([Explore Edition](https://developer.here.com/documentation/flutter-sdk-explore), [Navigate Edition](https://developer.here.com/documentation/flutter-sdk-navigate))
 
-> For now, the _Explore Edition_ and the _Navigate Edition_ are only available upon request. Please contact your HERE representative to receive access including a set of evaluation credentials.
+> For now, the _Navigate Edition_ is only available upon request. Please contact your HERE representative to receive access including a set of evaluation credentials.
 
-## List of Available Example Apps (Version 4.3.3.0)
+## List of Available Example Apps (Version 4.3.4.0)
 In this repository you can find the latest example apps that show key features of the HERE SDK in ready-to-use applications:
 
 - **HelloMap**: Shows the classic 'Hello World'.
@@ -29,7 +29,7 @@ In this repository you can find the latest example apps that show key features o
 - **Gestures**: Shows how to handle gestures.
 - **MapMarker**: Shows how to add POI marker to the map.
 - **MapObjects**: Shows how to add circles, polygons and polylines to the map.
-- **MapOverlays** : Shows how to add standard platform views to the map.
+- **MapOverlays** / **MapViewPins**: Shows how to add standard platform views to the map.
 - **Routing**: Shows how to calculate routes and add them to the map.
 - **Navigation**: Shows turn-by-turn navigation and tracking. Exclusively available for the _Navigate Edition_.
 - **Search**: Shows how to search POIs and add them to the map.
@@ -48,6 +48,7 @@ Find the examples for the edition and platform of your choice:
 
 ## Example Apps for Other Versions
 In addition to the apps above, this repo also contains example apps for the following HERE SDK versions:
+- [Version 4.3.3.0](examples/4.3.3.0/)
 - [Version 4.3.2.0](examples/4.3.2.0/)
 - [Version 4.3.1.0](examples/4.3.1.0/)
 - [Version 4.3.0.0](examples/4.3.0.0/)

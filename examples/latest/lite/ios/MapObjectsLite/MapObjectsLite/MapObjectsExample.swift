@@ -62,7 +62,7 @@ class MapObjectsExample {
         // We are sure that the number of vertices is greater than two, so it will not crash.
         let geoPolyline = try! GeoPolyline(vertices: coordinates)
         let mapPolylineStyle = MapPolylineStyleLite()
-        mapPolylineStyle.setWidthInPixels(inPixels: 20)
+        mapPolylineStyle.setWidthInPixels(inPixels: 20.0)
         mapPolylineStyle.setColor(0x00908AA0, encoding: .rgba8888)
         let mapPolyline = MapPolylineLite(geometry: geoPolyline, style: mapPolylineStyle)
 
