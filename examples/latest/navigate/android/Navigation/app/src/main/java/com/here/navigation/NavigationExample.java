@@ -190,7 +190,7 @@ public class NavigationExample {
             }
         });
 
-        // Notifies when the current speed limits are exceeded.
+        // Notifies when the current speed limit is exceeded.
         navigator.setSpeedWarningListener(new SpeedWarningListener() {
             @Override
             public void onSpeedWarningStatusChanged(SpeedWarningStatus speedWarningStatus) {

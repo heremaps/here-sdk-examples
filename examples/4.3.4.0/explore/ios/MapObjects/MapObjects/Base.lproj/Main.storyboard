@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="Stack View standard spacing" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="tne-QT-ifu">
+            <objects>
+                <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="MapObjects" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="d7N-t3-PMt">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="jv9-0R-Tz9" customClass="MapView" customModule="heresdk">
+                                <rect key="frame" x="0.0" y="20" width="375" height="647"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </view>
+                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="eu1-QJ-vBV">
+                                <rect key="frame" x="8" y="28" width="359" height="30"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9Bv-Tp-mIo">
+                                        <rect key="frame" x="0.0" y="0.0" width="114.5" height="30"/>
+                                        <color key="backgroundColor" red="0.0" green="0.71372549019607845" blue="0.69803921568627447" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <state key="normal" title="MapPolyline"/>
+                                        <connections>
+                                            <action selector="onMapPolylineClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="eSW-EV-CXn"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="IDY-a8-cO4">
+                                        <rect key="frame" x="122.5" y="0.0" width="114" height="30"/>
+                                        <color key="backgroundColor" red="0.0" green="0.71372549019607845" blue="0.69803921568627447" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <state key="normal" title="MapPolygon"/>
+                                        <connections>
+                                            <action selector="onMapPolygonClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="JsO-5X-zid"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="dqL-zX-9qE">
+                                        <rect key="frame" x="244.5" y="0.0" width="114.5" height="30"/>
+                                        <color key="backgroundColor" red="0.0" green="0.71372549019607845" blue="0.69803921568627447" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <state key="normal" title="MapCircle"/>
+                                        <connections>
+                                            <action selector="onMapCircleClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="jZg-EG-yGH"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="30" id="5v9-pL-qe6"/>
+                                </constraints>
+                            </stackView>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="eu1-QJ-vBV" firstAttribute="top" secondItem="7yx-63-l25" secondAttribute="top" constant="8" id="1NJ-EX-MTG"/>
+                            <constraint firstItem="eu1-QJ-vBV" firstAttribute="leading" secondItem="7yx-63-l25" secondAttribute="leading" constant="8" id="D7j-lq-Rwv"/>
+                            <constraint firstItem="jv9-0R-Tz9" firstAttribute="bottom" secondItem="7yx-63-l25" secondAttribute="bottom" id="QZw-vd-qP4"/>
+                            <constraint firstAttribute="trailing" secondItem="jv9-0R-Tz9" secondAttribute="trailing" id="eJ4-sm-GpV"/>
+                            <constraint firstItem="jv9-0R-Tz9" firstAttribute="top" secondItem="7yx-63-l25" secondAttribute="top" id="p05-LZ-W6d"/>
+                            <constraint firstItem="jv9-0R-Tz9" firstAttribute="leading" secondItem="d7N-t3-PMt" secondAttribute="leading" id="qOE-QK-qnt"/>
+                            <constraint firstItem="7yx-63-l25" firstAttribute="trailing" secondItem="eu1-QJ-vBV" secondAttribute="trailing" constant="8" id="xbd-jw-H4Z"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="7yx-63-l25"/>
+                    </view>
+                    <connections>
+                        <outlet property="mapView" destination="jv9-0R-Tz9" id="2AS-Uk-Z0n"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="50.399999999999999" y="29.23538230884558"/>
+        </scene>
+    </scenes>
+</document>

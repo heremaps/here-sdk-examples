@@ -7,9 +7,9 @@ import android.util.Log;
 
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.Location;
+import com.here.sdk.core.LocationListener;
+import com.here.sdk.core.LocationProvider;
 import com.here.sdk.core.errors.InstantiationErrorException;
-import com.here.sdk.navigation.LocationListener;
-import com.here.sdk.navigation.LocationProvider;
 import com.here.sdk.navigation.LocationSimulator;
 import com.here.sdk.navigation.LocationSimulatorOptions;
 import com.here.sdk.routing.Route;
