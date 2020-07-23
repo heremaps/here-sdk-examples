@@ -54,9 +54,8 @@ class MapViewPinsExample {
         textView.textColor = .white
         textView.font = .systemFont(ofSize: 17)
         textView.text = "Centered ViewPin"
-        
+
         _ = mapView.pinView(textView, to: mapCenterGeoCoordinates)
-        
     }
 
     private func showAnchoredMapViewPins() {
