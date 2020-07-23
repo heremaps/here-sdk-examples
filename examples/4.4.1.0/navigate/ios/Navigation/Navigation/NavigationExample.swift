@@ -143,7 +143,7 @@ class NavigationExample : NavigableLocationDelegate,
     }
 
     // Conform to SpeedWarningDelegate.
-    // Notifies when the current speed limits are exceeded.
+    // Notifies when the current speed limit is exceeded.
     func onSpeedWarningStatusChanged(_ status: SpeedWarningStatus) {
         if status == SpeedWarningStatus.speedLimitExceeded {
             // Driver is faster than current speed limit (plus an optional offset).
