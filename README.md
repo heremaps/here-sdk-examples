@@ -25,7 +25,7 @@ For an overview of the existing features, please check the _Developer's Guide_ f
 In this repository you can find the latest example apps that show key features of the HERE SDK in ready-to-use applications:
 
 - **HelloMap**: Shows the classic 'Hello World'.
-- **HelloMapWithStoryboard**: Shows the classic 'Hello World' using a Storyboard.
+- **HelloMapWithStoryboard**: Shows the classic 'Hello World' using a Storyboard (iOS only).
 - **Gestures**: Shows how to handle gestures.
 - **MapMarker**: Shows how to add POI marker to the map.
 - **MapObjects**: Shows how to add circles, polygons and polylines to the map.
