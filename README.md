@@ -35,6 +35,7 @@ In this repository you can find the latest example apps that show key features o
 - **Search**: Shows how to search POIs and add them to the map.
 - **Traffic**: Shows how to search for real-time traffic and how to visualize it on the map.
 - **StandAloneEngine**: Shows how to use an engine without a map view.
+- **Venues**: Shows how to integrate private venues. Exclusively available for the _Navigate Edition_.
 
 Most example apps contain a class named "XY-Example" where XY stands for the feature, which is in most cases equal to the name of the app. If you are looking for example code that shows how to use a certain HERE SDK feature, then please look for this class as it contains the most interesting parts. Note that the overall app architecture is kept as simple as possible to not shadow the parts in focus.
 
@@ -48,6 +49,7 @@ Find the examples for the edition and platform of your choice:
 
 ## Example Apps for Other Versions
 In addition to the apps above, this repo also contains example apps for the following HERE SDK versions:
+- [Version 4.4.1.0](examples/4.4.1.0/)
 - [Version 4.3.4.0](examples/4.3.4.0/)
 - [Version 4.3.3.0](examples/4.3.3.0/)
 - [Version 4.3.2.0](examples/4.3.2.0/)
