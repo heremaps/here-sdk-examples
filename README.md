@@ -67,7 +67,7 @@ In addition to the apps above, this repo also contains example apps for the foll
 ### Get Started for Android
 1. Copy the AAR file of the HERE SDK for Android to the example app's `app/libs` folder.
 2. Open _Android Studio_ and sync the project.
-3. To run the app, you need to add your HERE SDK credentials to the `AndroidManifext.xml` file.
+3. To run the app, you need to add your HERE SDK credentials to the `AndroidManifest.xml` file.
 
 ### Get Started for iOS
 1. Copy the `heresdk.framework` file of the HERE SDK for iOS to the example app's root folder.
