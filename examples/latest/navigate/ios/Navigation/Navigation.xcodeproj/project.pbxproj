@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		C8166E392430DAEA00881B24 /* PlatformPositioningProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8166E382430DAEA00881B24 /* PlatformPositioningProvider.swift */; };
 		C8166E3B2430DB0800881B24 /* LocationProviderImplementation.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8166E3A2430DB0800881B24 /* LocationProviderImplementation.swift */; };
+		C819AFB324D07B3E006C4213 /* HEREPositioningProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = C819AFB224D07B3E006C4213 /* HEREPositioningProvider.swift */; };
 		C82B793A2456A44500E6E383 /* LanguageCodeConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82B79392456A44500E6E383 /* LanguageCodeConverter.swift */; };
 		C82B794024578D5B00E6E383 /* VoiceAssistant.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82B793F24578D5B00E6E383 /* VoiceAssistant.swift */; };
 		C85F809221E5EDD800237ED0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C85F809121E5EDD800237ED0 /* AppDelegate.swift */; };
@@ -37,8 +37,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		C8166E382430DAEA00881B24 /* PlatformPositioningProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformPositioningProvider.swift; sourceTree = "<group>"; };
 		C8166E3A2430DB0800881B24 /* LocationProviderImplementation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationProviderImplementation.swift; sourceTree = "<group>"; };
+		C819AFB224D07B3E006C4213 /* HEREPositioningProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HEREPositioningProvider.swift; sourceTree = "<group>"; };
 		C82B79392456A44500E6E383 /* LanguageCodeConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageCodeConverter.swift; sourceTree = "<group>"; };
 		C82B793F24578D5B00E6E383 /* VoiceAssistant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceAssistant.swift; sourceTree = "<group>"; };
 		C85F808E21E5EDD800237ED0 /* Navigation.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Navigation.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -87,7 +87,7 @@
 			children = (
 				C85F809121E5EDD800237ED0 /* AppDelegate.swift */,
 				C85F809321E5EDD800237ED0 /* ViewController.swift */,
-				C8166E382430DAEA00881B24 /* PlatformPositioningProvider.swift */,
+				C819AFB224D07B3E006C4213 /* HEREPositioningProvider.swift */,
 				C8166E3A2430DB0800881B24 /* LocationProviderImplementation.swift */,
 				C85F80A321E5FC7F00237ED0 /* RoutingExample.swift */,
 				C893BB6223845E7B00AFD30F /* NavigationExample.swift */,
@@ -184,7 +184,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C85F809421E5EDD800237ED0 /* ViewController.swift in Sources */,
-				C8166E392430DAEA00881B24 /* PlatformPositioningProvider.swift in Sources */,
+				C819AFB324D07B3E006C4213 /* HEREPositioningProvider.swift in Sources */,
 				C85F809221E5EDD800237ED0 /* AppDelegate.swift in Sources */,
 				C893BB6323845E7B00AFD30F /* NavigationExample.swift in Sources */,
 				C82B793A2456A44500E6E383 /* LanguageCodeConverter.swift in Sources */,

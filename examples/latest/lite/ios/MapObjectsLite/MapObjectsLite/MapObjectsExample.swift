@@ -30,7 +30,7 @@ class MapObjectsExample {
     init(mapView: MapViewLite) {
         let camera = mapView.camera
         camera.setTarget(GeoCoordinates(latitude: 52.530932, longitude: 13.384915))
-        camera.setZoomLevel(14)
+        camera.setZoomLevel(13)
 
         mapScene = mapView.mapScene
     }
@@ -51,6 +51,10 @@ class MapObjectsExample {
         clearMap()
         mapCircle = createMapCircle()
         mapScene.addMapCircle(mapCircle!)
+    }
+
+    func onClearButtonClicked() {
+        clearMap()
     }
 
     private func createMapPolyline() -> MapPolylineLite {

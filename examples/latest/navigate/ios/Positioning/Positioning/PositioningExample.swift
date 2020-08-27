@@ -84,12 +84,12 @@ class PositioningExample: LocationUpdateDelegate, LocationStatusDelegate {
     }
 
     func onStatusChanged(locationEngineStatus: LocationEngineStatus) {
-        print("Location engine status: : \(locationEngineStatus)")
+        print("Location engine status: \(locationEngineStatus)")
     }
 
     func onFeaturesNotAvailable(features: [LocationFeature]) {
         for feature in features {
-            print("Feature not available: '%s'", String(describing: feature))
+            print("Location feature not available: '%s'", String(describing: feature))
         }
     }
 

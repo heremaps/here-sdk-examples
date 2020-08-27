@@ -116,14 +116,13 @@ public class PositioningExample {
             mapView.getCamera().lookAt(defaultLocation, CAMERA_DISTANCE_IN_METERS);
         }
 
-        final LocationEngineStatus locationEngineStatus = startLocating();
-        Log.d(TAG, "Location Engine returned status: " + locationEngineStatus.name());
+        startLocating();
     }
 
-    private LocationEngineStatus startLocating() {
+    private void startLocating() {
         locationEngine.addLocationStatusListener(locationStatusListener);
         locationEngine.addLocationUpdateListener(locationUpdateListener);
-        return locationEngine.start(LocationAccuracy.BEST_AVAILABLE);
+        locationEngine.start(LocationAccuracy.BEST_AVAILABLE);
     }
 
     public void stopLocating() {

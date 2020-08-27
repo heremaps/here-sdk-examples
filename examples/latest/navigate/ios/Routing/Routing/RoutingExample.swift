@@ -97,7 +97,10 @@ class RoutingExample {
         let routeGeoPolyline = try! GeoPolyline(vertices: route.polyline)
         let routeMapPolyline = MapPolyline(geometry: routeGeoPolyline,
                                            widthInPixels: 20,
-                                           color: Color(red: 0x00, green: 0x90, blue: 0x8A, alpha: 0xA0))
+                                           color: UIColor(red: 0,
+                                                          green: 0.56,
+                                                          blue: 0.54,
+                                                          alpha: 0.63))
         mapView.mapScene.addMapPolyline(routeMapPolyline)
         mapPolylineList.append(routeMapPolyline)
 

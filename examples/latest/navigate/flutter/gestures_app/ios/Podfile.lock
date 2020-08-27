@@ -1,6 +1,6 @@
 PODS:
   - Flutter (1.0.0)
-  - here_sdk (4.3.2.0.2094.rc1):
+  - here_sdk (4.4.4.0.2869.rc2):
     - Flutter
 
 DEPENDENCIES:
@@ -15,8 +15,8 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
-  here_sdk: 4fd362fff0aba227e5c88272219a1eb38e828c35
+  here_sdk: 1e5dd18328c4ea789568c5551f3a43cb3ba1ccaa
 
-PODFILE CHECKSUM: dd133c49ddf9fdfbba331a7e231980af3c9b201f
+PODFILE CHECKSUM: 57b6366e412a881a5db488ee35037f90711b962f
 
-COCOAPODS: 1.8.4
+COCOAPODS: 1.9.3

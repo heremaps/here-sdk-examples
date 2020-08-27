@@ -74,18 +74,20 @@ public class ConsentStateActivity extends AppCompatActivity {
             return;
         }
         switch(consentEngine.getUserConsentState()) {
-        case GRANTED:
-            //The user has previously given permission.
-            consentStateTextView.setText(R.string.consent_state_granted);
-            break;
-        case DENIED:
-            // The user has previously denied permission.
-        case NOT_HANDLED:
-            //The user has not been asked for consent.
-        case REQUESTING:
-            //The dialog is currently being shown to the user.
-            consentStateTextView.setText(R.string.consent_state_denied);
-            break;
+            case GRANTED:
+                //The user has previously given permission.
+                consentStateTextView.setText(R.string.consent_state_granted);
+                break;
+            case DENIED:
+                // The user has previously denied permission.
+            case NOT_HANDLED:
+                //The user has not been asked for consent.
+            case REQUESTING:
+                //The dialog is currently being shown to the user.
+                consentStateTextView.setText(R.string.consent_state_denied);
+                break;
+            default:
+                throw new RuntimeException("Unknown consent state.");
         }
     }
 }

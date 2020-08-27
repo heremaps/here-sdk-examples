@@ -142,7 +142,7 @@ public class RoutingExample {
         float widthInPixels = 20;
         MapPolyline routeMapPolyline = new MapPolyline(routeGeoPolyline,
                 widthInPixels,
-                new Color((short) 0x00, (short) 0x90, (short) 0x8A, (short) 0xA0));
+                Color.valueOf(0, 0.56f, 0.54f, 0.63f)); // RGBA
 
         mapView.getMapScene().addMapPolyline(routeMapPolyline);
         mapPolylines.add(routeMapPolyline);

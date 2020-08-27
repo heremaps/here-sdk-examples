@@ -29,10 +29,10 @@ public class VenueTapHandler: TapDelegate {
     var selectedVenue: Venue?
     var selectedGeometry: VenueGeometry?
 
-    let selectedColor = Color(red: 72, green: 187, blue: 245)
-    let selectedOutlineColor = Color(red: 30, green: 170, blue: 235)
-    let selectedTextColor = Color(red: 255, green: 255, blue: 255)
-    let selectedTextOutlineColor = Color(red: 0, green: 130, blue: 195)
+    let selectedColor = UIColor(red: 0.282, green: 0.733, blue: 0.96, alpha: 1.0)
+    let selectedOutlineColor = UIColor(red: 0.117, green: 0.666, blue: 0.921, alpha: 1.0)
+    let selectedTextColor = UIColor.white
+    let selectedTextOutlineColor = UIColor(red: 0.0, green: 0.51, blue: 0.764, alpha: 1.0)
 
     let geometryStyle: VenueGeometryStyle
     let labelStyle: VenueLabelStyle

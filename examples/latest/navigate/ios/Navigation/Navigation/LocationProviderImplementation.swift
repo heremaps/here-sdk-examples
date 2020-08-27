@@ -17,15 +17,17 @@
  * License-Filename: LICENSE
  */
 
-import CoreLocation
 import heresdk
 import UIKit
 
-// A class that conforms the HERE SDK's LocationProvider protocol.
-// This class is required by the Navigator to receive location updates from either the device or the LocationSimulator.
+// A class that conforms the HERE SDK's LocationProvider and LocationDelegate protocol.
+// Both protocols are required by the Navigator to receive location updates from either the device or the LocationSimulator.
+// This class allows to switch between simulated location events (requires a route) and real location updates using
+// the advanced capabilities of the HERE positioning features.
 class LocationProviderImplementation : LocationProvider,
                                        LocationDelegate,
-                                       PlatformPositioningProviderDelegate {
+                                       // Needed by HERE SDK positioning to listen for location updates.
+                                       LocationUpdateDelegate {
 
     // Conforms to the LocationProvider protocol.
     // Set by the Navigator instance to listen to location updates.
@@ -33,7 +35,7 @@ class LocationProviderImplementation : LocationProvider,
     var delegate: LocationDelegate?
 
     var lastKnownLocation: Location?
-    private let platformPositioningProvider: PlatformPositioningProvider
+    private let herePositioningProvider: HEREPositioningProvider
     private var locationSimulator: LocationSimulator?
     private var isSimulated: Bool = false
 
@@ -47,8 +49,7 @@ class LocationProviderImplementation : LocationProvider,
     }()
 
     init() {
-        platformPositioningProvider = PlatformPositioningProvider()
-        platformPositioningProvider.delegate = self
+        herePositioningProvider = HEREPositioningProvider()
     }
 
     // Provides location updates based on the given route.
@@ -74,21 +75,30 @@ class LocationProviderImplementation : LocationProvider,
 
     // Conforms to the LocationProvider protocol.
     func start() {
-        platformPositioningProvider.startLocating()
+        herePositioningProvider.startLocating(locationUpdateDelegate: self)
         timeoutDisplayLink.isPaused = false
-    }
-
-    // Conforms to the PlatformPositioningProviderDelegate to receive platform GPS events.
-    func onLocationUpdated(location: CLLocation) {
-        if !isSimulated {
-            handleLocationUpdate(location: convertLocation(nativeLocation: location))
-        }
     }
 
     // Conforms to the LocationProvider protocol.
     func stop() {
-        platformPositioningProvider.stopLocating()
+        herePositioningProvider.stopLocating()
         timeoutDisplayLink.isPaused = true
+    }
+
+    // Conforms to the LocationUpdateDelegate protocol to receive location events from the device.
+    func onLocationUpdated(location: Location) {
+        if !isSimulated {
+            handleLocationUpdate(location: location)
+        }
+    }
+
+    // Use this optionally to hook in additional delegates.
+    func addLocationUpdateDelegate(locationUpdateDelegate: LocationUpdateDelegate) {
+        herePositioningProvider.addLocationUpdateDelegate(locationUpdateDelegate: locationUpdateDelegate)
+    }
+
+    func removeLocationUpdateDelegate(locationUpdateDelegate: LocationUpdateDelegate) {
+        herePositioningProvider.removeLocationUpdateDelegate(locationUpdateDelegate: locationUpdateDelegate)
     }
 
     private func handleLocationUpdate(location: Location) {
@@ -146,20 +156,5 @@ class LocationProviderImplementation : LocationProvider,
         if isSimulated {
             delegate?.onLocationTimeout()
         }
-    }
-
-    // Converts platform CLLocation to HERE SDK Location.
-    private func convertLocation(nativeLocation: CLLocation) -> Location {
-        let geoCoordinates = GeoCoordinates(latitude: nativeLocation.coordinate.latitude,
-                                            longitude: nativeLocation.coordinate.longitude,
-                                            altitude: nativeLocation.altitude)
-        var location = Location(coordinates: geoCoordinates,
-                                timestamp: nativeLocation.timestamp)
-        location.bearingInDegrees = nativeLocation.course
-        location.speedInMetersPerSecond = nativeLocation.speed
-        location.horizontalAccuracyInMeters = nativeLocation.horizontalAccuracy
-        location.verticalAccuracyInMeters = nativeLocation.verticalAccuracy
-
-        return location
     }
 }

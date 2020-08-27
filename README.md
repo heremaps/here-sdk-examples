@@ -15,14 +15,14 @@ The HERE SDK consumes data from the [HERE Platform](https://www.here.com/product
 
 For an overview of the existing features, please check the _Developer's Guide_ for the platform of your choice. Here you will also find numerous code snippets, detailed tutorials, the _API Reference_ and the latest _Release Notes_:
 
-- HERE SDK for Android ([Lite Edition](https://developer.here.com/documentation/android-sdk/dev_guide/index.html), [Explore Edition](https://developer.here.com/documentation/android-sdk-explore), [Navigate Edition]( https://developer.here.com/documentation/android-sdk-navigate))
-- HERE SDK for iOS ([Lite Edition](https://developer.here.com/documentation/ios-sdk/dev_guide/index.html), [Explore Edition]( https://developer.here.com/documentation/ios-sdk-explore), [Navigate Edition]( https://developer.here.com/documentation/ios-sdk-navigate))
-- HERE SDK for Flutter ([Explore Edition](https://developer.here.com/documentation/flutter-sdk-explore), [Navigate Edition](https://developer.here.com/documentation/flutter-sdk-navigate))
+- Documentation for the HERE SDK for Android ([Lite Edition](https://developer.here.com/documentation/android-sdk/dev_guide/index.html), [Explore Edition](https://developer.here.com/documentation/android-sdk-explore), [Navigate Edition]( https://developer.here.com/documentation/android-sdk-navigate))
+- Documentation for the HERE SDK for iOS ([Lite Edition](https://developer.here.com/documentation/ios-sdk/dev_guide/index.html), [Explore Edition]( https://developer.here.com/documentation/ios-sdk-explore), [Navigate Edition]( https://developer.here.com/documentation/ios-sdk-navigate))
+- Documentation for the HERE SDK for Flutter ([Explore Edition](https://developer.here.com/documentation/flutter-sdk-explore), [Navigate Edition](https://developer.here.com/documentation/flutter-sdk-navigate))
 
 > For now, the _Navigate Edition_ is only available upon request. Please contact your HERE representative to receive access including a set of evaluation credentials.
 
-## List of Available Example Apps (Version 4.4.2.0)
-In this repository you can find the latest example apps that show key features of the HERE SDK in ready-to-use applications:
+## List of Available Example Apps (Version 4.4.4.0)
+In this repository you can find the [latest example apps](examples/latest) that show key features of the HERE SDK in ready-to-use applications:
 
 - **HelloMap**: Shows the classic 'Hello World'.
 - **HelloMapWithStoryboard**: Shows the classic 'Hello World' using a Storyboard (iOS only).
@@ -42,22 +42,14 @@ Most example apps contain a class named "XY-Example" where XY stands for the fea
 
 > Not all examples are available for all editions and platforms.
 
-Find the examples for the edition and platform of your choice:
+Find the [latest examples](examples/latest) for the edition and platform of your choice:
 
-- HERE SDK for Android ([Lite Edition](examples/latest/lite/android/), [Explore Edition](examples/latest/explore/android/), [Navigate Edition](examples/latest/navigate/android/))
-- HERE SDK for iOS ([Lite Edition](examples/latest/lite/ios/), [Explore Edition](examples/latest/explore/ios/), [Navigate Edition](examples/latest/navigate/ios/))
-- HERE SDK for Flutter ([Explore Edition](examples/latest/explore/flutter/), [Navigate Edition](examples/latest/navigate/flutter/))
+- Examples for the HERE SDK for Android ([Lite Edition](examples/latest/lite/android/), [Explore Edition](examples/latest/explore/android/), [Navigate Edition](examples/latest/navigate/android/))
+- Examples for the HERE SDK for iOS ([Lite Edition](examples/latest/lite/ios/), [Explore Edition](examples/latest/explore/ios/), [Navigate Edition](examples/latest/navigate/ios/))
+- Examples for the HERE SDK for Flutter ([Explore Edition](examples/latest/explore/flutter/), [Navigate Edition](examples/latest/navigate/flutter/))
 
 ## Example Apps for Other Versions
-In addition to the apps above, this repo also contains example apps for the following HERE SDK versions:
-- [Version 4.4.1.0](examples/4.4.1.0/)
-- [Version 4.3.4.0](examples/4.3.4.0/)
-- [Version 4.3.3.0](examples/4.3.3.0/)
-- [Version 4.3.2.0](examples/4.3.2.0/)
-- [Version 4.3.1.0](examples/4.3.1.0/)
-- [Version 4.3.0.0](examples/4.3.0.0/)
-- [Version 4.2.1.0](examples/4.2.1.0/)
-- [Version 4.2.0.0](examples/4.2.0.0/)
+In addition to the apps above, this repo also contains example apps for [other HERE SDK versions](examples/other_releases): Here you can find older releases _or_ releases that are not yet public on [developer.here.com](https://developer.here.com/).
 
 ## What You Need to Execute the Example Apps
 1. Acquire a set of credentials by registering yourself on [developer.here.com](https://developer.here.com/) - or ask your HERE representative.

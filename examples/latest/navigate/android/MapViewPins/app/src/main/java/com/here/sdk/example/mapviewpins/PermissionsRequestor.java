@@ -73,6 +73,10 @@ public class PermissionsRequestor {
                             // see https://issuetracker.google.com/issues/37067994
                             continue;
                         }
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q &&
+                                permission.equals(Manifest.permission.ACTIVITY_RECOGNITION)) {
+                            continue;
+                        }
                         permissionList.add(permission);
                     }
                 }

@@ -77,7 +77,7 @@ class ViewController: UIViewController {
 
         case .denied, .restricted:
             // Denied or restricted, request for user action.
-            let alert = UIAlertController(title: "Location Services are disabled", message: "Please enable Location Services in your device Settings", preferredStyle: .alert)
+            let alert = UIAlertController(title: "Location Services are disabled", message: "Please enable Location Services in your device settings.", preferredStyle: .alert)
             let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
             alert.addAction(okAction)
             present(alert, animated: true, completion: nil)
@@ -94,6 +94,5 @@ class ViewController: UIViewController {
         guard self.positioningExample == nil else {
             return
         }
-        
     }
 }

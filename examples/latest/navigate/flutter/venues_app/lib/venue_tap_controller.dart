@@ -41,9 +41,9 @@ class VenueTapController extends TapListener {
 
   // Create geometry and label styles for the selected geometry.
   final VenueGeometryStyle _geometryStyle =
-      VenueGeometryStyle(Color(72, 187, 245), Color(30, 170, 235), 1);
+      VenueGeometryStyle(Color.fromARGB(255, 72, 187, 245), Color.fromARGB(255, 30, 170, 235), 1);
   final VenueLabelStyle _labelStyle =
-      VenueLabelStyle(Color(255, 255, 255), Color(0, 130, 195), 1, 28);
+      VenueLabelStyle(Color.fromARGB(255, 255, 255, 255), Color.fromARGB(255, 0, 130, 195), 1, 28);
 
   VenueTapController(
       {@required this.hereMapController,

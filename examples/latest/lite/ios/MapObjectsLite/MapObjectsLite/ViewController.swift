@@ -58,6 +58,10 @@ final class ViewController: UIViewController {
         mapObjectsExample.onMapCircleClicked()
     }
 
+    @IBAction func onMapClearClicked(_ sender: Any) {
+        mapObjectsExample.onClearButtonClicked()
+    }
+
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         mapView.handleLowMemory()

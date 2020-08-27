@@ -1,4 +1,4 @@
-The MapViewPin example app shows how to add viewpins to show native android view layouts on the map. You can find how this is done in [MapViewPinExample.java](app/src/main/java/com/here/sdk/mapviewpins/MapViewPinExample.java).
+The MapViewPin example app shows how to add viewpins to show native android view layouts on the map. You can find how this is done in [MapViewPinExample.java](app/src/main/java/com/here/sdk/example/mapviewpins/MapViewPinExample.java).
 
 Build instructions:
 -------------------

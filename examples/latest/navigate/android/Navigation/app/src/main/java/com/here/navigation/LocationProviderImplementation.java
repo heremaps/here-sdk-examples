@@ -1,20 +1,17 @@
 package com.here.navigation;
 
-import android.content.Context;
 import android.os.Handler;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.util.Log;
 
-import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.Location;
 import com.here.sdk.core.LocationListener;
 import com.here.sdk.core.LocationProvider;
 import com.here.sdk.core.errors.InstantiationErrorException;
+import com.here.sdk.location.LocationUpdateListener;
 import com.here.sdk.navigation.LocationSimulator;
 import com.here.sdk.navigation.LocationSimulatorOptions;
 import com.here.sdk.routing.Route;
-
-import java.util.Date;
 
 // A class that conforms the HERE SDK's LocationProvider interface.
 // This class is required by Navigator to receive location updates from either the device or the LocationSimulator.
@@ -25,7 +22,7 @@ public class LocationProviderImplementation implements LocationProvider {
     public static final int TIMEOUT_POLL_INTERVAL_IN_MS = 500;
     public static final int TIMEOUT_INTERVAL_IN_MS = 2000;
 
-    // Set by the Navigator instance to listen for location updates.
+    // Used by the Navigator instance to listen for location updates.
     @Nullable
     private LocationListener locationListener;
     @Nullable
@@ -33,12 +30,12 @@ public class LocationProviderImplementation implements LocationProvider {
 
     // A loop to check for timeouts between location events.
     private final Handler timeoutHandler = new Handler();
-    private final PlatformPositioningProvider platformPositioningProvider;
+    private final HEREPositioningProvider herePositioningProvider;
     private LocationSimulator locationSimulator;
     private boolean isSimulated;
 
-    public LocationProviderImplementation(Context context) {
-        platformPositioningProvider = new PlatformPositioningProvider(context);
+    public LocationProviderImplementation() {
+        herePositioningProvider = new HEREPositioningProvider();
     }
 
     // Provides location updates based on the given route.
@@ -64,11 +61,11 @@ public class LocationProviderImplementation implements LocationProvider {
 
     @Override
     public void start() {
-        platformPositioningProvider.startLocating(new PlatformPositioningProvider.PlatformLocationListener() {
+        herePositioningProvider.startLocating(new LocationUpdateListener() {
             @Override
-            public void onLocationUpdated(android.location.Location location) {
+            public void onLocationUpdated(Location location) {
                 if (!isSimulated) {
-                    handleLocationUpdate(convertLocation(location));
+                    handleLocationUpdate(location);
                 }
             }
         });
@@ -76,9 +73,18 @@ public class LocationProviderImplementation implements LocationProvider {
         timeoutHandler.postDelayed(timeoutRunnable, TIMEOUT_POLL_INTERVAL_IN_MS);
     }
 
+    // Use this optionally to hook in additional listeners.
+    public void addLocationUpdateListener(LocationUpdateListener locationUpdateListener) {
+        herePositioningProvider.addLocationUpdateListener(locationUpdateListener);
+    }
+
+    public void removeLocationUpdateListener(LocationUpdateListener locationUpdateListener) {
+        herePositioningProvider.removeLocationUpdateListener(locationUpdateListener);
+    }
+
     @Override
     public void stop() {
-        platformPositioningProvider.stopLocating();
+        herePositioningProvider.stopLocating();
         timeoutHandler.removeCallbacks(timeoutRunnable);
     }
 
@@ -88,6 +94,7 @@ public class LocationProviderImplementation implements LocationProvider {
         return locationListener;
     }
 
+    // Called by Navigator instance to listen for location updates.
     @Override
     public void setListener(@Nullable LocationListener locationListener) {
         this.locationListener = locationListener;
@@ -97,7 +104,7 @@ public class LocationProviderImplementation implements LocationProvider {
         lastKnownLocation = location;
 
         if (locationListener != null) {
-            // The GPS location we received from either the platform or the LocationSimulator is forwarded to the Navigator.
+            // The location we received from either the platform or the LocationSimulator is forwarded to the Navigator.
             locationListener.onLocationUpdated(location);
         }
     }
@@ -164,19 +171,5 @@ public class LocationProviderImplementation implements LocationProvider {
         });
 
         return locationSimulator;
-    }
-
-    // Converts platform location to com.here.sdk.core.Location.
-    private Location convertLocation(android.location.Location nativeLocation) {
-        GeoCoordinates geoCoordinates = new GeoCoordinates(
-                nativeLocation.getLatitude(),
-                nativeLocation.getLongitude(),
-                nativeLocation.getAltitude());
-        Location location = new Location(geoCoordinates, new Date());
-        location.bearingInDegrees = (double) nativeLocation.getBearing();
-        location.speedInMetersPerSecond = (double) nativeLocation.getSpeed();
-        location.horizontalAccuracyInMeters = (double) nativeLocation.getAccuracy();
-
-        return location;
     }
 }

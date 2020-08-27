@@ -184,22 +184,30 @@ class NavigationExample : NavigableLocationDelegate,
     // Conform to RouteDeviationDelegate.
     // Notifies on a possible deviation from the route.
     func onRouteDeviation(_ routeDeviation: RouteDeviation) {
-        guard let lastLocationOnRoute = routeDeviation.lastLocationOnRoute else {
-            print("User was never following the route.")
-            return
-        }
-
+        // Get current geographic coordinates.
         var currentGeoCoordinates = routeDeviation.currentLocation.originalLocation.coordinates
         if let currentMapMatchedLocation = routeDeviation.currentLocation.mapMatchedLocation {
             currentGeoCoordinates = currentMapMatchedLocation.coordinates
         }
 
-        var lastGeoCoordinates = lastLocationOnRoute.originalLocation.coordinates
-        if let lastMapMatchedLocationOnRoute = lastLocationOnRoute.mapMatchedLocation {
-            lastGeoCoordinates = lastMapMatchedLocationOnRoute.coordinates
+        // Get last geographic coordinates on route.
+        var lastGeoCoordinates: GeoCoordinates?
+        if let lastLocationOnRoute = routeDeviation.lastLocationOnRoute {
+            lastGeoCoordinates = lastLocationOnRoute.originalLocation.coordinates
+            if let lastMapMatchedLocationOnRoute = lastLocationOnRoute.mapMatchedLocation {
+                lastGeoCoordinates = lastMapMatchedLocationOnRoute.coordinates
+            }
+        } else {
+            print("User was never following the route. So, we take the start of the route instead.")
+            lastGeoCoordinates = navigator.route?.sections.first?.departure.mapMatchedCoordinates
         }
 
-        let distanceInMeters = currentGeoCoordinates.distance(to: lastGeoCoordinates)
+        guard let lastGeoCoordinatesOnRoute = lastGeoCoordinates else {
+            print("No lastGeoCoordinatesOnRoute found. Should never happen.")
+            return
+        }
+
+        let distanceInMeters = currentGeoCoordinates.distance(to: lastGeoCoordinatesOnRoute)
         print("RouteDeviation in meters is \(distanceInMeters)")
     }
 
@@ -224,10 +232,11 @@ class NavigationExample : NavigableLocationDelegate,
 
     func startNavigation(route: Route,
                                 isSimulated: Bool) {
-        navigator.route = route
-
         setupSpeedWarnings()
         setupVoiceGuidance()
+
+        // Switches to navigation mode when no route was set before, otherwise navigation mode is kept.
+        navigator.route = route
 
         if isSimulated {
             locationProvider.enableRoutePlayback(route: route)
@@ -240,6 +249,7 @@ class NavigationExample : NavigableLocationDelegate,
     }
 
     func stopNavigation() {
+        // Switches to tracking mode when a route was set before, otherwise tracking mode is kept.
         navigator.route = nil
         mapView.mapScene.removeMapMarker(navigationArrow)
     }

@@ -86,7 +86,7 @@ public class MapObjectsExample {
         }
 
         float widthInPixels = 20;
-        Color lineColor = new Color((short) 0x00, (short) 0x90, (short) 0x8A, (short) 0xA0);
+        Color lineColor = Color.valueOf(0, 0.56f, 0.54f, 0.63f); // RGBA
         MapPolyline mapPolyline = new MapPolyline(geoPolyline, widthInPixels, lineColor);
 
         return mapPolyline;
@@ -108,7 +108,7 @@ public class MapObjectsExample {
             return null;
         }
 
-        Color fillColor = new Color((short) 0x00, (short) 0x90, (short) 0x8A, (short) 0xA0);
+        Color fillColor = Color.valueOf(0, 0.56f, 0.54f, 0.63f); // RGBA
         MapPolygon mapPolygon = new MapPolygon(geoPolygon, fillColor);
 
         return mapPolygon;
@@ -119,7 +119,7 @@ public class MapObjectsExample {
         GeoCircle geoCircle = new GeoCircle(new GeoCoordinates(52.530932, 13.384915), radiusInMeters);
 
         GeoPolygon geoPolygon = new GeoPolygon(geoCircle);
-        Color fillColor = new Color((short) 0x00, (short) 0x90, (short) 0x8A, (short) 0xA0);
+        Color fillColor = Color.valueOf(0, 0.56f, 0.54f, 0.63f); // RGBA
         MapPolygon mapPolygon = new MapPolygon(geoPolygon, fillColor);
 
         return mapPolygon;

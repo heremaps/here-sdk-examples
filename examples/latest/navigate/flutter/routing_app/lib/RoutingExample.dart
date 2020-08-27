@@ -102,7 +102,7 @@ class RoutingExample {
 
     double widthInPixels = 20;
     MapPolyline routeMapPolyline = MapPolyline(
-        routeGeoPolyline, widthInPixels, Color.withAlpha(0, 144, 138, 160));
+        routeGeoPolyline, widthInPixels, Color.fromARGB(160, 0, 144, 138));
 
     _hereMapController.mapScene.addMapPolyline(routeMapPolyline);
     _mapPolylines.add(routeMapPolyline);
