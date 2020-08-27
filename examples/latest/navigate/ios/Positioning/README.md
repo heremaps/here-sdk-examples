@@ -1,4 +1,4 @@
-The Positioning example app shows how to use location engine and visualize your current location on a map.
+The Positioning example app shows how to use the location engine to visualize your current location on a map. You can find how this is done in [PositioningExample.swift](Positioning/PositioningExample.swift).
 
 Build instructions:
 -------------------

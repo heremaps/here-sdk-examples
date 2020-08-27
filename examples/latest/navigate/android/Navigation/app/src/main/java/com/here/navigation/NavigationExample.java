@@ -23,9 +23,9 @@ import android.content.Context;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import com.google.android.material.snackbar.Snackbar;
 import android.util.Log;
 
 import com.here.sdk.core.GeoCoordinates;
@@ -90,7 +90,7 @@ public class NavigationExample {
         navigationArrow = createArrow(R.drawable.arrow_blue);
         trackingArrow = createArrow(R.drawable.arrow_green);
 
-        locationProvider = new LocationProviderImplementation(context);
+        locationProvider = new LocationProviderImplementation();
         locationProvider.start();
 
         try {
@@ -241,8 +241,9 @@ public class NavigationExample {
         navigator.setRouteDeviationListener(new RouteDeviationListener() {
             @Override
             public void onRouteDeviation(@NonNull RouteDeviation routeDeviation) {
-                if (routeDeviation.lastLocationOnRoute == null) {
-                    Log.d(TAG, "User was never following the route.");
+                Route route = navigator.getRoute();
+                if (route == null) {
+                    // May happen in rare cases when route was set to null inbetween.
                     return;
                 }
 
@@ -251,12 +252,18 @@ public class NavigationExample {
                 GeoCoordinates currentGeoCoordinates = currentMapMatchedLocation == null ?
                         routeDeviation.currentLocation.originalLocation.coordinates : currentMapMatchedLocation.coordinates;
 
-                // Get last geographic coordinates.
-                MapMatchedLocation lastMapMatchedLocationOnRoute = routeDeviation.lastLocationOnRoute.mapMatchedLocation;
-                GeoCoordinates lastGeoCoordinates = lastMapMatchedLocationOnRoute == null ?
-                        routeDeviation.lastLocationOnRoute.originalLocation.coordinates : lastMapMatchedLocationOnRoute.coordinates;
+                // Get last geographic coordinates on route.
+                GeoCoordinates lastGeoCoordinatesOnRoute;
+                if (routeDeviation.lastLocationOnRoute != null) {
+                    MapMatchedLocation lastMapMatchedLocationOnRoute = routeDeviation.lastLocationOnRoute.mapMatchedLocation;
+                    lastGeoCoordinatesOnRoute = lastMapMatchedLocationOnRoute == null ?
+                            routeDeviation.lastLocationOnRoute.originalLocation.coordinates : lastMapMatchedLocationOnRoute.coordinates;
+                } else {
+                    Log.d(TAG, "User was never following the route. So, we take the start of the route instead.");
+                    lastGeoCoordinatesOnRoute = route.getSections().get(0).getDeparture().mapMatchedCoordinates;
+                }
 
-                int distanceInMeters = (int) currentGeoCoordinates.distanceTo(lastGeoCoordinates);
+                int distanceInMeters = (int) currentGeoCoordinates.distanceTo(lastGeoCoordinatesOnRoute);
                 Log.d(TAG, "RouteDeviation in meters is " + distanceInMeters);
             }
         });
@@ -281,10 +288,11 @@ public class NavigationExample {
     }
 
     public void startNavigation(Route route, boolean isSimulated) {
-        navigator.setRoute(route);
-
         setupSpeedWarnings();
         setupVoiceGuidance();
+
+        // Switches to navigation mode when no route was set before, otherwise navigation mode is kept.
+        navigator.setRoute(route);
 
         if (isSimulated) {
             locationProvider.enableRoutePlayback(route);
@@ -297,6 +305,7 @@ public class NavigationExample {
     }
 
     public void stopNavigation() {
+        // Switches to tracking mode when a route was set before, otherwise tracking mode is kept.
         navigator.setRoute(null);
         mapView.getMapScene().removeMapMarker(navigationArrow);
     }

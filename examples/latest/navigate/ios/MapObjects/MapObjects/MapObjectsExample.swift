@@ -18,6 +18,7 @@
  */
 
 import heresdk
+import UIKit
 
 class MapObjectsExample {
 
@@ -65,7 +66,7 @@ class MapObjectsExample {
 
         // We are sure that the number of vertices is greater than two, so it will not crash.
         let geoPolyline = try! GeoPolyline(vertices: coordinates)
-        let lineColor = Color(red: 0x00, green: 0x90, blue: 0x8A, alpha: 0xA0)
+        let lineColor = UIColor(red: 0, green: 0.56, blue: 0.54, alpha: 0.63)
         let mapPolyline = MapPolyline(geometry: geoPolyline,
                                       widthInPixels: 30,
                                       color: lineColor)
@@ -81,7 +82,7 @@ class MapObjectsExample {
 
         // We are sure that the number of vertices is greater than three, so it will not crash.
         let geoPolygon = try! GeoPolygon(vertices: coordinates)
-        let fillColor = Color(red: 0x00, green: 0x90, blue: 0x8A, alpha: 0xA0)
+        let fillColor = UIColor(red: 0, green: 0.56, blue: 0.54, alpha: 0.63)
         let mapPolygon = MapPolygon(geometry: geoPolygon, color: fillColor)
 
         return mapPolygon
@@ -92,7 +93,7 @@ class MapObjectsExample {
                                   radiusInMeters: 300.0)
 
         let geoPolygon = GeoPolygon(geoCircle: geoCircle)
-        let fillColor = Color(red: 0x00, green: 0x90, blue: 0x8A, alpha: 0xA0)
+        let fillColor = UIColor(red: 0, green: 0.56, blue: 0.54, alpha: 0.63)
         let mapPolygon = MapPolygon(geometry: geoPolygon, color: fillColor)
 
         return mapPolygon

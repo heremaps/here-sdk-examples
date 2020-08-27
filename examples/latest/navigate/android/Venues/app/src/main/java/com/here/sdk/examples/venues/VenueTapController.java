@@ -45,10 +45,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class VenueTapController {
-    private static Color SELECTED_COLOR = new Color((short) 72, (short)187, (short)245);
-    private static Color SELECTED_OUTLINE_COLOR = new Color((short) 30, (short)170, (short)235);
-    private static Color SELECTED_TEXT_COLOR = new Color((short) 255, (short)255, (short)255);
-    private static Color SELECTED_TEXT_OUTLINE_COLOR = new Color((short) 0, (short)130, (short)195);
+    private static Color SELECTED_COLOR = Color.valueOf(0.282f, 0.733f, 0.96f);
+    private static Color SELECTED_OUTLINE_COLOR = Color.valueOf(0.118f, 0.667f, 0.921f);
+    private static Color SELECTED_TEXT_COLOR = Color.valueOf(1.0f, 1.0f, 1.0f);
+    private static Color SELECTED_TEXT_OUTLINE_COLOR = Color.valueOf(0.f, 0.51f, 0.765f);
 
     private VenueEngine venueEngine;
     private MapView mapView;

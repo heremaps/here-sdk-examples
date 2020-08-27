@@ -24,9 +24,9 @@ import android.app.Activity;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
 
@@ -73,6 +73,10 @@ public class PermissionsRequestor {
                             // Exclude CHANGE_NETWORK_STATE as it does not require explicit user approval.
                             // This workaround is needed for devices running Android 6.0.0,
                             // see https://issuetracker.google.com/issues/37067994
+                            continue;
+                        }
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q &&
+                                permission.equals(Manifest.permission.ACTIVITY_RECOGNITION)) {
                             continue;
                         }
                         permissionList.add(permission);
