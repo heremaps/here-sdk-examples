@@ -91,8 +91,8 @@ class GestureMapAnimator {
         let normalizedX = (1.0 / mapViewWidthInPixels) * origin.x
         let normalizedY = (1.0 / mapViewHeightInPixels) * origin.y
 
-        let transformCenter = Anchor2D(horizontal: Float(normalizedX),
-                                       vertical: Float(normalizedY))
+        let transformCenter = Anchor2D(horizontal: normalizedX,
+                                       vertical: normalizedY)
         return transformCenter
     }
 }

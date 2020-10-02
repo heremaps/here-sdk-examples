@@ -23,11 +23,9 @@ import android.content.Context;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import com.google.android.material.snackbar.Snackbar;
 import android.util.Log;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.LanguageCode;
 import com.here.sdk.core.UnitSystem;
@@ -63,6 +61,9 @@ import com.here.sdk.routing.Route;
 import java.util.List;
 import java.util.Locale;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import static com.here.navigation.RoutingExample.DEFAULT_DISTANCE_IN_METERS;
 import static com.here.navigation.RoutingExample.DEFAULT_MAP_CENTER;
 
@@ -90,15 +91,17 @@ public class NavigationExample {
         navigationArrow = createArrow(R.drawable.arrow_blue);
         trackingArrow = createArrow(R.drawable.arrow_green);
 
-        locationProvider = new LocationProviderImplementation();
-        locationProvider.start();
-
         try {
             // Without a route set, this starts tracking mode.
-            navigator = new Navigator(locationProvider);
+            navigator = new Navigator();
         } catch (InstantiationErrorException e) {
             throw new RuntimeException("Initialization of Navigator failed: " + e.error.name());
         }
+
+        locationProvider = new LocationProviderImplementation();
+        // Set navigator as listener to receive locations from HERE Positioning or from LocationSimulator.
+        locationProvider.setListener(navigator);
+        locationProvider.start();
 
         // A helper class for TTS.
         voiceAssistant = new VoiceAssistant(context);

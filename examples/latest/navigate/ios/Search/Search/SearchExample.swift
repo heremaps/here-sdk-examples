@@ -305,4 +305,5 @@ class SearchExample: TapDelegate,
         }
 
         mapMarkers.removeAll()
-    }}
+    }
+}

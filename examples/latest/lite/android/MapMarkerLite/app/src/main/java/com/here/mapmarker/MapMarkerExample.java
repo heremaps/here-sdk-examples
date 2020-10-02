@@ -91,7 +91,7 @@ public class MapMarkerExample {
     }
 
     private GeoCoordinates createRandomLatLonInViewport() {
-        GeoBox geoBox = mapView.getCamera().getBoundingRect();
+        GeoBox geoBox = mapView.getCamera().getBoundingBox();
         GeoCoordinates northEast = geoBox.northEastCorner;
         GeoCoordinates southWest = geoBox.southWestCorner;
 

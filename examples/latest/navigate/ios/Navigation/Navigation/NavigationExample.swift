@@ -46,15 +46,17 @@ class NavigationExample : NavigableLocationDelegate,
         self.viewController = viewController
         self.mapView = mapView
 
-        locationProvider = LocationProviderImplementation()
-        locationProvider.start()
-
         do {
             // Without a route set, this starts tracking mode.
-            try navigator = Navigator(locationProvider: locationProvider)
+            try navigator = Navigator()
         } catch let engineInstantiationError {
             fatalError("Failed to initialize navigator. Cause: \(engineInstantiationError)")
         }
+
+        locationProvider = LocationProviderImplementation()
+        // Set navigator as delegate to receive locations from HERE Positioning or from LocationSimulator.
+        locationProvider.delegate = navigator
+        locationProvider.start()
 
         // A helper class for TTS.
         voiceAssistant = VoiceAssistant()
