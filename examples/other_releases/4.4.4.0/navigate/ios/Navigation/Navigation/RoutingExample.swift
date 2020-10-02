@@ -1,0 +1,291 @@
+/*
+ * Copyright (C) 2019-2020 HERE Europe B.V.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ * License-Filename: LICENSE
+ */
+
+import heresdk
+import UIKit
+
+enum ConstantsEnum {
+    static let DEFAULT_MAP_CENTER = GeoCoordinates(latitude: 52.520798, longitude: 13.409408)
+    static let DEFAULT_DISTANCE_IN_METERS: Double = 1000 * 2
+}
+
+// Allows to calculate a route and start navigation, using either platform positioning or
+// simulated locations.
+class RoutingExample : LongPressDelegate {
+
+    private let viewController: UIViewController
+    private let mapView: MapView
+    private let routingEngine: RoutingEngine
+    private let navigationExample: NavigationExample
+    private var mapMarkers = [MapMarker]()
+    private var mapPolylineList = [MapPolyline]()
+    private var startGeoCoordinates: GeoCoordinates?
+    private var destinationGeoCoordinates: GeoCoordinates?
+    private var isLongpressDestination = false
+
+    init(viewController: UIViewController, mapView: MapView) {
+        self.viewController = viewController
+        self.mapView = mapView
+        let camera = mapView.camera
+        camera.lookAt(point: ConstantsEnum.DEFAULT_MAP_CENTER,
+                      distanceInMeters: ConstantsEnum.DEFAULT_DISTANCE_IN_METERS)
+
+        do {
+            try routingEngine = RoutingEngine()
+        } catch let engineInstantiationError {
+            fatalError("Failed to initialize routing engine. Cause: \(engineInstantiationError)")
+        }
+
+        navigationExample = NavigationExample(viewController: viewController,
+                                              mapView: mapView)
+        navigationExample.startTracking()
+
+        setLongPressGestureHandler()
+        showMessage("Long press to set a destination or use a random one.")
+    }
+
+    // Calculate a route and start navigation using a location simulator.
+    // Start is map center and destination location is set random within viewport,
+    // unless a destination is set via long press.
+    func addRouteSimulatedLocationButtonClicked() {
+        calculateRoute(isSimulated: true)
+    }
+
+    // Calculate a route and start navigation using locations from device.
+    // Start is current location and destination is set random within viewport,
+    // unless a destination is set via long press.
+    func addRouteDeviceLocationButtonClicked() {
+        calculateRoute(isSimulated: false)
+    }
+
+    func clearMapButtonClicked() {
+        clearMap()
+        isLongpressDestination = false
+    }
+
+    private func calculateRoute(isSimulated: Bool) {
+        clearMap()
+
+        if !determineRouteWaypoints(isSimulated: isSimulated) {
+            return
+        }
+
+        let carOptions = CarOptions()
+        routingEngine.calculateRoute(with: [Waypoint(coordinates: startGeoCoordinates!),
+                                            Waypoint(coordinates: destinationGeoCoordinates!)],
+                                     carOptions: carOptions) { (routingError, routes) in
+
+                                        if let error = routingError {
+                                            self.showDialog(title: "Error while calculating a route:", message: "\(error)")
+                                            return
+                                        }
+
+                                        // When routingError is nil, routes is guaranteed to contain at least one route.
+                                        let route = routes!.first
+                                        self.showRouteOnMap(route: route!)
+                                        self.showRouteDetails(route: route!, isSimulated: isSimulated)
+        }
+    }
+
+    private func determineRouteWaypoints(isSimulated: Bool) -> Bool {
+        if !isSimulated && navigationExample.getLastKnownGeoCoordinates() == nil {
+            showDialog(title: "Error", message: "No location found.")
+            return false
+        }
+
+        if isSimulated {
+            startGeoCoordinates = getMapViewCenter()
+        } else {
+            startGeoCoordinates = navigationExample.getLastKnownGeoCoordinates()
+            mapView.camera.lookAt(point: startGeoCoordinates!)
+        }
+
+        if !isLongpressDestination {
+            destinationGeoCoordinates = createRandomGeoCoordinatesAroundMapCenter()
+        }
+
+        // Add circles to indicate start and destination of route.
+        addCircleMapMarker(geoCoordinates: startGeoCoordinates!, imageName: "green_dot.png")
+        addCircleMapMarker(geoCoordinates: destinationGeoCoordinates!, imageName: "green_dot.png")
+
+        return true
+    }
+
+    private func showRouteDetails(route: Route, isSimulated: Bool) {
+        let estimatedTravelTimeInSeconds = route.durationInSeconds
+        let lengthInMeters = route.lengthInMeters
+
+        let routeDetails =
+            "Travel Time: " + formatTime(sec: estimatedTravelTimeInSeconds)
+                + ", Length: " + formatLength(meters: lengthInMeters)
+
+        showStartNavigationDialog(title: "Route Details",
+                                  message: routeDetails,
+                                  route: route,
+                                  isSimulated: isSimulated)
+    }
+
+    private func formatTime(sec: Int32) -> String {
+        let hours: Int32 = sec / 3600
+        let minutes: Int32 = (sec % 3600) / 60
+
+        return "\(hours):\(minutes)"
+    }
+
+    private func formatLength(meters: Int32) -> String {
+        let kilometers: Int32 = meters / 1000
+        let remainingMeters: Int32 = meters % 1000
+
+        return "\(kilometers).\(remainingMeters) km"
+    }
+
+    private func showRouteOnMap(route: Route) {
+        // Show route as polyline.
+        let routeGeoPolyline = try! GeoPolyline(vertices: route.polyline)
+        let routeMapPolyline = MapPolyline(geometry: routeGeoPolyline,
+                                           widthInPixels: 20,
+                                           color: UIColor(red: 0,
+                                                          green: 0.56,
+                                                          blue: 0.54,
+                                                          alpha: 0.63))
+        mapView.mapScene.addMapPolyline(routeMapPolyline)
+        mapPolylineList.append(routeMapPolyline)
+    }
+
+    func clearMap() {
+        clearWaypointMapMarker()
+        clearRoute()
+
+        navigationExample.stopNavigation()
+        navigationExample.startTracking()
+    }
+
+    private func clearWaypointMapMarker() {
+        for mapMarker in mapMarkers {
+            mapView.mapScene.removeMapMarker(mapMarker)
+        }
+        mapMarkers.removeAll()
+    }
+
+    private func clearRoute() {
+        for mapPolyline in mapPolylineList {
+            mapView.mapScene.removeMapPolyline(mapPolyline)
+        }
+        mapPolylineList.removeAll()
+    }
+
+    private func setLongPressGestureHandler() {
+        mapView.gestures.longPressDelegate = self
+    }
+
+    // Conform to LongPressDelegate protocol.
+    func onLongPress(state: GestureState, origin: Point2D) {
+        guard let geoCoordinates = mapView.viewToGeoCoordinates(viewCoordinates: origin) else {
+            print("Warning: Long press coordinate is not on map view.")
+            return
+        }
+
+        if state == GestureState.begin {
+            clearWaypointMapMarker()
+            clearRoute()
+            destinationGeoCoordinates = geoCoordinates
+            addCircleMapMarker(geoCoordinates: destinationGeoCoordinates!, imageName: "green_dot.png")
+            isLongpressDestination = true
+            showMessage("New long press destination set.")
+        }
+    }
+
+    private func createRandomGeoCoordinatesAroundMapCenter() -> GeoCoordinates {
+        let centerGeoCoordinates = getMapViewCenter()
+        let lat = centerGeoCoordinates.latitude
+        let lon = centerGeoCoordinates.longitude
+        return GeoCoordinates(latitude: getRandom(min: lat - 0.02,
+                                                  max: lat + 0.02),
+                              longitude: getRandom(min: lon - 0.02,
+                                                   max: lon + 0.02))
+    }
+
+    private func getRandom(min: Double, max: Double) -> Double {
+        return Double.random(in: min ... max)
+    }
+
+    private func getMapViewCenter() -> GeoCoordinates {
+        return mapView.camera.state.targetCoordinates
+    }
+
+    private func addCircleMapMarker(geoCoordinates: GeoCoordinates, imageName: String) {
+        guard
+            let image = UIImage(named: imageName),
+            let imageData = image.pngData() else {
+                return
+        }
+
+        let mapImage = MapImage(pixelData: imageData,
+                                imageFormat: ImageFormat.png)
+        let mapMarker = MapMarker(at: geoCoordinates,
+                                  image: mapImage)
+        mapView.mapScene.addMapMarker(mapMarker)
+        mapMarkers.append(mapMarker)
+    }
+
+    private func showStartNavigationDialog(title: String,
+                                           message: String,
+                                           route: Route,
+                                           isSimulated: Bool) {
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let buttonText = isSimulated ? "Start navigation (simulated)" : "Start navigation (device location)"
+        alertController.addAction(UIAlertAction(title: buttonText, style: .default, handler: { (alertAction) -> Void in
+            self.navigationExample.stopTracking()
+            self.navigationExample.startNavigation(route: route, isSimulated: isSimulated)
+        }))
+        alertController.addAction(UIAlertAction(title: "Cancel", style: .default))
+        viewController.present(alertController, animated: true)
+    }
+
+    private func showDialog(title: String, message: String) {
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: "OK", style: .default))
+        viewController.present(alertController, animated: true)
+    }
+
+    private var messageTextView = UITextView()
+    private func showMessage(_ message: String) {
+        messageTextView.text = message
+        messageTextView.textColor = .white
+        messageTextView.backgroundColor = UIColor(red: 0, green: 144 / 255, blue: 138 / 255, alpha: 1)
+        messageTextView.layer.cornerRadius = 8
+        messageTextView.isEditable = false
+        messageTextView.textAlignment = NSTextAlignment.center
+        messageTextView.font = .systemFont(ofSize: 14)
+        messageTextView.frame = CGRect(x: 0, y: 0, width: mapView.frame.width * 0.9, height: 50)
+        messageTextView.center = CGPoint(x: mapView.frame.width * 0.5, y: mapView.frame.height * 0.9)
+
+        UIView.transition(with: mapView, duration: 0.2, options: [.transitionCrossDissolve], animations: {
+            self.mapView.addSubview(self.messageTextView)
+        })
+
+        // Hide message after 5 seconds.
+        let messageDurationInSeconds: Double = 5
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + messageDurationInSeconds) {
+            UIView.transition(with: self.mapView, duration: 0.2, options: [.transitionCrossDissolve], animations: {
+                self.messageTextView.removeFromSuperview()
+            })
+        }
+    }
+}

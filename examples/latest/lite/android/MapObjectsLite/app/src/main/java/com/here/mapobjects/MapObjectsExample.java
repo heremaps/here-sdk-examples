@@ -86,7 +86,7 @@ public class MapObjectsExample {
         }
 
         MapPolylineStyle mapPolylineStyle = new MapPolylineStyle();
-        mapPolylineStyle.setWidth(20);
+        mapPolylineStyle.setWidthInPixels(20);
         mapPolylineStyle.setColor(0x00908AA0, PixelFormat.RGBA_8888);
         MapPolyline mapPolyline = new MapPolyline(geoPolyline, mapPolylineStyle);
 

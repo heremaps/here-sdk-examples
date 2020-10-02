@@ -73,22 +73,19 @@ class ViewController: UIViewController {
         case .notDetermined:
             // Not determined, request for authorization.
             locationManager.requestAlwaysAuthorization()
-            return
-
+            break
         case .denied, .restricted:
             // Denied or restricted, request for user action.
-            let alert = UIAlertController(title: "Location Services are disabled", message: "Please enable Location Services in your device settings.", preferredStyle: .alert)
+            let alert = UIAlertController(title: "Location services are disabled", message: "Please enable location services in your device settings.", preferredStyle: .alert)
             let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
             alert.addAction(okAction)
             present(alert, animated: true, completion: nil)
-            return
-
+            break
         case .authorizedAlways, .authorizedWhenInUse:
             // Authorized, ok to continue.
             break
-
-        @unknown default:
-            fatalError("Unknown location authorization status: \(locationAuthorizationStatus)")
+        default:
+            fatalError("Unknown location authorization status: \(locationAuthorizationStatus).")
         }
 
         guard self.positioningExample == nil else {

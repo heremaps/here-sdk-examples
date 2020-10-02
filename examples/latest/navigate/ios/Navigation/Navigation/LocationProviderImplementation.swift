@@ -20,33 +20,20 @@
 import heresdk
 import UIKit
 
-// A class that conforms the HERE SDK's LocationProvider and LocationDelegate protocol.
-// Both protocols are required by the Navigator to receive location updates from either the device or the LocationSimulator.
 // This class allows to switch between simulated location events (requires a route) and real location updates using
 // the advanced capabilities of the HERE positioning features.
-class LocationProviderImplementation : LocationProvider,
-                                       LocationDelegate,
-                                       // Needed by HERE SDK positioning to listen for location updates.
-                                       LocationUpdateDelegate {
+class LocationProviderImplementation : // Used to receive events from HERE Positioning.
+                                       LocationUpdateDelegate,
+                                       // Used to receive events from LocationSimulator.
+                                       LocationDelegate {
 
-    // Conforms to the LocationProvider protocol.
-    // Set by the Navigator instance to listen to location updates.
-    // Note: Must be declared as strong reference.
+    // Set by anyone who wants to listen to location updates from either HERE Positioning or LocationSimulator.
     var delegate: LocationDelegate?
 
     var lastKnownLocation: Location?
     private let herePositioningProvider: HEREPositioningProvider
     private var locationSimulator: LocationSimulator?
     private var isSimulated: Bool = false
-
-    // A loop to check for timeouts between location events.
-    private lazy var timeoutDisplayLink: CADisplayLink = {
-        let displayLink = CADisplayLink(target: self,
-                                        selector: #selector(timeoutLoop))
-        displayLink.preferredFramesPerSecond = 2
-        displayLink.add(to: .current, forMode: .common)
-        return displayLink
-    }()
 
     init() {
         herePositioningProvider = HEREPositioningProvider()
@@ -73,16 +60,12 @@ class LocationProviderImplementation : LocationProvider,
         isSimulated = false;
     }
 
-    // Conforms to the LocationProvider protocol.
     func start() {
         herePositioningProvider.startLocating(locationUpdateDelegate: self)
-        timeoutDisplayLink.isPaused = false
     }
 
-    // Conforms to the LocationProvider protocol.
     func stop() {
         herePositioningProvider.stopLocating()
-        timeoutDisplayLink.isPaused = true
     }
 
     // Conforms to the LocationUpdateDelegate protocol to receive location events from the device.
@@ -92,40 +75,13 @@ class LocationProviderImplementation : LocationProvider,
         }
     }
 
-    // Use this optionally to hook in additional delegates.
-    func addLocationUpdateDelegate(locationUpdateDelegate: LocationUpdateDelegate) {
-        herePositioningProvider.addLocationUpdateDelegate(locationUpdateDelegate: locationUpdateDelegate)
-    }
-
-    func removeLocationUpdateDelegate(locationUpdateDelegate: LocationUpdateDelegate) {
-        herePositioningProvider.removeLocationUpdateDelegate(locationUpdateDelegate: locationUpdateDelegate)
-    }
-
     private func handleLocationUpdate(location: Location) {
-        // The GPS location we received from either the platform or the LocationSimulator is forwarded to the Navigator.
+        // The GPS location we received from either the platform or the LocationSimulator is forwarded to the LocationDelegate.
         delegate?.onLocationUpdated(location)
         lastKnownLocation = location
     }
 
-    @objc private func timeoutLoop() {
-        if isSimulated {
-            // LocationSimulator already includes simulated timeout events.
-            return
-        }
-
-        if let lastKnownLocation = lastKnownLocation {
-            let timeIntervalInSeconds = lastKnownLocation.timestamp.timeIntervalSinceNow * -1
-            if timeIntervalInSeconds > 2 {
-                //If last location is older than 2 seconds we forward a timeout event to Navigator.
-                delegate?.onLocationTimeout()
-                print("GPS timeout detected: \(timeIntervalInSeconds)")
-            }
-        }
-    }
-
     // Provides fake GPS signals based on the route geometry.
-    // LocationSimulator can also be set directly to the Navigator, but here we want to have the flexibility to
-    // switch between real and simulated GPS data.
     private func createLocationSimulator(route: Route) -> LocationSimulator {
         let locationSimulatorOptions = LocationSimulatorOptions(speedFactor: 10,
                                                                 notificationIntervalInMilliseconds: 100)
@@ -144,17 +100,15 @@ class LocationProviderImplementation : LocationProvider,
         return locationSimulator
     }
 
-    // Conforms to the LocationDelegate, which is required to send notifications from the LocationSimulator.
+    // Conforms to the LocationDelegate protocol, which is required to send notifications from the LocationSimulator.
     func onLocationUpdated(_ location: Location) {
         if isSimulated {
             handleLocationUpdate(location: location)
         }
     }
 
-    // Conforms to the LocationDelegate, which is required to send notifications from the LocationSimulator.
+    // Conforms to the LocationDelegate protocol.
     func onLocationTimeout() {
-        if isSimulated {
-            delegate?.onLocationTimeout()
-        }
+        // Note: This method is deprecated and will be removed from the LocationDelegate protocol with release HERE SDK v4.7.0.
     }
 }

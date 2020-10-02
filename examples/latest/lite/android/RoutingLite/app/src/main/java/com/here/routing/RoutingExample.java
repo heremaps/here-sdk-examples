@@ -142,7 +142,7 @@ public class RoutingExample {
         }
         MapPolylineStyle mapPolylineStyle = new MapPolylineStyle();
         mapPolylineStyle.setColor(0x00908AA0, PixelFormat.RGBA_8888);
-        mapPolylineStyle.setWidth(10);
+        mapPolylineStyle.setWidthInPixels(10);
         MapPolyline routeMapPolyline = new MapPolyline(routeGeoPolyline, mapPolylineStyle);
         mapView.getMapScene().addMapPolyline(routeMapPolyline);
         mapPolylines.add(routeMapPolyline);

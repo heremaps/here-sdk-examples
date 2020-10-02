@@ -21,7 +21,7 @@ For an overview of the existing features, please check the _Developer's Guide_ f
 
 > For now, the _Navigate Edition_ is only available upon request. Please contact your HERE representative to receive access including a set of evaluation credentials.
 
-## List of Available Example Apps (Version 4.4.4.0)
+## List of Available Example Apps (Version 4.5.0.0)
 In this repository you can find the [latest example apps](examples/latest) that show key features of the HERE SDK in ready-to-use applications:
 
 - **HelloMap**: Shows the classic 'Hello World'.
@@ -32,11 +32,12 @@ In this repository you can find the [latest example apps](examples/latest) that 
 - **MapOverlays** / **MapViewPins**: Shows how to add standard platform views to the map.
 - **Routing**: Shows how to calculate routes and add them to the map.
 - **Navigation**: Shows turn-by-turn navigation and tracking. Exclusively available for the _Navigate Edition_.
-- **Positioning**: Shows how to integrate HERE Positioning. Exclusively available for the _Navigate Edition_ (iOS and Android only).
+- **Positioning**: Shows how to integrate HERE Positioning. Exclusively available for the _Navigate Edition_ (the example app is available for iOS and Android only).
 - **Search**: Shows how to search POIs and add them to the map.
 - **Traffic**: Shows how to search for real-time traffic and how to visualize it on the map.
 - **StandAloneEngine**: Shows how to use an engine without a map view.
 - **Venues**: Shows how to integrate private venues. Exclusively available for the _Navigate Edition_.
+- **UnitTesting**: Shows how to mock HERE SDK classes when writing unit tests (Android only, the example app is available for the _Explore Edition_ and the _Navigate Edition_).
 
 Most example apps contain a class named "XY-Example" where XY stands for the feature, which is in most cases equal to the name of the app. If you are looking for example code that shows how to use a certain HERE SDK feature, then please look for this class as it contains the most interesting parts. Note that the overall app architecture is kept as simple as possible to not shadow the parts in focus.
 

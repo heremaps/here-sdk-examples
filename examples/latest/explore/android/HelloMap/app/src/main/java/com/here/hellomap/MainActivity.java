@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
             public void onMapViewReady() {
                 // This will be called each time after this activity is resumed.
                 // It will not be called before the first map scene was loaded.
-                // Any code that requires map data may not work as expected.
+                // Any code that requires map data may not work as expected beforehand.
                 Log.d(TAG, "HERE Rendering Engine attached.");
             }
         });

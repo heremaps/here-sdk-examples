@@ -52,19 +52,19 @@ class PositioningExample: LocationUpdateDelegate, LocationStatusDelegate {
             addMyLocationToMap(geoCoordinates: PositioningExample.defaultGeoCoordinates,
                                accuracyInMeters: 0.0)
         }
-        let status = startLocating()
-        print("Start locating status: \(status)")
+
+        startLocating()
     }
 
     deinit {
         stopLocating()
     }
 
-    private func startLocating() -> LocationEngineStatus {
+    private func startLocating() {
         // Set delegates and start location engine.
         locationEngine.addLocationStatusDelegate(locationStatusDelegate: self)
         locationEngine.addLocationUpdateDelegate(locationUpdateDelegate: self)
-        return locationEngine.start(locationAccuracy: .bestAvailable)
+        _ = locationEngine.start(locationAccuracy: .bestAvailable)
     }
 
     public func stopLocating() {
@@ -121,5 +121,4 @@ class PositioningExample: LocationUpdateDelegate, LocationStatusDelegate {
         // Point camera to current location.
         mapCamera.lookAt(point: geoCoordinates)
     }
-
 }
