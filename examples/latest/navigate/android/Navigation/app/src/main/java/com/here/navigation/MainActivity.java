@@ -32,11 +32,13 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 
 import com.here.sdk.mapview.MapError;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
+import com.here.sdk.mapview.WatermarkPlacement;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -44,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
 
     private PermissionsRequestor permissionsRequestor;
     private MapView mapView;
-    private RoutingExample routingExample;
+    private App app;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,12 +54,19 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
 
+        // Keeping the screen alive is essential for a car navigation app.
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         Toolbar myToolbar = findViewById(R.id.toolbar);
         setSupportActionBar(myToolbar);
 
         // Get a MapView instance from layout.
         mapView = findViewById(R.id.map_view);
         mapView.onCreate(savedInstanceState);
+
+        // Reposition HERE logo, so it's not hidden by Android's Snackbar.
+        long bottomCenterMarginInPixels = (long) (getResources().getDisplayMetrics().density * 80);
+        mapView.setWatermarkPosition(WatermarkPlacement.BOTTOM_CENTER, bottomCenterMarginInPixels);
 
         handleAndroidPermissions();
     }
@@ -110,7 +119,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onLoadScene(@Nullable MapError mapError) {
                 if (mapError == null) {
-                    routingExample = new RoutingExample(MainActivity.this, mapView);
+                    // Start the app that contains the logic to calculate routes & start TBT guidance.
+                    app = new App(MainActivity.this, mapView);
+
+                    // Enable traffic flows by default.
+                    mapView.getMapScene().setLayerState(MapScene.Layers.TRAFFIC_FLOW, MapScene.LayerState.VISIBLE);
                 } else {
                     Log.d(TAG, "Loading map failed: " + mapError.name());
                 }
@@ -119,15 +132,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void addRouteSimulatedLocationButtonClicked(View view) {
-        routingExample.addRouteSimulatedLocation();
+        app.addRouteSimulatedLocation();
     }
 
     public void addRouteDeviceLocationButtonClicked(View view) {
-        routingExample.addRouteDeviceLocation();
+        app.addRouteDeviceLocation();
     }
 
     public void clearMapButtonClicked(View view) {
-        routingExample.clearMapButtonPressed();
+        app.clearMapButtonPressed();
     }
 
     @Override

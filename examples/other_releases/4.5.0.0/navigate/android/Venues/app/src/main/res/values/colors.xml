@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <!-- level switcher -->
+    <color name="level_background_normal">#CCFFFFFF</color>
+    <color name="level_background_selected">#FF888888</color>
+    <color name="level_text_color_normal">#FF444444</color>
+    <color name="level_text_color_pressed">#FFFFFFFF</color>
+</resources>

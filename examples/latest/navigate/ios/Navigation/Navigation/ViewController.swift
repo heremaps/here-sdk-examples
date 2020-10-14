@@ -23,7 +23,7 @@ import UIKit
 final class ViewController: UIViewController {
 
     @IBOutlet private var mapView: MapView!
-    private var routingExample: RoutingExample!
+    private var app: App!
     private var isMapSceneLoaded = false
 
     override func viewDidLoad() {
@@ -37,26 +37,29 @@ final class ViewController: UIViewController {
             return
         }
 
-        // Start the example.
-        self.routingExample = RoutingExample(viewController: self, mapView: self.mapView!)
+        // Start the app that contains the logic to calculate routes & start TBT guidance.
+        self.app = App(viewController: self, mapView: self.mapView!)
         self.isMapSceneLoaded = true
+
+        // Enable traffic flows by default.
+        mapView.mapScene.setLayerState(layerName: MapScene.Layers.trafficFlow, newState: MapScene.LayerState.visible)
     }
 
     @IBAction func onAddRouteSimulatedLocationButtonClicked(_ sender: Any) {
         if isMapSceneLoaded {
-            routingExample.addRouteSimulatedLocationButtonClicked()
+            app.addRouteSimulatedLocationButtonClicked()
         }
     }
 
     @IBAction func onAddRouteDeviceLocationButtonClicked(_ sender: Any) {
         if isMapSceneLoaded {
-            routingExample.addRouteDeviceLocationButtonClicked()
+            app.addRouteDeviceLocationButtonClicked()
         }
     }
 
     @IBAction func onClearMapButtonClicked(_ sender: Any) {
         if isMapSceneLoaded {
-            routingExample.clearMap()
+            app.clearMap()
         }
     }
 

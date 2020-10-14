@@ -83,8 +83,8 @@ class LocationProviderImplementation : // Used to receive events from HERE Posit
 
     // Provides fake GPS signals based on the route geometry.
     private func createLocationSimulator(route: Route) -> LocationSimulator {
-        let locationSimulatorOptions = LocationSimulatorOptions(speedFactor: 10,
-                                                                notificationIntervalInMilliseconds: 100)
+        let locationSimulatorOptions = LocationSimulatorOptions(speedFactor: 3,
+                                                                notificationIntervalInMilliseconds: 500)
         let locationSimulator: LocationSimulator
 
         do {

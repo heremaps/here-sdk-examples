@@ -44,7 +44,6 @@ import com.here.sdk.navigation.Milestone;
 import com.here.sdk.navigation.MilestoneReachedListener;
 import com.here.sdk.navigation.NavigableLocation;
 import com.here.sdk.navigation.NavigableLocationListener;
-import com.here.sdk.navigation.Navigator;
 import com.here.sdk.navigation.RouteDeviation;
 import com.here.sdk.navigation.RouteDeviationListener;
 import com.here.sdk.navigation.RouteProgress;
@@ -54,6 +53,7 @@ import com.here.sdk.navigation.SpeedLimitOffset;
 import com.here.sdk.navigation.SpeedWarningListener;
 import com.here.sdk.navigation.SpeedWarningOptions;
 import com.here.sdk.navigation.SpeedWarningStatus;
+import com.here.sdk.navigation.VisualNavigator;
 import com.here.sdk.routing.Maneuver;
 import com.here.sdk.routing.ManeuverAction;
 import com.here.sdk.routing.Route;
@@ -64,10 +64,10 @@ import java.util.Locale;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import static com.here.navigation.RoutingExample.DEFAULT_DISTANCE_IN_METERS;
-import static com.here.navigation.RoutingExample.DEFAULT_MAP_CENTER;
+import static com.here.navigation.App.DEFAULT_DISTANCE_IN_METERS;
+import static com.here.navigation.App.DEFAULT_MAP_CENTER;
 
-// Shows how to start and stop turn-by-turn navigation.
+// Shows how to start and stop turn-by-turn navigation on a car route.
 // By default, tracking mode is enabled. When navigation is stopped, tracking mode is enabled again.
 // The preferred device language determines the language for voice notifications used for TTS.
 // (Make sure to set language + region in device settings.)
@@ -78,35 +78,43 @@ public class NavigationExample {
     private final Context context;
     private final MapView mapView;
     private final LocationProviderImplementation locationProvider;
-    private final Navigator navigator;
+    private final VisualNavigator visualNavigator;
     private final MapMarker navigationArrow;
     private final MapMarker trackingArrow;
     private final VoiceAssistant voiceAssistant;
+    private final RouteCalculator routeCalculator;
     private int previousManeuverIndex = -1;
+    private Snackbar snackbar;
 
     public NavigationExample(Context context, MapView mapView) {
         this.context = context;
         this.mapView = mapView;
+
+        // Needed for rerouting, when user leaves route.
+        routeCalculator = new RouteCalculator();
 
         navigationArrow = createArrow(R.drawable.arrow_blue);
         trackingArrow = createArrow(R.drawable.arrow_green);
 
         try {
             // Without a route set, this starts tracking mode.
-            navigator = new Navigator();
+            visualNavigator = new VisualNavigator();
         } catch (InstantiationErrorException e) {
-            throw new RuntimeException("Initialization of Navigator failed: " + e.error.name());
+            throw new RuntimeException("Initialization of VisualNavigator failed: " + e.error.name());
         }
 
         locationProvider = new LocationProviderImplementation();
         // Set navigator as listener to receive locations from HERE Positioning or from LocationSimulator.
-        locationProvider.setListener(navigator);
+        locationProvider.setListener(visualNavigator);
         locationProvider.start();
 
         // A helper class for TTS.
         voiceAssistant = new VoiceAssistant(context);
 
         setupListeners();
+
+        snackbar = Snackbar.make(mapView, "Initialization completed.", Snackbar.LENGTH_INDEFINITE);
+        snackbar.show();
     }
 
     private MapMarker createArrow(int resource) {
@@ -117,7 +125,7 @@ public class NavigationExample {
     private void setupListeners() {
 
         // Notifies on the progress along the route including maneuver instructions.
-        navigator.setRouteProgressListener(new RouteProgressListener() {
+        visualNavigator.setRouteProgressListener(new RouteProgressListener() {
             @Override
             public void onRouteProgressUpdated(@NonNull RouteProgress routeProgress) {
                 List<SectionProgress> sectionProgressList = routeProgress.sectionProgress;
@@ -136,7 +144,7 @@ public class NavigationExample {
                 }
 
                 int nextManeuverIndex = nextManeuverProgress.maneuverIndex;
-                Maneuver nextManeuver = navigator.getManeuver(nextManeuverIndex);
+                Maneuver nextManeuver = visualNavigator.getManeuver(nextManeuverIndex);
                 if (nextManeuver == null) {
                     // Should never happen as we retrieved the next maneuver progress above.
                     return;
@@ -162,7 +170,7 @@ public class NavigationExample {
 
                 if (previousManeuverIndex != nextManeuverIndex) {
                     // Show only new maneuvers and ignore changes in distance.
-                    Snackbar.make(mapView, "New maneuver: " + logMessage, Snackbar.LENGTH_LONG).show();
+                    snackbar.setText("New maneuver: " + logMessage).show();
                 }
 
                 previousManeuverIndex = nextManeuverIndex;
@@ -170,17 +178,17 @@ public class NavigationExample {
         });
 
         // Notifies when the destination of the route is reached.
-        navigator.setDestinationReachedListener(new DestinationReachedListener() {
+        visualNavigator.setDestinationReachedListener(new DestinationReachedListener() {
             @Override
             public void onDestinationReached() {
                 String message = "Destination reached. Stopping turn-by-turn navigation.";
-                Snackbar.make(mapView, message, Snackbar.LENGTH_LONG).show();
+                snackbar.setText(message).show();
                 stopNavigation();
             }
         });
 
         // Notifies when a waypoint on the route is reached.
-        navigator.setMilestoneReachedListener(new MilestoneReachedListener() {
+        visualNavigator.setMilestoneReachedListener(new MilestoneReachedListener() {
             @Override
             public void onMilestoneReached(Milestone milestone) {
                 if (milestone.waypointIndex != null) {
@@ -194,7 +202,7 @@ public class NavigationExample {
         });
 
         // Notifies when the current speed limit is exceeded.
-        navigator.setSpeedWarningListener(new SpeedWarningListener() {
+        visualNavigator.setSpeedWarningListener(new SpeedWarningListener() {
             @Override
             public void onSpeedWarningStatusChanged(SpeedWarningStatus speedWarningStatus) {
                 if (speedWarningStatus == SpeedWarningStatus.SPEED_LIMIT_EXCEEDED) {
@@ -212,14 +220,12 @@ public class NavigationExample {
         });
 
         // Notifies on the current map-matched location and other useful information while driving or walking.
-        navigator.setNavigableLocationListener(new NavigableLocationListener() {
+        visualNavigator.setNavigableLocationListener(new NavigableLocationListener() {
             @Override
             public void onNavigableLocationUpdated(@NonNull NavigableLocation currentNavigableLocation) {
                 MapMatchedLocation mapMatchedLocation = currentNavigableLocation.mapMatchedLocation;
                 if (mapMatchedLocation == null) {
-                    Snackbar.make(mapView,
-                            "This new location could not be map-matched. Using raw location.",
-                            Snackbar.LENGTH_SHORT).show();
+                    snackbar.setText("This new location could not be map-matched. Using raw location.").show();
                     updateMapView(currentNavigableLocation.originalLocation.coordinates,
                             currentNavigableLocation.originalLocation.bearingInDegrees);
                     return;
@@ -241,10 +247,10 @@ public class NavigationExample {
         });
 
         // Notifies on a possible deviation from the route.
-        navigator.setRouteDeviationListener(new RouteDeviationListener() {
+        visualNavigator.setRouteDeviationListener(new RouteDeviationListener() {
             @Override
             public void onRouteDeviation(@NonNull RouteDeviation routeDeviation) {
-                Route route = navigator.getRoute();
+                Route route = visualNavigator.getRoute();
                 if (route == null) {
                     // May happen in rare cases when route was set to null inbetween.
                     return;
@@ -268,11 +274,25 @@ public class NavigationExample {
 
                 int distanceInMeters = (int) currentGeoCoordinates.distanceTo(lastGeoCoordinatesOnRoute);
                 Log.d(TAG, "RouteDeviation in meters is " + distanceInMeters);
+
+                // Calculate a new route when deviation is too large. Note that this ignores route alternatives
+                // and always takes the first route. Route alternatives are not supported for this example app.
+                if (distanceInMeters > 30) {
+                    List<GeoCoordinates> routeShape = route.getPolyline();
+                    GeoCoordinates startGeoCoordinates = currentGeoCoordinates;
+                    GeoCoordinates destinationGeoCoordinates = routeShape.get(routeShape.size() - 1);
+                    routeCalculator.calculateRoute(startGeoCoordinates, destinationGeoCoordinates, (routingError, routes) -> {
+                        if (routingError == null) {
+                            visualNavigator.setRoute(routes.get(0));
+                            snackbar.setText("Rerouting completed.").show();
+                        }
+                    });
+                }
             }
         });
 
         // Notifies on voice maneuver messages.
-        navigator.setManeuverNotificationListener(new ManeuverNotificationListener() {
+        visualNavigator.setManeuverNotificationListener(new ManeuverNotificationListener() {
             @Override
             public void onManeuverNotification(@NonNull String voiceText) {
                 voiceAssistant.speak(voiceText);
@@ -295,7 +315,7 @@ public class NavigationExample {
         setupVoiceGuidance();
 
         // Switches to navigation mode when no route was set before, otherwise navigation mode is kept.
-        navigator.setRoute(route);
+        visualNavigator.setRoute(route);
 
         if (isSimulated) {
             locationProvider.enableRoutePlayback(route);
@@ -309,7 +329,7 @@ public class NavigationExample {
 
     public void stopNavigation() {
         // Switches to tracking mode when a route was set before, otherwise tracking mode is kept.
-        navigator.setRoute(null);
+        visualNavigator.setRoute(null);
         mapView.getMapScene().removeMapMarker(navigationArrow);
     }
 
@@ -317,17 +337,17 @@ public class NavigationExample {
         // Reset route in case TBT was started before.
         // Without a route the navigator will only notify on the current map-matched location
         // including info such as speed and current street name.
-        navigator.setRoute(null);
+        visualNavigator.setRoute(null);
         locationProvider.enableDevicePositioning();
 
         mapView.getMapScene().addMapMarker(trackingArrow);
         updateArrowLocations();
-        Snackbar.make(mapView, "Free tracking: Running.", Snackbar.LENGTH_SHORT).show();
+        snackbar.setText("Free tracking: Running.").show();
     }
 
     public void stopTracking() {
         mapView.getMapScene().removeMapMarker(trackingArrow);
-        Snackbar.make(mapView, "Free tracking: Stopped.", Snackbar.LENGTH_SHORT).show();
+        snackbar.setText("Free tracking: Stopped.").show();
     }
 
     private void updateArrowLocations() {
@@ -352,12 +372,12 @@ public class NavigationExample {
         SpeedLimitOffset speedLimitOffset = new SpeedLimitOffset(
                 lowSpeedOffsetInMetersPerSecond, highSpeedOffsetInMetersPerSecond, highSpeedBoundaryInMetersPerSecond);
 
-        navigator.setSpeedWarningOptions(new SpeedWarningOptions(speedLimitOffset));
+        visualNavigator.setSpeedWarningOptions(new SpeedWarningOptions(speedLimitOffset));
     }
 
     private void setupVoiceGuidance() {
-        LanguageCode ttsLanguageCode = getLanguageCodeForDevice(navigator.getSupportedLanguagesForManeuverNotifications());
-        navigator.setManeuverNotificationOptions(new ManeuverNotificationOptions(ttsLanguageCode, UnitSystem.METRIC));
+        LanguageCode ttsLanguageCode = getLanguageCodeForDevice(VisualNavigator.getAvailableLanguagesForManeuverNotifications());
+        visualNavigator.setManeuverNotificationOptions(new ManeuverNotificationOptions(ttsLanguageCode, UnitSystem.METRIC));
         Log.d(TAG, "LanguageCode for maneuver notifications: " + ttsLanguageCode);
 
         // Set language to our TextToSpeech engine.

@@ -16,10 +16,11 @@
 		C85F809721E5EDD800237ED0 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C85F809521E5EDD800237ED0 /* Main.storyboard */; };
 		C85F809921E5EDD900237ED0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C85F809821E5EDD900237ED0 /* Assets.xcassets */; };
 		C85F809C21E5EDD900237ED0 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C85F809A21E5EDD900237ED0 /* LaunchScreen.storyboard */; };
-		C85F80A421E5FC8000237ED0 /* RoutingExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = C85F80A321E5FC7F00237ED0 /* RoutingExample.swift */; };
+		C85F80A421E5FC8000237ED0 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = C85F80A321E5FC7F00237ED0 /* App.swift */; };
 		C88C014E23CDE87E00043918 /* heresdk.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = C88C014D23CDE87E00043918 /* heresdk.xcframework */; };
 		C88C014F23CDE87E00043918 /* heresdk.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = C88C014D23CDE87E00043918 /* heresdk.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		C893BB6323845E7B00AFD30F /* NavigationExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = C893BB6223845E7B00AFD30F /* NavigationExample.swift */; };
+		C8979840252B90EE007391AD /* RouteCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C897983F252B90EE007391AD /* RouteCalculator.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -48,9 +49,11 @@
 		C85F809821E5EDD900237ED0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C85F809B21E5EDD900237ED0 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		C85F809D21E5EDD900237ED0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		C85F80A321E5FC7F00237ED0 /* RoutingExample.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoutingExample.swift; sourceTree = "<group>"; };
+		C85F80A321E5FC7F00237ED0 /* App.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
 		C88C014D23CDE87E00043918 /* heresdk.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = heresdk.xcframework; sourceTree = "<group>"; };
 		C893BB6223845E7B00AFD30F /* NavigationExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationExample.swift; sourceTree = "<group>"; };
+		C897983F252B90EE007391AD /* RouteCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteCalculator.swift; sourceTree = "<group>"; };
+		C8979841252DDC13007391AD /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -68,6 +71,7 @@
 		C85F808521E5EDD700237ED0 = {
 			isa = PBXGroup;
 			children = (
+				C8979841252DDC13007391AD /* Default-568h@2x.png */,
 				C85F809021E5EDD800237ED0 /* Navigation */,
 				C85F808F21E5EDD800237ED0 /* Products */,
 				C88C014C23CDE87D00043918 /* Frameworks */,
@@ -89,9 +93,10 @@
 				C85F809321E5EDD800237ED0 /* ViewController.swift */,
 				C819AFB224D07B3E006C4213 /* HEREPositioningProvider.swift */,
 				C8166E3A2430DB0800881B24 /* LocationProviderImplementation.swift */,
-				C85F80A321E5FC7F00237ED0 /* RoutingExample.swift */,
+				C85F80A321E5FC7F00237ED0 /* App.swift */,
 				C893BB6223845E7B00AFD30F /* NavigationExample.swift */,
 				C82B793F24578D5B00E6E383 /* VoiceAssistant.swift */,
+				C897983F252B90EE007391AD /* RouteCalculator.swift */,
 				C82B79392456A44500E6E383 /* LanguageCodeConverter.swift */,
 				C85F809521E5EDD800237ED0 /* Main.storyboard */,
 				C85F809821E5EDD900237ED0 /* Assets.xcassets */,
@@ -185,11 +190,12 @@
 			files = (
 				C85F809421E5EDD800237ED0 /* ViewController.swift in Sources */,
 				C819AFB324D07B3E006C4213 /* HEREPositioningProvider.swift in Sources */,
+				C8979840252B90EE007391AD /* RouteCalculator.swift in Sources */,
 				C85F809221E5EDD800237ED0 /* AppDelegate.swift in Sources */,
 				C893BB6323845E7B00AFD30F /* NavigationExample.swift in Sources */,
 				C82B793A2456A44500E6E383 /* LanguageCodeConverter.swift in Sources */,
 				C8166E3B2430DB0800881B24 /* LocationProviderImplementation.swift in Sources */,
-				C85F80A421E5FC8000237ED0 /* RoutingExample.swift in Sources */,
+				C85F80A421E5FC8000237ED0 /* App.swift in Sources */,
 				C82B794024578D5B00E6E383 /* VoiceAssistant.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

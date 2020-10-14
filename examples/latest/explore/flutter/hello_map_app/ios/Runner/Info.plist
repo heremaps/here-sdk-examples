@@ -42,13 +42,13 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 	<key>HERECredentials</key>
-    <dict>
-        <key>AccessKeyId</key>
-        <string>YOUR_ACCESS_KEY_ID</string>
-        <key>AccessKeySecret</key>
-        <string>YOUR_ACCESS_KEY_SECRET</string>
-    </dict>
-    <key>io.flutter.embedded_views_preview</key>
-    <true/>
+  <dict>
+      <key>AccessKeyId</key>
+      <string>YOUR_ACCESS_KEY_ID</string>
+      <key>AccessKeySecret</key>
+      <string>YOUR_ACCESS_KEY_SECRET</string>
+  </dict>
+  <key>io.flutter.embedded_views_preview</key>
+  <true/>
 </dict>
 </plist>
