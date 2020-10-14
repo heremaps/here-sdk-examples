@@ -32,6 +32,9 @@ class HEREPositioningProvider : NSObject,
                                 // Needed by HERE SDK positioning to listen for location updates.
                                 LocationUpdateDelegate {
 
+    // We need to check if the device is authorized to use location capabilities like GPS sensors.
+    // Results are handled in the CLLocationManagerDelegate below.
+    private let locationManager = CLLocationManager()
     private var locationEngine: LocationEngine
     private var locationUpdateDelegate: LocationUpdateDelegate?
 
@@ -53,9 +56,6 @@ class HEREPositioningProvider : NSObject,
     }
 
     private func authorizeNativeLocationServices() {
-        // We need to check if the device is authorized to use location capabilities like GPS sensors.
-        // Results are handled in the CLLocationManagerDelegate below.
-        let locationManager = CLLocationManager()
         locationManager.delegate = self
         locationManager.requestAlwaysAuthorization()
     }

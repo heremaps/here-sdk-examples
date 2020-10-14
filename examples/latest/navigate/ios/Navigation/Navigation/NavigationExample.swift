@@ -21,7 +21,7 @@ import AVFoundation
 import heresdk
 import UIKit
 
-// Shows how to start and stop turn-by-turn navigation.
+// Shows how to start and stop turn-by-turn navigation on a car route.
 // By default, tracking mode is enabled. When navigation is stopped, tracking mode is enabled again.
 // The preferred device language determines the language for voice notifications used for TTS.
 // (Make sure to set language + region in device settings.)
@@ -35,9 +35,10 @@ class NavigationExample : NavigableLocationDelegate,
 
     private let viewController: UIViewController
     private let mapView: MapView
-    private let navigator: Navigator
+    private let visualNavigator: VisualNavigator
     private let locationProvider: LocationProviderImplementation
     private let voiceAssistant: VoiceAssistant
+    private let routeCalculator: RouteCalculator
     private var previousManeuverIndex: Int32 = -1
     private lazy var navigationArrow = createArrow(asset: "arrow_blue.png")
     private lazy var trackingArrow = createArrow(asset: "arrow_green.png")
@@ -46,28 +47,31 @@ class NavigationExample : NavigableLocationDelegate,
         self.viewController = viewController
         self.mapView = mapView
 
+        // Needed for rerouting, when user leaves route.
+        routeCalculator = RouteCalculator()
+
         do {
             // Without a route set, this starts tracking mode.
-            try navigator = Navigator()
+            try visualNavigator = VisualNavigator()
         } catch let engineInstantiationError {
-            fatalError("Failed to initialize navigator. Cause: \(engineInstantiationError)")
+            fatalError("Failed to initialize VisualNavigator. Cause: \(engineInstantiationError)")
         }
 
         locationProvider = LocationProviderImplementation()
         // Set navigator as delegate to receive locations from HERE Positioning or from LocationSimulator.
-        locationProvider.delegate = navigator
+        locationProvider.delegate = visualNavigator
         locationProvider.start()
 
         // A helper class for TTS.
         voiceAssistant = VoiceAssistant()
 
-        navigator.navigableLocationDelegate = self
-        navigator.routeDeviationDelegate = self
-        navigator.routeProgressDelegate = self
-        navigator.maneuverNotificationDelegate = self
-        navigator.destinationReachedDelegate = self
-        navigator.milestoneReachedDelegate = self
-        navigator.speedWarningDelegate = self
+        visualNavigator.navigableLocationDelegate = self
+        visualNavigator.routeDeviationDelegate = self
+        visualNavigator.routeProgressDelegate = self
+        visualNavigator.maneuverNotificationDelegate = self
+        visualNavigator.destinationReachedDelegate = self
+        visualNavigator.milestoneReachedDelegate = self
+        visualNavigator.speedWarningDelegate = self
     }
 
     private func createArrow(asset: String) -> MapMarker {
@@ -101,7 +105,7 @@ class NavigationExample : NavigableLocationDelegate,
         }
 
         let nextManeuverIndex = nextManeuverProgress.maneuverIndex
-        guard let nextManeuver = navigator.getManeuver(index: nextManeuverIndex) else {
+        guard let nextManeuver = visualNavigator.getManeuver(index: nextManeuverIndex) else {
             // Should never happen as we retrieved the next maneuver progress above.
             return
         }
@@ -186,6 +190,11 @@ class NavigationExample : NavigableLocationDelegate,
     // Conform to RouteDeviationDelegate.
     // Notifies on a possible deviation from the route.
     func onRouteDeviation(_ routeDeviation: RouteDeviation) {
+        guard let route = visualNavigator.route else {
+            // May happen in rare cases when route was set to nil inbetween.
+            return
+        }
+
         // Get current geographic coordinates.
         var currentGeoCoordinates = routeDeviation.currentLocation.originalLocation.coordinates
         if let currentMapMatchedLocation = routeDeviation.currentLocation.mapMatchedLocation {
@@ -201,7 +210,7 @@ class NavigationExample : NavigableLocationDelegate,
             }
         } else {
             print("User was never following the route. So, we take the start of the route instead.")
-            lastGeoCoordinates = navigator.route?.sections.first?.departure.mapMatchedCoordinates
+            lastGeoCoordinates = visualNavigator.route?.sections.first?.departure.mapMatchedCoordinates
         }
 
         guard let lastGeoCoordinatesOnRoute = lastGeoCoordinates else {
@@ -211,6 +220,20 @@ class NavigationExample : NavigableLocationDelegate,
 
         let distanceInMeters = currentGeoCoordinates.distance(to: lastGeoCoordinatesOnRoute)
         print("RouteDeviation in meters is \(distanceInMeters)")
+
+        // Calculate a new route when deviation is too large. Note that this ignores route alternatives
+        // and always takes the first route. Route alternatives are not supported for this example app.
+        if (distanceInMeters > 30) {
+            let routeShape = route.polyline
+            routeCalculator.calculateRoute(start: currentGeoCoordinates,
+                                           destination: routeShape.last!) { (routingError, routes) in
+                if routingError == nil {
+                    // When routingError is nil, routes is guaranteed to contain at least one route.
+                    self.visualNavigator.route = routes!.first
+                    self.showMessage("Rerouting completed.")
+                }
+            }
+        }
     }
 
     // Conform to ManeuverNotificationDelegate.
@@ -238,7 +261,7 @@ class NavigationExample : NavigableLocationDelegate,
         setupVoiceGuidance()
 
         // Switches to navigation mode when no route was set before, otherwise navigation mode is kept.
-        navigator.route = route
+        visualNavigator.route = route
 
         if isSimulated {
             locationProvider.enableRoutePlayback(route: route)
@@ -252,13 +275,13 @@ class NavigationExample : NavigableLocationDelegate,
 
     func stopNavigation() {
         // Switches to tracking mode when a route was set before, otherwise tracking mode is kept.
-        navigator.route = nil
+        visualNavigator.route = nil
         mapView.mapScene.removeMapMarker(navigationArrow)
     }
 
     func startTracking() {
         // Reset route in case TBT was started before.
-        navigator.route = nil
+        visualNavigator.route = nil
         locationProvider.enableDevicePositioning()
 
         mapView.mapScene.addMapMarker(trackingArrow)
@@ -289,12 +312,12 @@ class NavigationExample : NavigableLocationDelegate,
         let speedLimitOffset = SpeedLimitOffset(lowSpeedOffsetInMetersPerSecond: 2,
                                                 highSpeedOffsetInMetersPerSecond: 4,
                                                 highSpeedBoundaryInMetersPerSecond: 25)
-        navigator.speedWarningOptions = SpeedWarningOptions(speedLimitOffset: speedLimitOffset)
+        visualNavigator.speedWarningOptions = SpeedWarningOptions(speedLimitOffset: speedLimitOffset)
     }
 
     private func setupVoiceGuidance() {
-        let ttsLanguageCode = getLanguageCodeForDevice(supportedVoiceSkins: navigator.supportedLanguages())
-        navigator.maneuverNotificationOptions = ManeuverNotificationOptions(language: ttsLanguageCode,
+        let ttsLanguageCode = getLanguageCodeForDevice(supportedVoiceSkins: VisualNavigator.availableLanguagesForManeuverNotifications())
+        visualNavigator.maneuverNotificationOptions = ManeuverNotificationOptions(language: ttsLanguageCode,
                                                                             unitSystem: UnitSystem.metric)
 
         print("LanguageCode for maneuver notifications: \(ttsLanguageCode).")
@@ -329,6 +352,7 @@ class NavigationExample : NavigableLocationDelegate,
         return languageCodeForCurrenDevice
     }
 
+    // A permanent view to show log content.
     private var messageTextView = UITextView()
     private func showMessage(_ message: String) {
         messageTextView.text = message
@@ -344,13 +368,5 @@ class NavigationExample : NavigableLocationDelegate,
         UIView.transition(with: mapView, duration: 0.2, options: [.transitionCrossDissolve], animations: {
             self.mapView.addSubview(self.messageTextView)
         })
-
-        // Hide message after 5 seconds.
-        let messageDurationInSeconds: Double = 5
-        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + messageDurationInSeconds) {
-            UIView.transition(with: self.mapView, duration: 0.2, options: [.transitionCrossDissolve], animations: {
-                self.messageTextView.removeFromSuperview()
-            })
-        }
     }
 }

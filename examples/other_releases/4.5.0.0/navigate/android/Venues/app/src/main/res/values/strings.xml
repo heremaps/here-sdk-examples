@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Venues Example</string>
+    <string name="venue_id">Venue ID</string>
+    <string name="go">Go</string>
+    <string name="loading">Loading...</string>
+    <string name="failed_load_venue">"Failed to load venue!"</string>
+    <string name="venue_search_button">Venue Search</string>
+    <string name="venues_manager">Venues Manager</string>
+    <string name="venue_search">Search</string>
+    <string name="venue_remove">Remove venue</string>
+</resources>
