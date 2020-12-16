@@ -23,8 +23,11 @@ import UIKit
 final class ViewController: UIViewController {
 
     @IBOutlet private var mapView: MapView!
+    @IBOutlet private var toggleTrackingButton: UIButton!
+
     private var app: App!
     private var isMapSceneLoaded = false
+    private var isToggleTrackingOn = true
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -60,6 +63,20 @@ final class ViewController: UIViewController {
     @IBAction func onClearMapButtonClicked(_ sender: Any) {
         if isMapSceneLoaded {
             app.clearMap()
+        }
+    }
+
+    @IBAction func toggleTrackingButton(_ sender: Any) {
+        if isMapSceneLoaded {
+            if (isToggleTrackingOn) {
+                isToggleTrackingOn = false
+                toggleTrackingButton.setTitle("Camera Tracking: OFF", for: .normal)
+                app.disableCameraTracking()
+            } else {
+                isToggleTrackingOn = true
+                toggleTrackingButton.setTitle("Camera Tracking: ON", for: .normal)
+                app.enableCameraTracking()
+            }
         }
     }
 

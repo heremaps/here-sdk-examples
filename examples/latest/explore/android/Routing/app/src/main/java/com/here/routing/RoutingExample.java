@@ -39,6 +39,7 @@ import com.here.sdk.routing.CalculateRouteCallback;
 import com.here.sdk.routing.CarOptions;
 import com.here.sdk.routing.Maneuver;
 import com.here.sdk.routing.ManeuverAction;
+import com.here.sdk.routing.Notice;
 import com.here.sdk.routing.Route;
 import com.here.sdk.routing.RoutingEngine;
 import com.here.sdk.routing.RoutingError;
@@ -97,11 +98,22 @@ public class RoutingExample {
                             Route route = routes.get(0);
                             showRouteDetails(route);
                             showRouteOnMap(route);
+                            logRouteViolations(route);
                         } else {
                             showDialog("Error while calculating a route:", routingError.toString());
                         }
                     }
                 });
+    }
+
+    // A route may contain several warnings, for example, when a certain route option could not be fulfilled.
+    // An implementation may decide to reject a route if one or more violations are detected.
+    private void logRouteViolations(Route route) {
+        for (Section section : route.getSections()) {
+            for (Notice notice : section.getNotices()) {
+                Log.e(TAG, "This route contains the following warning: " + notice.code.toString());
+            }
+        }
     }
 
     private void showRouteDetails(Route route) {
@@ -195,6 +207,7 @@ public class RoutingExample {
                             Route route = routes.get(0);
                             showRouteDetails(route);
                             showRouteOnMap(route);
+                            logRouteViolations(route);
 
                             // Draw a circle to indicate the location of the waypoints.
                             addCircleMapMarker(waypoint1.coordinates, R.drawable.red_dot);

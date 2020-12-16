@@ -30,12 +30,13 @@ import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.LanguageCode;
 import com.here.sdk.core.UnitSystem;
 import com.here.sdk.core.errors.InstantiationErrorException;
-import com.here.sdk.mapview.MapCamera;
-import com.here.sdk.mapview.MapImage;
-import com.here.sdk.mapview.MapImageFactory;
-import com.here.sdk.mapview.MapMarker;
 import com.here.sdk.mapview.MapView;
+import com.here.sdk.navigation.CameraTrackingMode;
 import com.here.sdk.navigation.DestinationReachedListener;
+import com.here.sdk.navigation.Lane;
+import com.here.sdk.navigation.LaneAssistance;
+import com.here.sdk.navigation.LaneAssistanceListener;
+import com.here.sdk.navigation.LaneRecommendationState;
 import com.here.sdk.navigation.ManeuverNotificationListener;
 import com.here.sdk.navigation.ManeuverNotificationOptions;
 import com.here.sdk.navigation.ManeuverProgress;
@@ -56,6 +57,7 @@ import com.here.sdk.navigation.SpeedWarningStatus;
 import com.here.sdk.navigation.VisualNavigator;
 import com.here.sdk.routing.Maneuver;
 import com.here.sdk.routing.ManeuverAction;
+import com.here.sdk.routing.RoadType;
 import com.here.sdk.routing.Route;
 
 import java.util.List;
@@ -63,9 +65,6 @@ import java.util.Locale;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
-import static com.here.navigation.App.DEFAULT_DISTANCE_IN_METERS;
-import static com.here.navigation.App.DEFAULT_MAP_CENTER;
 
 // Shows how to start and stop turn-by-turn navigation on a car route.
 // By default, tracking mode is enabled. When navigation is stopped, tracking mode is enabled again.
@@ -79,8 +78,6 @@ public class NavigationExample {
     private final MapView mapView;
     private final LocationProviderImplementation locationProvider;
     private final VisualNavigator visualNavigator;
-    private final MapMarker navigationArrow;
-    private final MapMarker trackingArrow;
     private final VoiceAssistant voiceAssistant;
     private final RouteCalculator routeCalculator;
     private int previousManeuverIndex = -1;
@@ -93,9 +90,6 @@ public class NavigationExample {
         // Needed for rerouting, when user leaves route.
         routeCalculator = new RouteCalculator();
 
-        navigationArrow = createArrow(R.drawable.arrow_blue);
-        trackingArrow = createArrow(R.drawable.arrow_green);
-
         try {
             // Without a route set, this starts tracking mode.
             visualNavigator = new VisualNavigator();
@@ -103,10 +97,10 @@ public class NavigationExample {
             throw new RuntimeException("Initialization of VisualNavigator failed: " + e.error.name());
         }
 
+        visualNavigator.startRendering(mapView);
+
+        // A class to receive real or simulated location events.
         locationProvider = new LocationProviderImplementation();
-        // Set navigator as listener to receive locations from HERE Positioning or from LocationSimulator.
-        locationProvider.setListener(visualNavigator);
-        locationProvider.start();
 
         // A helper class for TTS.
         voiceAssistant = new VoiceAssistant(context);
@@ -117,9 +111,11 @@ public class NavigationExample {
         snackbar.show();
     }
 
-    private MapMarker createArrow(int resource) {
-        MapImage mapImage = MapImageFactory.fromResource(context.getResources(), resource);
-        return new MapMarker(DEFAULT_MAP_CENTER, mapImage);
+    public void startLocationProvider() {
+        // Set navigator as listener to receive locations from HERE Positioning or from LocationSimulator.
+        locationProvider.setListener(visualNavigator);
+        locationProvider.enableDevicePositioning();
+        locationProvider.start();
     }
 
     private void setupListeners() {
@@ -154,6 +150,12 @@ public class NavigationExample {
                 String nextRoadName = nextManeuver.getNextRoadName();
                 String road = nextRoadName == null ? nextManeuver.getNextRoadNumber() : nextRoadName;
 
+                // On highways, we want to show the highway number instead of a possible street name,
+                // while for inner city and urban areas street names are preferred over road numbers.
+                if (nextManeuver.getNextRoadType() == RoadType.HIGHWAY) {
+                    road = nextManeuver.getNextRoadNumber() == null ? nextRoadName : nextManeuver.getNextRoadNumber();
+                }
+
                 if (action == ManeuverAction.ARRIVE) {
                     // We are approaching the destination, so there's no next road.
                     String currentRoadName = nextManeuver.getRoadName();
@@ -169,8 +171,10 @@ public class NavigationExample {
                         " in " + nextManeuverProgress.remainingDistanceInMeters + " meters.";
 
                 if (previousManeuverIndex != nextManeuverIndex) {
-                    // Show only new maneuvers and ignore changes in distance.
                     snackbar.setText("New maneuver: " + logMessage).show();
+                } else {
+                    // A maneuver update contains a different distance to reach the next maneuver.
+                    snackbar.setText("Maneuver update: " + logMessage).show();
                 }
 
                 previousManeuverIndex = nextManeuverIndex;
@@ -225,9 +229,7 @@ public class NavigationExample {
             public void onNavigableLocationUpdated(@NonNull NavigableLocation currentNavigableLocation) {
                 MapMatchedLocation mapMatchedLocation = currentNavigableLocation.mapMatchedLocation;
                 if (mapMatchedLocation == null) {
-                    snackbar.setText("This new location could not be map-matched. Using raw location.").show();
-                    updateMapView(currentNavigableLocation.originalLocation.coordinates,
-                            currentNavigableLocation.originalLocation.bearingInDegrees);
+                    Log.d(TAG, "The currentNavigableLocation could not be map-matched.");
                     return;
                 }
 
@@ -241,8 +243,6 @@ public class NavigationExample {
                 } else {
                     Log.d(TAG, "Current speed limit (m/s): " + currentNavigableLocation.speedLimitInMetersPerSecond);
                 }
-
-                updateMapView(mapMatchedLocation.coordinates, mapMatchedLocation.bearingInDegrees);
             }
         });
 
@@ -298,16 +298,53 @@ public class NavigationExample {
                 voiceAssistant.speak(voiceText);
             }
         });
+
+        // Notifies which lane(s) lead to the next (next) maneuvers.
+        // Note: This feature is in BETA state and thus there can be bugs and unexpected behavior.
+        // Related APIs may change for new releases without a deprecation process.
+        visualNavigator.setLaneAssistanceListener(new LaneAssistanceListener() {
+            @Override
+            public void onLaneAssistanceUpdated(@NonNull LaneAssistance laneAssistance) {
+                // This lane list is guaranteed to be non-empty.
+                List<Lane> lanes = laneAssistance.lanesForNextManeuver;
+                logLaneRecommendations(lanes);
+
+                List<Lane> nextLanes = laneAssistance.lanesForNextNextManeuver;
+                if (!nextLanes.isEmpty()) {
+                    Log.d(TAG, "Attention, the next next maneuver is very close.");
+                    Log.d(TAG, "Please take the following lane(s) after the next maneuver: ");
+                    logLaneRecommendations(nextLanes);
+                }
+            }
+        });
     }
 
-    // Update location and rotation of map. Update location of arrows.
-    private void updateMapView(GeoCoordinates currentGeoCoordinates,
-                               Double bearingInDegrees) {
-        MapCamera.OrientationUpdate orientation = new MapCamera.OrientationUpdate();
-        orientation.bearing = bearingInDegrees;
-        mapView.getCamera().lookAt(currentGeoCoordinates, orientation, DEFAULT_DISTANCE_IN_METERS);
-        navigationArrow.setCoordinates(currentGeoCoordinates);
-        trackingArrow.setCoordinates(currentGeoCoordinates);
+    private void logLaneRecommendations(List<Lane> lanes) {
+        // The lane at index 0 is the leftmost lane adjacent to the middle of the road.
+        // The lane at the last index is the rightmost lane.
+        // Note: Left-hand countries are not yet supported.
+        int laneNumber = 0;
+        for (Lane lane : lanes) {
+            // This state is only possible if laneAssistance.lanesForNextNextManeuver is not empty.
+            // For example, when two lanes go left, this lanes leads only to the next maneuver,
+            // but not to the maneuver after the next maneuver, while the highly recommended lane also leads
+            // to this next next maneuver.
+            if (lane.recommendationState == LaneRecommendationState.RECOMMENDED) {
+                Log.d(TAG,"Lane " + laneNumber + " leads to next maneuver, but not to the next next maneuver.");
+            }
+
+            // If laneAssistance.lanesForNextNextManeuver is not empty, this lane leads also to the
+            // maneuver after the next maneuver.
+            if (lane.recommendationState == LaneRecommendationState.HIGHLY_RECOMMENDED) {
+                Log.d(TAG,"Lane " + laneNumber + " leads to next maneuver and eventually to the next next maneuver.");
+            }
+
+            if (lane.recommendationState == LaneRecommendationState.NOT_RECOMMENDED) {
+                Log.d(TAG,"Do not take lane " + laneNumber + " to follow the route.");
+            }
+
+            laneNumber++;
+        }
     }
 
     public void startNavigation(Route route, boolean isSimulated) {
@@ -319,45 +356,28 @@ public class NavigationExample {
 
         if (isSimulated) {
             locationProvider.enableRoutePlayback(route);
+            snackbar.setText("Starting simulated navgation.").show();
         } else {
             locationProvider.enableDevicePositioning();
+            snackbar.setText("Starting navgation.").show();
         }
-
-        mapView.getMapScene().addMapMarker(navigationArrow);
-        updateArrowLocations();
     }
 
     public void stopNavigation() {
         // Switches to tracking mode when a route was set before, otherwise tracking mode is kept.
-        visualNavigator.setRoute(null);
-        mapView.getMapScene().removeMapMarker(navigationArrow);
-    }
-
-    public void startTracking() {
-        // Reset route in case TBT was started before.
         // Without a route the navigator will only notify on the current map-matched location
         // including info such as speed and current street name.
         visualNavigator.setRoute(null);
         locationProvider.enableDevicePositioning();
-
-        mapView.getMapScene().addMapMarker(trackingArrow);
-        updateArrowLocations();
-        snackbar.setText("Free tracking: Running.").show();
+        snackbar.setText("Tracking device's location.").show();
     }
 
-    public void stopTracking() {
-        mapView.getMapScene().removeMapMarker(trackingArrow);
-        snackbar.setText("Free tracking: Stopped.").show();
+    public void startCameraTracking() {
+        visualNavigator.setCameraMode(CameraTrackingMode.ENABLED);
     }
 
-    private void updateArrowLocations() {
-        GeoCoordinates lastKnownGeoCoordinates = getLastKnownGeoCoordinates();
-        if (lastKnownGeoCoordinates != null) {
-            navigationArrow.setCoordinates(lastKnownGeoCoordinates);
-            trackingArrow.setCoordinates(lastKnownGeoCoordinates);
-        } else {
-            Log.d(TAG, "Can't update arrows: No location found.");
-        }
+    public void stopCameraTracking() {
+        visualNavigator.setCameraMode(CameraTrackingMode.DISABLED);
     }
 
     @Nullable

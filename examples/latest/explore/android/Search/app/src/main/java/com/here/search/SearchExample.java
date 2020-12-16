@@ -139,19 +139,21 @@ public class SearchExample {
         int maxItems = 1;
         SearchOptions reverseGeocodingOptions = new SearchOptions(LanguageCode.EN_GB, maxItems);
 
-        searchEngine.search(geoCoordinates, reverseGeocodingOptions, new SearchCallback() {
-            @Override
-            public void onSearchCompleted(@Nullable SearchError searchError, @Nullable List<Place> list) {
-                if (searchError != null) {
-                    showDialog("Reverse geocoding", "Error: " + searchError.toString());
-                    return;
-                }
-
-                // If error is null, list is guaranteed to be not empty.
-                showDialog("Reverse geocoded address:", list.get(0).getAddress().addressText);
-            }
-        });
+        searchEngine.search(geoCoordinates, reverseGeocodingOptions, addressSearchCallback);
     }
+
+    private SearchCallback addressSearchCallback = new SearchCallback() {
+        @Override
+        public void onSearchCompleted(@Nullable SearchError searchError, @Nullable List<Place> list) {
+            if (searchError != null) {
+                showDialog("Reverse geocoding", "Error: " + searchError.toString());
+                return;
+            }
+
+            // If error is null, list is guaranteed to be not empty.
+            showDialog("Reverse geocoded address:", list.get(0).getAddress().addressText);
+        }
+    };
 
     private void pickMapMarker(final Point2D point2D) {
         float radiusInPixel = 2;
@@ -197,26 +199,28 @@ public class SearchExample {
         int maxItems = 30;
         SearchOptions searchOptions = new SearchOptions(LanguageCode.EN_US, maxItems);
 
-        searchEngine.search(query, searchOptions, new SearchCallback() {
-            @Override
-            public void onSearchCompleted(@Nullable SearchError searchError, @Nullable List<Place> list) {
-                if (searchError != null) {
-                    showDialog("Search", "Error: " + searchError.toString());
-                    return;
-                }
-
-                // If error is null, list is guaranteed to be not empty.
-                showDialog("Search", "Results: " + list.size());
-
-                // Add new marker for each search result on map.
-                for (Place searchResult : list) {
-                    Metadata metadata = new Metadata();
-                    metadata.setCustomValue("key_search_result", new SearchResultMetadata(searchResult));
-                    addPoiMapMarker(searchResult.getCoordinates(), metadata);
-                }
-            }
-        });
+        searchEngine.search(query, searchOptions, querySearchCallback);
     }
+
+    private SearchCallback querySearchCallback = new SearchCallback() {
+        @Override
+        public void onSearchCompleted(@Nullable SearchError searchError, @Nullable List<Place> list) {
+            if (searchError != null) {
+                showDialog("Search", "Error: " + searchError.toString());
+                return;
+            }
+
+            // If error is null, list is guaranteed to be not empty.
+            showDialog("Search", "Results: " + list.size());
+
+            // Add new marker for each search result on map.
+            for (Place searchResult : list) {
+                Metadata metadata = new Metadata();
+                metadata.setCustomValue("key_search_result", new SearchResultMetadata(searchResult));
+                addPoiMapMarker(searchResult.getCoordinates(), metadata);
+            }
+        }
+    };
 
     private static class SearchResultMetadata implements CustomMetadataValue {
 
@@ -290,29 +294,31 @@ public class SearchExample {
         int maxItems = 30;
         SearchOptions options = new SearchOptions(LanguageCode.DE_DE, maxItems);
 
-        searchEngine.search(query, options, new SearchCallback() {
-            @Override
-            public void onSearchCompleted(SearchError searchError, List<Place> list) {
-                if (searchError != null) {
-                    showDialog("Geocoding", "Error: " + searchError.toString());
-                    return;
-                }
-
-                for (Place geocodingResult : list) {
-                    GeoCoordinates geoCoordinates = geocodingResult.getCoordinates();
-                    Address address = geocodingResult.getAddress();
-                    String locationDetails = address.addressText
-                            + ". GeoCoordinates: " + geoCoordinates.latitude
-                            + ", " + geoCoordinates.longitude;
-
-                    Log.d(LOG_TAG, "GeocodingResult: " + locationDetails);
-                    addPoiMapMarker(geoCoordinates);
-                }
-
-                showDialog("Geocoding result","Size: " + list.size());
-            }
-        });
+        searchEngine.search(query, options, geocodeAddressSearchCallback);
     }
+
+    private SearchCallback geocodeAddressSearchCallback = new SearchCallback() {
+        @Override
+        public void onSearchCompleted(SearchError searchError, List<Place> list) {
+            if (searchError != null) {
+                showDialog("Geocoding", "Error: " + searchError.toString());
+                return;
+            }
+
+            for (Place geocodingResult : list) {
+                GeoCoordinates geoCoordinates = geocodingResult.getCoordinates();
+                Address address = geocodingResult.getAddress();
+                String locationDetails = address.addressText
+                        + ". GeoCoordinates: " + geoCoordinates.latitude
+                        + ", " + geoCoordinates.longitude;
+
+                Log.d(LOG_TAG, "GeocodingResult: " + locationDetails);
+                addPoiMapMarker(geoCoordinates);
+            }
+
+            showDialog("Geocoding result","Size: " + list.size());
+        }
+    };
 
     private void addPoiMapMarker(GeoCoordinates geoCoordinates) {
         MapMarker mapMarker = createPoiMapMarker(geoCoordinates);

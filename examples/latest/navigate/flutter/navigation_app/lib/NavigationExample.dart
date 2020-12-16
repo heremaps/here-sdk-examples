@@ -161,8 +161,10 @@ class NavigationExample {
           ' meters.';
 
       if (_previousManeuverIndex != nextManeuverIndex) {
-        // Print only new maneuvers and ignore changes in distance.
         print('New maneuver: $logMessage');
+      } else {
+        // A maneuver update contains a different distance to reach the next maneuver.
+        print('Maneuver update: $logMessage');
       }
 
       _previousManeuverIndex = nextManeuverIndex;
@@ -269,6 +271,7 @@ class NavigationExample {
   }
 
   // Update location and rotation of map. Update location of arrow.
+  // Alternatively, call startRendering() to enable smooth & interpolated map view updates.
   void updateMapView(GeoCoordinates currentGeoCoordinates, double bearingInDegrees) {
     MapCameraOrientationUpdate orientation = MapCameraOrientationUpdate.withDefaults();
     orientation.bearing = bearingInDegrees;

@@ -64,20 +64,21 @@ public class PermissionsRequestor {
         ArrayList<String> permissionList = new ArrayList<>();
         try {
             PackageInfo packageInfo = activity.getPackageManager().getPackageInfo(
-                activity.getPackageName(), PackageManager.GET_PERMISSIONS);
+                    activity.getPackageName(), PackageManager.GET_PERMISSIONS);
             if (packageInfo.requestedPermissions != null) {
                 for (String permission : packageInfo.requestedPermissions) {
                     if (ContextCompat.checkSelfPermission(
-                        activity, permission) != PackageManager.PERMISSION_GRANTED) {
+                            activity, permission) != PackageManager.PERMISSION_GRANTED) {
                         if (Build.VERSION.SDK_INT == Build.VERSION_CODES.M &&
-                            permission.equals(Manifest.permission.CHANGE_NETWORK_STATE)) {
+                                permission.equals(Manifest.permission.CHANGE_NETWORK_STATE)) {
                             // Exclude CHANGE_NETWORK_STATE as it does not require explicit user approval.
                             // This workaround is needed for devices running Android 6.0.0,
                             // see https://issuetracker.google.com/issues/37067994
                             continue;
                         }
                         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q &&
-                            permission.equals(Manifest.permission.ACTIVITY_RECOGNITION)) {
+                                (permission.equals(Manifest.permission.ACTIVITY_RECOGNITION) ||
+                                        permission.equals(Manifest.permission.ACCESS_BACKGROUND_LOCATION))) {
                             continue;
                         }
                         permissionList.add(permission);
@@ -94,6 +95,12 @@ public class PermissionsRequestor {
         if (resultListener == null) {
             return;
         }
+
+        if (grantResults.length == 0) {
+            // Request was cancelled.
+            return;
+        }
+
         if (requestCode == PERMISSIONS_REQUEST_CODE) {
             boolean allGranted = true;
             for (int result : grantResults) {

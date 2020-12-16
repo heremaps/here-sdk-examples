@@ -64,6 +64,18 @@ class RoutingExample {
                                         let route = routes!.first
                                         self.showRouteDetails(route: route!)
                                         self.showRouteOnMap(route: route!)
+                                        self.logRouteViolations(route: route!)
+        }
+    }
+
+    // A route may contain several warnings, for example, when a certain route option could not be fulfilled.
+    // An implementation may decide to reject a route if one or more violations are detected.
+    private func logRouteViolations(route: Route) {
+        let sections = route.sections
+        for section in sections {
+            for notice in section.notices {
+                print("This route contains the following warning: \(notice.code)")
+            }
         }
     }
 
@@ -157,6 +169,7 @@ class RoutingExample {
                                         let route = routes!.first
                                         self.showRouteDetails(route: route!)
                                         self.showRouteOnMap(route: route!)
+                                        self.logRouteViolations(route: route!)
 
                                         // Draw a circle to indicate the location of the waypoints.
                                         self.addCircleMapMarker(geoCoordinates: waypoint1GeoCoordinates, imageName: "red_dot.png")
