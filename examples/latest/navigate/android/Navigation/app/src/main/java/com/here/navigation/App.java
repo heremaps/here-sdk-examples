@@ -65,7 +65,7 @@ public class App {
         routeCalculator = new RouteCalculator();
 
         navigationExample = new NavigationExample(context, mapView);
-        navigationExample.startTracking();
+        navigationExample.startLocationProvider();
 
         setLongPressGestureHandler();
         Snackbar.make(mapView, "Long press to set a destination or use a random one.", Snackbar.LENGTH_LONG).show();
@@ -88,6 +88,15 @@ public class App {
     public void clearMapButtonPressed() {
         clearMap();
         isLongpressDestination = false;
+    }
+
+    public void toggleTrackingButtonOnClicked() {
+        // By default, this is enabled.
+        navigationExample.startCameraTracking();
+    }
+
+    public void toggleTrackingButtonOffClicked() {
+        navigationExample.stopCameraTracking();
     }
 
     private void calculateRoute(boolean isSimulated) {
@@ -181,7 +190,6 @@ public class App {
         clearRoute();
 
         navigationExample.stopNavigation();
-        navigationExample.startTracking();
     }
 
     private void clearWaypointMapMarker() {
@@ -253,7 +261,6 @@ public class App {
                .setMessage(message)
                .setNeutralButton(buttonText,
                        (dialog, which) -> {
-                           navigationExample.stopTracking();
                            navigationExample.startNavigation(route, isSimulated);
                        })
                .show();

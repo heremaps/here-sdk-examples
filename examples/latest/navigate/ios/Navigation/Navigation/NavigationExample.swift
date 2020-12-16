@@ -31,7 +31,8 @@ class NavigationExample : NavigableLocationDelegate,
                           SpeedWarningDelegate,
                           RouteProgressDelegate,
                           RouteDeviationDelegate,
-                          ManeuverNotificationDelegate {
+                          ManeuverNotificationDelegate,
+                          LaneAssistanceDelegate {
 
     private let viewController: UIViewController
     private let mapView: MapView
@@ -40,8 +41,6 @@ class NavigationExample : NavigableLocationDelegate,
     private let voiceAssistant: VoiceAssistant
     private let routeCalculator: RouteCalculator
     private var previousManeuverIndex: Int32 = -1
-    private lazy var navigationArrow = createArrow(asset: "arrow_blue.png")
-    private lazy var trackingArrow = createArrow(asset: "arrow_green.png")
 
     init(viewController: UIViewController, mapView: MapView) {
         self.viewController = viewController
@@ -57,10 +56,10 @@ class NavigationExample : NavigableLocationDelegate,
             fatalError("Failed to initialize VisualNavigator. Cause: \(engineInstantiationError)")
         }
 
+        visualNavigator.startRendering(mapView: mapView)
+
+        // A class to receive real or simulated location events.
         locationProvider = LocationProviderImplementation()
-        // Set navigator as delegate to receive locations from HERE Positioning or from LocationSimulator.
-        locationProvider.delegate = visualNavigator
-        locationProvider.start()
 
         // A helper class for TTS.
         voiceAssistant = VoiceAssistant()
@@ -72,20 +71,14 @@ class NavigationExample : NavigableLocationDelegate,
         visualNavigator.destinationReachedDelegate = self
         visualNavigator.milestoneReachedDelegate = self
         visualNavigator.speedWarningDelegate = self
+        visualNavigator.laneAssistanceDelegate = self
     }
 
-    private func createArrow(asset: String) -> MapMarker {
-        guard
-            let image = UIImage(named: asset),
-            let imageData = image.pngData() else {
-                fatalError("Image data not available.")
-        }
-
-        let mapImage = MapImage(pixelData: imageData,
-                                imageFormat: ImageFormat.png)
-        let mapMarker = MapMarker(at: ConstantsEnum.DEFAULT_MAP_CENTER,
-                                  image: mapImage)
-        return mapMarker
+    func startLocationProvider() {
+        // Set navigator as delegate to receive locations from HERE Positioning or from LocationSimulator.
+        locationProvider.delegate = visualNavigator
+        locationProvider.enableDevicePositioning()
+        locationProvider.start()
     }
 
     // Conform to RouteProgressDelegate.
@@ -113,6 +106,13 @@ class NavigationExample : NavigableLocationDelegate,
         let action = nextManeuver.action
         let nextRoadName = nextManeuver.nextRoadName
         var road = nextRoadName == nil ? nextManeuver.nextRoadNumber : nextRoadName
+
+        // On highways, we want to show the highway number instead of a possible street name,
+        // while for inner city and urban areas street names are preferred over road numbers.
+        if nextManeuver.nextRoadType == RoadType.highway {
+            road = nextManeuver.nextRoadNumber == nil ? nextRoadName : nextManeuver.nextRoadNumber
+        }
+
         if action == ManeuverAction.arrive {
             // We are reaching destination, so there's no next road.
             let currentRoadName = nextManeuver.roadName
@@ -124,6 +124,9 @@ class NavigationExample : NavigableLocationDelegate,
         if previousManeuverIndex != nextManeuverIndex {
             // Log only new maneuvers and ignore changes in distance.
             showMessage("New maneuver: " + logMessage)
+        } else {
+            // A maneuver update contains a different distance to reach the next maneuver.
+            showMessage("Maneuver update: " + logMessage)
         }
 
         previousManeuverIndex = nextManeuverIndex
@@ -165,10 +168,8 @@ class NavigationExample : NavigableLocationDelegate,
     // Conform to NavigableLocationDelegate.
     // Notifies on the current map-matched location and other useful information while driving or walking.
     func onNavigableLocationUpdated(_ navigableLocation: NavigableLocation) {
-        guard let mapMatchedLocation = navigableLocation.mapMatchedLocation else {
-            showMessage("This new location could not be map-matched. Using raw location.")
-            updateMapView(currentGeoCoordinates: navigableLocation.originalLocation.coordinates,
-                          bearingInDegrees: navigableLocation.originalLocation.bearingInDegrees)
+        guard navigableLocation.mapMatchedLocation != nil else {
+            print("The currentNavigableLocation could not be map-matched.")
             return
         }
 
@@ -182,9 +183,6 @@ class NavigationExample : NavigableLocationDelegate,
         } else {
             print("Current speed limit (m/s): \(String(describing: navigableLocation.speedLimitInMetersPerSecond))")
         }
-
-        updateMapView(currentGeoCoordinates: mapMatchedLocation.coordinates,
-                      bearingInDegrees: mapMatchedLocation.bearingInDegrees)
     }
 
     // Conform to RouteDeviationDelegate.
@@ -242,17 +240,49 @@ class NavigationExample : NavigableLocationDelegate,
         voiceAssistant.speak(message: text)
     }
 
-    // Update location and rotation of map. Update location of arrow.
-    private func updateMapView(currentGeoCoordinates: GeoCoordinates,
-                               bearingInDegrees: Double?) {
-        var orientation = MapCamera.OrientationUpdate()
-        orientation.bearing = bearingInDegrees
+    // Conform to the LaneAssistanceDelegate.
+    // Notifies which lane(s) lead to the next (next) maneuvers.
+    // Note: This feature is in BETA state and thus there can be bugs and unexpected behavior.
+    // Related APIs may change for new releases without a deprecation process.
+    func onLaneAssistanceUpdated(_ laneAssistance: LaneAssistance) {
+        // This lane list is guaranteed to be non-empty.
+        let lanes = laneAssistance.lanesForNextManeuver
+        logLaneRecommendations(lanes)
 
-        mapView.camera.lookAt(point: currentGeoCoordinates,
-                              orientation: orientation,
-                              distanceInMeters: ConstantsEnum.DEFAULT_DISTANCE_IN_METERS)
-        navigationArrow.coordinates = currentGeoCoordinates
-        trackingArrow.coordinates = currentGeoCoordinates
+        let nextLanes = laneAssistance.lanesForNextNextManeuver
+        if !nextLanes.isEmpty {
+            print("Attention, the next next maneuver is very close.")
+            print("Please take the following lane(s) after the next maneuver: ")
+            logLaneRecommendations(nextLanes)
+        }
+    }
+
+    private func logLaneRecommendations(_ lanes: [Lane]) {
+        // The lane at index 0 is the leftmost lane adjacent to the middle of the road.
+        // The lane at the last index is the rightmost lane.
+        // Note: Left-hand countries are not yet supported.
+        var laneNumber = 0
+        for lane in lanes {
+            // This state is only possible if laneAssistance.lanesForNextNextManeuver is not empty.
+            // For example, when two lanes go left, this lanes leads only to the next maneuver,
+            // but not to the maneuver after the next maneuver, while the highly recommended lane also leads
+            // to this next next maneuver.
+            if lane.recommendationState == .recommended {
+                print("Lane \(laneNumber) leads to next maneuver, but not to the next next maneuver.")
+            }
+
+            // If laneAssistance.lanesForNextNextManeuver is not empty, this lane leads also to the
+            // maneuver after the next maneuver.
+            if lane.recommendationState == .highlyRecommended {
+                print("Lane \(laneNumber) leads to next maneuver and eventually to the next next maneuver.")
+            }
+
+            if lane.recommendationState == .notRecommended {
+                print("Do not take lane \(laneNumber) to follow the route.")
+            }
+
+            laneNumber += 1
+        }
     }
 
     func startNavigation(route: Route,
@@ -265,43 +295,29 @@ class NavigationExample : NavigableLocationDelegate,
 
         if isSimulated {
             locationProvider.enableRoutePlayback(route: route)
+            showMessage("Starting simulated navgation.")
         } else {
             locationProvider.enableDevicePositioning()
+            showMessage("Starting navgation.")
         }
-
-        mapView.mapScene.addMapMarker(navigationArrow)
-        updateArrowLocations()
     }
 
     func stopNavigation() {
         // Switches to tracking mode when a route was set before, otherwise tracking mode is kept.
-        visualNavigator.route = nil
-        mapView.mapScene.removeMapMarker(navigationArrow)
-    }
-
-    func startTracking() {
-        // Reset route in case TBT was started before.
+        // Without a route the navigator will only notify on the current map-matched location
+        // including info such as speed and current street name.
         visualNavigator.route = nil
         locationProvider.enableDevicePositioning()
-
-        mapView.mapScene.addMapMarker(trackingArrow)
-        updateArrowLocations()
-        showMessage("Free tracking: Running.")
+        showMessage("Tracking device's location.")
     }
 
-    func stopTracking() {
-        mapView.mapScene.removeMapMarker(trackingArrow)
-        showMessage("Free tracking: Stopped.")
+    func startCameraTracking() {
+        // By default, this is enabled.
+        visualNavigator.cameraMode = CameraTrackingMode.enabled
     }
 
-    private func updateArrowLocations() {
-        guard let lastKnownLocation = getLastKnownGeoCoordinates() else {
-            print("No location found.")
-            return
-        }
-
-        navigationArrow.coordinates = lastKnownLocation
-        trackingArrow.coordinates = lastKnownLocation
+    func stopCameraTracking() {
+        visualNavigator.cameraMode = CameraTrackingMode.disabled
     }
 
     func getLastKnownGeoCoordinates() -> GeoCoordinates? {

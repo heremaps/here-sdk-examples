@@ -21,19 +21,24 @@ For an overview of the existing features, please check the _Developer's Guide_ f
 
 > For now, the _Navigate Edition_ is only available upon request. Please contact your HERE representative to receive access including a set of evaluation credentials.
 
-## List of Available Example Apps (Version 4.5.1.0)
+## List of Available Example Apps (Version 4.6.0.0)
 In this repository you can find the [latest example apps](examples/latest) that show key features of the HERE SDK in ready-to-use applications:
 
 - **HelloMap**: Shows the classic 'Hello World'.
 - **HelloMapWithStoryboard**: Shows the classic 'Hello World' using a Storyboard (iOS only).
+- **Camera**: Shows how to change the target and the target anchor point and how to move to another location using custom map animations.
 - **Gestures**: Shows how to handle gestures.
+- **OfflineMaps**: Shows how the HERE SDK can work fully offline and how offline map data can be downloaded for continents and countries. Exclusively available for the _Navigate Edition_.
 - **MapMarker**: Shows how to add POI marker to the map.
 - **MapObjects**: Shows how to add circles, polygons and polylines to the map.
 - **MapOverlays** / **MapViewPins**: Shows how to add standard platform views to the map.
 - **Routing**: Shows how to calculate routes and add them to the map.
+- **RoutingHybrid**: Shows how to calculate routes and add them to the map. Also shows how to calculate routes offline, when no internet connection is available. Exclusively available for the _Navigate Edition_.
+- **EVRouting**: Shows how to calculate routes for _electric vehicles_ and how to calculate the area of reach with _isoline routing_. Also shows how to search along a route.
+- **Search**: Shows how to search POIs and add them to the map. Shows also geocoding and reverse geocoding.
+- **SearchHybrid**: Shows how to search POIs and add them to the map. Shows geocoding and reverse geocoding. Also shows how to search offline, when no internet connection is available. Exclusively available for the _Navigate Edition_.
 - **Navigation**: Shows turn-by-turn navigation and tracking. Exclusively available for the _Navigate Edition_.
-- **Positioning**: Shows how to integrate HERE Positioning. Exclusively available for the _Navigate Edition_ (the example app is available for iOS and Android only).
-- **Search**: Shows how to search POIs and add them to the map.
+- **Positioning**: Shows how to integrate HERE Positioning. Exclusively available for the _Navigate Edition_.
 - **Traffic**: Shows how to search for real-time traffic and how to visualize it on the map.
 - **StandAloneEngine**: Shows how to use an engine without a map view.
 - **Venues**: Shows how to integrate private venues. Exclusively available for the _Navigate Edition_.
@@ -64,8 +69,7 @@ In addition to the apps above, this repo also contains example apps for [other H
 
 ### Get Started for iOS
 1. Copy the `heresdk.framework` file of the HERE SDK for iOS to the example app's root folder.
-2. In Xcode, open the _General_ settings of the app target and make sure that the HERE SDK framework appears under _Embedded Binaries_. If it does not appear, add the `heresdk.framework` to the _Embedded Binaries_ section ("Add other..." -> "Create folder references").
-3. To run the app, you need to add your HERE SDK credentials to the `Info.plist` file.
+2. To run the app, you need to add your HERE SDK credentials to the `Info.plist` file.
 
 ### Get Started for Flutter
 1. Unzip the HERE SDK for Flutter plugin to the `plugins` folder that can be found inside the example app project. Renname the folder to 'here_sdk': hello_map/plugins/here_sdk
@@ -75,7 +79,11 @@ In addition to the apps above, this repo also contains example apps for [other H
 3. Start an Android emulator or an iOS simulator and execute `flutter run` from the app's directory - or run the app from within your IDE.
 
 ## Get in Touch
-If you have more questions, please check [stackoverflow.com/questions/tagged/here-api](http://stackoverflow.com/questions/tagged/here-api). Information on how to contribute to this project can be found [here](CONTRIBUTING.md). If you have questions about billing or your account, [contact us](https://developer.here.com/contact-us). Thank you for using the HERE SDK.
+- If you have more questions, please check [stackoverflow.com/questions/tagged/here-api](http://stackoverflow.com/questions/tagged/here-api).
+- Information on how to contribute to this project can be found [here](CONTRIBUTING.md).
+- If you have questions about billing, your account, or anything else [Contact Us](https://developer.here.com/help).
+
+Thank you for using the HERE SDK.
 
 ## License
 Copyright (C) 2019-2020 HERE Europe B.V.

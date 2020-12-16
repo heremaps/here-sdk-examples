@@ -33,6 +33,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ToggleButton;
 
 import com.here.sdk.mapview.MapError;
 import com.here.sdk.mapview.MapScene;
@@ -69,6 +70,18 @@ public class MainActivity extends AppCompatActivity {
         mapView.setWatermarkPosition(WatermarkPlacement.BOTTOM_CENTER, bottomCenterMarginInPixels);
 
         handleAndroidPermissions();
+
+        ToggleButton toggleTrackingButton = findViewById(R.id.toggleTrackingButton);
+        toggleTrackingButton.setTextOn("Camera Tracking: ON");
+        toggleTrackingButton.setTextOff("Camera Tracking: OFF");
+        toggleTrackingButton.setChecked(true);
+        toggleTrackingButton.setOnClickListener(v -> {
+            if (toggleTrackingButton.isChecked()) {
+                app.toggleTrackingButtonOnClicked();
+            } else {
+                app.toggleTrackingButtonOffClicked();
+            }
+        });
     }
 
     @Override

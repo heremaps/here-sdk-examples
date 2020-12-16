@@ -56,11 +56,22 @@ class RoutingExample {
         here.Route route = routeList.first;
         _showRouteDetails(route);
         _showRouteOnMap(route);
+        _logRouteViolations(route);
       } else {
         var error = routingError.toString();
         _showDialog('Error', 'Error while calculating a route: $error');
       }
     });
+  }
+
+  // A route may contain several warnings, for example, when a certain route option could not be fulfilled.
+  // An implementation may decide to reject a route if one or more violations are detected.
+  void _logRouteViolations(here.Route route) {
+    for (var section in route.sections) {
+      for (var notice in section.notices) {
+        print("This route contains the following warning: " + notice.code.toString());
+      }
+    }
   }
 
   void clearMap() {

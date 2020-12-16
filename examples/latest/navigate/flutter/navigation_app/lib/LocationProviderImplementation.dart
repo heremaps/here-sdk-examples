@@ -23,7 +23,8 @@ import 'package:here_sdk/navigation.dart' as HERE;
 import 'package:here_sdk/routing.dart' as HERE;
 
 // This class provides simulated location events (requires a route).
-// Alternatively, check the positioning_app to see how to get real location events from a device.
+// Alternatively, check the positioning example code in the developer's guide
+// to see how to get real location events from a device.
 class LocationProviderImplementation {
   // Set by anyone who wants to listen to location updates from LocationSimulator.
   HERE.LocationListener locationListener;
@@ -44,7 +45,7 @@ class LocationProviderImplementation {
 
   // Provides fake GPS signals based on the route geometry.
   HERE.LocationSimulator _createLocationSimulator(HERE.Route route) {
-    final double speedFactor = 3;
+    final double speedFactor = 2;
     final notificationIntervalInMilliseconds = 500;
     HERE.LocationSimulatorOptions locationSimulatorOptions = HERE.LocationSimulatorOptions(
       speedFactor,

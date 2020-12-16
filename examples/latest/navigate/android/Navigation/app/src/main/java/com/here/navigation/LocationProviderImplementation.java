@@ -79,7 +79,7 @@ public class LocationProviderImplementation {
 
     // Provides fake GPS signals based on the route geometry.
     private LocationSimulator createLocationSimulator(Route route) {
-        double speedFactor = 3;
+        double speedFactor = 2;
         int notificationIntervalInMilliseconds = 500;
         LocationSimulatorOptions locationSimulatorOptions =
                 new LocationSimulatorOptions(speedFactor, notificationIntervalInMilliseconds);

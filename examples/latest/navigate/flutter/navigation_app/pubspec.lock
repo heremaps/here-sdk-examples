@@ -80,7 +80,7 @@ packages:
       path: "plugins/here_sdk"
       relative: true
     source: path
-    version: "4.5.1"
+    version: "4.5.4"
   intl:
     dependency: transitive
     description:

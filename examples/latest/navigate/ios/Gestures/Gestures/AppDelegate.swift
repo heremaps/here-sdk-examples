@@ -17,6 +17,7 @@
  * License-Filename: LICENSE
  */
 
+import heresdk
 import UIKit
 
 @UIApplicationMain
@@ -28,5 +29,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         return true
+    }
+
+    func applicationWillTerminate(_ application: UIApplication) {
+        // Deinitializes map renderer and releases all of its resources.
+        // All existing MapView instances will become invalid after this call.
+        MapView.deinitialize()
     }
 }

@@ -50,7 +50,7 @@ class App : LongPressDelegate {
 
         navigationExample = NavigationExample(viewController: viewController,
                                               mapView: mapView)
-        navigationExample.startTracking()
+        navigationExample.startLocationProvider()
 
         setLongPressGestureHandler()
         showMessage("Long press to set a destination or use a random one.")
@@ -73,6 +73,14 @@ class App : LongPressDelegate {
     func clearMapButtonClicked() {
         clearMap()
         isLongpressDestination = false
+    }
+
+    func enableCameraTracking() {
+        navigationExample.startCameraTracking()
+    }
+
+    func disableCameraTracking() {
+        navigationExample.stopCameraTracking()
     }
 
     private func calculateRoute(isSimulated: Bool) {
@@ -167,7 +175,6 @@ class App : LongPressDelegate {
         clearRoute()
 
         navigationExample.stopNavigation()
-        navigationExample.startTracking()
     }
 
     private func clearWaypointMapMarker() {
@@ -245,7 +252,6 @@ class App : LongPressDelegate {
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
         let buttonText = isSimulated ? "Start navigation (simulated)" : "Start navigation (device location)"
         alertController.addAction(UIAlertAction(title: buttonText, style: .default, handler: { (alertAction) -> Void in
-            self.navigationExample.stopTracking()
             self.navigationExample.startNavigation(route: route, isSimulated: isSimulated)
         }))
         alertController.addAction(UIAlertAction(title: "Cancel", style: .default))

@@ -28,6 +28,7 @@ import com.here.sdk.core.Color;
 import com.here.sdk.core.GeoCircle;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.GeoPolygon;
+import com.here.sdk.core.LocationListener;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.core.Location;
 import com.here.sdk.location.LocationAccuracy;
@@ -35,7 +36,6 @@ import com.here.sdk.location.LocationEngine;
 import com.here.sdk.location.LocationEngineStatus;
 import com.here.sdk.location.LocationFeature;
 import com.here.sdk.location.LocationStatusListener;
-import com.here.sdk.location.LocationUpdateListener;
 import com.here.sdk.mapview.MapPolygon;
 import com.here.sdk.mapview.MapView;
 
@@ -60,7 +60,7 @@ public class PositioningExample {
     private LocationEngine locationEngine;
     private ConsentEngine consentEngine;
 
-    private final LocationUpdateListener locationUpdateListener = new LocationUpdateListener() {
+    private final LocationListener locationListener = new LocationListener() {
         @Override
         public void onLocationUpdated(@NonNull Location location) {
             final double accuracy = (location.horizontalAccuracyInMeters != null) ? location.horizontalAccuracyInMeters: 0.0;
@@ -69,13 +69,18 @@ public class PositioningExample {
             //Update the map viewport to be centered on the location.
             mapView.getCamera().lookAt(location.coordinates, CAMERA_DISTANCE_IN_METERS);
         }
+
+        @Override
+        public void onLocationTimeout() {
+            //This callback is deprecated and will be removed with HERE SDK version 4.7. LocationEngine will never send updates through this callback.
+        }
     };
 
     private final LocationStatusListener locationStatusListener = new LocationStatusListener() {
         @Override
         public void onStatusChanged(@NonNull LocationEngineStatus locationEngineStatus) {
             if(locationEngineStatus == LocationEngineStatus.ENGINE_STOPPED) {
-                locationEngine.removeLocationUpdateListener(locationUpdateListener);
+                locationEngine.removeLocationListener(locationListener);
                 locationEngine.removeLocationStatusListener(locationStatusListener);
             }
         }
@@ -121,7 +126,7 @@ public class PositioningExample {
 
     private void startLocating() {
         locationEngine.addLocationStatusListener(locationStatusListener);
-        locationEngine.addLocationUpdateListener(locationUpdateListener);
+        locationEngine.addLocationListener(locationListener);
         locationEngine.start(LocationAccuracy.BEST_AVAILABLE);
     }
 

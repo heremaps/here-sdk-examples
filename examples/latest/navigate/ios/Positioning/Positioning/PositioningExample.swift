@@ -20,12 +20,12 @@
 import heresdk
 import UIKit
 
-class PositioningExample: LocationUpdateDelegate, LocationStatusDelegate {
+class PositioningExample: LocationDelegate, LocationStatusDelegate {
 
     private static let defaultGeoCoordinates = GeoCoordinates(latitude: 52.520798, longitude: 13.409408)
     private static let defaultCameraDistance = 1000.0
-    private static let defaultAccuracyColor = Color(red: 64, green: 190, blue: 255, alpha: 64)
-    private static let defaultCenterColor = Color(red: 255, green: 32, blue: 32, alpha: 255)
+    private static let defaultAccuracyColor = UIColor(red: 0.25, green: 0.75, blue: 1, alpha: 0.25)
+    private static let defaultCenterColor = UIColor(red: 1.0, green: 0.125, blue: 0.125, alpha: 1)
 
     private var locationEngine: LocationEngine
     private var mapView: MapView!
@@ -63,24 +63,28 @@ class PositioningExample: LocationUpdateDelegate, LocationStatusDelegate {
     private func startLocating() {
         // Set delegates and start location engine.
         locationEngine.addLocationStatusDelegate(locationStatusDelegate: self)
-        locationEngine.addLocationUpdateDelegate(locationUpdateDelegate: self)
+        locationEngine.addLocationDelegate(locationDelegate: self)
         _ = locationEngine.start(locationAccuracy: .bestAvailable)
     }
 
     public func stopLocating() {
         // Remove delegates and stop location engine.
-        locationEngine.removeLocationUpdateDelegate(locationUpdateDelegate: self)
+        locationEngine.removeLocationDelegate(locationDelegate: self)
         locationEngine.removeLocationStatusDelegate(locationStatusDelegate: self)
         locationEngine.stop()
     }
 
-    func onLocationUpdated(location: Location) {
+    func onLocationUpdated(_ location: heresdk.Location) {
         updateMyLocationOnMap(geoCoordinates: location.coordinates,
                               accuracyInMeters: location.horizontalAccuracyInMeters ?? 1.0)
 
         print("Location updated: \(location.coordinates)")
         print("Horizontal accuracy (m): \(String(describing: location.horizontalAccuracyInMeters))")
         print("Altitude (m): \(String(describing: location.verticalAccuracyInMeters))")
+    }
+
+    func onLocationTimeout() {
+        // Will be removed in 4.7.0. The time-out functionality is now part of the SDK implementation.
     }
 
     func onStatusChanged(locationEngineStatus: LocationEngineStatus) {

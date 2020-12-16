@@ -138,7 +138,7 @@ class MapMarkerExample: TapDelegate {
         }
 
         if let message = topmostMapMarker.metadata?.getString(key: "key_poi") {
-            showDialog(title: "Map Marker picked", message: message);
+            showDialog(title: "Map Marker picked", message: message)
             return
         }
 

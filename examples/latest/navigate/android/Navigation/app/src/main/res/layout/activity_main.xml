@@ -38,6 +38,7 @@
             android:backgroundTint="@android:color/holo_blue_light"
             android:onClick="addRouteSimulatedLocationButtonClicked"
             android:text="Add Route (Simulated Location)"
+            android:textSize="10sp"
             android:textColor="@android:color/white" />
 
         <Button
@@ -47,6 +48,7 @@
             android:backgroundTint="@android:color/holo_blue_light"
             android:onClick="addRouteDeviceLocationButtonClicked"
             android:text="Add Route (Device Location)"
+            android:textSize="10sp"
             android:textColor="@android:color/white" />
 
         <Button
@@ -56,7 +58,25 @@
             android:backgroundTint="@android:color/holo_blue_light"
             android:onClick="clearMapButtonClicked"
             android:text="Clear Map / Stop Navigation"
+            android:textSize="10sp"
             android:textColor="@android:color/white" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/buttons2ndRow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@+id/buttons">
+
+        <ToggleButton
+            android:id="@+id/toggleTrackingButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:backgroundTint="@android:color/holo_blue_light"
+            android:textColor="@android:color/white"
+            android:textSize="10sp" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
