@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 HERE Europe B.V.
+ * Copyright (C) 2019-2021 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,24 +20,22 @@
 import CoreLocation
 import heresdk
 
-// A reference implementation using HERE positioning.
-// It is not necessary to use this class directly, as the location features can be controlled
-// from the LocationProviderImplementation which uses this class to get location updates from
-// the device.
+// A reference implementation using HERE Positioning to get notified on location updates
+// from various location sources available from a device and HERE services.
 class HEREPositioningProvider : NSObject,
                                 // Needed to check device capabilities.
                                 CLLocationManagerDelegate,
                                 // Optionally needed by HERE SDK to listen for status changes.
-                                LocationStatusDelegate,
-                                // Needed by HERE SDK positioning to listen for location updates.
-                                LocationUpdateDelegate {
+                                LocationStatusDelegate {
 
     // We need to check if the device is authorized to use location capabilities like GPS sensors.
     // Results are handled in the CLLocationManagerDelegate below.
     private let locationManager = CLLocationManager()
     private var locationEngine: LocationEngine
-    private var locationUpdateDelegate: LocationUpdateDelegate?
+    private var locationUpdateDelegate: LocationDelegate?
 
+    var lastKnownLocation: Location?
+    
     override init() {
         do {
             try locationEngine = LocationEngine()
@@ -45,10 +43,11 @@ class HEREPositioningProvider : NSObject,
             fatalError("Failed to initialize LocationEngine. Cause: \(engineInstantiationError)")
         }
 
-        if let lastLocation = locationEngine.lastKnownLocation {
-            print("Last known location: \(lastLocation.coordinates)")
-        } else {
+        lastKnownLocation = locationEngine.lastKnownLocation
+        if lastKnownLocation == nil {
             print("No last known location found.")
+        } else {
+            print("Last known location found.")
         }
 
         super.init()
@@ -76,46 +75,31 @@ class HEREPositioningProvider : NSObject,
         }
     }
 
-    func startLocating(locationUpdateDelegate: LocationUpdateDelegate) {
+    // Does nothing when engine is already running.
+    func startLocating(locationDelegate: LocationDelegate, accuracy: LocationAccuracy) {
         if locationEngine.isStarted {
             return
         }
 
-        self.locationUpdateDelegate = locationUpdateDelegate
+        locationUpdateDelegate = locationDelegate
 
         // Set delegates to get location updates.
-        locationEngine.addLocationUpdateDelegate(locationUpdateDelegate: locationUpdateDelegate)
-        locationEngine.addLocationUpdateDelegate(locationUpdateDelegate: self)
+        locationEngine.addLocationDelegate(locationDelegate: locationUpdateDelegate!)
         locationEngine.addLocationStatusDelegate(locationStatusDelegate: self)
-
-        // Choose the best accuracy for the tbt navigation use case.
-        _ = locationEngine.start(locationAccuracy: .navigation)
+        
+        _ = locationEngine.start(locationAccuracy: accuracy)
     }
 
-    // Use this optionally to hook in additional delegates.
-    func addLocationUpdateDelegate(locationUpdateDelegate: LocationUpdateDelegate) {
-        locationEngine.addLocationUpdateDelegate(locationUpdateDelegate: locationUpdateDelegate)
-    }
-
-    func removeLocationUpdateDelegate(locationUpdateDelegate: LocationUpdateDelegate) {
-        locationEngine.removeLocationUpdateDelegate(locationUpdateDelegate: locationUpdateDelegate)
-    }
-
+    // Does nothing when engine is already stopped.
     func stopLocating() {
         if !locationEngine.isStarted {
             return
         }
 
         // Remove delegates and stop location engine.
-        locationEngine.removeLocationUpdateDelegate(locationUpdateDelegate: locationUpdateDelegate!)
-        locationEngine.removeLocationUpdateDelegate(locationUpdateDelegate: self)
+        locationEngine.removeLocationDelegate(locationDelegate: locationUpdateDelegate!)
         locationEngine.removeLocationStatusDelegate(locationStatusDelegate: self)
         locationEngine.stop()
-    }
-
-    // Conforms to the LocationUpdateDelegate protocol.
-    func onLocationUpdated(location: Location) {
-        print("Location updated: \(location.coordinates)")
     }
 
     // Conforms to the LocationStatusDelegate protocol.

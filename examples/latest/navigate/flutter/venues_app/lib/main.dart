@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 HERE Europe B.V.
+ * Copyright (C) 2020-2021 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:venues/geometry_info.dart';
+import 'package:venues/indoor_routing_widget.dart';
 import 'package:venues/settings_page.dart';
 import 'package:venues/venue_engine_widget.dart';
 import 'package:here_sdk/core.dart';
@@ -46,6 +47,7 @@ class MyApp extends StatelessWidget {
 
 class MainPage extends StatelessWidget {
   final VenueEngineState _venueEngineState = VenueEngineState();
+  final IndoorRoutingState _indoorRoutingState = IndoorRoutingState();
   final GeometryInfoState _geometryInfoState = GeometryInfoState();
 
   @override
@@ -60,8 +62,8 @@ class MainPage extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 150,
-              padding: EdgeInsets.only(left: 8, right: 8),
+              width: 120,
+              padding: EdgeInsets.only(left: 5, right: 5),
               // Widget for opening venue by provided ID.
               child: TextField(
                   decoration: InputDecoration(
@@ -99,6 +101,19 @@ class MainPage extends StatelessWidget {
               child: FlatButton(
                 color: Colors.white,
                 padding: EdgeInsets.zero,
+                child: Icon(Icons.directions,
+                  color: Colors.black, size: kMinInteractiveDimension),
+                onPressed: () {
+                  _indoorRoutingState.isEnabled = !_indoorRoutingState.isEnabled;
+                },
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.all(4),
+              width: kMinInteractiveDimension,
+              child: FlatButton(
+                color: Colors.white,
+                padding: EdgeInsets.zero,
                 child: Icon(Icons.edit,
                     color: Colors.black, size: kMinInteractiveDimension),
                 onPressed: () {
@@ -122,6 +137,7 @@ class MainPage extends StatelessWidget {
             )
           ],
         ),
+        IndoorRoutingWidget(state: _indoorRoutingState),
         Expanded(
           child: Stack(children: <Widget>[
             // Add a HERE map.
@@ -157,7 +173,7 @@ class MainPage extends StatelessWidget {
       // Create a venue engine object. Once the initialization is done,
       // a callback will be called.
       var venueEngine = VenueEngine.make(_onVenueEngineCreated);
-      _venueEngineState.set(hereMapController, venueEngine, _geometryInfoState);
+      _venueEngineState.set(hereMapController, venueEngine, _indoorRoutingState, _geometryInfoState);
     });
   }
 

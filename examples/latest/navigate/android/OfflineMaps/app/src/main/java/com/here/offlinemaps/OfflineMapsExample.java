@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 HERE Europe B.V.
+ * Copyright (C) 2019-2021 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,7 +94,7 @@ public class OfflineMapsExample {
         // Download a list of Region items that will tell us what map regions are available for later download.
         mapDownloader.getDownloadableRegions(LanguageCode.DE_DE, new DownloadableRegionsCallback() {
             @Override
-            public void onCompleted(MapLoaderError mapLoaderError, List<Region> list) {
+            public void onCompleted(@Nullable MapLoaderError mapLoaderError, @Nullable List<Region> list) {
                 if (mapLoaderError != null) {
                     String message = "Downloadable regions error: " + mapLoaderError;
                     snackbar.setText(message).show();

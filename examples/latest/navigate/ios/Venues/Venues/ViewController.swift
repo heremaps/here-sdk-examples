@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2020 HERE Europe B.V.
+* Copyright (C) 2020-2021 HERE Europe B.V.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -29,16 +29,19 @@ class ViewController: UIViewController {
     @IBOutlet private weak var geometryNameLabel: UILabel!
     @IBOutlet private weak var venueSearch: VenueSearch!
     @IBOutlet private weak var venuesManager: VenuesManager!
+    @IBOutlet private weak var indoorRoutingUI: IndoorRoutingUI!
+    @IBOutlet private weak var indoorRoutingUIConstraint: NSLayoutConstraint!
 
     var mapView: MapView = MapView()
     var mapScheme: MapScheme = .normalDay
     var venueEngine: VenueEngine!
     var moveToVenue: Bool = false
+    var venueTapHandler: VenueTapHandler?
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        mapView.setFrame(frame: viewFrame.bounds)
+        mapView.frame = viewFrame.bounds
         viewFrame.addSubview(mapView)
 
         venueIdInput?.keyboardType = UIKeyboardType.numberPad
@@ -57,6 +60,7 @@ class ViewController: UIViewController {
         venueService.removeVenueDelegate(self)
         venueMap.removeVenueSelectionDelegate(self)
         mapView.gestures.tapDelegate = nil
+        mapView.gestures.longPressDelegate = nil
     }
 
     // Completion handler when loading a map scene.
@@ -93,11 +97,13 @@ class ViewController: UIViewController {
         drawingSwitcher.setVenueMap(venueMap)
 
         // Create a venue tap handler and set it as default tap delegate.
-        let tapHandler = VenueTapHandler(venueEngine: venueEngine,
+        venueTapHandler = VenueTapHandler(venueEngine: venueEngine,
                                          mapView: mapView,
                                          geometryLabel: geometryNameLabel)
-        mapView.gestures.tapDelegate = tapHandler
-        venueSearch.setup(venueMap, tapHandler: tapHandler)
+        venueSearch.setup(venueMap, tapHandler: venueTapHandler)
+        indoorRoutingUI.setup(venueEngine, mapView: mapView, heightConstraint: indoorRoutingUIConstraint)
+        mapView.gestures.tapDelegate = self
+        mapView.gestures.longPressDelegate = indoorRoutingUI
         venuesManager.setup(venueMap, mapView: mapView)
 
         // Start VenueEngine. Once authentication is done, the authentication completion handler
@@ -135,6 +141,9 @@ class ViewController: UIViewController {
     @IBAction private func onSearchTap(_ sender: Any) {
         venueSearch.isHidden = !venueSearch.isHidden
     }
+    @IBAction private func onRoutingUIEnabler(_ sender: Any) {
+        indoorRoutingUI.isHidden = !indoorRoutingUI.isHidden
+    }
 
     @IBAction private func onEditTap(_ sender: Any) {
         venuesManager.isHidden = !venuesManager.isHidden
@@ -143,6 +152,16 @@ class ViewController: UIViewController {
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         mapView.handleLowMemory()
+    }
+}
+
+extension ViewController: TapDelegate {
+    public func onTap(origin: Point2D) {
+        if !indoorRoutingUI.isHidden {
+            indoorRoutingUI.onTap(origin: origin)
+        } else {
+            venueTapHandler?.onTap(origin: origin)
+        }
     }
 }
 

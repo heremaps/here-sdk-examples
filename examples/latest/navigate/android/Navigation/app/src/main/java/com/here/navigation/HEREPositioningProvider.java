@@ -1,39 +1,53 @@
+/*
+ * Copyright (C) 2019-2021 HERE Europe B.V.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ * License-Filename: LICENSE
+ */
+
 package com.here.navigation;
 
-import androidx.annotation.NonNull;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.here.sdk.consent.Consent;
 import com.here.sdk.consent.ConsentEngine;
 import com.here.sdk.core.Location;
+import com.here.sdk.core.LocationListener;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.location.LocationAccuracy;
 import com.here.sdk.location.LocationEngine;
 import com.here.sdk.location.LocationEngineStatus;
 import com.here.sdk.location.LocationFeature;
 import com.here.sdk.location.LocationStatusListener;
-import com.here.sdk.location.LocationUpdateListener;
 
 import java.util.List;
 
-// A reference implementation using HERE positioning.
-// It is not necessary to use this class directly, as the location features can be controlled
-// from the LocationProviderImplementation which uses this class to get location updates from
-// the device.
+// A reference implementation using HERE Positioning to get notified on location updates
+// from various location sources available from a device and HERE services.
 public class HEREPositioningProvider {
 
-    public static final String LOG_TAG = HEREPositioningProvider.class.getName();
+    private static final String LOG_TAG = HEREPositioningProvider.class.getName();
 
-    private LocationEngine locationEngine;
-    private ConsentEngine consentEngine;
-    private LocationUpdateListener updateListener;
+    private final LocationEngine locationEngine;
+    private LocationListener updateListener;
 
-    private final LocationUpdateListener locationUpdateListener = new LocationUpdateListener() {
-        @Override
-        public void onLocationUpdated(@NonNull Location location) {
-            Log.d(LOG_TAG, "Location update received.");
-        }
-    };
+    @Nullable
+    public Location lastKnownLocation;
 
     private final LocationStatusListener locationStatusListener = new LocationStatusListener() {
         @Override
@@ -50,6 +64,8 @@ public class HEREPositioningProvider {
     };
 
     public HEREPositioningProvider() {
+        ConsentEngine consentEngine;
+
         try {
             consentEngine = new ConsentEngine();
             locationEngine = new LocationEngine();
@@ -62,15 +78,16 @@ public class HEREPositioningProvider {
             consentEngine.requestUserConsent();
         }
 
-        Location myLastLocation = locationEngine.getLastKnownLocation();
-        if (myLastLocation != null) {
-            Log.d(LOG_TAG, "Last known location: " + myLastLocation.timestamp);
+        lastKnownLocation = locationEngine.getLastKnownLocation();
+        if (lastKnownLocation != null) {
+            Log.d(LOG_TAG, "Last known location: " + lastKnownLocation.timestamp);
         } else {
             Log.d(LOG_TAG, "No last known location found.");
         }
     }
 
-    public void startLocating(LocationUpdateListener updateListener) {
+    // Does nothing when engine is already running.
+    public void startLocating(LocationListener updateListener, LocationAccuracy accuracy) {
         if (locationEngine.isStarted()) {
             return;
         }
@@ -78,31 +95,20 @@ public class HEREPositioningProvider {
         this.updateListener = updateListener;
 
         // Set listeners to get location updates.
-        locationEngine.addLocationUpdateListener(updateListener);
-        locationEngine.addLocationUpdateListener(locationUpdateListener);
+        locationEngine.addLocationListener(updateListener);
         locationEngine.addLocationStatusListener(locationStatusListener);
 
-        // Choose the best accuracy for the tbt navigation use case.
-        locationEngine.start(LocationAccuracy.NAVIGATION);
+        locationEngine.start(accuracy);
     }
 
-    // Use this optionally to hook in additional listeners.
-    public void addLocationUpdateListener(LocationUpdateListener locationUpdateListener) {
-        locationEngine.addLocationUpdateListener(locationUpdateListener);
-    }
-
-    public void removeLocationUpdateListener(LocationUpdateListener locationUpdateListener) {
-        locationEngine.removeLocationUpdateListener(locationUpdateListener);
-    }
-
+    // Does nothing when engine is already stopped.
     public void stopLocating() {
         if (!locationEngine.isStarted()) {
             return;
         }
 
         // Remove listeners and stop location engine.
-        locationEngine.removeLocationUpdateListener(updateListener);
-        locationEngine.removeLocationUpdateListener(locationUpdateListener);
+        locationEngine.removeLocationListener(updateListener);
         locationEngine.removeLocationStatusListener(locationStatusListener);
         locationEngine.stop();
     }

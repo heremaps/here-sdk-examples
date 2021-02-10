@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 HERE Europe B.V.
+ * Copyright (C) 2019-2021 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.GeoPolygon;
 import com.here.sdk.core.GeoPolyline;
 import com.here.sdk.core.errors.InstantiationErrorException;
+import com.here.sdk.mapview.MapArrow;
 import com.here.sdk.mapview.MapCamera;
 import com.here.sdk.mapview.MapPolygon;
 import com.here.sdk.mapview.MapPolyline;
@@ -37,6 +38,7 @@ public class MapObjectsExample {
 
     private MapScene mapScene;
     private MapPolyline mapPolyline;
+    private MapArrow mapArrow;
     private MapPolygon mapPolygon;
     private MapPolygon mapCircle;
 
@@ -52,6 +54,12 @@ public class MapObjectsExample {
         clearMap();
         mapPolyline = createPolyline();
         mapScene.addMapPolyline(mapPolyline);
+    }
+
+    public void showMapArrow() {
+        clearMap();
+        mapArrow = createMapArrow();
+        mapScene.addMapArrow(mapArrow);
     }
 
     public void showMapPolygon() {
@@ -81,7 +89,7 @@ public class MapObjectsExample {
         try {
             geoPolyline = new GeoPolyline(coordinates);
         } catch (InstantiationErrorException e) {
-            // Less than two vertices.
+            // Thrown when less than two vertices.
             return null;
         }
 
@@ -92,9 +100,31 @@ public class MapObjectsExample {
         return mapPolyline;
     }
 
+    private MapArrow createMapArrow() {
+        ArrayList<GeoCoordinates> coordinates = new ArrayList<>();
+        coordinates.add(new GeoCoordinates(52.53032, 13.37409));
+        coordinates.add(new GeoCoordinates(52.5309, 13.3946));
+        coordinates.add(new GeoCoordinates(52.53894, 13.39194));
+        coordinates.add(new GeoCoordinates(52.54014, 13.37958));
+
+        GeoPolyline geoPolyline;
+        try {
+            geoPolyline = new GeoPolyline(coordinates);
+        } catch (InstantiationErrorException e) {
+            // Thrown when less than two vertices.
+            return null;
+        }
+
+        float widthInPixels = 20;
+        Color lineColor = Color.valueOf(0, 0.56f, 0.54f, 0.63f); // RGBA
+        MapArrow mapArrow = new MapArrow(geoPolyline, widthInPixels, lineColor);
+
+        return mapArrow;
+    }
+
     private MapPolygon createPolygon() {
         ArrayList<GeoCoordinates> coordinates = new ArrayList<>();
-        // Note that a polygon requires a clockwise order of the coordinates.
+        // Note that a polygon requires a clockwise or counter-clockwise order of the coordinates.
         coordinates.add(new GeoCoordinates(52.54014, 13.37958));
         coordinates.add(new GeoCoordinates(52.53894, 13.39194));
         coordinates.add(new GeoCoordinates(52.5309, 13.3946));
@@ -128,6 +158,10 @@ public class MapObjectsExample {
     private void clearMap() {
         if (mapPolyline != null) {
             mapScene.removeMapPolyline(mapPolyline);
+        }
+
+        if (mapArrow != null) {
+            mapScene.removeMapArrow(mapArrow);
         }
 
         if (mapPolygon != null) {

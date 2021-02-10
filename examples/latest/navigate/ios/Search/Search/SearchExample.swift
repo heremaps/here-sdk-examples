@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 HERE Europe B.V.
+ * Copyright (C) 2019-2021 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,7 +91,8 @@ class SearchExample: TapDelegate,
         for searchResult in items! {
             let metadata = Metadata()
             metadata.setCustomValue(key: "key_search_result", value: SearchResultMetadata(searchResult))
-            addPoiMapMarker(geoCoordinates: searchResult.coordinates, metadata: metadata)
+            // Note that geoCoordinates are always set, but can be nil for suggestions only.
+            addPoiMapMarker(geoCoordinates: searchResult.geoCoordinates!, metadata: metadata)
         }
     }
 
@@ -175,7 +176,8 @@ class SearchExample: TapDelegate,
 
         // If error is nil, it is guaranteed that the items will not be nil.
         for geocodingResult in items! {
-            let geoCoordinates = geocodingResult.coordinates
+            // Note that geoCoordinates are always set, but can be nil for suggestions only.
+            let geoCoordinates = geocodingResult.geoCoordinates!
             let address = geocodingResult.address
             let locationDetails = address.addressText
                 + ". Coordinates: \(geoCoordinates.latitude)"

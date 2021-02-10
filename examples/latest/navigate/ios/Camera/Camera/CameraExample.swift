@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 HERE Europe B.V.
+ * Copyright (C) 2019-2021 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,7 @@ import heresdk
 import UIKit
 
 // This example shows how to use the Camera class to rotate and tilt the map programmatically, to set
-// a new transform center that influences those operations, and to move to a new location using
-// Apple's CADisplayLink to animate the map smoothly.
+// a new transform center that influences those operations, and to move to a new location.
 // For more features of the Camera class, please consult the API Reference and the Developer's Guide.
 class CameraExample: TapDelegate, MapCameraObserver {
 
@@ -32,8 +31,6 @@ class CameraExample: TapDelegate, MapCameraObserver {
     private let camera: MapCamera
     private var cameraTargetView: UIImageView
     private var poiMapCircle: MapPolygon!
-
-    private lazy var cameraAnimator = CameraAnimator(mapView.camera)
 
     init(viewController: UIViewController, mapView: MapView) {
         self.viewController = viewController
@@ -72,7 +69,7 @@ class CameraExample: TapDelegate, MapCameraObserver {
     func onMoveToXYButtonClicked() {
         let geoCoordinates = getRandomGeoCoordinates()
         updatePoiCircle(geoCoordinates)
-        cameraAnimator.moveTo(geoCoordinates, defaultDistanceToEarthInMeters)
+        camera.flyTo(target: geoCoordinates)
     }
 
     // Rotate the map by x degrees. Tip: Try to see what happens for negative values.

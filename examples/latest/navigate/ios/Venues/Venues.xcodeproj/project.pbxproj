@@ -10,6 +10,8 @@
 		B02A918A24B60CF900571C9D /* VenuesManager.xib in Resources */ = {isa = PBXBuildFile; fileRef = B02A918824B60CF900571C9D /* VenuesManager.xib */; };
 		B02A919424B62C7700571C9D /* VenueTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B02A919224B62C7700571C9D /* VenueTableViewCell.xib */; };
 		B02A919624B70C0400571C9D /* VenueTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B02A919524B70C0400571C9D /* VenueTableViewCell.swift */; };
+		B045590F25C9854400BD2D8D /* IndoorRoutingUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B045590C25C9854400BD2D8D /* IndoorRoutingUI.swift */; };
+		B045591025C9854400BD2D8D /* IndoorRoutingUI.xib in Resources */ = {isa = PBXBuildFile; fileRef = B045590D25C9854400BD2D8D /* IndoorRoutingUI.xib */; };
 		B0479B9424B5D0C500EDEEEA /* VenuesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0479B9224B5D0C400EDEEEA /* VenuesManager.swift */; };
 		B0479B9524B5D0C500EDEEEA /* VenueSearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0479B9324B5D0C500EDEEEA /* VenueSearch.swift */; };
 		B0479B9A24B5D16600EDEEEA /* VenueSearch.xib in Resources */ = {isa = PBXBuildFile; fileRef = B0479B9624B5D16600EDEEEA /* VenueSearch.xib */; };
@@ -47,6 +49,8 @@
 		B02A918924B60CF900571C9D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/VenuesManager.xib; sourceTree = "<group>"; };
 		B02A919324B62C7700571C9D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/VenueTableViewCell.xib; sourceTree = "<group>"; };
 		B02A919524B70C0400571C9D /* VenueTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VenueTableViewCell.swift; sourceTree = "<group>"; };
+		B045590C25C9854400BD2D8D /* IndoorRoutingUI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IndoorRoutingUI.swift; sourceTree = "<group>"; };
+		B045590E25C9854400BD2D8D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Venues/Base.lproj/IndoorRoutingUI.xib; sourceTree = "<group>"; };
 		B0479B9224B5D0C400EDEEEA /* VenuesManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VenuesManager.swift; sourceTree = "<group>"; };
 		B0479B9324B5D0C500EDEEEA /* VenueSearch.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VenueSearch.swift; sourceTree = "<group>"; };
 		B0479B9724B5D16600EDEEEA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/VenueSearch.xib; sourceTree = "<group>"; };
@@ -99,6 +103,8 @@
 		C865242320B7E70F00392D48 /* Venues */ = {
 			isa = PBXGroup;
 			children = (
+				B045590C25C9854400BD2D8D /* IndoorRoutingUI.swift */,
+				B045590D25C9854400BD2D8D /* IndoorRoutingUI.xib */,
 				B02A919224B62C7700571C9D /* VenueTableViewCell.xib */,
 				B0479B9624B5D16600EDEEEA /* VenueSearch.xib */,
 				B0479B9224B5D0C400EDEEEA /* VenuesManager.swift */,
@@ -198,6 +204,7 @@
 				B0479B9A24B5D16600EDEEEA /* VenueSearch.xib in Resources */,
 				B02A919424B62C7700571C9D /* VenueTableViewCell.xib in Resources */,
 				B058835224696D2600DEF143 /* LaunchScreen.storyboard in Resources */,
+				B045591025C9854400BD2D8D /* IndoorRoutingUI.xib in Resources */,
 				B05883442469624E00DEF143 /* LevelSwitcher.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -219,6 +226,7 @@
 				B058833C2469623700DEF143 /* VenueTapHandler.swift in Sources */,
 				B0479B9524B5D0C500EDEEEA /* VenueSearch.swift in Sources */,
 				B058833E2469623700DEF143 /* DrawingSwitcherDelegate.swift in Sources */,
+				B045590F25C9854400BD2D8D /* IndoorRoutingUI.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -239,6 +247,14 @@
 				B02A919324B62C7700571C9D /* Base */,
 			);
 			name = VenueTableViewCell.xib;
+			sourceTree = "<group>";
+		};
+		B045590D25C9854400BD2D8D /* IndoorRoutingUI.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B045590E25C9854400BD2D8D /* Base */,
+			);
+			name = IndoorRoutingUI.xib;
 			sourceTree = "<group>";
 		};
 		B0479B9624B5D16600EDEEEA /* VenueSearch.xib */ = {

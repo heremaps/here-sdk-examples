@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 HERE Europe B.V.
+ * Copyright (C) 2019-2021 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import android.widget.EditText;
 
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.examples.venues.PermissionsRequestor.ResultListener;
+import com.here.sdk.gestures.TapListener;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
@@ -54,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
     private LevelSwitcher levelSwitcher;
     private VenueTapController venueTapController;
     private VenueSearchController venueSearchController;
+    private IndoorRoutingUIController indoorRoutingController;
     private VenuesController venuesController;
 
     @Override
@@ -134,6 +136,15 @@ public class MainActivity extends AppCompatActivity {
 
         venueSearchController = new VenueSearchController(venueMap, venueTapController,
                 findViewById(R.id.venueSearchLayout), findViewById(R.id.searchButton));
+
+        indoorRoutingController = new IndoorRoutingUIController(
+                venueEngine,
+                mapView,
+                findViewById(R.id.indoorRoutingLayout),
+                findViewById(R.id.indoorRoutingButton));
+
+        // Set a tap listener.
+        mapView.getGestures().setTapListener(tapListener);
 
         venuesController = new VenuesController(venueMap, findViewById(R.id.venuesLayout),
                 findViewById(R.id.editVenuesButton));
@@ -240,6 +251,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // Tap listener for MapView
+    private final TapListener tapListener = origin -> {
+        if (indoorRoutingController.isVisible()) {
+            indoorRoutingController.onTap(origin);
+        } else {
+            venueTapController.onTap(origin);
+        }
+    };
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -255,6 +275,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (mapView != null) {
+            mapView.getGestures().setTapListener(null);
+        }
         venueEngine.destroy();
         mapView.onDestroy();
     }
