@@ -15,7 +15,6 @@
 		C827C555232938B2003AA0C5 /* CameraExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = C827C554232938B2003AA0C5 /* CameraExample.swift */; };
 		C88C019223CDFDD600043918 /* heresdk.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = C88C019123CDFDD500043918 /* heresdk.xcframework */; };
 		C88C019323CDFDD600043918 /* heresdk.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = C88C019123CDFDD500043918 /* heresdk.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		C8CCAC39233AB0EA00486294 /* CameraAnimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CCAC38233AB0EA00486294 /* CameraAnimator.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -42,7 +41,6 @@
 		C827C54E23293726003AA0C5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C827C554232938B2003AA0C5 /* CameraExample.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraExample.swift; sourceTree = "<group>"; };
 		C88C019123CDFDD500043918 /* heresdk.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = heresdk.xcframework; sourceTree = "<group>"; };
-		C8CCAC38233AB0EA00486294 /* CameraAnimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraAnimator.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,7 +78,6 @@
 				C827C5422329371C003AA0C5 /* AppDelegate.swift */,
 				C827C5442329371C003AA0C5 /* ViewController.swift */,
 				C827C554232938B2003AA0C5 /* CameraExample.swift */,
-				C8CCAC38233AB0EA00486294 /* CameraAnimator.swift */,
 				C827C5462329371C003AA0C5 /* Main.storyboard */,
 				C827C54923293725003AA0C5 /* Assets.xcassets */,
 				C827C54B23293726003AA0C5 /* LaunchScreen.storyboard */,
@@ -173,7 +170,6 @@
 				C827C555232938B2003AA0C5 /* CameraExample.swift in Sources */,
 				C827C5452329371C003AA0C5 /* ViewController.swift in Sources */,
 				C827C5432329371C003AA0C5 /* AppDelegate.swift in Sources */,
-				C8CCAC39233AB0EA00486294 /* CameraAnimator.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

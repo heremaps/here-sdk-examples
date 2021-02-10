@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 HERE Europe B.V.
+ * Copyright (C) 2020-2021 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +17,16 @@
  * License-Filename: LICENSE
  */
 
-import 'dart:typed_data';
-
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/services.dart';
 import 'package:here_sdk/core.dart';
-import 'package:here_sdk/gestures.dart';
 import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/venue.control.dart';
 import 'package:here_sdk/venue.data.dart';
 import 'package:here_sdk/venue.style.dart';
 import 'package:venues/geometry_info.dart';
+import 'package:venues/image_helper.dart';
 
-class VenueTapController extends TapListener {
+class VenueTapController {
   final HereMapController hereMapController;
   final VenueMap venueMap;
   final GeometryInfoState geometryInfoState;
@@ -49,14 +46,11 @@ class VenueTapController extends TapListener {
       {@required this.hereMapController,
       @required this.venueMap,
       @required this.geometryInfoState}) {
-    // Set a tap listener.
-    hereMapController.gestures.tapListener = this;
     // Get an image for MapMarker.
-    _loadFileAsUint8List('poi.png').then((imagePixelData) => _markerImage =
+    ImageHelper.loadFileAsUint8List('poi.png').then((imagePixelData) => _markerImage =
         MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png));
   }
 
-  @override
   onTap(Point2D origin) {
     _deselectGeometry();
 
@@ -135,11 +129,5 @@ class VenueTapController extends TapListener {
     Anchor2D anchor2D = Anchor2D.withHorizontalAndVertical(0.5, 1);
     _marker = MapMarker.withAnchor(geoCoordinates, _markerImage, anchor2D);
     hereMapController.mapScene.addMapMarker(_marker);
-  }
-
-  Future<Uint8List> _loadFileAsUint8List(String fileName) async {
-    // The path refers to the assets directory as specified in pubspec.yaml.
-    ByteData fileData = await rootBundle.load('assets/' + fileName);
-    return Uint8List.view(fileData.buffer);
   }
 }

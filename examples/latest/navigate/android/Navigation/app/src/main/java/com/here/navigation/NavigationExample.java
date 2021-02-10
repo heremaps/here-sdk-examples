@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 HERE Europe B.V.
+ * Copyright (C) 2019-2021 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,11 +25,15 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.google.android.material.snackbar.Snackbar;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.LanguageCode;
 import com.here.sdk.core.UnitSystem;
 import com.here.sdk.core.errors.InstantiationErrorException;
+import com.here.sdk.location.LocationAccuracy;
 import com.here.sdk.mapview.MapView;
 import com.here.sdk.navigation.CameraTrackingMode;
 import com.here.sdk.navigation.DestinationReachedListener;
@@ -59,12 +63,10 @@ import com.here.sdk.routing.Maneuver;
 import com.here.sdk.routing.ManeuverAction;
 import com.here.sdk.routing.RoadType;
 import com.here.sdk.routing.Route;
+import com.here.sdk.routing.Section;
 
 import java.util.List;
 import java.util.Locale;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 // Shows how to start and stop turn-by-turn navigation on a car route.
 // By default, tracking mode is enabled. When navigation is stopped, tracking mode is enabled again.
@@ -75,20 +77,24 @@ public class NavigationExample {
     private static final String TAG = NavigationExample.class.getName();
 
     private final Context context;
-    private final MapView mapView;
-    private final LocationProviderImplementation locationProvider;
     private final VisualNavigator visualNavigator;
+    private final HEREPositioningProvider herePositioningProvider;
+    private final HEREPositioningSimulator herePositioningSimulator;
     private final VoiceAssistant voiceAssistant;
     private final RouteCalculator routeCalculator;
     private int previousManeuverIndex = -1;
-    private Snackbar snackbar;
+    private final Snackbar snackbar;
 
     public NavigationExample(Context context, MapView mapView) {
         this.context = context;
-        this.mapView = mapView;
 
         // Needed for rerouting, when user leaves route.
         routeCalculator = new RouteCalculator();
+
+        // A class to receive real location events.
+        herePositioningProvider = new HEREPositioningProvider();
+        // A class to receive simulated location events.
+        herePositioningSimulator = new HEREPositioningSimulator();
 
         try {
             // Without a route set, this starts tracking mode.
@@ -98,9 +104,6 @@ public class NavigationExample {
         }
 
         visualNavigator.startRendering(mapView);
-
-        // A class to receive real or simulated location events.
-        locationProvider = new LocationProviderImplementation();
 
         // A helper class for TTS.
         voiceAssistant = new VoiceAssistant(context);
@@ -112,10 +115,9 @@ public class NavigationExample {
     }
 
     public void startLocationProvider() {
-        // Set navigator as listener to receive locations from HERE Positioning or from LocationSimulator.
-        locationProvider.setListener(visualNavigator);
-        locationProvider.enableDevicePositioning();
-        locationProvider.start();
+        // Set navigator as listener to receive locations from HERE Positioning
+        // and choose the best accuracy for the tbt navigation use case.
+        herePositioningProvider.startLocating(visualNavigator, LocationAccuracy.NAVIGATION);
     }
 
     private void setupListeners() {
@@ -194,7 +196,7 @@ public class NavigationExample {
         // Notifies when a waypoint on the route is reached.
         visualNavigator.setMilestoneReachedListener(new MilestoneReachedListener() {
             @Override
-            public void onMilestoneReached(Milestone milestone) {
+            public void onMilestoneReached(@NonNull Milestone milestone) {
                 if (milestone.waypointIndex != null) {
                     Log.d(TAG, "A user-defined waypoint was reached, index of waypoint: " + milestone.waypointIndex);
                     Log.d(TAG,"Original coordinates: " + milestone.originalCoordinates);
@@ -208,7 +210,7 @@ public class NavigationExample {
         // Notifies when the current speed limit is exceeded.
         visualNavigator.setSpeedWarningListener(new SpeedWarningListener() {
             @Override
-            public void onSpeedWarningStatusChanged(SpeedWarningStatus speedWarningStatus) {
+            public void onSpeedWarningStatusChanged(@NonNull SpeedWarningStatus speedWarningStatus) {
                 if (speedWarningStatus == SpeedWarningStatus.SPEED_LIMIT_EXCEEDED) {
                     // Driver is faster than current speed limit (plus an optional offset).
                     // Play a notification sound to alert the driver.
@@ -229,7 +231,7 @@ public class NavigationExample {
             public void onNavigableLocationUpdated(@NonNull NavigableLocation currentNavigableLocation) {
                 MapMatchedLocation mapMatchedLocation = currentNavigableLocation.mapMatchedLocation;
                 if (mapMatchedLocation == null) {
-                    Log.d(TAG, "The currentNavigableLocation could not be map-matched.");
+                    Log.d(TAG, "The currentNavigableLocation could not be map-matched. Are you off-road?");
                     return;
                 }
 
@@ -269,7 +271,7 @@ public class NavigationExample {
                             routeDeviation.lastLocationOnRoute.originalLocation.coordinates : lastMapMatchedLocationOnRoute.coordinates;
                 } else {
                     Log.d(TAG, "User was never following the route. So, we take the start of the route instead.");
-                    lastGeoCoordinatesOnRoute = route.getSections().get(0).getDeparture().mapMatchedCoordinates;
+                    lastGeoCoordinatesOnRoute = route.getSections().get(0).getDeparturePlace().originalCoordinates;
                 }
 
                 int distanceInMeters = (int) currentGeoCoordinates.distanceTo(lastGeoCoordinatesOnRoute);
@@ -278,10 +280,9 @@ public class NavigationExample {
                 // Calculate a new route when deviation is too large. Note that this ignores route alternatives
                 // and always takes the first route. Route alternatives are not supported for this example app.
                 if (distanceInMeters > 30) {
-                    List<GeoCoordinates> routeShape = route.getPolyline();
-                    GeoCoordinates startGeoCoordinates = currentGeoCoordinates;
-                    GeoCoordinates destinationGeoCoordinates = routeShape.get(routeShape.size() - 1);
-                    routeCalculator.calculateRoute(startGeoCoordinates, destinationGeoCoordinates, (routingError, routes) -> {
+                    List<Section> sections = route.getSections();
+                    GeoCoordinates destinationGeoCoordinates = sections.get(sections.size() - 1).getArrivalPlace().originalCoordinates;
+                    routeCalculator.calculateRoute(currentGeoCoordinates, destinationGeoCoordinates, (routingError, routes) -> {
                         if (routingError == null) {
                             visualNavigator.setRoute(routes.get(0));
                             snackbar.setText("Rerouting completed.").show();
@@ -355,10 +356,10 @@ public class NavigationExample {
         visualNavigator.setRoute(route);
 
         if (isSimulated) {
-            locationProvider.enableRoutePlayback(route);
+            enableRoutePlayback(route);
             snackbar.setText("Starting simulated navgation.").show();
         } else {
-            locationProvider.enableDevicePositioning();
+            enableDevicePositioning();
             snackbar.setText("Starting navgation.").show();
         }
     }
@@ -368,8 +369,20 @@ public class NavigationExample {
         // Without a route the navigator will only notify on the current map-matched location
         // including info such as speed and current street name.
         visualNavigator.setRoute(null);
-        locationProvider.enableDevicePositioning();
+        enableDevicePositioning();
         snackbar.setText("Tracking device's location.").show();
+    }
+
+    // Provides simulated location updates based on the given route.
+    public void enableRoutePlayback(Route route) {
+        herePositioningProvider.stopLocating();
+        herePositioningSimulator.startLocating(visualNavigator, route);
+    }
+
+    // Provides location updates based on the device's GPS sensor.
+    public void enableDevicePositioning() {
+        herePositioningSimulator.stopLocating();
+        herePositioningProvider.startLocating(visualNavigator, LocationAccuracy.NAVIGATION);
     }
 
     public void startCameraTracking() {
@@ -382,7 +395,7 @@ public class NavigationExample {
 
     @Nullable
     public GeoCoordinates getLastKnownGeoCoordinates() {
-        return locationProvider.lastKnownLocation == null ? null : locationProvider.lastKnownLocation.coordinates;
+        return herePositioningProvider.lastKnownLocation == null ? null : herePositioningProvider.lastKnownLocation.coordinates;
     }
 
     private void setupSpeedWarnings() {
@@ -427,5 +440,9 @@ public class NavigationExample {
         }
 
         return languageCodeForCurrenDevice;
+    }
+
+    public void stopLocating() {
+        herePositioningProvider.stopLocating();
     }
 }

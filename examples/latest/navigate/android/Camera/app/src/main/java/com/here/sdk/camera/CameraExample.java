@@ -1,5 +1,5 @@
  /*
-  * Copyright (C) 2019-2020 HERE Europe B.V.
+  * Copyright (C) 2019-2021 HERE Europe B.V.
   *
   * Licensed under the Apache License, Version 2.0 (the "License");
   * you may not use this file except in compliance with the License.
@@ -23,11 +23,9 @@
  import android.content.Context;
  import android.support.v7.app.AlertDialog.Builder;
  import android.util.Log;
- import android.view.animation.AccelerateDecelerateInterpolator;
  import android.widget.ImageView;
  import android.widget.Toast;
 
- import com.here.sdk.core.Anchor2D;
  import com.here.sdk.core.Color;
  import com.here.sdk.core.GeoCircle;
  import com.here.sdk.core.GeoCoordinates;
@@ -40,8 +38,7 @@
 
  /**
   * This example shows how to use the Camera class to rotate and tilt the map programmatically, to set
-  * a new transform center that influences those operations, and to move to a new location using
-  * Android's Animation framework.
+  * a new transform center that influences those operations, and to move to a new location.
   * For more features of the Camera class, please consult the API Reference and the Developer's Guide.
   */
  public class CameraExample {
@@ -51,7 +48,6 @@
      private Context context;
      private MapView mapView;
      private MapCamera camera;
-     private CameraAnimator cameraAnimator;
      private ImageView cameraTargetView;
      private MapPolygon poiMapCircle;
 
@@ -61,9 +57,6 @@
 
          camera = mapView.getCamera();
          camera.lookAt(new GeoCoordinates(52.750731,13.007375), DEFAULT_DISTANCE_TO_EARTH_IN_METERS);
-
-         cameraAnimator = new CameraAnimator(camera);
-         cameraAnimator.setTimeInterpolator(new AccelerateDecelerateInterpolator());
 
          // The red circle dot indicates the camera's current target location.
          // By default, the dot is centered on the full screen map view.
@@ -91,7 +84,7 @@
      public void moveToXYButtonClicked() {
          GeoCoordinates geoCoordinates = getRandomGeoCoordinates();
          updatePoiCircle(geoCoordinates);
-         cameraAnimator.moveTo(geoCoordinates, DEFAULT_DISTANCE_TO_EARTH_IN_METERS);
+         camera.flyTo(geoCoordinates);
      }
 
      // Rotate the map by x degrees. Tip: Try to see what happens for negative values.

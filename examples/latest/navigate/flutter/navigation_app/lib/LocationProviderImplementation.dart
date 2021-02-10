@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 HERE Europe B.V.
+ * Copyright (C) 2019-2021 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -26,16 +26,14 @@ import 'package:here_sdk/routing.dart' as HERE;
 // Alternatively, check the positioning example code in the developer's guide
 // to see how to get real location events from a device.
 class LocationProviderImplementation {
-  // Set by anyone who wants to listen to location updates from LocationSimulator.
-  HERE.LocationListener locationListener;
-
   HERE.LocationSimulator _locationSimulator;
 
   // Provides location updates based on the given route.
-  void enableRoutePlayback(HERE.Route route) {
+  void enableRoutePlayback(
+      HERE.Route route, HERE.LocationListener locationListener) {
     _locationSimulator?.stop();
 
-    _locationSimulator = _createLocationSimulator(route);
+    _locationSimulator = _createLocationSimulator(route, locationListener);
     _locationSimulator.start();
   }
 
@@ -44,10 +42,12 @@ class LocationProviderImplementation {
   }
 
   // Provides fake GPS signals based on the route geometry.
-  HERE.LocationSimulator _createLocationSimulator(HERE.Route route) {
+  HERE.LocationSimulator _createLocationSimulator(
+      HERE.Route route, HERE.LocationListener locationListener) {
     final double speedFactor = 2;
     final notificationIntervalInMilliseconds = 500;
-    HERE.LocationSimulatorOptions locationSimulatorOptions = HERE.LocationSimulatorOptions(
+    HERE.LocationSimulatorOptions locationSimulatorOptions =
+        HERE.LocationSimulatorOptions(
       speedFactor,
       notificationIntervalInMilliseconds,
     );
@@ -55,17 +55,13 @@ class LocationProviderImplementation {
     HERE.LocationSimulator locationSimulator;
 
     try {
-      locationSimulator = HERE.LocationSimulator.withRoute(route, locationSimulatorOptions);
+      locationSimulator =
+          HERE.LocationSimulator.withRoute(route, locationSimulatorOptions);
     } on InstantiationException {
       throw Exception("Initialization of LocationSimulator failed.");
     }
 
-    locationSimulator.listener = HERE.LocationListener.fromLambdas(lambda_onLocationUpdated: (HERE.Location location) {
-      locationListener?.onLocationUpdated(location);
-    }, lambda_onLocationTimeout: () {
-      // Note: This method is deprecated and will be removed
-      // from the LocationListener interface with release HERE SDK v4.7.0.
-    });
+    locationSimulator.listener = locationListener;
 
     return locationSimulator;
   }

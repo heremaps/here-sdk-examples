@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 HERE Europe B.V.
+ * Copyright (C) 2019-2021 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -217,7 +217,8 @@ public class SearchExample {
             for (Place searchResult : list) {
                 Metadata metadata = new Metadata();
                 metadata.setCustomValue("key_search_result", new SearchResultMetadata(searchResult));
-                addPoiMapMarker(searchResult.getCoordinates(), metadata);
+                // Note: getGeoCoordinates() may return null only for Suggestions.
+                addPoiMapMarker(searchResult.getGeoCoordinates(), metadata);
             }
         }
     };
@@ -306,7 +307,8 @@ public class SearchExample {
             }
 
             for (Place geocodingResult : list) {
-                GeoCoordinates geoCoordinates = geocodingResult.getCoordinates();
+                // Note: getGeoCoordinates() may return null only for Suggestions.
+                GeoCoordinates geoCoordinates = geocodingResult.getGeoCoordinates();
                 Address address = geocodingResult.getAddress();
                 String locationDetails = address.addressText
                         + ". GeoCoordinates: " + geoCoordinates.latitude

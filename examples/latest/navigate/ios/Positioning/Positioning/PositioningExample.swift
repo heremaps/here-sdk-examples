@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 HERE Europe B.V.
+ * Copyright (C) 2019-2021 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ class PositioningExample: LocationDelegate, LocationStatusDelegate {
     private var mapView: MapView!
     private var mapCamera: MapCamera!
     private var locationAccuracyCircle: MapPolygon!
-    private var locationCenterCircle: MapPolygon!
+    private var locationCenterCircle: MapMarker!
 
     init() {
         // Create instance of location engine.
@@ -104,12 +104,16 @@ class PositioningExample: LocationDelegate, LocationStatusDelegate {
         locationAccuracyCircle = MapPolygon(geometry: accuracyPolygon,
                                             color: PositioningExample.defaultAccuracyColor)
         mapView.mapScene.addMapPolygon(locationAccuracyCircle)
-        // Solid circle on top of the current location.
-        let centerCircle = GeoCircle(center: geoCoordinates, radiusInMeters: 1.0)
-        let centerPolygon = GeoPolygon(geoCircle: centerCircle)
-        locationCenterCircle = MapPolygon(geometry: centerPolygon,
-                                          color: PositioningExample.defaultCenterColor)
-        mapView.mapScene.addMapPolygon(locationCenterCircle)
+        // Solid red circle on top of the current location.
+        guard
+            let image = UIImage(named: "red_dot"),
+            let imageData = image.pngData() else {
+            return
+        }
+        locationCenterCircle = MapMarker(at: geoCoordinates,
+                                         image: MapImage(pixelData: imageData,
+                                                         imageFormat: ImageFormat.png))
+        mapView.mapScene.addMapMarker(locationCenterCircle)
         // Point camera to current location.
         mapCamera.lookAt(point: geoCoordinates,
                          distanceInMeters: PositioningExample.defaultCameraDistance)
@@ -118,10 +122,9 @@ class PositioningExample: LocationDelegate, LocationStatusDelegate {
     private func updateMyLocationOnMap(geoCoordinates: GeoCoordinates, accuracyInMeters: Double) {
         // Update location accuracy circle.
         let accuracyCircle = GeoCircle(center: geoCoordinates, radiusInMeters: accuracyInMeters)
-        locationAccuracyCircle.updateGeometry(GeoPolygon(geoCircle: accuracyCircle))
+        locationAccuracyCircle.geometry = GeoPolygon(geoCircle: accuracyCircle)
         // Update location center.
-        let centerCircle = GeoCircle(center: geoCoordinates, radiusInMeters: 1.0)
-        locationCenterCircle.updateGeometry(GeoPolygon(geoCircle: centerCircle))
+        locationCenterCircle.coordinates = geoCoordinates
         // Point camera to current location.
         mapCamera.lookAt(point: geoCoordinates)
     }

@@ -20,7 +20,7 @@
                 android:layout_width="108dp"
                 android:layout_height="match_parent"
                 android:layout_gravity="start"
-                android:layout_marginStart="10dp"
+                android:layout_marginStart="5dp"
                 android:importantForAutofill="no"
                 android:hint="@string/venue_id"/>
             <Button
@@ -30,7 +30,7 @@
                 android:layout_height="match_parent"
                 android:layout_alignParentTop="true"
                 android:layout_gravity="start"
-                android:layout_marginStart="10dp"
+                android:layout_marginStart="5dp"
                 android:layout_toEndOf="@+id/venueChooser"
                 android:text="@string/go"
                 android:textColor="@android:color/white"/>
@@ -40,7 +40,7 @@
                 android:layout_height="match_parent"
                 android:layout_alignParentTop="true"
                 android:layout_gravity="start"
-                android:layout_marginStart="10dp"
+                android:layout_marginStart="5dp"
                 android:layout_marginTop="5dp"
                 android:layout_marginBottom="5dp"
                 android:layout_toEndOf="@+id/goButton"
@@ -50,20 +50,36 @@
                 android:tint="@android:color/white"
                 android:contentDescription="@string/venue_search_button" />
             <ImageView
-                android:id="@+id/editVenuesButton"
+                android:id="@+id/indoorRoutingButton"
                 android:layout_width="40dp"
                 android:layout_height="match_parent"
                 android:layout_alignParentTop="true"
                 android:layout_gravity="start"
-                android:layout_marginStart="10dp"
+                android:layout_marginStart="5dp"
                 android:layout_marginTop="5dp"
                 android:layout_marginBottom="5dp"
                 android:layout_toEndOf="@+id/searchButton"
                 android:background="@color/colorPrimary"
                 android:scaleType="fitCenter"
+                android:src="@drawable/directions"
+                android:tint="@android:color/white"
+                android:contentDescription="@string/venue_search_button" />
+            <ImageView
+                android:id="@+id/editVenuesButton"
+                android:layout_width="40dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentTop="true"
+                android:layout_gravity="start"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:layout_toEndOf="@+id/indoorRoutingButton"
+                android:background="@color/colorPrimary"
+                android:scaleType="fitCenter"
                 android:src="@drawable/baseline_edit_white_36"
                 android:contentDescription="@string/venues_manager"/>
         </RelativeLayout>
+        <include layout="@layout/indoor_routing_layout" />
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">

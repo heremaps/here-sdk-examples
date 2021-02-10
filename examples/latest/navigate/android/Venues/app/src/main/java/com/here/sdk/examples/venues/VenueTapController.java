@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 HERE Europe B.V.
+ * Copyright (C) 2019-2021 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
 
 package com.here.sdk.examples.venues;
 
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.TextView;
@@ -26,7 +27,7 @@ import android.widget.TextView;
 import com.here.sdk.core.Anchor2D;
 import com.here.sdk.core.Color;
 import com.here.sdk.core.GeoCoordinates;
-import com.here.sdk.gestures.TapListener;
+import com.here.sdk.core.Point2D;
 import com.here.sdk.mapview.MapImage;
 import com.here.sdk.mapview.MapImageFactory;
 import com.here.sdk.mapview.MapMarker;
@@ -72,9 +73,6 @@ public class VenueTapController {
         this.venueEngine = venueEngine;
         this.mapView = mapView;
 
-        // Set a tap listener.
-        mapView.getGestures().setTapListener(tapListener);
-
         // Get an image for MapMarker.
         markerImage = MapImageFactory.fromResource(activity.getResources(), R.drawable.marker);
 
@@ -85,9 +83,6 @@ public class VenueTapController {
     @Override
     protected void finalize() throws Throwable {
         removeListeners();
-        if (mapView != null) {
-            mapView.getGestures().setTapListener(null);
-        }
         super.finalize();
     }
 
@@ -120,6 +115,9 @@ public class VenueTapController {
     public void selectGeometry(VenueGeometry geometry, GeoCoordinates position, boolean center) {
         deselectGeometry();
         selectedVenue = venueMap.getSelectedVenue();
+        if (selectedVenue == null) {
+            return;
+        }
         selectedVenue.setSelectedDrawing(geometry.getLevel().getDrawing());
         selectedVenue.setSelectedLevel(geometry.getLevel());
         selectedGeometry = geometry;
@@ -161,7 +159,7 @@ public class VenueTapController {
     }
 
     // Tap listener for MapView
-    private final TapListener tapListener = origin -> {
+    public void onTap(@NonNull final Point2D origin) {
         deselectGeometry();
 
         // Get geo coordinates of the tapped point.
@@ -184,7 +182,7 @@ public class VenueTapController {
                 venueMap.setSelectedVenue(venue);
             }
         }
-    };
+    }
 
     private void onLevelChanged(Venue venue) {
         if (venue == selectedVenue && selectedGeometry != null

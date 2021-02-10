@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 HERE Europe B.V.
+ * Copyright (C) 2019-2021 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,8 @@ class NavigationExample : NavigableLocationDelegate,
     private let viewController: UIViewController
     private let mapView: MapView
     private let visualNavigator: VisualNavigator
-    private let locationProvider: LocationProviderImplementation
+    private let herePositioningProvider: HEREPositioningProvider
+    private let herePositioningSimulator: HEREPositioningSimulator
     private let voiceAssistant: VoiceAssistant
     private let routeCalculator: RouteCalculator
     private var previousManeuverIndex: Int32 = -1
@@ -58,8 +59,10 @@ class NavigationExample : NavigableLocationDelegate,
 
         visualNavigator.startRendering(mapView: mapView)
 
-        // A class to receive real or simulated location events.
-        locationProvider = LocationProviderImplementation()
+        // A class to receive real location events.
+        herePositioningProvider = HEREPositioningProvider()
+        // A class to receive simulated location events.
+        herePositioningSimulator = HEREPositioningSimulator()
 
         // A helper class for TTS.
         voiceAssistant = VoiceAssistant()
@@ -75,10 +78,10 @@ class NavigationExample : NavigableLocationDelegate,
     }
 
     func startLocationProvider() {
-        // Set navigator as delegate to receive locations from HERE Positioning or from LocationSimulator.
-        locationProvider.delegate = visualNavigator
-        locationProvider.enableDevicePositioning()
-        locationProvider.start()
+        // Set navigator as delegate to receive locations from HERE Positioning.
+        herePositioningProvider.startLocating(locationDelegate: visualNavigator,
+                                              // Choose the best accuracy for the tbt navigation use case.
+                                              accuracy: .navigation)
     }
 
     // Conform to RouteProgressDelegate.
@@ -169,7 +172,7 @@ class NavigationExample : NavigableLocationDelegate,
     // Notifies on the current map-matched location and other useful information while driving or walking.
     func onNavigableLocationUpdated(_ navigableLocation: NavigableLocation) {
         guard navigableLocation.mapMatchedLocation != nil else {
-            print("The currentNavigableLocation could not be map-matched.")
+            print("The currentNavigableLocation could not be map-matched. Are you off-road?")
             return
         }
 
@@ -208,7 +211,7 @@ class NavigationExample : NavigableLocationDelegate,
             }
         } else {
             print("User was never following the route. So, we take the start of the route instead.")
-            lastGeoCoordinates = visualNavigator.route?.sections.first?.departure.mapMatchedCoordinates
+            lastGeoCoordinates = route.sections.first?.departurePlace.originalCoordinates
         }
 
         guard let lastGeoCoordinatesOnRoute = lastGeoCoordinates else {
@@ -222,13 +225,14 @@ class NavigationExample : NavigableLocationDelegate,
         // Calculate a new route when deviation is too large. Note that this ignores route alternatives
         // and always takes the first route. Route alternatives are not supported for this example app.
         if (distanceInMeters > 30) {
-            let routeShape = route.polyline
+            let destination = visualNavigator.route?.sections.last?.arrivalPlace.originalCoordinates
             routeCalculator.calculateRoute(start: currentGeoCoordinates,
-                                           destination: routeShape.last!) { (routingError, routes) in
+                                           destination: destination!) { (routingError, routes) in
                 if routingError == nil {
                     // When routingError is nil, routes is guaranteed to contain at least one route.
                     self.visualNavigator.route = routes!.first
                     self.showMessage("Rerouting completed.")
+                    print("A new route was calculated, length: \(String(describing: self.visualNavigator.route?.lengthInMeters)) m.")
                 }
             }
         }
@@ -294,10 +298,10 @@ class NavigationExample : NavigableLocationDelegate,
         visualNavigator.route = route
 
         if isSimulated {
-            locationProvider.enableRoutePlayback(route: route)
+            enableRoutePlayback(route: route)
             showMessage("Starting simulated navgation.")
         } else {
-            locationProvider.enableDevicePositioning()
+            enableDevicePositioning()
             showMessage("Starting navgation.")
         }
     }
@@ -307,10 +311,23 @@ class NavigationExample : NavigableLocationDelegate,
         // Without a route the navigator will only notify on the current map-matched location
         // including info such as speed and current street name.
         visualNavigator.route = nil
-        locationProvider.enableDevicePositioning()
+        enableDevicePositioning()
         showMessage("Tracking device's location.")
     }
 
+    // Provides location updates based on the given route.
+    func enableRoutePlayback(route: Route) {
+        herePositioningProvider.stopLocating()
+        herePositioningSimulator.startLocating(locationDelegate: visualNavigator, route: route)
+    }
+
+    // Provides location updates based on the device's GPS sensor.
+    func enableDevicePositioning() {
+        herePositioningSimulator.stopLocating()
+        herePositioningProvider.startLocating(locationDelegate: visualNavigator,
+                                              accuracy: .navigation)
+    }
+    
     func startCameraTracking() {
         // By default, this is enabled.
         visualNavigator.cameraMode = CameraTrackingMode.enabled
@@ -321,7 +338,7 @@ class NavigationExample : NavigableLocationDelegate,
     }
 
     func getLastKnownGeoCoordinates() -> GeoCoordinates? {
-        return locationProvider.lastKnownLocation?.coordinates
+        return herePositioningProvider.lastKnownLocation?.coordinates
     }
 
     private func setupSpeedWarnings() {

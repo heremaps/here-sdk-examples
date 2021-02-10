@@ -1,0 +1,15 @@
+{
+    "background" : {"alwaysShowRootLevel" : true},
+    "northpole" : { "alwaysShowRootLevel" : true },
+    "southpole" : { "alwaysShowRootLevel" : true },
+    "tilezen_points" : { "alwaysShowRootLevel" : true, "lodErrorFactor" : 0.5 },
+    "tilezen_building_addresses" : { "minZoom" : 18 },
+    "tilezen_lines" : { "alwaysShowRootLevel" : true, "lodErrorFactor" : 0.5 },
+    "tilezen_roads" : { "alwaysShowRootLevel" : true, "lodErrorFactor" : 0.5 },
+    "tilezen_polygons" : { "alwaysShowRootLevel" : true, "distanceToEyeErrorFactor" : 0.0, "lodErrorFactor" : 0.5 },
+    "tilezen_building_footprints" : { "minZoom" : 16 },
+    "tilezen_building_footprints_outlines" : { "minZoom" : 16 },
+    "tilezen_volumes" : { "minZoom" : 16 },
+    "landmarks": { "minZoom" : 16 },
+    "labels" : { "alwaysShowRootLevel" : true }
+}

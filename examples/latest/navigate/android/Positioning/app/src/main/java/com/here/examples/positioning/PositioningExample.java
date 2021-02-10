@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 HERE Europe B.V.
+ * Copyright (C) 2020-2021 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,9 @@ import com.here.sdk.location.LocationEngine;
 import com.here.sdk.location.LocationEngineStatus;
 import com.here.sdk.location.LocationFeature;
 import com.here.sdk.location.LocationStatusListener;
+import com.here.sdk.mapview.MapImage;
+import com.here.sdk.mapview.MapImageFactory;
+import com.here.sdk.mapview.MapMarker;
 import com.here.sdk.mapview.MapPolygon;
 import com.here.sdk.mapview.MapView;
 
@@ -55,8 +58,9 @@ public class PositioningExample {
     private final Color colorAccuracy = new Color((short) 118, (short) 227, (short) 220, (short) 50);
 
     private MapView mapView;
+    private Context context;
     private MapPolygon locationAccuracyCircle;
-    private MapPolygon locationCenterCircle;
+    private MapMarker locationCenterCircle;
     private LocationEngine locationEngine;
     private ConsentEngine consentEngine;
 
@@ -95,6 +99,7 @@ public class PositioningExample {
 
     public void onMapSceneLoaded(MapView mapView, Context context) {
         this.mapView = mapView;
+        this.context = context;
 
         try {
             consentEngine = new ConsentEngine();
@@ -138,15 +143,16 @@ public class PositioningExample {
         //Transparent halo around the current location: the true geographic coordinates lie with a probability of 68% within that.
         locationAccuracyCircle = new MapPolygon(new GeoPolygon(new GeoCircle(geoCoordinates, accuracyRadiusInMeters)), colorAccuracy);
         //Solid circle on top of the current location.
-        locationCenterCircle = new MapPolygon(new GeoPolygon(new GeoCircle(geoCoordinates, CENTER_RADIUS_IN_METERS)), colorCenter);
+        MapImage mapImage = MapImageFactory.fromResource(context.getResources(), R.drawable.red_dot);
+        locationCenterCircle = new MapMarker(geoCoordinates, mapImage);
 
         //Add the circle to the map.
         mapView.getMapScene().addMapPolygon(locationAccuracyCircle);
-        mapView.getMapScene().addMapPolygon(locationCenterCircle);
+        mapView.getMapScene().addMapMarker(locationCenterCircle);
     }
 
     private void updateMyLocation(@NonNull GeoCoordinates geoCoordinates, @NonNull double accuracyRadiusInMeters) {
-        locationAccuracyCircle.updateGeometry(new GeoPolygon(new GeoCircle(geoCoordinates, accuracyRadiusInMeters)));
-        locationCenterCircle.updateGeometry(new GeoPolygon(new GeoCircle(geoCoordinates, CENTER_RADIUS_IN_METERS)));
+        locationAccuracyCircle.setGeometry(new GeoPolygon(new GeoCircle(geoCoordinates, accuracyRadiusInMeters)));
+        locationCenterCircle.setCoordinates(geoCoordinates);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 HERE Europe B.V.
+ * Copyright (C) 2020-2021 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:here_sdk/core.dart';
+import 'package:here_sdk/gestures.dart';
 import 'package:here_sdk/venue.data.dart';
 import 'package:venues/drawing_switcher.dart';
+import 'package:venues/indoor_routing_widget.dart';
 import 'package:venues/level_switcher.dart';
 import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/venue.control.dart';
@@ -46,6 +48,7 @@ class VenueEngineWidget extends StatefulWidget {
 class VenueEngineState extends State<VenueEngineWidget> {
   HereMapController _hereMapController;
   VenueEngine _venueEngine;
+  IndoorRoutingState _indoorRoutingState;
   GeometryInfoState _geometryInfoState;
   VenueServiceListener _serviceListener;
   VenueSelectionListener _venueSelectionListener;
@@ -53,6 +56,8 @@ class VenueEngineState extends State<VenueEngineWidget> {
   VenueLevelSelectionListener _levelSelectionListener;
   VenueLifecycleListenerImpl _venueLifecycleListener;
   VenueTapController _venueTapController;
+  VenueTapListenerImpl _tapListener;
+  VenueLongPressListenerImpl _longPressListener;
   final _drawingSwitcherState = DrawingSwitcherState();
   final _levelSwitcherState = LevelSwitcherState();
   final _venueSearchState = VenueSearchControllerState();
@@ -83,9 +88,10 @@ class VenueEngineState extends State<VenueEngineWidget> {
   }
 
   set(HereMapController hereMapController, VenueEngine venueEngine,
-      GeometryInfoState geometryInfoState) {
+      IndoorRoutingState indoorRoutingState, GeometryInfoState geometryInfoState) {
     _hereMapController = hereMapController;
     _venueEngine = venueEngine;
+    _indoorRoutingState = indoorRoutingState;
     _geometryInfoState = geometryInfoState;
   }
 
@@ -114,6 +120,12 @@ class VenueEngineState extends State<VenueEngineWidget> {
         hereMapController: _hereMapController,
         venueMap: venueMap,
         geometryInfoState: _geometryInfoState);
+    _indoorRoutingState.set(_hereMapController, venueEngine);
+    _tapListener = VenueTapListenerImpl(_indoorRoutingState, _venueTapController);
+    _longPressListener = VenueLongPressListenerImpl(_indoorRoutingState);
+    // Set a tap listener.
+    _hereMapController.gestures.tapListener = _tapListener;
+    _hereMapController.gestures.longPressListener = _longPressListener;
     _venueSearchState.set(_venueTapController);
     _venuesState.set(venueMap);
     // Start VenueEngine. Once authentication is done, the authentication
@@ -232,5 +244,41 @@ class VenueLifecycleListenerImpl extends VenueLifecycleListener {
   @override
   onVenueRemoved(int venueId) {
     _venueEngineState.onVenuesChanged();
+  }
+}
+
+// A listener for the map tap event.
+class VenueTapListenerImpl extends TapListener {
+  IndoorRoutingState _indoorRoutingState;
+  VenueTapController _tapController;
+
+  VenueTapListenerImpl(IndoorRoutingState indoorRoutingState, VenueTapController tapController) {
+    _indoorRoutingState = indoorRoutingState;
+    _tapController = tapController;
+  }
+
+  @override
+  onTap(Point2D origin) {
+    if (_indoorRoutingState.isEnabled) {
+      _indoorRoutingState.setDestinationPoint(origin);
+    } else {
+      _tapController.onTap(origin);
+    }
+  }
+}
+
+// A listener for the map long press event.
+class VenueLongPressListenerImpl extends LongPressListener {
+  IndoorRoutingState _indoorRoutingState;
+
+  VenueLongPressListenerImpl(IndoorRoutingState indoorRoutingState) {
+    _indoorRoutingState = indoorRoutingState;
+  }
+
+  @override
+  onLongPress(GestureState state, Point2D origin  ) {
+    if (_indoorRoutingState.isEnabled) {
+      _indoorRoutingState.setStartPoint(origin);
+    }
   }
 }

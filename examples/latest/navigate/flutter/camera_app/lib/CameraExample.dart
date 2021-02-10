@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 HERE Europe B.V.
+ * Copyright (C) 2019-2021 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import 'package:here_sdk/mapview.dart';
 // animate from the map center location to a random location inside the viewport.
 // See more about Flutter's Tween class and AnimationController here:
 // https://flutter.dev/docs/development/ui/animations/tutorial
+// Note: Alternatively, you can run basic animations from A to B with the Camera's flyTo()-method. 
 class CameraExample {
   TickerProvider _tickerProvider;
   HereMapController _hereMapController;

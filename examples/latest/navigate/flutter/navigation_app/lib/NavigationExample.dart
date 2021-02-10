@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 HERE Europe B.V.
+ * Copyright (C) 2019-2021 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@
  * License-Filename: LICENSE
  */
 
-import 'dart:typed_data';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:here_sdk/core.dart';
@@ -32,15 +30,12 @@ import 'LocationProviderImplementation.dart';
 // Shows how to start and stop turn-by-turn navigation along a route.
 class NavigationExample {
   HereMapController _hereMapController;
-  MapMarker _navigationArrow;
   VisualNavigator _visualNavigator;
   LocationProviderImplementation _locationProvider;
-  final double _cameraDistanceToEarthInMeters = 2000;
   int _previousManeuverIndex = -1;
 
   NavigationExample(HereMapController hereMapController) {
     _hereMapController = hereMapController;
-    _createNavigationArrow(GeoCoordinates(52.520798, 13.409408));
 
     try {
       _visualNavigator = VisualNavigator.make();
@@ -48,11 +43,12 @@ class NavigationExample {
       throw Exception("Initialization of VisualNavigator failed.");
     }
 
+    // This enables a navigation view including a rendered navigation arrow.
+    _visualNavigator.startRendering(_hereMapController);
+
     // For easy testing, this location provider simulates location events along a route.
     // You can use HERE positioning to feed real locations, see the positioning_app for an example.
     _locationProvider = new LocationProviderImplementation();
-    // Set navigator as listener to receive locations from LocationSimulator.
-    _locationProvider.locationListener = _visualNavigator;
 
     setupListeners();
   }
@@ -65,38 +61,27 @@ class NavigationExample {
     _visualNavigator.route = route;
 
     // Simulates location events based on the given route.
-    _locationProvider.enableRoutePlayback(route);
-
-    _hereMapController.mapScene.addMapMarker(_navigationArrow);
+    // The navigator is set as listener to receive location updates.
+    _locationProvider.enableRoutePlayback(route, _visualNavigator);
   }
 
   void stopNavigation() {
-    // This enables tracking mode.
-    // However, below we stop the location provider, so no new locations will be forwarded to navigator.
+    // This can be used to enable tracking mode (when valid locations are provided).
+    // However, below we just stop the location provider, so no new locations will be forwarded to the navigator.
     _visualNavigator.route = null;
     _locationProvider.stop();
-
-    MapCameraOrientationUpdate orientation = MapCameraOrientationUpdate.withDefaults();
-    orientation.bearing = 0;
-    _hereMapController.camera.setTargetOrientation(orientation);
-    double distanceToEarthInMeters = 10000;
-    _hereMapController.camera.setDistanceToTarget(distanceToEarthInMeters);
-
-    _hereMapController.mapScene.removeMapMarker(_navigationArrow);
   }
 
   void setupListeners() {
     // Notifies on the current map-matched location and other useful information while driving or walking.
     // The map-matched location is used to update the map view.
-    _visualNavigator.navigableLocationListener = NavigableLocationListener.fromLambdas(
-        lambda_onNavigableLocationUpdated: (NavigableLocation currentNavigableLocation) {
-      MapMatchedLocation mapMatchedLocation = currentNavigableLocation.mapMatchedLocation;
+    _visualNavigator.navigableLocationListener =
+        NavigableLocationListener.fromLambdas(lambda_onNavigableLocationUpdated:
+            (NavigableLocation currentNavigableLocation) {
+      MapMatchedLocation mapMatchedLocation =
+          currentNavigableLocation.mapMatchedLocation;
       if (mapMatchedLocation == null) {
-        print('This new location could not be map-matched. Using raw location.');
-        updateMapView(
-          currentNavigableLocation.originalLocation.coordinates,
-          currentNavigableLocation.originalLocation.bearingInDegrees,
-        );
+        print('This new location could not be map-matched. Are you off-road?');
         return;
       }
 
@@ -106,23 +91,26 @@ class NavigationExample {
       if (currentNavigableLocation.speedLimitInMetersPerSecond == null) {
         print('Warning: Speed limits unkown, data could not be retrieved.');
       } else if (currentNavigableLocation.speedLimitInMetersPerSecond == 0) {
-        print('No speed limits on this road! Drive as fast as you feel safe ...');
+        print(
+            'No speed limits on this road! Drive as fast as you feel safe ...');
       } else {
-        print('Current speed limit (m/s): ' + currentNavigableLocation.speedLimitInMetersPerSecond.toString());
+        print('Current speed limit (m/s): ' +
+            currentNavigableLocation.speedLimitInMetersPerSecond.toString());
       }
-
-      updateMapView(mapMatchedLocation.coordinates, mapMatchedLocation.bearingInDegrees);
     });
 
     // Notifies on the progress along the route including maneuver instructions.
     // These maneuver instructions can be used to compose a visual representation of the next maneuver actions.
-    _visualNavigator.routeProgressListener =
-        RouteProgressListener.fromLambdas(lambda_onRouteProgressUpdated: (RouteProgress routeProgress) {
+    _visualNavigator.routeProgressListener = RouteProgressListener.fromLambdas(
+        lambda_onRouteProgressUpdated: (RouteProgress routeProgress) {
       List<SectionProgress> sectionProgressList = routeProgress.sectionProgress;
       // sectionProgressList is guaranteed to be non-empty.
-      SectionProgress lastSectionProgress = sectionProgressList.elementAt(sectionProgressList.length - 1);
-      print('Distance to destination in meters: ' + lastSectionProgress.remainingDistanceInMeters.toString());
-      print('Traffic delay ahead in seconds: ' + lastSectionProgress.trafficDelayInSeconds.toString());
+      SectionProgress lastSectionProgress =
+          sectionProgressList.elementAt(sectionProgressList.length - 1);
+      print('Distance to destination in meters: ' +
+          lastSectionProgress.remainingDistanceInMeters.toString());
+      print('Traffic delay ahead in seconds: ' +
+          lastSectionProgress.trafficDelayInSeconds.toString());
 
       // Contains the progress for the next maneuver ahead and the next-next maneuvers, if any.
       List<ManeuverProgress> nextManeuverList = routeProgress.maneuverProgress;
@@ -134,7 +122,8 @@ class NavigationExample {
       }
 
       int nextManeuverIndex = nextManeuverProgress.maneuverIndex;
-      HERE.Maneuver nextManeuver = _visualNavigator.getManeuver(nextManeuverIndex);
+      HERE.Maneuver nextManeuver =
+          _visualNavigator.getManeuver(nextManeuverIndex);
       if (nextManeuver == null) {
         // Should never happen as we retrieved the next maneuver progress above.
         return;
@@ -179,19 +168,24 @@ class NavigationExample {
 
     // Notifies when a waypoint on the route is reached.
     _visualNavigator.milestoneReachedListener =
-        MilestoneReachedListener.fromLambdas(lambda_onMilestoneReached: (Milestone milestone) {
+        MilestoneReachedListener.fromLambdas(
+            lambda_onMilestoneReached: (Milestone milestone) {
       if (milestone.waypointIndex != null) {
-        print('A user-defined waypoint was reached, index of waypoint: ' + milestone.waypointIndex.toString());
-        print('Original coordinates: ' + milestone.originalCoordinates.toString());
+        print('A user-defined waypoint was reached, index of waypoint: ' +
+            milestone.waypointIndex.toString());
+        print('Original coordinates: ' +
+            milestone.originalCoordinates.toString());
       } else {
         // For example, when transport mode changes due to a ferry.
-        print('A system defined waypoint was reached at ' + milestone.mapMatchedCoordinates.toString());
+        print('A system defined waypoint was reached at ' +
+            milestone.mapMatchedCoordinates.toString());
       }
     });
 
     // Notifies when the current speed limit is exceeded.
-    _visualNavigator.speedWarningListener =
-        SpeedWarningListener.fromLambdas(lambda_onSpeedWarningStatusChanged: (SpeedWarningStatus speedWarningStatus) {
+    _visualNavigator.speedWarningListener = SpeedWarningListener.fromLambdas(
+        lambda_onSpeedWarningStatusChanged:
+            (SpeedWarningStatus speedWarningStatus) {
       if (speedWarningStatus == SpeedWarningStatus.speedLimitExceeded) {
         // Driver is faster than current speed limit (plus an optional offset, see setupSpeedWarnings()).
         // Play a click sound to indicate this to the driver.
@@ -202,14 +196,16 @@ class NavigationExample {
       }
 
       if (speedWarningStatus == SpeedWarningStatus.speedLimitRestored) {
-        print('Driver is again slower than current speed limit (plus an optional offset.)');
+        print(
+            'Driver is again slower than current speed limit (plus an optional offset.)');
       }
     });
 
     // Notifies on a possible deviation from the route.
     // When deviation is too large, an app may decide to recalculate the route from current location to destination.
     _visualNavigator.routeDeviationListener =
-        RouteDeviationListener.fromLambdas(lambda_onRouteDeviation: (RouteDeviation routeDeviation) {
+        RouteDeviationListener.fromLambdas(
+            lambda_onRouteDeviation: (RouteDeviation routeDeviation) {
       HERE.Route route = _visualNavigator.route;
       if (route == null) {
         // May happen in rare cases when route was set to null inbetween.
@@ -217,7 +213,8 @@ class NavigationExample {
       }
 
       // Get current geographic coordinates.
-      MapMatchedLocation currentMapMatchedLocation = routeDeviation.currentLocation.mapMatchedLocation;
+      MapMatchedLocation currentMapMatchedLocation =
+          routeDeviation.currentLocation.mapMatchedLocation;
       GeoCoordinates currentGeoCoordinates = currentMapMatchedLocation == null
           ? routeDeviation.currentLocation.originalLocation.coordinates
           : currentMapMatchedLocation.coordinates;
@@ -225,22 +222,27 @@ class NavigationExample {
       // Get last geographic coordinates on route.
       GeoCoordinates lastGeoCoordinatesOnRoute;
       if (routeDeviation.lastLocationOnRoute != null) {
-        MapMatchedLocation lastMapMatchedLocationOnRoute = routeDeviation.lastLocationOnRoute.mapMatchedLocation;
+        MapMatchedLocation lastMapMatchedLocationOnRoute =
+            routeDeviation.lastLocationOnRoute.mapMatchedLocation;
         lastGeoCoordinatesOnRoute = lastMapMatchedLocationOnRoute == null
             ? routeDeviation.lastLocationOnRoute.originalLocation.coordinates
             : lastMapMatchedLocationOnRoute.coordinates;
       } else {
-        print('User was never following the route. So, we take the start of the route instead.');
-        lastGeoCoordinatesOnRoute = route.sections.first.departure.mapMatchedCoordinates;
+        print(
+            'User was never following the route. So, we take the start of the route instead.');
+        lastGeoCoordinatesOnRoute =
+            route.sections.first.departurePlace.originalCoordinates;
       }
 
-      int distanceInMeters = currentGeoCoordinates.distanceTo(lastGeoCoordinatesOnRoute) as int;
+      int distanceInMeters =
+          currentGeoCoordinates.distanceTo(lastGeoCoordinatesOnRoute) as int;
       print('RouteDeviation in meters is ' + distanceInMeters.toString());
     });
 
     // Notifies on voice maneuver messages.
     _visualNavigator.maneuverNotificationListener =
-        ManeuverNotificationListener.fromLambdas(lambda_onManeuverNotification: (String voiceText) {
+        ManeuverNotificationListener.fromLambdas(
+            lambda_onManeuverNotification: (String voiceText) {
       // Flutter itself does not provide a text-to-speech engine. Use one of the available TTS plugins to speak
       // the voiceText message.
       print('Voice guidance text: $voiceText');
@@ -257,42 +259,19 @@ class NavigationExample {
       highSpeedBoundaryInMetersPerSecond,
     );
 
-    _visualNavigator.speedWarningOptions = SpeedWarningOptions(speedLimitOffset);
+    _visualNavigator.speedWarningOptions =
+        SpeedWarningOptions(speedLimitOffset);
   }
 
   void setupVoiceTextMessages() {
     LanguageCode languageCode = LanguageCode.enUs;
-    List<LanguageCode> supportedVoiceSkins = VisualNavigator.getAvailableLanguagesForManeuverNotifications();
+    List<LanguageCode> supportedVoiceSkins =
+        VisualNavigator.getAvailableLanguagesForManeuverNotifications();
     if (supportedVoiceSkins.contains(languageCode)) {
-      _visualNavigator.maneuverNotificationOptions = ManeuverNotificationOptions(languageCode, UnitSystem.metric);
+      _visualNavigator.maneuverNotificationOptions =
+          ManeuverNotificationOptions(languageCode, UnitSystem.metric);
     } else {
       print('Warning: Requested voice skin is not supported.');
     }
-  }
-
-  // Update location and rotation of map. Update location of arrow.
-  // Alternatively, call startRendering() to enable smooth & interpolated map view updates.
-  void updateMapView(GeoCoordinates currentGeoCoordinates, double bearingInDegrees) {
-    MapCameraOrientationUpdate orientation = MapCameraOrientationUpdate.withDefaults();
-    orientation.bearing = bearingInDegrees;
-    _hereMapController.camera.lookAtPointWithOrientationAndDistance(
-      currentGeoCoordinates,
-      orientation,
-      _cameraDistanceToEarthInMeters,
-    );
-    _navigationArrow.coordinates = currentGeoCoordinates;
-  }
-
-  Future<void> _createNavigationArrow(GeoCoordinates geoCoordinates) async {
-    Uint8List imagePixelData = await _loadFileAsUint8List('arrow_blue.png');
-    MapImage mapImage = MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
-
-    _navigationArrow = MapMarker(geoCoordinates, mapImage);
-  }
-
-  Future<Uint8List> _loadFileAsUint8List(String fileName) async {
-    // The path refers to the assets directory as specified in pubspec.yaml.
-    ByteData fileData = await rootBundle.load('assets/' + fileName);
-    return Uint8List.view(fileData.buffer);
   }
 }
