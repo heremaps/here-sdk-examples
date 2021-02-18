@@ -338,7 +338,7 @@ class NavigationExample : NavigableLocationDelegate,
     }
 
     func getLastKnownGeoCoordinates() -> GeoCoordinates? {
-        return herePositioningProvider.lastKnownLocation?.coordinates
+        return herePositioningProvider.getLastKnownLocation()?.coordinates
     }
 
     private func setupSpeedWarnings() {

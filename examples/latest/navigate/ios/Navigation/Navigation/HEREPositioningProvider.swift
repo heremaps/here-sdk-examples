@@ -25,7 +25,7 @@ import heresdk
 class HEREPositioningProvider : NSObject,
                                 // Needed to check device capabilities.
                                 CLLocationManagerDelegate,
-                                // Optionally needed by HERE SDK to listen for status changes.
+                                // Optionally needed to listen for status changes.
                                 LocationStatusDelegate {
 
     // We need to check if the device is authorized to use location capabilities like GPS sensors.
@@ -33,8 +33,6 @@ class HEREPositioningProvider : NSObject,
     private let locationManager = CLLocationManager()
     private var locationEngine: LocationEngine
     private var locationUpdateDelegate: LocationDelegate?
-
-    var lastKnownLocation: Location?
     
     override init() {
         do {
@@ -43,17 +41,14 @@ class HEREPositioningProvider : NSObject,
             fatalError("Failed to initialize LocationEngine. Cause: \(engineInstantiationError)")
         }
 
-        lastKnownLocation = locationEngine.lastKnownLocation
-        if lastKnownLocation == nil {
-            print("No last known location found.")
-        } else {
-            print("Last known location found.")
-        }
-
         super.init()
         authorizeNativeLocationServices()
     }
 
+    func getLastKnownLocation() -> Location? {
+        return locationEngine.lastKnownLocation
+    }
+    
     private func authorizeNativeLocationServices() {
         locationManager.delegate = self
         locationManager.requestAlwaysAuthorization()
@@ -101,7 +96,7 @@ class HEREPositioningProvider : NSObject,
         locationEngine.removeLocationStatusDelegate(locationStatusDelegate: self)
         locationEngine.stop()
     }
-
+    
     // Conforms to the LocationStatusDelegate protocol.
     func onStatusChanged(locationEngineStatus: LocationEngineStatus) {
         print("Location engine status changed: \(locationEngineStatus)")

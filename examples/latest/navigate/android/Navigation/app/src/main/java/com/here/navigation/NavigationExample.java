@@ -395,7 +395,7 @@ public class NavigationExample {
 
     @Nullable
     public GeoCoordinates getLastKnownGeoCoordinates() {
-        return herePositioningProvider.lastKnownLocation == null ? null : herePositioningProvider.lastKnownLocation.coordinates;
+        return herePositioningProvider.getLastKnownLocation() == null ? null : herePositioningProvider.getLastKnownLocation().coordinates;
     }
 
     private void setupSpeedWarnings() {

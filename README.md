@@ -21,7 +21,7 @@ For an overview of the existing features, please check the _Developer's Guide_ f
 
 > For now, the _Navigate Edition_ is only available upon request. Please contact your HERE representative to receive access including a set of evaluation credentials.
 
-## List of Available Example Apps (Version 4.6.2.0)
+## List of Available Example Apps (Version 4.6.3.0)
 In this repository you can find the [latest example apps](examples/latest) that show key features of the HERE SDK in ready-to-use applications:
 
 - **HelloMap**: Shows the classic 'Hello World'.
@@ -42,7 +42,7 @@ In this repository you can find the [latest example apps](examples/latest) that 
 - **Positioning**: Shows how to integrate HERE Positioning. Exclusively available for the _Navigate Edition_.
 - **Traffic**: Shows how to search for real-time traffic and how to visualize it on the map.
 - **StandAloneEngine**: Shows how to use an engine without a map view.
-- **Venues**: Shows how to integrate private venues. Exclusively available for the _Navigate Edition_.
+- **IndoorMap**: Shows how to integrate private venues. Exclusively available for the _Navigate Edition_.
 - **UnitTesting**: Shows how to mock HERE SDK classes when writing unit tests (Android only, the example app is available for the _Explore Edition_ and the _Navigate Edition_).
 
 Most example apps contain a class named "XY-Example" where XY stands for the feature, which is in most cases equal to the name of the app. If you are looking for example code that shows how to use a certain HERE SDK feature, then please look for this class as it contains the most interesting parts. Note that the overall app architecture is kept as simple as possible to not shadow the parts in focus.
@@ -55,8 +55,8 @@ Find the [latest examples](examples/latest) for the edition and platform of your
 - Examples for the HERE SDK for iOS ([Lite Edition](examples/latest/lite/ios/), [Explore Edition](examples/latest/explore/ios/), [Navigate Edition](examples/latest/navigate/ios/))
 - Examples for the HERE SDK for Flutter ([Explore Edition](examples/latest/explore/flutter/), [Navigate Edition](examples/latest/navigate/flutter/))
 
-## Example Apps for Other Versions
-In addition to the apps above, this repo also contains example apps for [other HERE SDK versions](examples/other_releases): Here you can find older releases _or_ releases that are not yet public on [developer.here.com](https://developer.here.com/).
+## Example Apps for Older Versions
+Above you can find the example app links for the _latest_ HERE SDK version. If you are looking for an older version, please check our [release page](https://github.com/heremaps/here-sdk-examples/releases) where you can download tagged older releases.
 
 ## What You Need to Execute the Example Apps
 1. Acquire a set of credentials by registering yourself on [developer.here.com](https://developer.here.com/) - or ask your HERE representative.
