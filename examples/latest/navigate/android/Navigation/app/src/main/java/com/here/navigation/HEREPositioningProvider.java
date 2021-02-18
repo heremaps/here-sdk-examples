@@ -46,9 +46,6 @@ public class HEREPositioningProvider {
     private final LocationEngine locationEngine;
     private LocationListener updateListener;
 
-    @Nullable
-    public Location lastKnownLocation;
-
     private final LocationStatusListener locationStatusListener = new LocationStatusListener() {
         @Override
         public void onStatusChanged(@NonNull LocationEngineStatus locationEngineStatus) {
@@ -77,13 +74,11 @@ public class HEREPositioningProvider {
         if (consentEngine.getUserConsentState() == Consent.UserReply.NOT_HANDLED) {
             consentEngine.requestUserConsent();
         }
+    }
 
-        lastKnownLocation = locationEngine.getLastKnownLocation();
-        if (lastKnownLocation != null) {
-            Log.d(LOG_TAG, "Last known location: " + lastKnownLocation.timestamp);
-        } else {
-            Log.d(LOG_TAG, "No last known location found.");
-        }
+    @Nullable
+    public Location getLastKnownLocation() {
+        return locationEngine.getLastKnownLocation();
     }
 
     // Does nothing when engine is already running.

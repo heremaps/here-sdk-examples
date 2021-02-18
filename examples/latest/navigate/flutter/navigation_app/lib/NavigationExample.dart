@@ -70,6 +70,9 @@ class NavigationExample {
     // However, below we just stop the location provider, so no new locations will be forwarded to the navigator.
     _visualNavigator.route = null;
     _locationProvider.stop();
+
+    // Optionally, you can stop rendering, ie. to remove the current location marker.
+    //_visualNavigator.stopRendering();
   }
 
   void setupListeners() {

@@ -75,6 +75,8 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
             guard let childRegions = region.childRegions else {
                 continue
             }
+
+            // Note that this code ignores to list the children of the children (and so on).
             for childRegion in childRegions {
                 let sizeOnDiskinMB = childRegion.sizeOnDiskInBytes / (1024 * 1024)
                 print("Child region: \(childRegion.name), ID: \(childRegion.regionId.id), Size: \(sizeOnDiskinMB) MB")
@@ -120,6 +122,7 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
     }
 
     // Finds a region in the downloaded region list.
+    // Note that we ignore children of children (and so on).
     private func findRegion(localizedRegionName: String) -> Region? {
         var downloadableRegion: Region?
         for region in downloadableRegions {

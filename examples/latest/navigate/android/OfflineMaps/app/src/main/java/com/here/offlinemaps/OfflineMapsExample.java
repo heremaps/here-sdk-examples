@@ -110,6 +110,8 @@ public class OfflineMapsExample {
                     if (childRegions == null) {
                         continue;
                     }
+
+                    // Note that this code ignores to list the children of the children (and so on).
                     for (Region childRegion : childRegions) {
                         long sizeOnDiskInMB = childRegion.sizeOnDiskInBytes / (1024 * 1024);
                         String logMessage = "Child region: " + childRegion.name +
@@ -168,6 +170,7 @@ public class OfflineMapsExample {
     }
 
     // Finds a region in the downloaded region list.
+    // Note that we ignore children of children (and so on).
     private Region findRegion(String localizedRegionName) {
         Region downloadableRegion = null;
         for (Region region : downloadableRegions) {
