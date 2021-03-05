@@ -25,14 +25,18 @@ import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/routing.dart';
 import 'package:here_sdk/routing.dart' as here;
 
+// A callback to notifiy the hosting widget.
+typedef ShowDialogFunction = void Function(String title, String message);
+
 class RoutingExample {
-  BuildContext _context;
   HereMapController _hereMapController;
   List<MapPolyline> _mapPolylines = [];
   RoutingEngine _routingEngine;
+  ShowDialogFunction _showDialog;
 
-  RoutingExample(BuildContext context, HereMapController hereMapController) {
-    _context = context;
+  RoutingExample(
+      ShowDialogFunction showDialogCallback, HereMapController hereMapController) {
+    _showDialog = showDialogCallback;
     _hereMapController = hereMapController;
 
     double distanceToEarthInMeters = 10000;
@@ -69,7 +73,8 @@ class RoutingExample {
   void _logRouteViolations(here.Route route) {
     for (var section in route.sections) {
       for (var notice in section.notices) {
-        print("This route contains the following warning: " + notice.code.toString());
+        print("This route contains the following warning: " +
+            notice.code.toString());
       }
     }
   }
@@ -142,32 +147,5 @@ class RoutingExample {
 
   double _getRandom(double min, double max) {
     return min + Random().nextDouble() * (max - min);
-  }
-
-  Future<void> _showDialog(String title, String message) async {
-    return showDialog<void>(
-      context: _context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(title),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(message),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            FlatButton(
-              child: Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 }

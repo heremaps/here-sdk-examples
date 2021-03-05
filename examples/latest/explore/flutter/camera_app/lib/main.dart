@@ -58,12 +58,10 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   }
 
   void _onMapCreated(HereMapController hereMapController) {
-    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError error) {
+    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay,
+        (MapError error) {
       if (error == null) {
-        // A TickerProviderStateMixin requires a stateful widget to sync animations
-        // with screen rendering.
-        TickerProvider tickerProvider = this;
-        _cameraExample = CameraExample(tickerProvider, hereMapController);
+        _cameraExample = CameraExample(hereMapController);
       } else {
         print("Map scene not loaded. MapError: " + error.toString());
       }

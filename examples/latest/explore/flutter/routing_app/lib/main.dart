@@ -62,13 +62,13 @@ class MyApp extends StatelessWidget {
 
   void _onMapCreated(HereMapController hereMapController) {
     hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay,
-            (MapError error) {
-          if (error == null) {
-            _routingExample = RoutingExample(_context, hereMapController);
-          } else {
-            print("Map scene not loaded. MapError: " + error.toString());
-          }
-        });
+        (MapError error) {
+      if (error == null) {
+        _routingExample = RoutingExample(_showDialog, hereMapController);
+      } else {
+        print("Map scene not loaded. MapError: " + error.toString());
+      }
+    });
   }
 
   void _addRouteButtonClicked() {
@@ -89,6 +89,34 @@ class MyApp extends StatelessWidget {
         onPressed: () => callbackFunction(),
         child: Text(buttonLabel, style: TextStyle(fontSize: 20)),
       ),
+    );
+  }
+
+  // A helper method to show a dialog.
+  Future<void> _showDialog(String title, String message) async {
+    return showDialog<void>(
+      context: _context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(message),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
