@@ -7,7 +7,7 @@ Build instructions:
 - `indoor_map_app/android/app/src/main/AndroidManifest.xml`
 - `indoor_map_app/ios/Runner/Info.plist`
 
-2) Unzip the HERE SDK plugin to the plugins folder inside this project. Name the folder 'here_sdk': indoor_map_app/plugins/here_sdk
+2) Unzip the HERE SDK plugin to the plugins folder inside this project. Name the folder 'here_sdk': `indoor_map_app/plugins/here_sdk`.
 
 3) Start an emulator or simulator and execute `flutter run` from the app's directory - or run the app from within your IDE.
 
