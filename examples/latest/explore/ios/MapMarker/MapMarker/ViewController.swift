@@ -56,6 +56,18 @@ final class ViewController: UIViewController {
         }
     }
 
+    @IBAction func onFlatMapMarkerButtonClicked(_ sender: Any) {
+        if isMapSceneLoaded {
+            mapMarkerExample.onFlatMapMarkerButtonClicked()
+        }
+    }
+
+    @IBAction func onMapMarker3DClicked(_ sender: Any) {
+        if isMapSceneLoaded {
+            mapMarkerExample.onMapMarker3DClicked()
+        }
+    }
+    
     @IBAction func onClearButtonClicked(_ sender: Any) {
         if isMapSceneLoaded {
             mapMarkerExample.onClearButtonClicked()

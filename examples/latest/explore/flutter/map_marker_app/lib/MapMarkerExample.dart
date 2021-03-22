@@ -26,16 +26,22 @@ import 'package:here_sdk/core.dart';
 import 'package:here_sdk/gestures.dart';
 import 'package:here_sdk/mapview.dart';
 
+// A callback to notifiy the hosting widget.
+typedef ShowDialogFunction = void Function(String title, String message);
+
 class MapMarkerExample {
   BuildContext _context;
   HereMapController _hereMapController;
   List<MapMarker> _mapMarkerList = [];
+  List<MapMarker3D> _mapMarker3DList = [];
   MapImage _poiMapImage;
   MapImage _photoMapImage;
   MapImage _circleMapImage;
+  ShowDialogFunction _showDialog;
 
-  MapMarkerExample(BuildContext context, HereMapController hereMapController) {
-    _context = context;
+  MapMarkerExample(ShowDialogFunction showDialogCallback,
+      HereMapController hereMapController) {
+    _showDialog = showDialogCallback;
     _hereMapController = hereMapController;
 
     double distanceToEarthInMeters = 8000;
@@ -44,10 +50,14 @@ class MapMarkerExample {
 
     // Setting a tap handler to pick markers from map.
     _setTapGestureHandler();
+
+    _showDialog("Note", "You can tap 2D markers.");
   }
 
   void showAnchoredMapMarkers() {
-    GeoCoordinates geoCoordinates = _createRandomGeoCoordinatesInViewport();
+    _unTiltMap();
+
+    GeoCoordinates geoCoordinates = _createRandomGeoCoordinatesAroundMapCenter();
 
     // Centered on location. Shown below the POI image to indicate the location.
     // The draw order is determined from what is first added to the map,
@@ -60,7 +70,9 @@ class MapMarkerExample {
   }
 
   void showCenteredMapMarkers() {
-    GeoCoordinates geoCoordinates = _createRandomGeoCoordinatesInViewport();
+    _unTiltMap();
+
+    GeoCoordinates geoCoordinates = _createRandomGeoCoordinatesAroundMapCenter();
 
     // Centered on location.
     _addPhotoMapMarker(geoCoordinates, 0);
@@ -69,18 +81,48 @@ class MapMarkerExample {
     _addCircleMapMarker(geoCoordinates, 1);
   }
 
+  void showFlatMapMarkers() {
+    // Tilt the map for a better 3D effect.
+    _tiltMap();
+
+    GeoCoordinates geoCoordinates = _createRandomGeoCoordinatesAroundMapCenter();
+
+    // Adds a flat POI marker that rotates and tilts together with the map.
+    _addFlatMarker3D(geoCoordinates);
+
+    // A centered 2D map marker to indicate the exact location.
+    // Note that 3D map markers are always drawn on top of 2D map markers.
+    _addCircleMapMarker(geoCoordinates, 1);
+  }
+
+  void showMapMarkers3D() {
+    // Tilt the map for a better 3D effect.
+    _tiltMap();
+
+    GeoCoordinates geoCoordinates = _createRandomGeoCoordinatesAroundMapCenter();
+
+    // Adds a textured 3D model.
+    // It's origin is centered on the location.
+    _addMapMarker3D(geoCoordinates);
+  }
+
   void clearMap() {
     for (var mapMarker in _mapMarkerList) {
       _hereMapController.mapScene.removeMapMarker(mapMarker);
     }
     _mapMarkerList.clear();
+
+    for (var mapMarker3D in _mapMarker3DList) {
+      _hereMapController.mapScene.removeMapMarker3d(mapMarker3D);
+    }
+    _mapMarker3DList.clear();
   }
 
   Future<void> _addPOIMapMarker(
       GeoCoordinates geoCoordinates, int drawOrder) async {
     // Reuse existing MapImage for new map markers.
     if (_poiMapImage == null) {
-      Uint8List imagePixelData = await _loadFileAsUint8List('poi.png');
+      Uint8List imagePixelData = await _loadFileAsUint8List('assets/poi.png');
       _poiMapImage =
           MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
     }
@@ -105,7 +147,7 @@ class MapMarkerExample {
       GeoCoordinates geoCoordinates, int drawOrder) async {
     // Reuse existing MapImage for new map markers.
     if (_photoMapImage == null) {
-      Uint8List imagePixelData = await _loadFileAsUint8List('here_car.png');
+      Uint8List imagePixelData = await _loadFileAsUint8List('assets/here_car.png');
       _photoMapImage =
           MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
     }
@@ -121,7 +163,7 @@ class MapMarkerExample {
       GeoCoordinates geoCoordinates, int drawOrder) async {
     // Reuse existing MapImage for new map markers.
     if (_circleMapImage == null) {
-      Uint8List imagePixelData = await _loadFileAsUint8List('circle.png');
+      Uint8List imagePixelData = await _loadFileAsUint8List('assets/circle.png');
       _circleMapImage =
           MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
     }
@@ -133,9 +175,45 @@ class MapMarkerExample {
     _mapMarkerList.add(mapMarker);
   }
 
-  Future<Uint8List> _loadFileAsUint8List(String fileName) async {
+  Future<void> _addFlatMarker3D(GeoCoordinates geoCoordinates) {
+    // Place the files in the "assets" directory as specified in pubspec.yaml.
+    // Adjust file name and path as appropriate for your project.
+    // Note: The bottom of the plane is centered on the origin.
+    String geometryFilePath = "assets/models/plane.obj";
+
+    // The POI texture is a square, so we can easily wrap it onto the 2 x 2 plane model.
+    String textureFilePath = "assets/models/poi_texture.png";
+
+    // Optionally, consider to store the model for reuse (like we showed for MapImages above).
+    MapMarker3DModel mapMarker3DModel =
+        MapMarker3DModel.withTextureFilePath(geometryFilePath, textureFilePath);
+    MapMarker3D mapMarker3D = MapMarker3D(geoCoordinates, mapMarker3DModel);
+    // Scale marker. Note that we used a normalized length of 2 units in 3D space.
+    mapMarker3D.scale = 50;
+
+    _hereMapController.mapScene.addMapMarker3d(mapMarker3D);
+    _mapMarker3DList.add(mapMarker3D);
+  }
+
+  Future<void> _addMapMarker3D(GeoCoordinates geoCoordinates) {
+    // Place the files in the "assets" directory as specified in pubspec.yaml.
+    // Adjust file name and path as appropriate for your project.
+    String geometryFilePath = "assets/models/obstacle.obj";
+    String textureFilePath = "assets/models/obstacle_texture.png";
+
+    // Optionally, consider to store the model for reuse (like we showed for MapImages above).
+    MapMarker3DModel mapMarker3DModel =
+        MapMarker3DModel.withTextureFilePath(geometryFilePath, textureFilePath);
+    MapMarker3D mapMarker3D = MapMarker3D(geoCoordinates, mapMarker3DModel);
+    mapMarker3D.scale = 6;
+
+    _hereMapController.mapScene.addMapMarker3d(mapMarker3D);
+    _mapMarker3DList.add(mapMarker3D);
+  }
+
+  Future<Uint8List> _loadFileAsUint8List(String assetPathToFile) async {
     // The path refers to the assets directory as specified in pubspec.yaml.
-    ByteData fileData = await rootBundle.load('assets/' + fileName);
+    ByteData fileData = await rootBundle.load(assetPathToFile);
     return Uint8List.view(fileData.buffer);
   }
 
@@ -150,6 +228,7 @@ class MapMarkerExample {
     double radiusInPixel = 2;
     _hereMapController.pickMapItems(touchPoint, radiusInPixel,
         (pickMapItemsResult) {
+      // Note that 3D map markers can't be picked yet. Only marker, polgon and polyline map items are pickable.
       List<MapMarker> mapMarkerList = pickMapItemsResult.markers;
       if (mapMarkerList.length == 0) {
         print("No map markers found.");
@@ -168,55 +247,34 @@ class MapMarkerExample {
     });
   }
 
-  GeoCoordinates _createRandomGeoCoordinatesInViewport() {
-    GeoBox geoBox = _hereMapController.camera.boundingBox;
-    if (geoBox == null) {
-      // Happens only when map is not fully covering the viewport.
-      return GeoCoordinates(52.530932, 13.384915);
+  void _tiltMap() {
+    MapCameraOrientationUpdate targetOrientation =
+        MapCameraOrientationUpdate.withDefaults();
+    targetOrientation.tilt = 60;
+    _hereMapController.camera.setTargetOrientation(targetOrientation);
+  }
+
+  void _unTiltMap() {
+    MapCameraOrientationUpdate targetOrientation =
+        MapCameraOrientationUpdate.withDefaults();
+    targetOrientation.tilt = 0;
+    _hereMapController.camera.setTargetOrientation(targetOrientation);
+  }
+
+  GeoCoordinates _createRandomGeoCoordinatesAroundMapCenter() {
+    GeoCoordinates centerGeoCoordinates = _hereMapController.viewToGeoCoordinates(
+        Point2D(_hereMapController.viewportSize.width / 2, _hereMapController.viewportSize.height / 2));
+    if (centerGeoCoordinates == null) {
+      // Should never happen for center coordinates.
+      throw Exception("CenterGeoCoordinates are null");
     }
-
-    GeoCoordinates northEast = geoBox.northEastCorner;
-    GeoCoordinates southWest = geoBox.southWestCorner;
-
-    double minLat = southWest.latitude;
-    double maxLat = northEast.latitude;
-    double lat = _getRandom(minLat, maxLat);
-
-    double minLon = southWest.longitude;
-    double maxLon = northEast.longitude;
-    double lon = _getRandom(minLon, maxLon);
-
-    return new GeoCoordinates(lat, lon);
+    double lat = centerGeoCoordinates.latitude;
+    double lon = centerGeoCoordinates.longitude;
+    return GeoCoordinates(_getRandom(lat - 0.02, lat + 0.02),
+        _getRandom(lon - 0.02, lon + 0.02));
   }
 
   double _getRandom(double min, double max) {
     return min + Random().nextDouble() * (max - min);
-  }
-
-  Future<void> _showDialog(String title, String message) async {
-    return showDialog<void>(
-      context: _context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(title),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(message),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            FlatButton(
-              child: Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 }

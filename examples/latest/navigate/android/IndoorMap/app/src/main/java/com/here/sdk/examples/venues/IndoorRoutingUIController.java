@@ -334,7 +334,9 @@ public class IndoorRoutingUIController implements LongPressListener {
     // Calculate an indoor route based on the start and destination waypoints, and
     // the indoor route options.
     private void calculateRoute() {
-        engine.calculateRoute(startWaypoint, destinationWaypoint, routeOptions, this ::showRoute);
+        if (startWaypoint != null && destinationWaypoint != null) {
+            engine.calculateRoute(startWaypoint, destinationWaypoint, routeOptions, this::showRoute);
+        }
     }
 
     // Show the resulting route.

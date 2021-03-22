@@ -25,6 +25,7 @@ class MapMarkerExample: TapDelegate {
     private var viewController: UIViewController
     private var mapView: MapView
     private var mapMarkers = [MapMarker]()
+    private var mapMarkers3D = [MapMarker3D]()
     private let mapCenterGeoCoordinates = GeoCoordinates(latitude: 52.520798, longitude: 13.409408)
 
     init(viewController: UIViewController, mapView: MapView) {
@@ -37,10 +38,12 @@ class MapMarkerExample: TapDelegate {
         // Setting a tap delegate to pick markers from map.
         mapView.gestures.tapDelegate = self
 
-        showDialog(title: "Note", message: "You can tap markers.")
+        showDialog(title: "Note", message: "You can tap 2D markers.")
     }
 
     func onAnchoredButtonClicked() {
+        unTiltMap()
+        
         for _ in 1...10 {
             let geoCoordinates = createRandomGeoCoordinatesAroundMapCenter()
 
@@ -53,6 +56,8 @@ class MapMarkerExample: TapDelegate {
     }
 
     func onCenteredButtonClicked() {
+        unTiltMap()
+        
         let geoCoordinates = createRandomGeoCoordinatesAroundMapCenter()
 
         // Centered on location.
@@ -63,10 +68,35 @@ class MapMarkerExample: TapDelegate {
         addCircleMapMarker(geoCoordinates: geoCoordinates)
     }
 
+    public func onFlatMapMarkerButtonClicked() {
+        // Tilt the map for a better 3D effect.
+        tiltMap()
+
+        let geoCoordinates = createRandomGeoCoordinatesAroundMapCenter()
+
+        // Adds a flat POI marker that rotates and tilts together with the map.
+        addFlatMarker3D(geoCoordinates: geoCoordinates)
+
+        // A centered 2D map marker to indicate the exact location.
+        // Note that 3D map markers are always drawn on top of 2D map markers.
+        addCircleMapMarker(geoCoordinates: geoCoordinates)
+    }
+
+    public func onMapMarker3DClicked() {
+        // Tilt the map for a better 3D effect.
+        tiltMap()
+
+        let geoCoordinates = createRandomGeoCoordinatesAroundMapCenter()
+
+        // Adds a textured 3D model.
+        // It's origin is centered on the location.
+        addMapMarker3D(geoCoordinates: geoCoordinates)
+    }
+
     func onClearButtonClicked() {
         clearMap()
     }
-
+    
     private func addPOIMapMarker(geoCoordinates: GeoCoordinates) {
         // Drag & Drop the image to Assets.xcassets (or simply add the image as file to the project).
         // You can add multiple resolutions to Assets.xcassets that will be used depending on the
@@ -126,6 +156,61 @@ class MapMarkerExample: TapDelegate {
         mapMarkers.append(mapMarker)
     }
 
+    private func addFlatMarker3D(geoCoordinates: GeoCoordinates) {
+        // Place the files to an "assets" directory via drag & drop.
+        // Adjust file name and path as appropriate for your project.
+        // Note: The bottom of the plane is centered on the origin.
+        let geometryFile = getResourceStringFromBundle(name: "plane", type: "obj")
+
+        // The POI texture is a square, so we can easily wrap it onto the 2 x 2 plane model.
+        let textureFile = getResourceStringFromBundle(name: "poi_texture", type: "png")
+
+        let mapMarker3DModel = MapMarker3DModel(geometryFilePath: geometryFile, textureFilePath: textureFile)
+        let mapMarker3D = MapMarker3D(at: geoCoordinates, model: mapMarker3DModel)
+        // Scale marker. Note that we used a normalized length of 2 units in 3D space.
+        mapMarker3D.scale = 70
+        
+        mapView.mapScene.addMapMarker3d(mapMarker3D)
+        mapMarkers3D.append(mapMarker3D)
+    }
+
+    private func addMapMarker3D(geoCoordinates: GeoCoordinates) {
+        // Place the files to an "assets" directory via drag & drop.
+        // Adjust file name and path as appropriate for your project.
+        let geometryFile = getResourceStringFromBundle(name: "obstacle", type: "obj")
+        let textureFile = getResourceStringFromBundle(name: "obstacle_texture", type: "png")
+
+        let mapMarker3DModel = MapMarker3DModel(geometryFilePath: geometryFile, textureFilePath: textureFile)
+        let mapMarker3D = MapMarker3D(at: geoCoordinates, model: mapMarker3DModel)
+        mapMarker3D.scale = 6
+        
+        mapView.mapScene.addMapMarker3d(mapMarker3D)
+        mapMarkers3D.append(mapMarker3D)
+    }
+
+    private func getResourceStringFromBundle(name: String, type: String) -> String {
+        let bundle = Bundle(for: ViewController.self)
+        let resourceUrl = bundle.url(forResource: name,
+                                     withExtension: type)
+        guard let resourceString = resourceUrl?.path else {
+            fatalError("Error: Resource not found!")
+        }
+
+        return resourceString
+    }
+    
+    private func clearMap() {
+        for mapMarker in mapMarkers {
+            mapView.mapScene.removeMapMarker(mapMarker)
+        }
+        mapMarkers.removeAll()
+
+        for mapMarker3D in mapMarkers3D {
+            mapView.mapScene.removeMapMarker3d(mapMarker3D)
+        }
+        mapMarkers3D.removeAll()
+    }
+    
     // Conform to the TapDelegate protocol.
     func onTap(origin: Point2D) {
         mapView.pickMapItems(at: origin, radius: 2, completion: onMapItemsPicked)
@@ -133,6 +218,7 @@ class MapMarkerExample: TapDelegate {
 
     // Completion handler to receive picked map items.
     func onMapItemsPicked(pickedMapItems: PickMapItemsResult?) {
+        // Note that 3D map markers can't be picked yet. Only marker, polgon and polyline map items are pickable.
         guard let topmostMapMarker = pickedMapItems?.markers.first else {
             return
         }
@@ -165,17 +251,21 @@ class MapMarkerExample: TapDelegate {
         return Double.random(in: min ... max)
     }
 
+    private func tiltMap() {
+        var targetOrientation = MapCamera.OrientationUpdate()
+        targetOrientation.tilt = 60
+        mapView.camera.setTargetOrientation(orientation: targetOrientation)
+    }
+
+    private func unTiltMap() {
+        var targetOrientation = MapCamera.OrientationUpdate()
+        targetOrientation.tilt = 0
+        mapView.camera.setTargetOrientation(orientation: targetOrientation)
+    }
+    
     private func showDialog(title: String, message: String) {
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
         viewController.present(alertController, animated: true, completion: nil)
-    }
-
-    private func clearMap() {
-        for mapMarker in mapMarkers {
-            mapView.mapScene.removeMapMarker(mapMarker)
-        }
-
-        mapMarkers.removeAll()
     }
 }

@@ -56,7 +56,7 @@ class MainPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('HERE SDK for Flutter - Indoor Map'),
       ),
-      resizeToAvoidBottomPadding: false,
+      resizeToAvoidBottomInset: false,
       body: Column(children: [
         Row(
           mainAxisSize: MainAxisSize.min,

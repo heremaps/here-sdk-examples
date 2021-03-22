@@ -9,6 +9,10 @@
 /* Begin PBXBuildFile section */
 		C88C017223CDFCB200043918 /* heresdk.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = C88C017123CDFCB200043918 /* heresdk.xcframework */; };
 		C88C017323CDFCB200043918 /* heresdk.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = C88C017123CDFCB200043918 /* heresdk.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		C8B73DB625FE8CBA00A943DD /* poi_texture.png in Resources */ = {isa = PBXBuildFile; fileRef = C8B73DB225FE8CBA00A943DD /* poi_texture.png */; };
+		C8B73DB725FE8CBA00A943DD /* plane.obj in Resources */ = {isa = PBXBuildFile; fileRef = C8B73DB325FE8CBA00A943DD /* plane.obj */; };
+		C8B73DB825FE8CBA00A943DD /* obstacle.obj in Resources */ = {isa = PBXBuildFile; fileRef = C8B73DB425FE8CBA00A943DD /* obstacle.obj */; };
+		C8B73DB925FE8CBA00A943DD /* obstacle_texture.png in Resources */ = {isa = PBXBuildFile; fileRef = C8B73DB525FE8CBA00A943DD /* obstacle_texture.png */; };
 		C8D0BB4C2167D6B6002FD93D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D0BB4B2167D6B6002FD93D /* AppDelegate.swift */; };
 		C8D0BB4E2167D6B6002FD93D /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D0BB4D2167D6B6002FD93D /* ViewController.swift */; };
 		C8D0BB512167D6B6002FD93D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C8D0BB4F2167D6B6002FD93D /* Main.storyboard */; };
@@ -33,6 +37,10 @@
 
 /* Begin PBXFileReference section */
 		C88C017123CDFCB200043918 /* heresdk.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = heresdk.xcframework; sourceTree = "<group>"; };
+		C8B73DB225FE8CBA00A943DD /* poi_texture.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = poi_texture.png; sourceTree = "<group>"; };
+		C8B73DB325FE8CBA00A943DD /* plane.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = plane.obj; sourceTree = "<group>"; };
+		C8B73DB425FE8CBA00A943DD /* obstacle.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = obstacle.obj; sourceTree = "<group>"; };
+		C8B73DB525FE8CBA00A943DD /* obstacle_texture.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = obstacle_texture.png; sourceTree = "<group>"; };
 		C8D0BB482167D6B6002FD93D /* MapMarker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MapMarker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C8D0BB4B2167D6B6002FD93D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C8D0BB4D2167D6B6002FD93D /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -63,9 +71,21 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		C8B73DB125FE8CBA00A943DD /* assets */ = {
+			isa = PBXGroup;
+			children = (
+				C8B73DB225FE8CBA00A943DD /* poi_texture.png */,
+				C8B73DB325FE8CBA00A943DD /* plane.obj */,
+				C8B73DB425FE8CBA00A943DD /* obstacle.obj */,
+				C8B73DB525FE8CBA00A943DD /* obstacle_texture.png */,
+			);
+			path = assets;
+			sourceTree = "<group>";
+		};
 		C8D0BB3F2167D6B6002FD93D = {
 			isa = PBXGroup;
 			children = (
+				C8B73DB125FE8CBA00A943DD /* assets */,
 				C8D0BB4A2167D6B6002FD93D /* MapMarker */,
 				C8D0BB492167D6B6002FD93D /* Products */,
 				C88C017023CDFCB200043918 /* Frameworks */,
@@ -122,7 +142,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1000;
-				LastUpgradeCheck = 1000;
+				LastUpgradeCheck = 1240;
 				ORGANIZATIONNAME = HERE;
 				TargetAttributes = {
 					C8D0BB472167D6B6002FD93D = {
@@ -155,7 +175,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				C8D0BB562167D6B7002FD93D /* LaunchScreen.storyboard in Resources */,
+				C8B73DB925FE8CBA00A943DD /* obstacle_texture.png in Resources */,
 				C8D0BB532167D6B7002FD93D /* Assets.xcassets in Resources */,
+				C8B73DB725FE8CBA00A943DD /* plane.obj in Resources */,
+				C8B73DB625FE8CBA00A943DD /* poi_texture.png in Resources */,
+				C8B73DB825FE8CBA00A943DD /* obstacle.obj in Resources */,
 				C8D0BB512167D6B6002FD93D /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -221,6 +245,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -282,6 +307,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;

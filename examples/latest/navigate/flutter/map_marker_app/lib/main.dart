@@ -47,12 +47,24 @@ class MyApp extends StatelessWidget {
         body: Stack(
           children: [
             HereMap(onMapCreated: _onMapCreated),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            Column(
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                button('Anchored', _anchoredMapMarkersButtonClicked),
-                button('Centered', _centeredMapMarkersButtonClicked),
-                button('Clear', _clearButtonClicked),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    button('Anchored (2D)', _anchoredMapMarkersButtonClicked),
+                    button('Centered (2D)', _centeredMapMarkersButtonClicked),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    button('Flat', _flatMapMarkersButtonClicked),
+                    button('3D OBJ', _mapMarkers3DButtonClicked),
+                    button('Clear', _clearButtonClicked),
+                  ],
+                ),
               ],
             ),
           ],
@@ -65,7 +77,7 @@ class MyApp extends StatelessWidget {
     hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay,
         (MapError error) {
       if (error == null) {
-        _mapMarkerExample = MapMarkerExample(_context, hereMapController);
+        _mapMarkerExample = MapMarkerExample(_showDialog, hereMapController);
       } else {
         print("Map scene not loaded. MapError: " + error.toString());
       }
@@ -78,6 +90,14 @@ class MyApp extends StatelessWidget {
 
   void _centeredMapMarkersButtonClicked() {
     _mapMarkerExample.showCenteredMapMarkers();
+  }
+
+  void _flatMapMarkersButtonClicked() {
+    _mapMarkerExample.showFlatMapMarkers();
+  }
+
+  void _mapMarkers3DButtonClicked() {
+    _mapMarkerExample.showMapMarkers3D();
   }
 
   void _clearButtonClicked() {
@@ -94,6 +114,34 @@ class MyApp extends StatelessWidget {
         onPressed: () => callbackFunction(),
         child: Text(buttonLabel, style: TextStyle(fontSize: 20)),
       ),
+    );
+  }
+
+  // A helper method to add a button on top of the HERE map.
+  Future<void> _showDialog(String title, String message) async {
+    return showDialog<void>(
+      context: _context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(message),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
