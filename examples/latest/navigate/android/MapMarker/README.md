@@ -1,4 +1,4 @@
-The MapMarker example app shows how to pin images to mark specific spots on the map. You can find how this is done in [MapMarkerExample.java](app/src/main/java/com/here/mapmarker/MapMarkerExample.java).
+The MapMarker example app shows how to pin images and 3D objects to mark specific spots on the map. You can find how this is done in [MapMarkerExample.java](app/src/main/java/com/here/mapmarker/MapMarkerExample.java).
 
 Build instructions:
 -------------------

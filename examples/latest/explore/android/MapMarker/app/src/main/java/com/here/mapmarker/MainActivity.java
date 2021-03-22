@@ -93,6 +93,14 @@ public class MainActivity extends AppCompatActivity {
         mapMarkerExample.showCenteredMapMarkers();
     }
 
+    public void FlatMapMarkerButtonClicked(View view) {
+        mapMarkerExample.showFlatMarker();
+    }
+
+    public void MapMarker3DButtonClicked(View view) {
+        mapMarkerExample.showMapMarker3D();
+    }
+
     public void clearMapButtonClicked(View view) {
         mapMarkerExample.clearMap();
     }

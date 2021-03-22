@@ -40,6 +40,10 @@ class CameraExample {
 
   void move() {
     GeoCoordinates newTarget = _createRandomGeoCoordinatesNearby();
+
+    // Indicate the new map center with a circle.
+    _setNewMapCircle(newTarget);
+
     _hereMapController.camera.flyToWithOptions(newTarget, MapCameraFlyToOptions.withDefaults());
   }
 

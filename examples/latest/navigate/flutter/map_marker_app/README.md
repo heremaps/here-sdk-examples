@@ -1,4 +1,4 @@
-The map_marker example app shows how to pin images to mark specific spots on the map. You can find how this is done in [MapMarkerExample.dart](lib/MapMarkerExample.dart).
+The map_marker example app shows how to pin images and 3D objects to mark specific spots on the map. You can find how this is done in [MapMarkerExample.dart](lib/MapMarkerExample.dart).
 
 Build instructions:
 -------------------
