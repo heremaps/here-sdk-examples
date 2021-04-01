@@ -210,7 +210,7 @@ public class SearchExample {
                 for (Place searchResult : list) {
                     Metadata metadata = new Metadata();
                     metadata.setCustomValue("key_search_result", new SearchResultMetadata(searchResult));
-                    addPoiMapMarker(searchResult.getCoordinates(), metadata);
+                    addPoiMapMarker(searchResult.getGeoCoordinates(), metadata);
                 }
             }
         });
@@ -297,7 +297,7 @@ public class SearchExample {
                 }
 
                 for (Place geocodingResult : list) {
-                    GeoCoordinates geoCoordinates = geocodingResult.getCoordinates();
+                    GeoCoordinates geoCoordinates = geocodingResult.getGeoCoordinates();
                     Address address = geocodingResult.getAddress();
                     String locationDetails = address.addressText
                             + ". GeoCoordinates: " + geoCoordinates.latitude

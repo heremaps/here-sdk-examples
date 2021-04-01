@@ -91,7 +91,8 @@ class SearchExample: TapDelegate,
         for searchResult in items! {
             let metadata = Metadata()
             metadata.setCustomValue(key: "key_search_result", value: SearchResultMetadata(searchResult))
-            addPoiMapMarker(geoCoordinates: searchResult.coordinates, metadata: metadata)
+            // Note that geoCoordinates are always set, but can be nil for suggestions only.
+            addPoiMapMarker(geoCoordinates: searchResult.geoCoordinates!, metadata: metadata)
         }
     }
 
@@ -176,7 +177,8 @@ class SearchExample: TapDelegate,
 
         // If error is nil, it is guaranteed that the items will not be nil.
         for geocodingResult in items! {
-            let geoCoordinates = geocodingResult.coordinates
+            // Note that geoCoordinates are always set, but can be nil for suggestions only.
+            let geoCoordinates = geocodingResult.geoCoordinates!
             let address = geocodingResult.address
             let locationDetails = address.addressText
                 + ". Coordinates: \(geoCoordinates.latitude)"

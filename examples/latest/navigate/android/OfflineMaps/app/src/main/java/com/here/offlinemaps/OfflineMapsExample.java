@@ -82,7 +82,7 @@ public class OfflineMapsExample {
         }
 
         // Note that the default storage path can be adapted when creating a new SDKNativeEngine.
-        String storagePath = SDKNativeEngine.getSharedInstance().getOptions().cachePath;
+        String storagePath = sdkNativeEngine.getOptions().cachePath;
         Log.d("",  "StoragePath: " + storagePath);
 
         String info = "This example allows to download the region Switzerland.";

@@ -25,7 +25,7 @@ import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/routing.dart';
 import 'package:here_sdk/routing.dart' as here;
 
-// A callback to notifiy the hosting widget.
+// A callback to notify the hosting widget.
 typedef ShowDialogFunction = void Function(String title, String message);
 
 class RoutingExample {
@@ -34,14 +34,12 @@ class RoutingExample {
   RoutingEngine _routingEngine;
   ShowDialogFunction _showDialog;
 
-  RoutingExample(
-      ShowDialogFunction showDialogCallback, HereMapController hereMapController) {
+  RoutingExample(ShowDialogFunction showDialogCallback, HereMapController hereMapController) {
     _showDialog = showDialogCallback;
     _hereMapController = hereMapController;
 
     double distanceToEarthInMeters = 10000;
-    _hereMapController.camera.lookAtPointWithDistance(
-        GeoCoordinates(52.520798, 13.409408), distanceToEarthInMeters);
+    _hereMapController.camera.lookAtPointWithDistance(GeoCoordinates(52.520798, 13.409408), distanceToEarthInMeters);
 
     _routingEngine = new RoutingEngine();
   }
@@ -73,8 +71,7 @@ class RoutingExample {
   void _logRouteViolations(here.Route route) {
     for (var section in route.sections) {
       for (var notice in section.notices) {
-        print("This route contains the following warning: " +
-            notice.code.toString());
+        print("This route contains the following warning: " + notice.code.toString());
       }
     }
   }
@@ -90,10 +87,8 @@ class RoutingExample {
     int estimatedTravelTimeInSeconds = route.durationInSeconds;
     int lengthInMeters = route.lengthInMeters;
 
-    String routeDetails = 'Travel Time: ' +
-        _formatTime(estimatedTravelTimeInSeconds) +
-        ', Length: ' +
-        _formatLength(lengthInMeters);
+    String routeDetails =
+        'Travel Time: ' + _formatTime(estimatedTravelTimeInSeconds) + ', Length: ' + _formatLength(lengthInMeters);
 
     _showDialog('Route Details', '$routeDetails');
   }
@@ -117,8 +112,7 @@ class RoutingExample {
     GeoPolyline routeGeoPolyline = GeoPolyline(route.polyline);
 
     double widthInPixels = 20;
-    MapPolyline routeMapPolyline = MapPolyline(
-        routeGeoPolyline, widthInPixels, Color.fromARGB(160, 0, 144, 138));
+    MapPolyline routeMapPolyline = MapPolyline(routeGeoPolyline, widthInPixels, Color.fromARGB(160, 0, 144, 138));
 
     _hereMapController.mapScene.addMapPolyline(routeMapPolyline);
     _mapPolylines.add(routeMapPolyline);

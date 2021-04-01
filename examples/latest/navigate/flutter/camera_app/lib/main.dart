@@ -58,8 +58,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   }
 
   void _onMapCreated(HereMapController hereMapController) {
-    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay,
-        (MapError error) {
+    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError error) {
       if (error == null) {
         _cameraExample = CameraExample(hereMapController);
       } else {

@@ -83,10 +83,6 @@ class PositioningExample: LocationDelegate, LocationStatusDelegate {
         print("Altitude (m): \(String(describing: location.verticalAccuracyInMeters))")
     }
 
-    func onLocationTimeout() {
-        // Will be removed in 4.7.0. The time-out functionality is now part of the SDK implementation.
-    }
-
     func onStatusChanged(locationEngineStatus: LocationEngineStatus) {
         print("Location engine status: \(locationEngineStatus)")
     }

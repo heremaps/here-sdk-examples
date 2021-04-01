@@ -31,7 +31,7 @@ final class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        mapView.mapScene.loadScene(mapScheme: MapScheme.greyDay, completion: onLoadScene)
+        mapView.mapScene.loadScene(mapScheme: MapScheme.normalDay, completion: onLoadScene)
     }
 
     private func onLoadScene(mapError: MapError?) {

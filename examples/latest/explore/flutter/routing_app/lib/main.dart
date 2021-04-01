@@ -61,8 +61,7 @@ class MyApp extends StatelessWidget {
   }
 
   void _onMapCreated(HereMapController hereMapController) {
-    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay,
-        (MapError error) {
+    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError error) {
       if (error == null) {
         _routingExample = RoutingExample(_showDialog, hereMapController);
       } else {

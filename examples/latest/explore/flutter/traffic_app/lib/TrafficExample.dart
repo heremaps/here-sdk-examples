@@ -27,8 +27,7 @@ class TrafficExample {
     _hereMapController = hereMapController;
 
     double distanceToEarthInMeters = 10000;
-    _hereMapController.camera.lookAtPointWithDistance(
-        GeoCoordinates(52.520798, 13.409408), distanceToEarthInMeters);
+    _hereMapController.camera.lookAtPointWithDistance(GeoCoordinates(52.520798, 13.409408), distanceToEarthInMeters);
   }
 
   void enableAll() {
@@ -41,16 +40,12 @@ class TrafficExample {
   }
 
   void _enableTrafficVisualization() {
-    _hereMapController.mapScene
-        .setLayerState(MapSceneLayers.trafficFlow, MapSceneLayerState.visible);
-    _hereMapController.mapScene.setLayerState(
-        MapSceneLayers.trafficIncidents, MapSceneLayerState.visible);
+    _hereMapController.mapScene.setLayerState(MapSceneLayers.trafficFlow, MapSceneLayerState.visible);
+    _hereMapController.mapScene.setLayerState(MapSceneLayers.trafficIncidents, MapSceneLayerState.visible);
   }
 
   void _disableTrafficVisualization() {
-    _hereMapController.mapScene
-        .setLayerState(MapSceneLayers.trafficFlow, MapSceneLayerState.hidden);
-    _hereMapController.mapScene.setLayerState(
-        MapSceneLayers.trafficIncidents, MapSceneLayerState.hidden);
+    _hereMapController.mapScene.setLayerState(MapSceneLayers.trafficFlow, MapSceneLayerState.hidden);
+    _hereMapController.mapScene.setLayerState(MapSceneLayers.trafficIncidents, MapSceneLayerState.hidden);
   }
 }

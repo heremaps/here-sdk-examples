@@ -31,8 +31,7 @@ class MapObjectsExample {
 
   MapObjectsExample(HereMapController hereMapController) {
     double distanceToEarthInMeters = 5000;
-    hereMapController.camera.lookAtPointWithDistance(
-        GeoCoordinates(52.530932, 13.384915), distanceToEarthInMeters);
+    hereMapController.camera.lookAtPointWithDistance(GeoCoordinates(52.530932, 13.384915), distanceToEarthInMeters);
 
     _mapScene = hereMapController.mapScene;
   }
@@ -82,8 +81,7 @@ class MapObjectsExample {
 
     double widthInPixels = 20;
     Color lineColor = Color.fromARGB(160, 0, 144, 138);
-    MapPolyline mapPolyline =
-        MapPolyline(geoPolyline, widthInPixels, lineColor);
+    MapPolyline mapPolyline = MapPolyline(geoPolyline, widthInPixels, lineColor);
 
     return mapPolyline;
   }
@@ -134,8 +132,7 @@ class MapObjectsExample {
 
   MapPolygon _createMapCircle() {
     double radiusInMeters = 300;
-    GeoCircle geoCircle =
-        GeoCircle(GeoCoordinates(52.530932, 13.384915), radiusInMeters);
+    GeoCircle geoCircle = GeoCircle(GeoCoordinates(52.530932, 13.384915), radiusInMeters);
 
     GeoPolygon geoPolygon = GeoPolygon.withGeoCircle(geoCircle);
     Color fillColor = Color.fromARGB(160, 0, 144, 138);

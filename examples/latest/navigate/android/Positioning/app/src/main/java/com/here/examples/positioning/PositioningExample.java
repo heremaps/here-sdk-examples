@@ -22,15 +22,17 @@ package com.here.examples.positioning;
 import android.content.Context;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.here.sdk.consent.Consent;
 import com.here.sdk.consent.ConsentEngine;
 import com.here.sdk.core.Color;
 import com.here.sdk.core.GeoCircle;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.GeoPolygon;
+import com.here.sdk.core.Location;
 import com.here.sdk.core.LocationListener;
 import com.here.sdk.core.errors.InstantiationErrorException;
-import com.here.sdk.core.Location;
 import com.here.sdk.location.LocationAccuracy;
 import com.here.sdk.location.LocationEngine;
 import com.here.sdk.location.LocationEngineStatus;
@@ -44,8 +46,6 @@ import com.here.sdk.mapview.MapView;
 
 import java.util.List;
 
-import androidx.annotation.NonNull;
-
 public class PositioningExample {
 
     private static final String TAG = PositioningExample.class.getSimpleName();
@@ -54,8 +54,8 @@ public class PositioningExample {
     private static final int CAMERA_DISTANCE_IN_METERS = 200;
 
     private final GeoCoordinates defaultLocation = new GeoCoordinates(52.520798,13.409408);
-    private final Color colorCenter = new Color((short) 0, (short) 144, (short) 138, (short) 255);
-    private final Color colorAccuracy = new Color((short) 118, (short) 227, (short) 220, (short) 50);
+    private final Color colorCenter = Color.valueOf(0, 0.56f, 0.54f, 1); // RGBA
+    private final Color colorAccuracy = Color.valueOf(0.46f, 0.89f, 0.86f, 0.20f); // RGBA
 
     private MapView mapView;
     private Context context;
@@ -72,11 +72,6 @@ public class PositioningExample {
 
             //Update the map viewport to be centered on the location.
             mapView.getCamera().lookAt(location.coordinates, CAMERA_DISTANCE_IN_METERS);
-        }
-
-        @Override
-        public void onLocationTimeout() {
-            //This callback is deprecated and will be removed with HERE SDK version 4.7. LocationEngine will never send updates through this callback.
         }
     };
 

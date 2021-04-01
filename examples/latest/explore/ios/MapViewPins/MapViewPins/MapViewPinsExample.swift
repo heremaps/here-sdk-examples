@@ -82,7 +82,7 @@ class MapViewPinsExample {
                                   radiusInMeters: 50.0)
 
         let geoPolygon = GeoPolygon(geoCircle: geoCircle)
-        let fillColor = Color(red: 0x00, green: 0x90, blue: 0x8A, alpha: 0xA0)
+        let fillColor = UIColor(red: 0, green: 0.56, blue: 0.54, alpha: 0.63)
         let mapPolygon = MapPolygon(geometry: geoPolygon, color: fillColor)
 
         mapView.mapScene.addMapPolygon(mapPolygon)

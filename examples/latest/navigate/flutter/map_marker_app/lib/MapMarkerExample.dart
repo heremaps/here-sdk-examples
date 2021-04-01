@@ -39,14 +39,12 @@ class MapMarkerExample {
   MapImage _circleMapImage;
   ShowDialogFunction _showDialog;
 
-  MapMarkerExample(ShowDialogFunction showDialogCallback,
-      HereMapController hereMapController) {
+  MapMarkerExample(ShowDialogFunction showDialogCallback, HereMapController hereMapController) {
     _showDialog = showDialogCallback;
     _hereMapController = hereMapController;
 
     double distanceToEarthInMeters = 8000;
-    _hereMapController.camera.lookAtPointWithDistance(
-        GeoCoordinates(52.530932, 13.384915), distanceToEarthInMeters);
+    _hereMapController.camera.lookAtPointWithDistance(GeoCoordinates(52.530932, 13.384915), distanceToEarthInMeters);
 
     // Setting a tap handler to pick markers from map.
     _setTapGestureHandler();
@@ -118,21 +116,18 @@ class MapMarkerExample {
     _mapMarker3DList.clear();
   }
 
-  Future<void> _addPOIMapMarker(
-      GeoCoordinates geoCoordinates, int drawOrder) async {
+  Future<void> _addPOIMapMarker(GeoCoordinates geoCoordinates, int drawOrder) async {
     // Reuse existing MapImage for new map markers.
     if (_poiMapImage == null) {
       Uint8List imagePixelData = await _loadFileAsUint8List('assets/poi.png');
-      _poiMapImage =
-          MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
+      _poiMapImage = MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
     }
 
     // By default, the anchor point is set to 0.5, 0.5 (= centered).
     // Here the bottom, middle position should point to the location.
     Anchor2D anchor2D = Anchor2D.withHorizontalAndVertical(0.5, 1);
 
-    MapMarker mapMarker =
-        MapMarker.withAnchor(geoCoordinates, _poiMapImage, anchor2D);
+    MapMarker mapMarker = MapMarker.withAnchor(geoCoordinates, _poiMapImage, anchor2D);
     mapMarker.drawOrder = drawOrder;
 
     Metadata metadata = new Metadata();
@@ -143,13 +138,11 @@ class MapMarkerExample {
     _mapMarkerList.add(mapMarker);
   }
 
-  Future<void> _addPhotoMapMarker(
-      GeoCoordinates geoCoordinates, int drawOrder) async {
+  Future<void> _addPhotoMapMarker(GeoCoordinates geoCoordinates, int drawOrder) async {
     // Reuse existing MapImage for new map markers.
     if (_photoMapImage == null) {
       Uint8List imagePixelData = await _loadFileAsUint8List('assets/here_car.png');
-      _photoMapImage =
-          MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
+      _photoMapImage = MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
     }
 
     MapMarker mapMarker = MapMarker(geoCoordinates, _photoMapImage);
@@ -159,13 +152,11 @@ class MapMarkerExample {
     _mapMarkerList.add(mapMarker);
   }
 
-  Future<void> _addCircleMapMarker(
-      GeoCoordinates geoCoordinates, int drawOrder) async {
+  Future<void> _addCircleMapMarker(GeoCoordinates geoCoordinates, int drawOrder) async {
     // Reuse existing MapImage for new map markers.
     if (_circleMapImage == null) {
       Uint8List imagePixelData = await _loadFileAsUint8List('assets/circle.png');
-      _circleMapImage =
-          MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
+      _circleMapImage = MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
     }
 
     MapMarker mapMarker = MapMarker(geoCoordinates, _circleMapImage);
@@ -175,7 +166,7 @@ class MapMarkerExample {
     _mapMarkerList.add(mapMarker);
   }
 
-  Future<void> _addFlatMarker3D(GeoCoordinates geoCoordinates) {
+  void _addFlatMarker3D(GeoCoordinates geoCoordinates) {
     // Place the files in the "assets" directory as specified in pubspec.yaml.
     // Adjust file name and path as appropriate for your project.
     // Note: The bottom of the plane is centered on the origin.
@@ -185,8 +176,7 @@ class MapMarkerExample {
     String textureFilePath = "assets/models/poi_texture.png";
 
     // Optionally, consider to store the model for reuse (like we showed for MapImages above).
-    MapMarker3DModel mapMarker3DModel =
-        MapMarker3DModel.withTextureFilePath(geometryFilePath, textureFilePath);
+    MapMarker3DModel mapMarker3DModel = MapMarker3DModel.withTextureFilePath(geometryFilePath, textureFilePath);
     MapMarker3D mapMarker3D = MapMarker3D(geoCoordinates, mapMarker3DModel);
     // Scale marker. Note that we used a normalized length of 2 units in 3D space.
     mapMarker3D.scale = 50;
@@ -195,15 +185,14 @@ class MapMarkerExample {
     _mapMarker3DList.add(mapMarker3D);
   }
 
-  Future<void> _addMapMarker3D(GeoCoordinates geoCoordinates) {
+  void _addMapMarker3D(GeoCoordinates geoCoordinates) {
     // Place the files in the "assets" directory as specified in pubspec.yaml.
     // Adjust file name and path as appropriate for your project.
     String geometryFilePath = "assets/models/obstacle.obj";
     String textureFilePath = "assets/models/obstacle_texture.png";
 
     // Optionally, consider to store the model for reuse (like we showed for MapImages above).
-    MapMarker3DModel mapMarker3DModel =
-        MapMarker3DModel.withTextureFilePath(geometryFilePath, textureFilePath);
+    MapMarker3DModel mapMarker3DModel = MapMarker3DModel.withTextureFilePath(geometryFilePath, textureFilePath);
     MapMarker3D mapMarker3D = MapMarker3D(geoCoordinates, mapMarker3DModel);
     mapMarker3D.scale = 6;
 
@@ -218,16 +207,14 @@ class MapMarkerExample {
   }
 
   void _setTapGestureHandler() {
-    _hereMapController.gestures.tapListener =
-        TapListener.fromLambdas(lambda_onTap: (Point2D touchPoint) {
+    _hereMapController.gestures.tapListener = TapListener.fromLambdas(lambda_onTap: (Point2D touchPoint) {
       _pickMapMarker(touchPoint);
     });
   }
 
   void _pickMapMarker(Point2D touchPoint) {
     double radiusInPixel = 2;
-    _hereMapController.pickMapItems(touchPoint, radiusInPixel,
-        (pickMapItemsResult) {
+    _hereMapController.pickMapItems(touchPoint, radiusInPixel, (pickMapItemsResult) {
       // Note that 3D map markers can't be picked yet. Only marker, polgon and polyline map items are pickable.
       List<MapMarker> mapMarkerList = pickMapItemsResult.markers;
       if (mapMarkerList.length == 0) {
@@ -248,15 +235,13 @@ class MapMarkerExample {
   }
 
   void _tiltMap() {
-    MapCameraOrientationUpdate targetOrientation =
-        MapCameraOrientationUpdate.withDefaults();
+    MapCameraOrientationUpdate targetOrientation = MapCameraOrientationUpdate.withDefaults();
     targetOrientation.tilt = 60;
     _hereMapController.camera.setTargetOrientation(targetOrientation);
   }
 
   void _unTiltMap() {
-    MapCameraOrientationUpdate targetOrientation =
-        MapCameraOrientationUpdate.withDefaults();
+    MapCameraOrientationUpdate targetOrientation = MapCameraOrientationUpdate.withDefaults();
     targetOrientation.tilt = 0;
     _hereMapController.camera.setTargetOrientation(targetOrientation);
   }
@@ -270,8 +255,7 @@ class MapMarkerExample {
     }
     double lat = centerGeoCoordinates.latitude;
     double lon = centerGeoCoordinates.longitude;
-    return GeoCoordinates(_getRandom(lat - 0.02, lat + 0.02),
-        _getRandom(lon - 0.02, lon + 0.02));
+    return GeoCoordinates(_getRandom(lat - 0.02, lat + 0.02), _getRandom(lon - 0.02, lon + 0.02));
   }
 
   double _getRandom(double min, double max) {

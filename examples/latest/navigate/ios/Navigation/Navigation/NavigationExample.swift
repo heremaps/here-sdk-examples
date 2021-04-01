@@ -29,6 +29,7 @@ class NavigationExample : NavigableLocationDelegate,
                           DestinationReachedDelegate,
                           MilestoneReachedDelegate,
                           SpeedWarningDelegate,
+                          SpeedLimitDelegate,
                           RouteProgressDelegate,
                           RouteDeviationDelegate,
                           ManeuverNotificationDelegate,
@@ -74,6 +75,7 @@ class NavigationExample : NavigableLocationDelegate,
         visualNavigator.destinationReachedDelegate = self
         visualNavigator.milestoneReachedDelegate = self
         visualNavigator.speedWarningDelegate = self
+        visualNavigator.speedLimitDelegate = self
         visualNavigator.laneAssistanceDelegate = self
     }
 
@@ -160,6 +162,7 @@ class NavigationExample : NavigableLocationDelegate,
         if status == SpeedWarningStatus.speedLimitExceeded {
             // Driver is faster than current speed limit (plus an optional offset).
             // Play a notification sound to alert the driver.
+            // Note that this may not include temporary special speed limits, see SpeedLimitDelegate.
             AudioServicesPlaySystemSound(SystemSoundID(1016))
         }
 
@@ -168,6 +171,83 @@ class NavigationExample : NavigableLocationDelegate,
         }
     }
 
+    // Conform to SpeedLimitDelegate.
+    // Notifies on the current speed limit valid on the current road.
+    func onSpeedLimitUpdated(_ speedLimit: SpeedLimit) {
+        let speedLimit = getCurrentSpeedLimit(speedLimit)
+
+        if speedLimit == nil {
+            print("Warning: Speed limits unkown, data could not be retrieved.")
+        } else if speedLimit == 0 {
+            print("No speed limits on this road! Drive as fast as you feel safe ...")
+        } else {
+            print("Current speed limit (m/s): \(String(describing: speedLimit))")
+        }
+    }
+
+    private func getCurrentSpeedLimit(_ speedLimit: SpeedLimit) -> Double? {
+        // If available, it is recommended to show this value as speed limit to the user.
+        // Note that the SpeedWarningStatus only warns when speedLimit.speedLimitInMetersPerSecond is exceeded.
+        if let specialSpeedLimit = getSpecialSpeedLimit(speedLimit.specialSpeedSituations) {
+            return specialSpeedLimit
+        }
+
+        // If no special speed limit is available, show the standard speed limit.
+        return speedLimit.speedLimitInMetersPerSecond
+    }
+
+    // An example implementation that will retrieve the slowest speed limit, including advisory speed limits and
+    // weather-dependent speed limits that may or may not be valid due to the actual weather condition while driving.
+    private func getSpecialSpeedLimit(_ specialSpeedSituations: [SpecialSpeedSituation]) -> Double? {
+        var specialSpeedLimit: Double?
+        
+        // Iterates through the list of applicable special speed limits, if available.
+        for specialSpeedSituation in specialSpeedSituations {
+
+            // Check if a time restriction is available and if it is currently active.
+            var timeRestrictionisPresent = false
+            var timeRestrictionisActive = false
+            for timeDomain in specialSpeedSituation.appliesDuring {
+                timeRestrictionisPresent = true
+                if timeDomain.isActive(at: Date()) {
+                    timeRestrictionisActive = true
+                }
+            }
+
+            if timeRestrictionisPresent && !timeRestrictionisActive {
+                // We are not interested in currently inactive special speed limits.
+                continue
+            }
+            
+            if (specialSpeedSituation.type == .advisorySpeed) {
+                print("Contains an advisory speed limit. For safety reasons it is recommended to respect it.")
+            }
+
+            if (specialSpeedSituation.type == .rain ||
+                    specialSpeedSituation.type == .snow ||
+                    specialSpeedSituation.type == .fog) {
+                // The HERE SDK cannot detect the current weather condition, so a driver must decide
+                // based on the situation if this speed limit applies.
+                // Note: For this example we respect weather related speed limits, even if not applicable
+                // due to the current weather condition.
+                print("Attention: This road has weather dependent speed limits!")
+            }
+
+            let newSpecialSpeedLimit = specialSpeedSituation.specialSpeedLimitInMetersPerSecond
+            print("Found special speed limit: \(newSpecialSpeedLimit) m/s, type \(specialSpeedSituation.type).")
+            
+            if specialSpeedLimit != nil && specialSpeedLimit! > newSpecialSpeedLimit {
+                // For this example, we are only interested in the slowest special speed limit value,
+                // regardless if it is legal, advisory or bound to conditions that may require the decision
+                // of the driver.
+                specialSpeedLimit = newSpecialSpeedLimit
+            }
+        }
+        
+        print("Slowest special speed limit (m/s): \(String(describing: specialSpeedLimit)))")
+        return specialSpeedLimit
+    }
+    
     // Conform to NavigableLocationDelegate.
     // Notifies on the current map-matched location and other useful information while driving or walking.
     func onNavigableLocationUpdated(_ navigableLocation: NavigableLocation) {
@@ -176,16 +256,9 @@ class NavigationExample : NavigableLocationDelegate,
             return
         }
 
-        print("Current street: \(String(describing: navigableLocation.streetName))")
-
-        // Get speed limits for drivers.
-        if navigableLocation.speedLimitInMetersPerSecond == nil {
-            print("Warning: Speed limits unkown, data could not be retrieved.")
-        } else if navigableLocation.speedLimitInMetersPerSecond == 0 {
-            print("No speed limits on this road! Drive as fast as you feel safe ...")
-        } else {
-            print("Current speed limit (m/s): \(String(describing: navigableLocation.speedLimitInMetersPerSecond))")
-        }
+        let speed = navigableLocation.originalLocation.speedInMetersPerSecond
+        let accuracy = navigableLocation.originalLocation.speedAccuracyInMetersPerSecond
+        print("Driving speed: \(String(describing: speed)) plus/minus accuracy of \(String(describing: accuracy)).")
     }
 
     // Conform to RouteDeviationDelegate.
@@ -327,7 +400,7 @@ class NavigationExample : NavigableLocationDelegate,
         herePositioningProvider.startLocating(locationDelegate: visualNavigator,
                                               accuracy: .navigation)
     }
-    
+
     func startCameraTracking() {
         // By default, this is enabled.
         visualNavigator.cameraMode = CameraTrackingMode.enabled
