@@ -31,25 +31,20 @@ class GesturesExample {
     _hereMapController = hereMapController;
 
     double distanceToEarthInMeters = 8000;
-    _hereMapController.camera.lookAtPointWithDistance(
-        GeoCoordinates(52.530932, 13.384915), distanceToEarthInMeters);
+    _hereMapController.camera.lookAtPointWithDistance(GeoCoordinates(52.530932, 13.384915), distanceToEarthInMeters);
 
     _setTapGestureHandler();
     _setDoubleTapGestureHandler();
     _setTwoFingerTapGestureHandler();
     _setLongPressGestureHandler();
 
-    _showDialog(
-        "Gestures Example",
-        "Shows Tap, DoubleTap, TwoFingerTap and LongPress gesture handling. " +
-            "See log for details.");
+    _showDialog("Gestures Example",
+        "Shows Tap, DoubleTap, TwoFingerTap and LongPress gesture handling. " + "See log for details.");
   }
 
   void _setTapGestureHandler() {
-    _hereMapController.gestures.tapListener =
-        TapListener.fromLambdas(lambda_onTap: (Point2D touchPoint) {
-      var geoCoordinates =
-          _toString(_hereMapController.viewToGeoCoordinates(touchPoint));
+    _hereMapController.gestures.tapListener = TapListener.fromLambdas(lambda_onTap: (Point2D touchPoint) {
+      var geoCoordinates = _toString(_hereMapController.viewToGeoCoordinates(touchPoint));
       print('Tap at: $geoCoordinates');
     });
   }
@@ -57,28 +52,23 @@ class GesturesExample {
   void _setDoubleTapGestureHandler() {
     _hereMapController.gestures.doubleTapListener =
         DoubleTapListener.fromLambdas(lambda_onDoubleTap: (Point2D touchPoint) {
-      var geoCoordinates =
-          _toString(_hereMapController.viewToGeoCoordinates(touchPoint));
+      var geoCoordinates = _toString(_hereMapController.viewToGeoCoordinates(touchPoint));
       print('DoubleTap at: $geoCoordinates');
     });
   }
 
   void _setTwoFingerTapGestureHandler() {
     _hereMapController.gestures.twoFingerTapListener =
-        TwoFingerTapListener.fromLambdas(
-            lambda_onTwoFingerTap: (Point2D touchCenterPoint) {
-      var geoCoordinates =
-          _toString(_hereMapController.viewToGeoCoordinates(touchCenterPoint));
+        TwoFingerTapListener.fromLambdas(lambda_onTwoFingerTap: (Point2D touchCenterPoint) {
+      var geoCoordinates = _toString(_hereMapController.viewToGeoCoordinates(touchCenterPoint));
       print('TwoFingerTap at: $geoCoordinates');
     });
   }
 
   void _setLongPressGestureHandler() {
     _hereMapController.gestures.longPressListener =
-        LongPressListener.fromLambdas(lambda_onLongPress:
-            (GestureState gestureState, Point2D touchPoint) {
-      var geoCoordinates =
-          _toString(_hereMapController.viewToGeoCoordinates(touchPoint));
+        LongPressListener.fromLambdas(lambda_onLongPress: (GestureState gestureState, Point2D touchPoint) {
+      var geoCoordinates = _toString(_hereMapController.viewToGeoCoordinates(touchPoint));
 
       if (gestureState == GestureState.begin) {
         print('LongPress detected at: $geoCoordinates');
@@ -95,9 +85,7 @@ class GesturesExample {
   }
 
   String _toString(GeoCoordinates geoCoordinates) {
-    return geoCoordinates.latitude.toString() +
-        ", " +
-        geoCoordinates.longitude.toString();
+    return geoCoordinates.latitude.toString() + ", " + geoCoordinates.longitude.toString();
   }
 
   Future<void> _showDialog(String title, String message) async {

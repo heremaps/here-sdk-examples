@@ -21,7 +21,6 @@ package com.here.sdk.example.mapviewpins;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -92,8 +91,8 @@ public class MapViewPinExample {
         GeoCircle geoCircle = new GeoCircle(geoCoordinates, radiusInMeters);
 
         GeoPolygon geoPolygon = new GeoPolygon(geoCircle);
-        com.here.sdk.core.Color fillColor =
-                new com.here.sdk.core.Color((short) 0x00, (short) 0x90, (short) 0x8A, (short) 0xA0);
+          com.here.sdk.core.Color fillColor =
+                com.here.sdk.core.Color.valueOf(0, 0.56f, 0.54f, 0.63f); // RGBA
         MapPolygon mapPolygon = new MapPolygon(geoPolygon, fillColor);
 
         mapView.getMapScene().addMapPolygon(mapPolygon);

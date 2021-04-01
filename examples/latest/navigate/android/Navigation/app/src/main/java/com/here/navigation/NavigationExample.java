@@ -54,10 +54,15 @@ import com.here.sdk.navigation.RouteDeviationListener;
 import com.here.sdk.navigation.RouteProgress;
 import com.here.sdk.navigation.RouteProgressListener;
 import com.here.sdk.navigation.SectionProgress;
+import com.here.sdk.navigation.SpecialSpeedSituation;
+import com.here.sdk.navigation.SpecialSpeedSituationType;
+import com.here.sdk.navigation.SpeedLimit;
+import com.here.sdk.navigation.SpeedLimitListener;
 import com.here.sdk.navigation.SpeedLimitOffset;
 import com.here.sdk.navigation.SpeedWarningListener;
 import com.here.sdk.navigation.SpeedWarningOptions;
 import com.here.sdk.navigation.SpeedWarningStatus;
+import com.here.sdk.navigation.TimeDomain;
 import com.here.sdk.navigation.VisualNavigator;
 import com.here.sdk.routing.Maneuver;
 import com.here.sdk.routing.ManeuverAction;
@@ -65,6 +70,7 @@ import com.here.sdk.routing.RoadType;
 import com.here.sdk.routing.Route;
 import com.here.sdk.routing.Section;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -214,6 +220,7 @@ public class NavigationExample {
                 if (speedWarningStatus == SpeedWarningStatus.SPEED_LIMIT_EXCEEDED) {
                     // Driver is faster than current speed limit (plus an optional offset).
                     // Play a notification sound to alert the driver.
+                    // Note that this may not include temporary special speed limits, see SpeedLimitDelegate.
                     Uri ringtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
                     Ringtone ringtone = RingtoneManager.getRingtone(context, ringtoneUri);
                     ringtone.play();
@@ -221,6 +228,22 @@ public class NavigationExample {
 
                 if (speedWarningStatus == SpeedWarningStatus.SPEED_LIMIT_RESTORED) {
                     Log.d(TAG, "Driver is again slower than current speed limit (plus an optional offset).");
+                }
+            }
+        });
+
+        // Notifies on the current speed limit valid on the current road.
+        visualNavigator.setSpeedLimitListener(new SpeedLimitListener() {
+            @Override
+            public void onSpeedLimitUpdated(@NonNull SpeedLimit speedLimit) {
+                Double currentSpeedLimit = getCurrentSpeedLimit(speedLimit);
+
+                if (currentSpeedLimit == null) {
+                    Log.d(TAG, "Warning: Speed limits unkown, data could not be retrieved.");
+                } else if (currentSpeedLimit == 0) {
+                    Log.d(TAG, "No speed limits on this road! Drive as fast as you feel safe ...");
+                } else {
+                    Log.d(TAG, "Current speed limit (m/s):" + currentSpeedLimit);
                 }
             }
         });
@@ -235,16 +258,9 @@ public class NavigationExample {
                     return;
                 }
 
-                Log.d(TAG, "Current street: " + currentNavigableLocation.streetName);
-
-                // Get speed limits for drivers.
-                if (currentNavigableLocation.speedLimitInMetersPerSecond == null) {
-                    Log.d(TAG, "Warning: Speed limits unkown, data could not be retrieved.");
-                } else if (currentNavigableLocation.speedLimitInMetersPerSecond == 0) {
-                    Log.d(TAG, "No speed limits on this road! Drive as fast as you feel safe ...");
-                } else {
-                    Log.d(TAG, "Current speed limit (m/s): " + currentNavigableLocation.speedLimitInMetersPerSecond);
-                }
+                Double speed = currentNavigableLocation.originalLocation.speedInMetersPerSecond;
+                Double accuracy = currentNavigableLocation.originalLocation.speedAccuracyInMetersPerSecond;
+                Log.d(TAG, "Driving speed (m/s): " + speed + "plus/minus an accuracy of: " +accuracy);
             }
         });
 
@@ -346,6 +362,71 @@ public class NavigationExample {
 
             laneNumber++;
         }
+    }
+
+    private Double getCurrentSpeedLimit(SpeedLimit speedLimit) {
+        // If available, it is recommended to show this value as speed limit to the user.
+        // Note that the SpeedWarningStatus only warns when speedLimit.speedLimitInMetersPerSecond is exceeded.
+        Double specialSpeedLimit = getSpecialSpeedLimit(speedLimit.specialSpeedSituations);
+        if (specialSpeedLimit != null ) {
+            return specialSpeedLimit;
+        }
+
+        // If no special speed limit is available, show the standard speed limit.
+        return speedLimit.speedLimitInMetersPerSecond;
+    }
+
+    // An example implementation that will retrieve the slowest speed limit, including advisory speed limits and
+    // weather-dependent speed limits that may or may not be valid due to the actual weather condition while driving.
+    private Double getSpecialSpeedLimit(List<SpecialSpeedSituation> specialSpeedSituations) {
+        Double specialSpeedLimit = null;
+
+        // Iterates through the list of applicable special speed limits, if available.
+        for (SpecialSpeedSituation specialSpeedSituation : specialSpeedSituations) {
+
+            // Check if a time restriction is available and if it is currently active.
+            boolean timeRestrictionisPresent = false;
+            boolean timeRestrictionisActive = false;
+            for (TimeDomain timeDomain : specialSpeedSituation.appliesDuring) {
+                timeRestrictionisPresent = true;
+                if (timeDomain.isActive(new Date())) {
+                    timeRestrictionisActive = true;
+                }
+            }
+
+            if (timeRestrictionisPresent && !timeRestrictionisActive) {
+                // We are not interested in currently inactive special speed limits.
+                continue;
+            }
+
+            if (specialSpeedSituation.type == SpecialSpeedSituationType.ADVISORY_SPEED) {
+                Log.d(TAG, "Contains an advisory speed limit. For safety reasons it is recommended to respect it.");
+            }
+
+            if (specialSpeedSituation.type == SpecialSpeedSituationType.RAIN ||
+                    specialSpeedSituation.type == SpecialSpeedSituationType.SNOW ||
+                    specialSpeedSituation.type == SpecialSpeedSituationType.FOG) {
+                // The HERE SDK cannot detect the current weather condition, so a driver must decide
+                // based on the situation if this speed limit applies.
+                // Note: For this example we respect weather related speed limits, even if not applicable
+                // due to the current weather condition.
+                Log.d(TAG, "Attention: This road has weather dependent speed limits!");
+            }
+
+            Double newSpecialSpeedLimit = specialSpeedSituation.specialSpeedLimitInMetersPerSecond;
+            Log.d(TAG, "Found special speed limit: " + newSpecialSpeedLimit +
+                    " m/s, type: " + specialSpeedSituation.type);
+
+            if (specialSpeedLimit != null && specialSpeedLimit > newSpecialSpeedLimit) {
+                // For this example, we are only interested in the slowest special speed limit value,
+                // regardless if it is legal, advisory or bound to conditions that may require the decision
+                // of the driver.
+                specialSpeedLimit = newSpecialSpeedLimit;
+            }
+        }
+
+        Log.d(TAG, "Slowest special speed limit (m/s): " + specialSpeedLimit);
+        return specialSpeedLimit;
     }
 
     public void startNavigation(Route route, boolean isSimulated) {

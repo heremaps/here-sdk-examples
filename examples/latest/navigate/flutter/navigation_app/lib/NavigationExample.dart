@@ -78,42 +78,28 @@ class NavigationExample {
   void setupListeners() {
     // Notifies on the current map-matched location and other useful information while driving or walking.
     // The map-matched location is used to update the map view.
-    _visualNavigator.navigableLocationListener =
-        NavigableLocationListener.fromLambdas(lambda_onNavigableLocationUpdated:
-            (NavigableLocation currentNavigableLocation) {
-      MapMatchedLocation mapMatchedLocation =
-          currentNavigableLocation.mapMatchedLocation;
+    _visualNavigator.navigableLocationListener = NavigableLocationListener.fromLambdas(
+        lambda_onNavigableLocationUpdated: (NavigableLocation currentNavigableLocation) {
+      MapMatchedLocation mapMatchedLocation = currentNavigableLocation.mapMatchedLocation;
       if (mapMatchedLocation == null) {
         print('This new location could not be map-matched. Are you off-road?');
         return;
       }
 
-      print('Current street: ' + currentNavigableLocation.streetName);
-
-      // Get speed limits for drivers.
-      if (currentNavigableLocation.speedLimitInMetersPerSecond == null) {
-        print('Warning: Speed limits unkown, data could not be retrieved.');
-      } else if (currentNavigableLocation.speedLimitInMetersPerSecond == 0) {
-        print(
-            'No speed limits on this road! Drive as fast as you feel safe ...');
-      } else {
-        print('Current speed limit (m/s): ' +
-            currentNavigableLocation.speedLimitInMetersPerSecond.toString());
-      }
+      var speed = currentNavigableLocation.originalLocation.speedInMetersPerSecond;
+      var accuracy = currentNavigableLocation.originalLocation.speedAccuracyInMetersPerSecond;
+      print("Driving speed (m/s): $speed plus/minus an accuracy of: $accuracy");
     });
 
     // Notifies on the progress along the route including maneuver instructions.
     // These maneuver instructions can be used to compose a visual representation of the next maneuver actions.
-    _visualNavigator.routeProgressListener = RouteProgressListener.fromLambdas(
-        lambda_onRouteProgressUpdated: (RouteProgress routeProgress) {
+    _visualNavigator.routeProgressListener =
+        RouteProgressListener.fromLambdas(lambda_onRouteProgressUpdated: (RouteProgress routeProgress) {
       List<SectionProgress> sectionProgressList = routeProgress.sectionProgress;
       // sectionProgressList is guaranteed to be non-empty.
-      SectionProgress lastSectionProgress =
-          sectionProgressList.elementAt(sectionProgressList.length - 1);
-      print('Distance to destination in meters: ' +
-          lastSectionProgress.remainingDistanceInMeters.toString());
-      print('Traffic delay ahead in seconds: ' +
-          lastSectionProgress.trafficDelayInSeconds.toString());
+      SectionProgress lastSectionProgress = sectionProgressList.elementAt(sectionProgressList.length - 1);
+      print('Distance to destination in meters: ' + lastSectionProgress.remainingDistanceInMeters.toString());
+      print('Traffic delay ahead in seconds: ' + lastSectionProgress.trafficDelayInSeconds.toString());
 
       // Contains the progress for the next maneuver ahead and the next-next maneuvers, if any.
       List<ManeuverProgress> nextManeuverList = routeProgress.maneuverProgress;
@@ -125,8 +111,7 @@ class NavigationExample {
       }
 
       int nextManeuverIndex = nextManeuverProgress.maneuverIndex;
-      HERE.Maneuver nextManeuver =
-          _visualNavigator.getManeuver(nextManeuverIndex);
+      HERE.Maneuver nextManeuver = _visualNavigator.getManeuver(nextManeuverIndex);
       if (nextManeuver == null) {
         // Should never happen as we retrieved the next maneuver progress above.
         return;
@@ -171,44 +156,52 @@ class NavigationExample {
 
     // Notifies when a waypoint on the route is reached.
     _visualNavigator.milestoneReachedListener =
-        MilestoneReachedListener.fromLambdas(
-            lambda_onMilestoneReached: (Milestone milestone) {
+        MilestoneReachedListener.fromLambdas(lambda_onMilestoneReached: (Milestone milestone) {
       if (milestone.waypointIndex != null) {
-        print('A user-defined waypoint was reached, index of waypoint: ' +
-            milestone.waypointIndex.toString());
-        print('Original coordinates: ' +
-            milestone.originalCoordinates.toString());
+        print('A user-defined waypoint was reached, index of waypoint: ' + milestone.waypointIndex.toString());
+        print('Original coordinates: ' + milestone.originalCoordinates.toString());
       } else {
         // For example, when transport mode changes due to a ferry.
-        print('A system defined waypoint was reached at ' +
-            milestone.mapMatchedCoordinates.toString());
+        print('A system defined waypoint was reached at ' + milestone.mapMatchedCoordinates.toString());
+      }
+    });
+
+    // Notifies on the current speed limit valid on the current road.
+    _visualNavigator.speedLimitListener =
+        SpeedLimitListener.fromLambdas(lambda_onSpeedLimitUpdated: (SpeedLimit speedLimit) {
+      double currentSpeedLimit = _getCurrentSpeedLimit(speedLimit);
+
+      if (currentSpeedLimit == null) {
+        print("Warning: Speed limits unkown, data could not be retrieved.");
+      } else if (currentSpeedLimit == 0) {
+        print("No speed limits on this road! Drive as fast as you feel safe ...");
+      } else {
+        print("Current speed limit (m/s): $currentSpeedLimit");
       }
     });
 
     // Notifies when the current speed limit is exceeded.
-    _visualNavigator.speedWarningListener = SpeedWarningListener.fromLambdas(
-        lambda_onSpeedWarningStatusChanged:
-            (SpeedWarningStatus speedWarningStatus) {
+    _visualNavigator.speedWarningListener =
+        SpeedWarningListener.fromLambdas(lambda_onSpeedWarningStatusChanged: (SpeedWarningStatus speedWarningStatus) {
       if (speedWarningStatus == SpeedWarningStatus.speedLimitExceeded) {
         // Driver is faster than current speed limit (plus an optional offset, see setupSpeedWarnings()).
         // Play a click sound to indicate this to the driver.
         // As Flutter itself does not provide support for sounds,
         // alternatively use a 3rd party plugin to play an alert sound of your choice.
+        // Note that this may not include temporary special speed limits, see SpeedLimitDelegate.
         SystemSound.play(SystemSoundType.click);
         print('Speed limit exceeded.');
       }
 
       if (speedWarningStatus == SpeedWarningStatus.speedLimitRestored) {
-        print(
-            'Driver is again slower than current speed limit (plus an optional offset.)');
+        print('Driver is again slower than current speed limit (plus an optional offset.)');
       }
     });
 
     // Notifies on a possible deviation from the route.
     // When deviation is too large, an app may decide to recalculate the route from current location to destination.
     _visualNavigator.routeDeviationListener =
-        RouteDeviationListener.fromLambdas(
-            lambda_onRouteDeviation: (RouteDeviation routeDeviation) {
+        RouteDeviationListener.fromLambdas(lambda_onRouteDeviation: (RouteDeviation routeDeviation) {
       HERE.Route route = _visualNavigator.route;
       if (route == null) {
         // May happen in rare cases when route was set to null inbetween.
@@ -216,8 +209,7 @@ class NavigationExample {
       }
 
       // Get current geographic coordinates.
-      MapMatchedLocation currentMapMatchedLocation =
-          routeDeviation.currentLocation.mapMatchedLocation;
+      MapMatchedLocation currentMapMatchedLocation = routeDeviation.currentLocation.mapMatchedLocation;
       GeoCoordinates currentGeoCoordinates = currentMapMatchedLocation == null
           ? routeDeviation.currentLocation.originalLocation.coordinates
           : currentMapMatchedLocation.coordinates;
@@ -225,27 +217,22 @@ class NavigationExample {
       // Get last geographic coordinates on route.
       GeoCoordinates lastGeoCoordinatesOnRoute;
       if (routeDeviation.lastLocationOnRoute != null) {
-        MapMatchedLocation lastMapMatchedLocationOnRoute =
-            routeDeviation.lastLocationOnRoute.mapMatchedLocation;
+        MapMatchedLocation lastMapMatchedLocationOnRoute = routeDeviation.lastLocationOnRoute.mapMatchedLocation;
         lastGeoCoordinatesOnRoute = lastMapMatchedLocationOnRoute == null
             ? routeDeviation.lastLocationOnRoute.originalLocation.coordinates
             : lastMapMatchedLocationOnRoute.coordinates;
       } else {
-        print(
-            'User was never following the route. So, we take the start of the route instead.');
-        lastGeoCoordinatesOnRoute =
-            route.sections.first.departurePlace.originalCoordinates;
+        print('User was never following the route. So, we take the start of the route instead.');
+        lastGeoCoordinatesOnRoute = route.sections.first.departurePlace.originalCoordinates;
       }
 
-      int distanceInMeters =
-          currentGeoCoordinates.distanceTo(lastGeoCoordinatesOnRoute) as int;
+      int distanceInMeters = currentGeoCoordinates.distanceTo(lastGeoCoordinatesOnRoute) as int;
       print('RouteDeviation in meters is ' + distanceInMeters.toString());
     });
 
     // Notifies on voice maneuver messages.
     _visualNavigator.maneuverNotificationListener =
-        ManeuverNotificationListener.fromLambdas(
-            lambda_onManeuverNotification: (String voiceText) {
+        ManeuverNotificationListener.fromLambdas(lambda_onManeuverNotification: (String voiceText) {
       // Flutter itself does not provide a text-to-speech engine. Use one of the available TTS plugins to speak
       // the voiceText message.
       print('Voice guidance text: $voiceText');
@@ -262,19 +249,79 @@ class NavigationExample {
       highSpeedBoundaryInMetersPerSecond,
     );
 
-    _visualNavigator.speedWarningOptions =
-        SpeedWarningOptions(speedLimitOffset);
+    _visualNavigator.speedWarningOptions = SpeedWarningOptions(speedLimitOffset);
   }
 
   void setupVoiceTextMessages() {
     LanguageCode languageCode = LanguageCode.enUs;
-    List<LanguageCode> supportedVoiceSkins =
-        VisualNavigator.getAvailableLanguagesForManeuverNotifications();
+    List<LanguageCode> supportedVoiceSkins = VisualNavigator.getAvailableLanguagesForManeuverNotifications();
     if (supportedVoiceSkins.contains(languageCode)) {
-      _visualNavigator.maneuverNotificationOptions =
-          ManeuverNotificationOptions(languageCode, UnitSystem.metric);
+      _visualNavigator.maneuverNotificationOptions = ManeuverNotificationOptions(languageCode, UnitSystem.metric);
     } else {
       print('Warning: Requested voice skin is not supported.');
     }
+  }
+
+  double _getCurrentSpeedLimit(SpeedLimit speedLimit) {
+    // If available, it is recommended to show this value as speed limit to the user.
+    // Note that the SpeedWarningStatus only warns when speedLimit.speedLimitInMetersPerSecond is exceeded.
+    double specialSpeedLimit = getSpecialSpeedLimit(speedLimit.specialSpeedSituations);
+    if (specialSpeedLimit != null) {
+      return specialSpeedLimit;
+    }
+
+    // If no special speed limit is available, show the standard speed limit.
+    return speedLimit.speedLimitInMetersPerSecond;
+  }
+
+  // An example implementation that will retrieve the slowest speed limit, including advisory speed limits and
+  // weather-dependent speed limits that may or may not be valid due to the actual weather condition while driving.
+  double getSpecialSpeedLimit(List<SpecialSpeedSituation> specialSpeedSituations) {
+    double specialSpeedLimit = null;
+
+    // Iterates through the list of applicable special speed limits, if available.
+    for (SpecialSpeedSituation specialSpeedSituation in specialSpeedSituations) {
+      // Check if a time restriction is available and if it is currently active.
+      bool timeRestrictionisPresent = false;
+      bool timeRestrictionisActive = false;
+      for (TimeDomain timeDomain in specialSpeedSituation.appliesDuring) {
+        timeRestrictionisPresent = true;
+        if (timeDomain.isActive(DateTime.now())) {
+          timeRestrictionisActive = true;
+        }
+      }
+
+      if (timeRestrictionisPresent && !timeRestrictionisActive) {
+        // We are not interested in currently inactive special speed limits.
+        continue;
+      }
+
+      if (specialSpeedSituation.type == SpecialSpeedSituationType.advisorySpeed) {
+        print("Contains an advisory speed limit. For safety reasons it is recommended to respect it.");
+      }
+
+      if (specialSpeedSituation.type == SpecialSpeedSituationType.rain ||
+          specialSpeedSituation.type == SpecialSpeedSituationType.snow ||
+          specialSpeedSituation.type == SpecialSpeedSituationType.fog) {
+        // The HERE SDK cannot detect the current weather condition, so a driver must decide
+        // based on the situation if this speed limit applies.
+        // Note: For this example we respect weather related speed limits, even if not applicable
+        // due to the current weather condition.
+        print("Attention: This road has weather dependent speed limits!");
+      }
+
+      double newSpecialSpeedLimit = specialSpeedSituation.specialSpeedLimitInMetersPerSecond;
+      print("Found special speed limit: $newSpecialSpeedLimit" + " m/s, type: $specialSpeedSituation.type");
+
+      if (specialSpeedLimit != null && specialSpeedLimit > newSpecialSpeedLimit) {
+        // For this example, we are only interested in the slowest special speed limit value,
+        // regardless if it is legal, advisory or bound to conditions that may require the decision
+        // of the driver.
+        specialSpeedLimit = newSpecialSpeedLimit;
+      }
+    }
+
+    print("Slowest special speed limit (m/s): $specialSpeedLimit");
+    return specialSpeedLimit;
   }
 }

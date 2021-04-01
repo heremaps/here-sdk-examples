@@ -29,8 +29,7 @@ class LocationProviderImplementation {
   HERE.LocationSimulator _locationSimulator;
 
   // Provides location updates based on the given route.
-  void enableRoutePlayback(
-      HERE.Route route, HERE.LocationListener locationListener) {
+  void enableRoutePlayback(HERE.Route route, HERE.LocationListener locationListener) {
     _locationSimulator?.stop();
 
     _locationSimulator = _createLocationSimulator(route, locationListener);
@@ -42,12 +41,10 @@ class LocationProviderImplementation {
   }
 
   // Provides fake GPS signals based on the route geometry.
-  HERE.LocationSimulator _createLocationSimulator(
-      HERE.Route route, HERE.LocationListener locationListener) {
+  HERE.LocationSimulator _createLocationSimulator(HERE.Route route, HERE.LocationListener locationListener) {
     final double speedFactor = 2;
     final notificationIntervalInMilliseconds = 500;
-    HERE.LocationSimulatorOptions locationSimulatorOptions =
-        HERE.LocationSimulatorOptions(
+    HERE.LocationSimulatorOptions locationSimulatorOptions = HERE.LocationSimulatorOptions(
       speedFactor,
       notificationIntervalInMilliseconds,
     );
@@ -55,8 +52,7 @@ class LocationProviderImplementation {
     HERE.LocationSimulator locationSimulator;
 
     try {
-      locationSimulator =
-          HERE.LocationSimulator.withRoute(route, locationSimulatorOptions);
+      locationSimulator = HERE.LocationSimulator.withRoute(route, locationSimulatorOptions);
     } on InstantiationException {
       throw Exception("Initialization of LocationSimulator failed.");
     }

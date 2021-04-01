@@ -23,15 +23,13 @@ import 'package:here_sdk/mapview.dart';
 
 class MapViewPinsExample {
   HereMapController _hereMapController;
-  final GeoCoordinates MAP_CENTER_GEO_COORDINATES =
-      GeoCoordinates(52.520798, 13.409408);
+  final GeoCoordinates MAP_CENTER_GEO_COORDINATES = GeoCoordinates(52.520798, 13.409408);
 
   MapViewPinsExample(HereMapController hereMapController) {
     _hereMapController = hereMapController;
 
     double distanceToEarthInMeters = 7000;
-    _hereMapController.camera.lookAtPointWithDistance(
-        MAP_CENTER_GEO_COORDINATES, distanceToEarthInMeters);
+    _hereMapController.camera.lookAtPointWithDistance(MAP_CENTER_GEO_COORDINATES, distanceToEarthInMeters);
 
     // Add circle to indicate map center.
     _addCirclePolygon(MAP_CENTER_GEO_COORDINATES);
@@ -39,14 +37,12 @@ class MapViewPinsExample {
 
   void addDefaultMapViewPinButtonClicked() {
     _hereMapController.pinWidget(
-        _createWidget("Centered ViewPin", Color.fromARGB(150, 0, 194, 138)),
-        MAP_CENTER_GEO_COORDINATES);
+        _createWidget("Centered ViewPin", Color.fromARGB(150, 0, 194, 138)), MAP_CENTER_GEO_COORDINATES);
   }
 
   void addAnchoredMapViewPinButtonClicked() {
     var widgetPin = _hereMapController.pinWidget(
-        _createWidget("Anchored MapViewPin", Color.fromARGB(200, 0, 144, 138)),
-        MAP_CENTER_GEO_COORDINATES);
+        _createWidget("Anchored MapViewPin", Color.fromARGB(200, 0, 144, 138)), MAP_CENTER_GEO_COORDINATES);
     widgetPin.anchor = Anchor2D.withHorizontalAndVertical(0.5, 1);
   }
 
