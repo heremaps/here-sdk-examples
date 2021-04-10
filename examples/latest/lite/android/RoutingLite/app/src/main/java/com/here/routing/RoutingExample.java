@@ -148,7 +148,7 @@ public class RoutingExample {
         mapPolylines.add(routeMapPolyline);
 
         // Draw a circle to indicate starting point and destination.
-        addCircleMapMarker(startGeoCoordinates, R.drawable.green_dot);
+        addCircleMapMarker(startGeoCoordinates, R.drawable.green_dot); // the resources should be in png format and not vector
         addCircleMapMarker(destinationGeoCoordinates, R.drawable.green_dot);
 
         // Log maneuver instructions per route section.
