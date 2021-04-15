@@ -20,20 +20,22 @@
 import heresdk
 import UIKit
 
-class PositioningExample: LocationDelegate, LocationStatusDelegate {
+class PositioningExample: LocationDelegate, LocationStatusDelegate, LocationAuthorizationChangeDelegate {
 
     private static let defaultGeoCoordinates = GeoCoordinates(latitude: 52.520798, longitude: 13.409408)
     private static let defaultCameraDistance = 1000.0
     private static let defaultAccuracyColor = UIColor(red: 0.25, green: 0.75, blue: 1, alpha: 0.25)
     private static let defaultCenterColor = UIColor(red: 1.0, green: 0.125, blue: 0.125, alpha: 1)
 
+    private var locationAuthorization: LocationAuthorizationDelegate
     private var locationEngine: LocationEngine
     private var mapView: MapView!
     private var mapCamera: MapCamera!
     private var locationAccuracyCircle: MapPolygon!
     private var locationCenterCircle: MapMarker!
 
-    init() {
+    init(locationAuthorization: LocationAuthorizationDelegate) {
+        self.locationAuthorization = locationAuthorization
         // Create instance of location engine.
         do {
             try locationEngine = LocationEngine()
@@ -52,7 +54,7 @@ class PositioningExample: LocationDelegate, LocationStatusDelegate {
             addMyLocationToMap(geoCoordinates: PositioningExample.defaultGeoCoordinates,
                                accuracyInMeters: 0.0)
         }
-
+        locationAuthorization.authorizationChangeDelegate = self
         startLocating()
     }
 
@@ -60,11 +62,19 @@ class PositioningExample: LocationDelegate, LocationStatusDelegate {
         stopLocating()
     }
 
+    func locationAuthorizatioChanged(granted: Bool) {
+        if granted {
+            startLocating()
+        }
+    }
+
     private func startLocating() {
         // Set delegates and start location engine.
         locationEngine.addLocationStatusDelegate(locationStatusDelegate: self)
         locationEngine.addLocationDelegate(locationDelegate: self)
-        _ = locationEngine.start(locationAccuracy: .bestAvailable)
+        if locationEngine.start(locationAccuracy: .bestAvailable) == .missingPermissions {
+            locationAuthorization.requestLocationAuthorization()
+        }
     }
 
     public func stopLocating() {
