@@ -21,6 +21,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:here_sdk/core.dart';
+import 'package:here_sdk/core.errors.dart';
 import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/routing.dart';
 import 'package:here_sdk/routing.dart' as here;
@@ -41,7 +42,11 @@ class RoutingExample {
     double distanceToEarthInMeters = 10000;
     _hereMapController.camera.lookAtPointWithDistance(GeoCoordinates(52.520798, 13.409408), distanceToEarthInMeters);
 
-    _routingEngine = new RoutingEngine();
+    try {
+      _routingEngine = RoutingEngine();
+    } on InstantiationException {
+      throw ("Initialization of RoutingEngine failed.");
+    }
   }
 
   Future<void> addRoute() async {

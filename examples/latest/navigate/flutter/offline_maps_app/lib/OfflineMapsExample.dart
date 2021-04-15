@@ -167,7 +167,7 @@ class OfflineMapsExample {
     return downloadableRegion;
   }
 
-  Future<void> onCancelMapDownloadClicked() async {
+  onCancelMapDownloadClicked() {
     for (MapDownloaderTask mapDownloaderTask in _mapDownloaderTasks) {
       mapDownloaderTask.cancel();
     }
