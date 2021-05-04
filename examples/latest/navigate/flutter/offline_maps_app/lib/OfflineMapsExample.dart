@@ -135,6 +135,14 @@ class OfflineMapsExample {
           String message =
               "Download of Switzerland. ID: " + regionId.id.toString() + ". Progress: " + percentage.toString() + "%.";
           print(message);
+        }, lambda_onPause: (MapLoaderError mapLoaderError) {
+          if (mapLoaderError == null) {
+            _showDialog("Info", "The download was paused by the user calling mapDownloaderTask.pause().");
+          } else {
+            _showDialog("Error", "Download regions onPause error. The task tried to often to retry the download: $mapLoaderError");
+          }
+        }, lambda_onResume: () {
+          _showDialog("Info", "A previously paused download has been resumed.");
         }));
 
     _mapDownloaderTasks.add(mapDownloaderTask);

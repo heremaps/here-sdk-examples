@@ -164,6 +164,23 @@ public class OfflineMapsExample {
                             ". Progress: " + percentage + "%.";
                         snackbar.setText(message).show();
                     }
+
+                    @Override
+                    public void onPause(@Nullable MapLoaderError mapLoaderError) {
+                        if (mapLoaderError == null) {
+                            String message = "The download was paused by the user calling mapDownloaderTask.pause().";
+                            snackbar.setText(message).show();
+                        } else {
+                            String message = "Download regions onPause error. The task tried to often to retry the download: " + mapLoaderError;
+                            snackbar.setText(message).show();
+                        }
+                    }
+
+                    @Override
+                    public void onResume() {
+                        String message = "A previously paused download has been resumed.";
+                        snackbar.setText(message).show();
+                    }
                 });
 
         mapDownloaderTasks.add(mapDownloaderTask);
