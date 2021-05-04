@@ -109,6 +109,7 @@ public class NavigationExample {
             throw new RuntimeException("Initialization of VisualNavigator failed: " + e.error.name());
         }
 
+        // This enables a navigation view including a rendered navigation arrow.
         visualNavigator.startRendering(mapView);
 
         // A helper class for TTS.

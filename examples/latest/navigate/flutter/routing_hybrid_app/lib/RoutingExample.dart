@@ -33,7 +33,7 @@ class RoutingExample {
   HereMapController _hereMapController;
   List<MapMarker> _mapMarkers = [];
   List<MapPolyline> _mapPolylines = [];
-  RoutingInterface routingEngine;
+  RoutingInterface _routingEngine;
   RoutingEngine _onlineRoutingEngine;
   OfflineRoutingEngine _offlineRoutingEngine;
   GeoCoordinates _startGeoCoordinates;
@@ -59,6 +59,9 @@ class RoutingExample {
     } on InstantiationException {
       throw ("Initialization of OfflineRoutingEngine failed.");
     }
+
+    // Use _onlineRoutingEngine by default.
+    useOnlineRoutingEngine();
   }
 
   // Calculates a route with two waypoints (start / destination).
@@ -72,7 +75,7 @@ class RoutingExample {
 
     List<Waypoint> waypoints = [startWaypoint, destinationWaypoint];
 
-    await _onlineRoutingEngine.calculateCarRoute(waypoints, CarOptions.withDefaults(),
+    await _routingEngine.calculateCarRoute(waypoints, CarOptions.withDefaults(),
         (RoutingError routingError, List<here.Route> routeList) async {
       if (routingError == null) {
         here.Route route = routeList.first;
@@ -104,7 +107,7 @@ class RoutingExample {
 
     List<Waypoint> waypoints = [startWaypoint, waypoint1, waypoint2, destinationWaypoint];
 
-    await _onlineRoutingEngine.calculateCarRoute(waypoints, CarOptions.withDefaults(),
+    await _routingEngine.calculateCarRoute(waypoints, CarOptions.withDefaults(),
         (RoutingError routingError, List<here.Route> routeList) async {
       if (routingError == null) {
         here.Route route = routeList.first;
@@ -129,12 +132,12 @@ class RoutingExample {
   }
 
   void useOnlineRoutingEngine() {
-    routingEngine = _onlineRoutingEngine;
+    _routingEngine = _onlineRoutingEngine;
     _showDialog('Switched to RoutingEngine', 'Routes will be calculated online.');
   }
 
   void useOfflineRoutingEngine() {
-    routingEngine = _offlineRoutingEngine;
+    _routingEngine = _offlineRoutingEngine;
     // Note that this app does not show how to download offline maps. For this, check the offline_maps_app example.
     _showDialog(
         'Switched to OfflineRoutingEngine', 'Routes will be calculated offline on cached or downloaded map data.');

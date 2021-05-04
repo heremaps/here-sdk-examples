@@ -47,7 +47,8 @@ class NavigationExample {
     _visualNavigator.startRendering(_hereMapController);
 
     // For easy testing, this location provider simulates location events along a route.
-    // You can use HERE positioning to feed real locations, see the positioning_app for an example.
+    // You can use HERE positioning to feed real locations, see the "Positioning"-section in
+    // our Developer's Guide for an example.
     _locationProvider = new LocationProviderImplementation();
 
     setupListeners();
@@ -76,21 +77,6 @@ class NavigationExample {
   }
 
   void setupListeners() {
-    // Notifies on the current map-matched location and other useful information while driving or walking.
-    // The map-matched location is used to update the map view.
-    _visualNavigator.navigableLocationListener = NavigableLocationListener.fromLambdas(
-        lambda_onNavigableLocationUpdated: (NavigableLocation currentNavigableLocation) {
-      MapMatchedLocation mapMatchedLocation = currentNavigableLocation.mapMatchedLocation;
-      if (mapMatchedLocation == null) {
-        print('This new location could not be map-matched. Are you off-road?');
-        return;
-      }
-
-      var speed = currentNavigableLocation.originalLocation.speedInMetersPerSecond;
-      var accuracy = currentNavigableLocation.originalLocation.speedAccuracyInMetersPerSecond;
-      print("Driving speed (m/s): $speed plus/minus an accuracy of: $accuracy");
-    });
-
     // Notifies on the progress along the route including maneuver instructions.
     // These maneuver instructions can be used to compose a visual representation of the next maneuver actions.
     _visualNavigator.routeProgressListener =
@@ -145,6 +131,21 @@ class NavigationExample {
       }
 
       _previousManeuverIndex = nextManeuverIndex;
+    });
+
+    // Notifies on the current map-matched location and other useful information while driving or walking.
+    // The map-matched location is used to update the map view.
+    _visualNavigator.navigableLocationListener = NavigableLocationListener.fromLambdas(
+        lambda_onNavigableLocationUpdated: (NavigableLocation currentNavigableLocation) {
+      MapMatchedLocation mapMatchedLocation = currentNavigableLocation.mapMatchedLocation;
+      if (mapMatchedLocation == null) {
+        print('This new location could not be map-matched. Are you off-road?');
+        return;
+      }
+
+      var speed = currentNavigableLocation.originalLocation.speedInMetersPerSecond;
+      var accuracy = currentNavigableLocation.originalLocation.speedAccuracyInMetersPerSecond;
+      print("Driving speed (m/s): $speed plus/minus an accuracy of: $accuracy");
     });
 
     // Notifies when the destination of the route is reached.
@@ -253,7 +254,7 @@ class NavigationExample {
   }
 
   void setupVoiceTextMessages() {
-    LanguageCode languageCode = LanguageCode.enUs;
+    LanguageCode languageCode = LanguageCode.enGb;
     List<LanguageCode> supportedVoiceSkins = VisualNavigator.getAvailableLanguagesForManeuverNotifications();
     if (supportedVoiceSkins.contains(languageCode)) {
       _visualNavigator.maneuverNotificationOptions = ManeuverNotificationOptions(languageCode, UnitSystem.metric);

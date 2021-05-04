@@ -121,6 +121,20 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
         showMessage("Map download progress for Switzerland. ID: \(region.id). Progress: \(percentage)%.")
     }
 
+    // Conform to the DownloadRegionsStatusListener protocol.
+    func onPause(error: MapLoaderError?) {
+        if (error == nil) {
+            showMessage("The download was paused by the user calling mapDownloaderTask.pause().")
+        } else {
+            showMessage("Download regions onPause error. The task tried to often to retry the download: \(error.debugDescription)")
+        }
+    }
+
+    // Conform to the DownloadRegionsStatusListener protocol.
+    func onResume() {
+        showMessage("A previously paused download has been resumed.")
+    }
+    
     // Finds a region in the downloaded region list.
     // Note that we ignore children of children (and so on).
     private func findRegion(localizedRegionName: String) -> Region? {
