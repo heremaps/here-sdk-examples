@@ -26,6 +26,7 @@ class MapMarkerExample: TapDelegate {
     private var mapView: MapView
     private var mapMarkers = [MapMarker]()
     private var mapMarkers3D = [MapMarker3D]()
+    private var locationIndicators = [LocationIndicator]()
     private let mapCenterGeoCoordinates = GeoCoordinates(latitude: 52.520798, longitude: 13.409408)
 
     init(viewController: UIViewController, mapView: MapView) {
@@ -68,6 +69,26 @@ class MapMarkerExample: TapDelegate {
         addCircleMapMarker(geoCoordinates: geoCoordinates)
     }
 
+    func onLocationIndicatorPedestrianButtonClicked() {
+        unTiltMap()
+        
+        let geoCoordinates = createRandomGeoCoordinatesAroundMapCenter()
+
+        // Centered on location.
+        addLocationIndicator(geoCoordinates: geoCoordinates,
+                             style: LocationIndicator.IndicatorStyle.pedestrian)
+    }
+    
+    func onLocationIndicatorNavigationButtonClicked() {
+        unTiltMap()
+        
+        let geoCoordinates = createRandomGeoCoordinatesAroundMapCenter()
+
+        // Centered on location.
+        addLocationIndicator(geoCoordinates: geoCoordinates,
+                             style: LocationIndicator.IndicatorStyle.navigation)
+    }
+    
     public func onFlatMapMarkerButtonClicked() {
         // Tilt the map for a better 3D effect.
         tiltMap()
@@ -156,6 +177,24 @@ class MapMarkerExample: TapDelegate {
         mapMarkers.append(mapMarker)
     }
 
+    private func addLocationIndicator(geoCoordinates: GeoCoordinates,
+                                      style: LocationIndicator.IndicatorStyle) {
+        let locationIndicator = LocationIndicator()
+        locationIndicator.locationIndicatorStyle = style
+
+        // A LocationIndicator is intended to mark the user's current location,
+        // including a bearing direction.
+        var location = Location(coordinates: geoCoordinates, timestamp: Date())
+        location.bearingInDegrees = getRandom(min: 0, max: 360)
+
+        locationIndicator.updateLocation(location)
+
+        // A LocationIndicator listens to the lifecycle of the map view,
+        // therefore, for example, it will get destroyed when the map view gets destroyed.
+        mapView.addLifecycleDelegate(locationIndicator)
+        locationIndicators.append(locationIndicator)
+    }
+    
     private func addFlatMarker3D(geoCoordinates: GeoCoordinates) {
         // Place the files to an "assets" directory via drag & drop.
         // Adjust file name and path as appropriate for your project.
@@ -209,6 +248,11 @@ class MapMarkerExample: TapDelegate {
             mapView.mapScene.removeMapMarker3d(mapMarker3D)
         }
         mapMarkers3D.removeAll()
+        
+        for locationIndicator in locationIndicators {
+            mapView.removeLifecycleDelegate(locationIndicator)
+        }
+        locationIndicators.removeAll()
     }
     
     // Conform to the TapDelegate protocol.

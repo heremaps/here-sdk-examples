@@ -60,6 +60,13 @@ class MyApp extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
+                    button('Location (Ped)', _locationIndicatorPedestrianButtonClicked),
+                    button('Location (Nav)', _locationIndicatorNavigationButtonClicked),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
                     button('Flat', _flatMapMarkersButtonClicked),
                     button('3D OBJ', _mapMarkers3DButtonClicked),
                     button('Clear', _clearButtonClicked),
@@ -89,6 +96,14 @@ class MyApp extends StatelessWidget {
 
   void _centeredMapMarkersButtonClicked() {
     _mapMarkerExample.showCenteredMapMarkers();
+  }
+
+  void _locationIndicatorPedestrianButtonClicked() {
+    _mapMarkerExample.showLocationIndicatorPedestrian();
+  }
+
+  void _locationIndicatorNavigationButtonClicked() {
+    _mapMarkerExample.showLocationIndicatorNavigation();
   }
 
   void _flatMapMarkersButtonClicked() {

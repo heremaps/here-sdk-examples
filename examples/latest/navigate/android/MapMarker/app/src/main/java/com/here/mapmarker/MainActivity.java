@@ -93,6 +93,14 @@ public class MainActivity extends AppCompatActivity {
         mapMarkerExample.showCenteredMapMarkers();
     }
 
+    public void LocationIndicatorPedButtonClicked(View view) {
+        mapMarkerExample.showLocationIndicatorPedestrian();
+    }
+
+    public void LocationIndicatorNavButtonClicked(View view) {
+        mapMarkerExample.showLocationIndicatorNavigation();
+    }
+
     public void FlatMapMarkerButtonClicked(View view) {
         mapMarkerExample.showFlatMarker();
     }
@@ -104,6 +112,7 @@ public class MainActivity extends AppCompatActivity {
     public void clearMapButtonClicked(View view) {
         mapMarkerExample.clearMap();
     }
+
 
     @Override
     protected void onPause() {
