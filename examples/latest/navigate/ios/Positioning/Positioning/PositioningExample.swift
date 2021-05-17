@@ -24,15 +24,12 @@ class PositioningExample: LocationDelegate, LocationStatusDelegate, LocationAuth
 
     private static let defaultGeoCoordinates = GeoCoordinates(latitude: 52.520798, longitude: 13.409408)
     private static let defaultCameraDistance = 1000.0
-    private static let defaultAccuracyColor = UIColor(red: 0.25, green: 0.75, blue: 1, alpha: 0.25)
-    private static let defaultCenterColor = UIColor(red: 1.0, green: 0.125, blue: 0.125, alpha: 1)
 
     private var locationAuthorization: LocationAuthorizationDelegate
     private var locationEngine: LocationEngine
     private var mapView: MapView!
     private var mapCamera: MapCamera!
-    private var locationAccuracyCircle: MapPolygon!
-    private var locationCenterCircle: MapMarker!
+    private var locationIndicator: LocationIndicator!
 
     init(locationAuthorization: LocationAuthorizationDelegate) {
         self.locationAuthorization = locationAuthorization
@@ -48,11 +45,11 @@ class PositioningExample: LocationDelegate, LocationStatusDelegate, LocationAuth
         self.mapView = mapView
         mapCamera = mapView.camera
         if let lastLocation = locationEngine.lastKnownLocation {
-            addMyLocationToMap(geoCoordinates: lastLocation.coordinates,
-                               accuracyInMeters: lastLocation.horizontalAccuracyInMeters ?? 0.0)
+            addMyLocationToMap(myLocation: lastLocation)
         } else {
-            addMyLocationToMap(geoCoordinates: PositioningExample.defaultGeoCoordinates,
-                               accuracyInMeters: 0.0)
+            let defaultLocation = Location(coordinates: PositioningExample.defaultGeoCoordinates,
+                                           timestamp: Date())
+            addMyLocationToMap(myLocation: defaultLocation)
         }
         locationAuthorization.authorizationChangeDelegate = self
         startLocating()
@@ -85,9 +82,7 @@ class PositioningExample: LocationDelegate, LocationStatusDelegate, LocationAuth
     }
 
     func onLocationUpdated(_ location: heresdk.Location) {
-        updateMyLocationOnMap(geoCoordinates: location.coordinates,
-                              accuracyInMeters: location.horizontalAccuracyInMeters ?? 1.0)
-
+        updateMyLocationOnMap(myLocation: location)
         print("Location updated: \(location.coordinates)")
         print("Horizontal accuracy (m): \(String(describing: location.horizontalAccuracyInMeters))")
         print("Altitude (m): \(String(describing: location.verticalAccuracyInMeters))")
@@ -103,35 +98,21 @@ class PositioningExample: LocationDelegate, LocationStatusDelegate, LocationAuth
         }
     }
 
-    private func addMyLocationToMap(geoCoordinates: GeoCoordinates, accuracyInMeters: Double) {
-        // Transparent halo around the current location with radius of horizontal accuracy.
-        let accuracyCircle = GeoCircle(center: geoCoordinates, radiusInMeters: accuracyInMeters)
-        let accuracyPolygon = GeoPolygon(geoCircle: accuracyCircle)
-        locationAccuracyCircle = MapPolygon(geometry: accuracyPolygon,
-                                            color: PositioningExample.defaultAccuracyColor)
-        mapView.mapScene.addMapPolygon(locationAccuracyCircle)
-        // Solid red circle on top of the current location.
-        guard
-            let image = UIImage(named: "red_dot"),
-            let imageData = image.pngData() else {
-            return
-        }
-        locationCenterCircle = MapMarker(at: geoCoordinates,
-                                         image: MapImage(pixelData: imageData,
-                                                         imageFormat: ImageFormat.png))
-        mapView.mapScene.addMapMarker(locationCenterCircle)
+    private func addMyLocationToMap(myLocation: Location) {
+        // Setup location indicator.
+        locationIndicator = LocationIndicator()
+        locationIndicator.locationIndicatorStyle = .pedestrian;
+        locationIndicator.updateLocation(myLocation)
+        mapView.addLifecycleDelegate(locationIndicator)
         // Point camera to current location.
-        mapCamera.lookAt(point: geoCoordinates,
+        mapCamera.lookAt(point: myLocation.coordinates,
                          distanceInMeters: PositioningExample.defaultCameraDistance)
     }
 
-    private func updateMyLocationOnMap(geoCoordinates: GeoCoordinates, accuracyInMeters: Double) {
-        // Update location accuracy circle.
-        let accuracyCircle = GeoCircle(center: geoCoordinates, radiusInMeters: accuracyInMeters)
-        locationAccuracyCircle.geometry = GeoPolygon(geoCircle: accuracyCircle)
-        // Update location center.
-        locationCenterCircle.coordinates = geoCoordinates
+    private func updateMyLocationOnMap(myLocation: Location) {
+        // Update location indicator.
+        locationIndicator.updateLocation(myLocation)
         // Point camera to current location.
-        mapCamera.lookAt(point: geoCoordinates)
+        mapCamera.lookAt(point: myLocation.coordinates)
     }
 }

@@ -26,10 +26,7 @@ import androidx.annotation.NonNull;
 
 import com.here.sdk.consent.Consent;
 import com.here.sdk.consent.ConsentEngine;
-import com.here.sdk.core.Color;
-import com.here.sdk.core.GeoCircle;
 import com.here.sdk.core.GeoCoordinates;
-import com.here.sdk.core.GeoPolygon;
 import com.here.sdk.core.Location;
 import com.here.sdk.core.LocationListener;
 import com.here.sdk.core.errors.InstantiationErrorException;
@@ -38,41 +35,28 @@ import com.here.sdk.location.LocationEngine;
 import com.here.sdk.location.LocationEngineStatus;
 import com.here.sdk.location.LocationFeature;
 import com.here.sdk.location.LocationStatusListener;
-import com.here.sdk.mapview.MapImage;
-import com.here.sdk.mapview.MapImageFactory;
-import com.here.sdk.mapview.MapMarker;
-import com.here.sdk.mapview.MapPolygon;
+import com.here.sdk.mapview.LocationIndicator;
 import com.here.sdk.mapview.MapView;
 
+import java.util.Date;
 import java.util.List;
 
 public class PositioningExample {
 
     private static final String TAG = PositioningExample.class.getSimpleName();
 
-    private static final double CENTER_RADIUS_IN_METERS = 1;
     private static final int CAMERA_DISTANCE_IN_METERS = 200;
 
-    private final GeoCoordinates defaultLocation = new GeoCoordinates(52.520798,13.409408);
-    private final Color colorCenter = Color.valueOf(0, 0.56f, 0.54f, 1); // RGBA
-    private final Color colorAccuracy = Color.valueOf(0.46f, 0.89f, 0.86f, 0.20f); // RGBA
+    private final GeoCoordinates defaultCoordinates = new GeoCoordinates(52.520798,13.409408);
 
     private MapView mapView;
     private Context context;
-    private MapPolygon locationAccuracyCircle;
-    private MapMarker locationCenterCircle;
     private LocationEngine locationEngine;
     private ConsentEngine consentEngine;
+    private LocationIndicator locationIndicator;
 
-    private final LocationListener locationListener = new LocationListener() {
-        @Override
-        public void onLocationUpdated(@NonNull Location location) {
-            final double accuracy = (location.horizontalAccuracyInMeters != null) ? location.horizontalAccuracyInMeters: 0.0;
-            updateMyLocation(location.coordinates, accuracy);
-
-            //Update the map viewport to be centered on the location.
-            mapView.getCamera().lookAt(location.coordinates, CAMERA_DISTANCE_IN_METERS);
-        }
+    private final LocationListener locationListener = location -> {
+        updateMyLocationOnMap(location);
     };
 
     private final LocationStatusListener locationStatusListener = new LocationStatusListener() {
@@ -107,18 +91,12 @@ public class PositioningExample {
             consentEngine.requestUserConsent();
         }
 
-        Location myLastLocation = locationEngine.getLastKnownLocation();
+        final Location myLastLocation = locationEngine.getLastKnownLocation();
         if (myLastLocation != null) {
-            final double accuracy = (myLastLocation.horizontalAccuracyInMeters != null) ? myLastLocation.horizontalAccuracyInMeters: 0.0;
-            addMyLocationToMap(myLastLocation.coordinates, accuracy);
-
-            //Update the map viewport to be centered on the location.
-            mapView.getCamera().lookAt(myLastLocation.coordinates, CAMERA_DISTANCE_IN_METERS);
+            addMyLocationToMap(myLastLocation);
         } else {
-            addMyLocationToMap(defaultLocation, 0.0);
-
-            //Update the map viewport to be centered on the location.
-            mapView.getCamera().lookAt(defaultLocation, CAMERA_DISTANCE_IN_METERS);
+            final Location defaultLocation = new Location(defaultCoordinates, new Date());
+            addMyLocationToMap(defaultLocation);
         }
 
         startLocating();
@@ -134,20 +112,20 @@ public class PositioningExample {
         locationEngine.stop();
     }
 
-    private void addMyLocationToMap(@NonNull GeoCoordinates geoCoordinates, @NonNull double accuracyRadiusInMeters) {
-        //Transparent halo around the current location: the true geographic coordinates lie with a probability of 68% within that.
-        locationAccuracyCircle = new MapPolygon(new GeoPolygon(new GeoCircle(geoCoordinates, accuracyRadiusInMeters)), colorAccuracy);
-        //Solid circle on top of the current location.
-        MapImage mapImage = MapImageFactory.fromResource(context.getResources(), R.drawable.red_dot);
-        locationCenterCircle = new MapMarker(geoCoordinates, mapImage);
-
-        //Add the circle to the map.
-        mapView.getMapScene().addMapPolygon(locationAccuracyCircle);
-        mapView.getMapScene().addMapMarker(locationCenterCircle);
+    private void addMyLocationToMap(@NonNull Location myLocation) {
+        //Create and setup location indicator.
+        locationIndicator = new LocationIndicator();
+        locationIndicator.setLocationIndicatorStyle(LocationIndicator.IndicatorStyle.PEDESTRIAN);
+        locationIndicator.updateLocation(myLocation);
+        mapView.addLifecycleListener(locationIndicator);
+        //Update the map viewport to be centered on the location.
+        mapView.getCamera().lookAt(myLocation.coordinates, CAMERA_DISTANCE_IN_METERS);
     }
 
-    private void updateMyLocation(@NonNull GeoCoordinates geoCoordinates, @NonNull double accuracyRadiusInMeters) {
-        locationAccuracyCircle.setGeometry(new GeoPolygon(new GeoCircle(geoCoordinates, accuracyRadiusInMeters)));
-        locationCenterCircle.setCoordinates(geoCoordinates);
+    private void updateMyLocationOnMap(@NonNull Location myLocation) {
+        //Update the location indicator's location.
+        locationIndicator.updateLocation(myLocation);
+        //Update the map viewport to be centered on the location, preserving zoom level.
+        mapView.getCamera().lookAt(myLocation.coordinates);
     }
 }

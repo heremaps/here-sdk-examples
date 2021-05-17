@@ -34,6 +34,7 @@ class MapMarkerExample {
   HereMapController _hereMapController;
   List<MapMarker> _mapMarkerList = [];
   List<MapMarker3D> _mapMarker3DList = [];
+  List<LocationIndicator> _locationIndicatorList = [];
   MapImage _poiMapImage;
   MapImage _photoMapImage;
   MapImage _circleMapImage;
@@ -79,6 +80,24 @@ class MapMarkerExample {
     _addCircleMapMarker(geoCoordinates, 1);
   }
 
+  void showLocationIndicatorPedestrian() {
+    _unTiltMap();
+
+    GeoCoordinates geoCoordinates = _createRandomGeoCoordinatesAroundMapCenter();
+
+    // Centered on location.
+    _addLocationIndicator(geoCoordinates, LocationIndicatorIndicatorStyle.pedestrian);
+  }
+
+  void showLocationIndicatorNavigation() {
+    _unTiltMap();
+
+    GeoCoordinates geoCoordinates = _createRandomGeoCoordinatesAroundMapCenter();
+
+    // Centered on location.
+    _addLocationIndicator(geoCoordinates, LocationIndicatorIndicatorStyle.navigation);
+  }
+
   void showFlatMapMarkers() {
     // Tilt the map for a better 3D effect.
     _tiltMap();
@@ -114,6 +133,11 @@ class MapMarkerExample {
       _hereMapController.mapScene.removeMapMarker3d(mapMarker3D);
     }
     _mapMarker3DList.clear();
+
+    for (var locationIndicator in _locationIndicatorList) {
+      _hereMapController.removeLifecycleListener(locationIndicator);
+    }
+    _locationIndicatorList.clear();
   }
 
   Future<void> _addPOIMapMarker(GeoCoordinates geoCoordinates, int drawOrder) async {
@@ -164,6 +188,23 @@ class MapMarkerExample {
 
     _hereMapController.mapScene.addMapMarker(mapMarker);
     _mapMarkerList.add(mapMarker);
+  }
+
+  void _addLocationIndicator(GeoCoordinates geoCoordinates, LocationIndicatorIndicatorStyle indicatorStyle) {
+    LocationIndicator locationIndicator = LocationIndicator();
+    locationIndicator.locationIndicatorStyle = indicatorStyle;
+
+    // A LocationIndicator is intended to mark the user's current location,
+    // including a bearing direction.
+    Location location = Location.withDefaults(geoCoordinates, DateTime.now());
+    location.bearingInDegrees = _getRandom(0, 360);
+
+    locationIndicator.updateLocation(location);
+
+    // A LocationIndicator listens to the lifecycle of the map view,
+    // therefore, for example, it will get destroyed when the map view gets destroyed.
+    _hereMapController.addLifecycleListener(locationIndicator);
+    _locationIndicatorList.add(locationIndicator);
   }
 
   void _addFlatMarker3D(GeoCoordinates geoCoordinates) {

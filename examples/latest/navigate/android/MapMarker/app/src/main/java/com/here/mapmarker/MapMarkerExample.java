@@ -29,9 +29,12 @@ import android.widget.Toast;
 import com.here.sdk.core.Anchor2D;
 import com.here.sdk.core.Color;
 import com.here.sdk.core.GeoCoordinates;
+import com.here.sdk.core.Location;
+import com.here.sdk.core.Location.Builder.FinalBuilder;
 import com.here.sdk.core.Metadata;
 import com.here.sdk.core.Point2D;
 import com.here.sdk.gestures.TapListener;
+import com.here.sdk.mapview.LocationIndicator;
 import com.here.sdk.mapview.MapCamera;
 import com.here.sdk.mapview.MapImage;
 import com.here.sdk.mapview.MapImageFactory;
@@ -44,6 +47,7 @@ import com.here.sdk.mapview.PickMapItemsResult;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class MapMarkerExample {
@@ -52,6 +56,7 @@ public class MapMarkerExample {
     private MapView mapView;
     private final List<MapMarker> mapMarkerList = new ArrayList<>();
     private final List<MapMarker3D> mapMarker3DList = new ArrayList<>();
+    private final List<LocationIndicator> locationIndicatorList = new ArrayList<>();
 
     public MapMarkerExample(Context context, MapView mapView) {
         this.context = context;
@@ -94,6 +99,24 @@ public class MapMarkerExample {
         addCircleMapMarker(geoCoordinates);
     }
 
+    public void showLocationIndicatorPedestrian() {
+        unTiltMap();
+
+        GeoCoordinates geoCoordinates = createRandomGeoCoordinatesAroundMapCenter();
+
+        // Centered on location.
+        addLocationIndicator(geoCoordinates, LocationIndicator.IndicatorStyle.PEDESTRIAN);
+    }
+
+    public void showLocationIndicatorNavigation() {
+        unTiltMap();
+
+        GeoCoordinates geoCoordinates = createRandomGeoCoordinatesAroundMapCenter();
+
+        // Centered on location.
+        addLocationIndicator(geoCoordinates, LocationIndicator.IndicatorStyle.NAVIGATION);
+    }
+
     public void showFlatMarker() {
         // Tilt the map for a better 3D effect.
         tiltMap();
@@ -129,6 +152,11 @@ public class MapMarkerExample {
             mapView.getMapScene().removeMapMarker3d(mapMarker3D);
         }
         mapMarker3DList.clear();
+
+        for (LocationIndicator locationIndicator : locationIndicatorList) {
+            mapView.removeLifecycleListener(locationIndicator);
+        }
+        locationIndicatorList.clear();
     }
 
     private void addPOIMapMarker(GeoCoordinates geoCoordinates) {
@@ -161,6 +189,27 @@ public class MapMarkerExample {
 
         mapView.getMapScene().addMapMarker(mapMarker);
         mapMarkerList.add(mapMarker);
+    }
+
+    private void addLocationIndicator(GeoCoordinates geoCoordinates,
+                                      LocationIndicator.IndicatorStyle indicatorStyle) {
+        LocationIndicator locationIndicator = new LocationIndicator();
+        locationIndicator.setLocationIndicatorStyle(indicatorStyle);
+
+        // A LocationIndicator is intended to mark the user's current location,
+        // including a bearing direction.
+        Location location = new Location.Builder()
+            .setCoordinates(geoCoordinates)
+            .setTimestamp(new Date())
+            .setBearingInDegrees(getRandom(0, 360))
+            .build();
+
+        locationIndicator.updateLocation(location);
+
+        // A LocationIndicator listens to the lifecycle of the map view,
+        // therefore, for example, it will get destroyed when the map view gets destroyed.
+        mapView.addLifecycleListener(locationIndicator);
+        locationIndicatorList.add(locationIndicator);
     }
 
     private void addFlatMarker3D(GeoCoordinates geoCoordinates) {
@@ -211,12 +260,7 @@ public class MapMarkerExample {
     }
 
     private GeoCoordinates createRandomGeoCoordinatesAroundMapCenter() {
-        GeoCoordinates centerGeoCoordinates = mapView.viewToGeoCoordinates(
-                new Point2D(mapView.getWidth() / 2, mapView.getHeight() / 2));
-        if (centerGeoCoordinates == null) {
-            // Should never happen for center coordinates.
-            throw new RuntimeException("CenterGeoCoordinates are null");
-        }
+        GeoCoordinates centerGeoCoordinates = mapView.getCamera().getState().targetCoordinates;
         double lat = centerGeoCoordinates.latitude;
         double lon = centerGeoCoordinates.longitude;
         return new GeoCoordinates(getRandom(lat - 0.02, lat + 0.02),

@@ -55,7 +55,19 @@ final class ViewController: UIViewController {
             mapMarkerExample.onCenteredButtonClicked()
         }
     }
-
+    
+    @IBAction func onLocationIndicatorPedestrianButtonClicked(_ sender: Any) {
+        if isMapSceneLoaded {
+            mapMarkerExample.onLocationIndicatorPedestrianButtonClicked()
+        }
+    }
+    
+    @IBAction func onLocationIndicatorNavigationButtonClicked(_ sender: Any) {
+        if isMapSceneLoaded {
+            mapMarkerExample.onLocationIndicatorNavigationButtonClicked()
+        }
+    }
+    
     @IBAction func onFlatMapMarkerButtonClicked(_ sender: Any) {
         if isMapSceneLoaded {
             mapMarkerExample.onFlatMapMarkerButtonClicked()

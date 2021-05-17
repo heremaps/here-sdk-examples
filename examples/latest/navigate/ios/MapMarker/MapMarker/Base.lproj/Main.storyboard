@@ -22,7 +22,7 @@
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="EuV-uk-pie">
-                                <rect key="frame" x="8" y="8" width="359" height="68"/>
+                                <rect key="frame" x="8" y="8" width="359" height="106"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="eu1-QJ-vBV">
                                         <rect key="frame" x="0.0" y="0.0" width="359" height="30"/>
@@ -50,8 +50,34 @@
                                             <constraint firstAttribute="height" constant="30" id="5v9-pL-qe6"/>
                                         </constraints>
                                     </stackView>
-                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="as1-DF-vOV">
+                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="eu1-UJ-vBV">
                                         <rect key="frame" x="0.0" y="38" width="359" height="30"/>
+                                        <subviews>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9Bv-Up-mIo">
+                                                <rect key="frame" x="0.0" y="0.0" width="175.5" height="30"/>
+                                                <color key="backgroundColor" red="0.0" green="0.71372549019607845" blue="0.69803921568627447" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <state key="normal" title="Location (Ped)"/>
+                                                <connections>
+                                                    <action selector="onLocationIndicatorPedestrianButtonClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="lIN-nm-5W9"/>
+                                                </connections>
+                                            </button>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="IDY-b8-cO4">
+                                                <rect key="frame" x="183.5" y="0.0" width="175.5" height="30"/>
+                                                <color key="backgroundColor" red="0.0" green="0.71372549019607845" blue="0.69803921568627447" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <state key="normal" title="Location (Nav)"/>
+                                                <connections>
+                                                    <action selector="onLocationIndicatorNavigationButtonClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Jxc-xR-Pan"/>
+                                                </connections>
+                                            </button>
+                                        </subviews>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="30" id="5z9-pL-qe6"/>
+                                        </constraints>
+                                    </stackView>
+                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="as1-DF-vOV">
+                                        <rect key="frame" x="0.0" y="76" width="359" height="30"/>
                                         <subviews>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Sa7-AF-waV">
                                                 <rect key="frame" x="0.0" y="0.0" width="114.5" height="30"/>
