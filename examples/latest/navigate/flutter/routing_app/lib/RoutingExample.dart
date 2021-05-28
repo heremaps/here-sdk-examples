@@ -141,7 +141,7 @@ class RoutingExample {
     double maxLon = northEast.longitude;
     double lon = _getRandom(minLon, maxLon);
 
-    return new GeoCoordinates(lat, lon);
+    return GeoCoordinates(lat, lon);
   }
 
   double _getRandom(double min, double max) {

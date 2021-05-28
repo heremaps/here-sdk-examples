@@ -126,16 +126,19 @@ class MapMarkerExample {
   void clearMap() {
     for (var mapMarker in _mapMarkerList) {
       _hereMapController.mapScene.removeMapMarker(mapMarker);
+      mapMarker.release();
     }
     _mapMarkerList.clear();
 
     for (var mapMarker3D in _mapMarker3DList) {
       _hereMapController.mapScene.removeMapMarker3d(mapMarker3D);
+      mapMarker3D.release();
     }
     _mapMarker3DList.clear();
 
     for (var locationIndicator in _locationIndicatorList) {
       _hereMapController.removeLifecycleListener(locationIndicator);
+      locationIndicator.release();
     }
     _locationIndicatorList.clear();
   }
@@ -154,7 +157,7 @@ class MapMarkerExample {
     MapMarker mapMarker = MapMarker.withAnchor(geoCoordinates, _poiMapImage, anchor2D);
     mapMarker.drawOrder = drawOrder;
 
-    Metadata metadata = new Metadata();
+    Metadata metadata = Metadata();
     metadata.setString("key_poi", "Metadata: This is a POI.");
     mapMarker.metadata = metadata;
 

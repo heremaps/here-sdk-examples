@@ -17,6 +17,8 @@
  * License-Filename: LICENSE
  */
 
+import 'dart:ui';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:here_sdk/core.dart';
@@ -25,6 +27,7 @@ import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/navigation.dart';
 import 'package:here_sdk/routing.dart' as HERE;
 
+import 'LanguageCodeConverter.dart';
 import 'LocationProviderImplementation.dart';
 
 // Shows how to start and stop turn-by-turn navigation along a route.
@@ -38,7 +41,7 @@ class NavigationExample {
     _hereMapController = hereMapController;
 
     try {
-      _visualNavigator = VisualNavigator.make();
+      _visualNavigator = VisualNavigator();
     } on InstantiationException {
       throw Exception("Initialization of VisualNavigator failed.");
     }
@@ -49,7 +52,7 @@ class NavigationExample {
     // For easy testing, this location provider simulates location events along a route.
     // You can use HERE positioning to feed real locations, see the "Positioning"-section in
     // our Developer's Guide for an example.
-    _locationProvider = new LocationProviderImplementation();
+    _locationProvider = LocationProviderImplementation();
 
     setupListeners();
   }
@@ -244,7 +247,7 @@ class NavigationExample {
     double lowSpeedOffsetInMetersPerSecond = 2;
     double highSpeedOffsetInMetersPerSecond = 4;
     double highSpeedBoundaryInMetersPerSecond = 25;
-    SpeedLimitOffset speedLimitOffset = new SpeedLimitOffset(
+    SpeedLimitOffset speedLimitOffset = SpeedLimitOffset(
       lowSpeedOffsetInMetersPerSecond,
       highSpeedOffsetInMetersPerSecond,
       highSpeedBoundaryInMetersPerSecond,
@@ -254,13 +257,24 @@ class NavigationExample {
   }
 
   void setupVoiceTextMessages() {
-    LanguageCode languageCode = LanguageCode.enGb;
-    List<LanguageCode> supportedVoiceSkins = VisualNavigator.getAvailableLanguagesForManeuverNotifications();
-    if (supportedVoiceSkins.contains(languageCode)) {
-      _visualNavigator.maneuverNotificationOptions = ManeuverNotificationOptions(languageCode, UnitSystem.metric);
-    } else {
-      print('Warning: Requested voice skin is not supported.');
+    LanguageCode ttsLanguageCode =
+        getLanguageCodeForDevice(VisualNavigator.getAvailableLanguagesForManeuverNotifications());
+    _visualNavigator.maneuverNotificationOptions = ManeuverNotificationOptions(ttsLanguageCode, UnitSystem.metric);
+
+    print("LanguageCode for maneuver notifications: $ttsLanguageCode.");
+  }
+
+  LanguageCode getLanguageCodeForDevice(List<LanguageCode> supportedVoiceSkins) {
+    final Locale localeForCurrenDevice = window.locales.first;
+
+    // Determine supported voice skins from HERE SDK.
+    LanguageCode languageCodeForCurrenDevice = LanguageCodeConverter.getLanguageCode(localeForCurrenDevice);
+    if (!supportedVoiceSkins.contains(languageCodeForCurrenDevice)) {
+      print("No voice skins available for $languageCodeForCurrenDevice, falling back to enUs.");
+      languageCodeForCurrenDevice = LanguageCode.enUs;
     }
+
+    return languageCodeForCurrenDevice;
   }
 
   double _getCurrentSpeedLimit(SpeedLimit speedLimit) {

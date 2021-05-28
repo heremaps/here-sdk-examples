@@ -61,7 +61,7 @@ class EVRoutingExample {
 
     try {
       // Add search engine to search for places along a route.
-      _searchEngine = new SearchEngine();
+      _searchEngine = SearchEngine();
     } on InstantiationException {
       throw ("Initialization of SearchEngine failed.");
     }
@@ -210,7 +210,7 @@ class EVRoutingExample {
         "charging station", routeCorridor, _hereMapController.camera.state.targetCoordinates);
 
     int maxItems = 30;
-    SearchOptions searchOptions = new SearchOptions(LanguageCode.enUs, maxItems);
+    SearchOptions searchOptions = SearchOptions(LanguageCode.enUs, maxItems);
 
     _searchEngine.searchByText(textQuery, searchOptions, (SearchError searchError, List<Place> items) {
       if (searchError != null) {
@@ -276,7 +276,7 @@ class EVRoutingExample {
       for (GeoPolygon geoPolygon in isoline.polygons) {
         // Show polygon on map.
         Color fillColor = Color.fromARGB(128, 0, 143, 138);
-        MapPolygon mapPolygon = new MapPolygon(geoPolygon, fillColor);
+        MapPolygon mapPolygon = MapPolygon(geoPolygon, fillColor);
         _hereMapController.mapScene..addMapPolygon(mapPolygon);
         _mapPolygons.add(mapPolygon);
       }
@@ -354,7 +354,7 @@ class EVRoutingExample {
     double maxLon = northEast.longitude;
     double lon = _getRandom(minLon, maxLon);
 
-    return new GeoCoordinates(lat, lon);
+    return GeoCoordinates(lat, lon);
   }
 
   double _getRandom(double min, double max) {

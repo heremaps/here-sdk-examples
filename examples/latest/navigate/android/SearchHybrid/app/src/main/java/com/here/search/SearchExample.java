@@ -118,7 +118,7 @@ public class SearchExample {
     private void geocodeAnAddress() {
         // Set map to expected location.
         GeoCoordinates geoCoordinates = new GeoCoordinates(52.53086, 13.38469);
-        camera.lookAt(geoCoordinates, 1000 * 7);
+        camera.flyTo(geoCoordinates);
 
         String queryString = "Invalidenstraße 116, Berlin";
 
