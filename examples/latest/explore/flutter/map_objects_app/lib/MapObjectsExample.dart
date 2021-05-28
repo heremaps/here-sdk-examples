@@ -144,18 +144,26 @@ class MapObjectsExample {
   void _clearMap() {
     if (_mapPolyline != null) {
       _mapScene.removeMapPolyline(_mapPolyline);
+      _mapPolyline.release();
+      _mapPolyline = null;
     }
 
     if (_mapArrow != null) {
       _mapScene.removeMapArrow(_mapArrow);
+      _mapArrow.release();
+      _mapArrow = null;
     }
 
     if (_mapPolygon != null) {
       _mapScene.removeMapPolygon(_mapPolygon);
+      _mapPolygon.release();
+      _mapPolygon = null;
     }
 
     if (_mapCircle != null) {
       _mapScene.removeMapPolygon(_mapCircle);
+      _mapCircle.release();
+      _mapCircle = null;
     }
   }
 }

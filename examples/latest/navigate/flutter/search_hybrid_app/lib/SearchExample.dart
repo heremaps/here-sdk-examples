@@ -103,7 +103,7 @@ class SearchExample {
 
   void _geocodeAnAddress() {
     // Set map to expected location.
-    GeoCoordinates geoCoordinates = new GeoCoordinates(52.53086, 13.38469);
+    GeoCoordinates geoCoordinates = GeoCoordinates(52.53086, 13.38469);
     _camera.flyTo(geoCoordinates);
 
     String queryString = "Invalidenstraße 116, Berlin";
@@ -135,7 +135,7 @@ class SearchExample {
 
   Future<void> _getAddressForCoordinates(GeoCoordinates geoCoordinates) async {
     int maxItems = 1;
-    SearchOptions reverseGeocodingOptions = new SearchOptions(LanguageCode.enGb, maxItems);
+    SearchOptions reverseGeocodingOptions = SearchOptions(LanguageCode.enGb, maxItems);
 
     if (useOnlineSearchEngine) {
       _onlineSearchEngine.searchByCoordinates(geoCoordinates, reverseGeocodingOptions,

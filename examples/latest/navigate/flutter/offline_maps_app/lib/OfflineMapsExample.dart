@@ -118,7 +118,7 @@ class OfflineMapsExample {
 
     MapDownloaderTask mapDownloaderTask = _mapDownloader.downloadRegions(
         regionIDs,
-        new DownloadRegionsStatusListener.fromLambdas(
+        DownloadRegionsStatusListener.fromLambdas(
             lambda_onDownloadRegionsComplete: (MapLoaderError mapLoaderError, List<RegionId> list) {
           // Handle events from onDownloadRegionsComplete().
           if (mapLoaderError != null) {

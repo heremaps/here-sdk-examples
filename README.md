@@ -21,7 +21,7 @@ For an overview of the existing features, please check the _Developer's Guide_ f
 
 > For now, the _Navigate Edition_ is only available upon request. Please contact your HERE representative to receive access including a set of evaluation credentials.
 
-## List of Available Example Apps (Version 4.7.3.0)
+## List of Available Example Apps (Version 4.7.4.0)
 In this repository you can find the [latest example apps](examples/latest) that show key features of the HERE SDK in ready-to-use applications:
 
 - **HelloMap**: Shows the classic 'Hello World'.
@@ -36,6 +36,7 @@ In this repository you can find the [latest example apps](examples/latest) that 
 - **Routing**: Shows how to calculate routes and add them to the map.
 - **RoutingHybrid**: Shows how to calculate routes and add them to the map. Also shows how to calculate routes offline, when no internet connection is available. Exclusively available for the _Navigate Edition_.
 - **EVRouting**: Shows how to calculate routes for _electric vehicles_ and how to calculate the area of reach with _isoline routing_. Also shows how to search along a route.
+- **Public Transit**: Shows how to calculate routes for public transportation vehicles such as subways, trains, or busses.
 - **Search**: Shows how to search POIs and add them to the map. Shows also geocoding and reverse geocoding.
 - **SearchHybrid**: Shows how to search POIs and add them to the map. Shows geocoding and reverse geocoding. Also shows how to search offline, when no internet connection is available. Exclusively available for the _Navigate Edition_.
 - **Navigation**: Shows turn-by-turn navigation and tracking. Exclusively available for the _Navigate Edition_.

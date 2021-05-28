@@ -48,7 +48,7 @@ class SearchExample {
     _camera.lookAtPointWithDistance(GeoCoordinates(52.520798, 13.409408), distanceToEarthInMeters);
 
     try {
-      _searchEngine = new SearchEngine();
+      _searchEngine = SearchEngine();
     } on InstantiationException {
       throw Exception("Initialization of SearchEngine failed.");
     }
@@ -80,7 +80,7 @@ class SearchExample {
 
   void _geocodeAnAddress() {
     // Move map to expected location.
-    GeoCoordinates geoCoordinates = new GeoCoordinates(52.53086, 13.38469);
+    GeoCoordinates geoCoordinates = GeoCoordinates(52.53086, 13.38469);
     _camera.flyTo(geoCoordinates);
 
     String queryString = "Invalidenstraße 116, Berlin";
@@ -112,7 +112,7 @@ class SearchExample {
 
   Future<void> _getAddressForCoordinates(GeoCoordinates geoCoordinates) async {
     int maxItems = 1;
-    SearchOptions reverseGeocodingOptions = new SearchOptions(LanguageCode.enGb, maxItems);
+    SearchOptions reverseGeocodingOptions = SearchOptions(LanguageCode.enGb, maxItems);
 
     _searchEngine.searchByCoordinates(geoCoordinates, reverseGeocodingOptions,
         (SearchError searchError, List<Place> list) async {
