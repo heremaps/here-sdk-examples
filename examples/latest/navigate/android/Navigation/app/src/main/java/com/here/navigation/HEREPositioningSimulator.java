@@ -32,7 +32,6 @@ public class HEREPositioningSimulator {
     private LocationSimulator locationSimulator;
 
     // Starts route playback.
-    // Does nothing when engine is already running.
     public void startLocating(LocationListener locationListener, Route route) {
         if (locationSimulator != null) {
             locationSimulator.stop();
@@ -42,7 +41,6 @@ public class HEREPositioningSimulator {
         locationSimulator.start();
     }
 
-    // Does nothing when engine is already stopped.
     public void stopLocating() {
         if (locationSimulator != null) {
             locationSimulator.stop();

@@ -25,38 +25,36 @@ import 'EVRoutingExample.dart';
 
 void main() {
   SdkContext.init(IsolateOrigin.main);
-  // Making sure that BuildContext has MaterialLocalizations widget in the widget tree,
-  // which is part of MaterialApp.
-  runApp(MaterialApp(home: MyApp()));
+  // Ensure that all widgets, including EVRoutingApp, have a MaterialLocalizations object available.
+  runApp(MaterialApp(home: EVRoutingApp()));
 }
 
-class MyApp extends StatelessWidget {
-  // Use _context only within the scope of this widget.
-  BuildContext _context;
+class EVRoutingApp extends StatefulWidget {
+  @override
+  _EVRoutingAppState createState() => _EVRoutingAppState();
+}
+
+class _EVRoutingAppState extends State<EVRoutingApp> {
   EVRoutingExample _evRoutingExample;
 
   @override
   Widget build(BuildContext context) {
-    _context = context;
-
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('HERE SDK - EVRouting Example'),
-        ),
-        body: Stack(
-          children: [
-            HereMap(onMapCreated: _onMapCreated),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                button('EV Route', _addEVRouteButtonClicked),
-                button('Isoline', _reachableAreaButtonClicked),
-                button('Clear', _clearMapButtonClicked),
-              ],
-            ),
-          ],
-        ),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('HERE SDK - EVRouting Example'),
+      ),
+      body: Stack(
+        children: [
+          HereMap(onMapCreated: _onMapCreated),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              button('EV Route', _addEVRouteButtonClicked),
+              button('Isoline', _reachableAreaButtonClicked),
+              button('Clear', _clearMapButtonClicked),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -99,7 +97,7 @@ class MyApp extends StatelessWidget {
   // A helper method to show a dialog.
   Future<void> _showDialog(String title, String message) async {
     return showDialog<void>(
-      context: _context,
+      context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(

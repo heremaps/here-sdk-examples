@@ -29,6 +29,10 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.3
 
+  # The following adds the permission_handler plugin, to request various different
+  # permissions from the user.
+  permission_handler: 5.0.1
+
   # The following adds the HERE SDK for Flutter plugin folder to your application.
   here_sdk:
     path: plugins/here_sdk

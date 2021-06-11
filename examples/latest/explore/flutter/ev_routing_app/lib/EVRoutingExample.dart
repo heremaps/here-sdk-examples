@@ -35,7 +35,7 @@ typedef ShowDialogFunction = void Function(String title, String message);
 // (indicated with green charging icon). You can also visualize the reachable area from your starting point
 // (isoline routing).
 class EVRoutingExample {
-  HereMapController _hereMapController;
+  final HereMapController _hereMapController;
   List<MapMarker> _mapMarkers = [];
   List<MapPolyline> _mapPolylines = [];
   List<MapPolygon> _mapPolygons = [];
@@ -46,9 +46,8 @@ class EVRoutingExample {
   ShowDialogFunction _showDialog;
   List<String> chargingStationsIDs = [];
 
-  EVRoutingExample(Function showDialogCallback, HereMapController hereMapController) {
+  EVRoutingExample(Function showDialogCallback, HereMapController this._hereMapController) {
     _showDialog = showDialogCallback;
-    _hereMapController = hereMapController;
 
     double distanceToEarthInMeters = 10000;
     _hereMapController.camera.lookAtPointWithDistance(GeoCoordinates(52.520798, 13.409408), distanceToEarthInMeters);
@@ -68,7 +67,7 @@ class EVRoutingExample {
   }
 
   // Calculates an EV car route based on random start / destination coordinates near viewport center.
-  Future<void> addEVRoute() async {
+  void addEVRoute() {
     clearMap();
     chargingStationsIDs.clear();
 
@@ -128,7 +127,7 @@ class EVRoutingExample {
     int additionalSectionCount = route.sections.length - 1;
     if (additionalSectionCount > 0) {
       // Each additional waypoint splits the route into two sections.
-      print("EVDetails: Number of required stops at charging stations: $additionalSectionCount");
+      print("EVDetails: Number of required stops at charging stations: " + additionalSectionCount.toString());
     } else {
       print(
           "EVDetails: Based on the provided options, the destination can be reached without a stop at a charging station.");
@@ -204,8 +203,8 @@ class EVRoutingExample {
   void _searchAlongARoute(here.Route route) {
     // We specify here that we only want to include results
     // within a max distance of xx meters from any point of the route.
-    int radiusInMeters = 200;
-    GeoCorridor routeCorridor = GeoCorridor.withRadius(route.polyline, radiusInMeters);
+    int halfWidthInMeters = 200;
+    GeoCorridor routeCorridor = GeoCorridor.make(route.polyline, halfWidthInMeters);
     TextQuery textQuery = TextQuery.withCorridorAreaAndAreaCenter(
         "charging station", routeCorridor, _hereMapController.camera.state.targetCoordinates);
 
@@ -215,9 +214,9 @@ class EVRoutingExample {
     _searchEngine.searchByText(textQuery, searchOptions, (SearchError searchError, List<Place> items) {
       if (searchError != null) {
         if (searchError == SearchError.polylineTooLong) {
-          // Increasing corridor radius will result in less precise results with the benefit of a less
+          // Increasing halfWidthInMeters will result in less precise results with the benefit of a less
           // complex route shape.
-          print("Search: Route too long or route corridor radius too small.");
+          print("Search: Route too long or halfWidthInMeters too small.");
         } else {
           print("Search: No charging stations found along the route. Error: $searchError");
         }
@@ -225,8 +224,7 @@ class EVRoutingExample {
       }
 
       // If error is nil, it is guaranteed that the items will not be nil.
-      var listLength = items.length;
-      print("Search: Search along route found $listLength charging stations:");
+      print("Search: Search along route found ${items.length} charging stations:");
       for (Place place in items) {
         if (chargingStationsIDs.contains(place.id)) {
           print(
@@ -242,11 +240,14 @@ class EVRoutingExample {
 
   // Shows the reachable area for this electric vehicle from the current start coordinates and EV car options when the goal is
   // to consume 400 Wh or less (see options below).
-  Future<void> showReachableArea() async {
+  void showReachableArea() {
     if (_startGeoCoordinates == null) {
       _showDialog("Error", "Please add at least one route first.");
       return;
     }
+
+    // Clear previously added polygon area, if any.
+    _clearIsolines();
 
     // This finds the area that an electric vehicle can reach by consuming 400 Wh or less,
     // while trying to take the fastest possible route into any possible straight direction from start.
@@ -254,7 +255,7 @@ class EVRoutingExample {
     List<int> rangeValues = [400];
 
     // With null we choose the default option for the resulting polygon shape.
-    int maxPoints = null;
+    int maxPoints;
     IsolineOptionsCalculation calculationOptions = IsolineOptionsCalculation(
         IsolineRangeType.consumptionInWattHours, rangeValues, IsolineCalculationMode.balanced, maxPoints);
     IsolineOptions isolineOptions = IsolineOptions.withEVCarOptions(calculationOptions, _getEVCarOptions());
@@ -277,7 +278,7 @@ class EVRoutingExample {
         // Show polygon on map.
         Color fillColor = Color.fromARGB(128, 0, 143, 138);
         MapPolygon mapPolygon = MapPolygon(geoPolygon, fillColor);
-        _hereMapController.mapScene..addMapPolygon(mapPolygon);
+        _hereMapController.mapScene.addMapPolygon(mapPolygon);
         _mapPolygons.add(mapPolygon);
       }
     });

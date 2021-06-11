@@ -21,7 +21,7 @@ For an overview of the existing features, please check the _Developer's Guide_ f
 
 > For now, the _Navigate Edition_ is only available upon request. Please contact your HERE representative to receive access including a set of evaluation credentials.
 
-## List of Available Example Apps (Version 4.7.4.0)
+## List of Available Example Apps (Version 4.7.5.0)
 In this repository you can find the [latest example apps](examples/latest) that show key features of the HERE SDK in ready-to-use applications:
 
 - **HelloMap**: Shows the classic 'Hello World'.
@@ -30,9 +30,9 @@ In this repository you can find the [latest example apps](examples/latest) that 
 - **CustomMapStyles**: Shows how to load custom map schemes made with the _HERE Style Editor_. Exclusively available for the _Explore Edition_ and the _Navigate Edition_).
 - **Gestures**: Shows how to handle gestures.
 - **OfflineMaps**: Shows how the HERE SDK can work fully offline and how offline map data can be downloaded for continents and countries. Exclusively available for the _Navigate Edition_.
-- **MapMarker**: Shows how to add 2D and 3D map markers to locate POIs (and more) on the map. 3D map markers are exclusively available for the _Explore and Navigate Editions_.
+- **MapItems** / **MapMarkerLite**: Shows how to add 2D and 3D map markers to locate POIs (and more) on the map. 3D map markers are exclusively available for the _Explore and Navigate Editions_.
 - **MapObjects**: Shows how to add circles, polygons and polylines to the map.
-- **MapOverlays** / **MapViewPins**: Shows how to add standard platform views to the map.
+- **MapViewPins** / **MapOverlaysLite**: Shows how to add standard platform views to the map.
 - **Routing**: Shows how to calculate routes and add them to the map.
 - **RoutingHybrid**: Shows how to calculate routes and add them to the map. Also shows how to calculate routes offline, when no internet connection is available. Exclusively available for the _Navigate Edition_.
 - **EVRouting**: Shows how to calculate routes for _electric vehicles_ and how to calculate the area of reach with _isoline routing_. Also shows how to search along a route.

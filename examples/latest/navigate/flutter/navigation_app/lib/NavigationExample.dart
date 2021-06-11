@@ -23,18 +23,21 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/core.errors.dart';
+import 'package:here_sdk/location.dart';
 import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/navigation.dart';
 import 'package:here_sdk/routing.dart' as HERE;
 
+import 'HEREPositioningProvider.dart';
+import 'HEREPositioningSimulator.dart';
 import 'LanguageCodeConverter.dart';
-import 'LocationProviderImplementation.dart';
 
 // Shows how to start and stop turn-by-turn navigation along a route.
 class NavigationExample {
   HereMapController _hereMapController;
   VisualNavigator _visualNavigator;
-  LocationProviderImplementation _locationProvider;
+  HEREPositioningSimulator _locationSimulationProvider;
+  HEREPositioningProvider _herePositioningProvider;
   int _previousManeuverIndex = -1;
 
   NavigationExample(HereMapController hereMapController) {
@@ -52,31 +55,73 @@ class NavigationExample {
     // For easy testing, this location provider simulates location events along a route.
     // You can use HERE positioning to feed real locations, see the "Positioning"-section in
     // our Developer's Guide for an example.
-    _locationProvider = LocationProviderImplementation();
+    _locationSimulationProvider = HEREPositioningSimulator();
+
+    // Access the device's GPS sensor and other data.
+    _herePositioningProvider = HEREPositioningProvider();
+    _herePositioningProvider.startLocating(_visualNavigator, LocationAccuracy.navigation);
 
     setupListeners();
   }
 
+  Location getLastKnownLocation() {
+    return _herePositioningProvider.getLastKnownLocation();
+  }
+
+  void startNavigationSimulation(HERE.Route route) {
+    _prepareNavigation(route);
+
+    // Stop in case it was started before.
+    _herePositioningProvider.stop();
+
+    // Simulates location events based on the given route.
+    // The navigator is set as listener to receive location updates.
+    _locationSimulationProvider.startLocating(route, _visualNavigator);
+  }
+
   void startNavigation(HERE.Route route) {
+    _prepareNavigation(route);
+
+    // Stop in case it was started before.
+    _locationSimulationProvider.stop();
+
+    // Access the device's GPS sensor and other data.
+    // The navigator is set as listener to receive location updates.
+    _herePositioningProvider.startLocating(_visualNavigator, LocationAccuracy.navigation);
+  }
+
+  void _prepareNavigation(HERE.Route route) {
     setupSpeedWarnings();
     setupVoiceTextMessages();
 
     // Set the route to follow.
     _visualNavigator.route = route;
-
-    // Simulates location events based on the given route.
-    // The navigator is set as listener to receive location updates.
-    _locationProvider.enableRoutePlayback(route, _visualNavigator);
   }
 
+  void setTracking(bool isTracking) {
+    if (isTracking) {
+      _visualNavigator.cameraMode = CameraTrackingMode.enabled;
+    } else {
+      _visualNavigator.cameraMode = CameraTrackingMode.disabled;
+    }
+  }
+
+  // Starts tracking the device's location using HERE Positioning.
   void stopNavigation() {
-    // This can be used to enable tracking mode (when valid locations are provided).
-    // However, below we just stop the location provider, so no new locations will be forwarded to the navigator.
+    // Stop in case it was started before.
+    _locationSimulationProvider.stop();
+
+    // Leaves navigation and enables tracking mode. The camera may optionally follow, see toggleTracking().
     _visualNavigator.route = null;
-    _locationProvider.stop();
+    _herePositioningProvider.startLocating(_visualNavigator, LocationAccuracy.navigation);
 
     // Optionally, you can stop rendering, ie. to remove the current location marker.
     //_visualNavigator.stopRendering();
+  }
+
+  void stopRendering() {
+    // It is recommended to stop rendering before leaving the app.
+    _visualNavigator.stopRendering();
   }
 
   void setupListeners() {
@@ -292,7 +337,7 @@ class NavigationExample {
   // An example implementation that will retrieve the slowest speed limit, including advisory speed limits and
   // weather-dependent speed limits that may or may not be valid due to the actual weather condition while driving.
   double getSpecialSpeedLimit(List<SpecialSpeedSituation> specialSpeedSituations) {
-    double specialSpeedLimit = null;
+    double specialSpeedLimit;
 
     // Iterates through the list of applicable special speed limits, if available.
     for (SpecialSpeedSituation specialSpeedSituation in specialSpeedSituations) {

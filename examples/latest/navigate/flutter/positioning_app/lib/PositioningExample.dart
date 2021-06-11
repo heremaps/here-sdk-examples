@@ -46,6 +46,13 @@ class PositioningExample extends State<MyApp> implements LocationListener, Locat
   Location _location;
   LocationEngineStatus _status;
 
+  // When using HERE Positioning in your app, it is required to request and to show the user's consent decision.
+  // In addition, users must be able to change their consent decision at any time.
+  // Note that this is only needed when running on Android devices.
+  static const String _consentGranted = 'Positioning consent: You have granted consent to the data collection.';
+  static const String _consentDenied = 'Positioning consent: You have denied consent to the data collection.';
+  String _consentState = 'Pending ...';
+
   @override
   void initState() {
     super.initState();
@@ -71,55 +78,71 @@ class PositioningExample extends State<MyApp> implements LocationListener, Locat
         body: Stack(
           children: [
             HereMap(onMapCreated: _onMapCreated),
-            IgnorePointer(
-              child: Padding(
-                padding: const EdgeInsets.all(_spacing),
-                child: Column(
+            Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _buildLabelValue(
-                      'Coordinates:',
-                      _getCoordinatesString(),
-                    ),
-                    _buildLabelValue(
-                      'Horz.Accuracy:',
-                      _getHorizontalAccuracyString(),
-                    ),
-                    _buildLabelValue(
-                      'Vert.Accuracy:',
-                      _getVerticalAccuracyString(),
-                    ),
-                    _buildLabelValue(
-                      'Bearing:',
-                      _getBearingString(),
-                    ),
-                    _buildLabelValue(
-                      'Bear.Accuracy:',
-                      _getBearingAccuracyString(),
-                    ),
-                    _buildLabelValue(
-                      'Speed:',
-                      _getSpeedString(),
-                    ),
-                    _buildLabelValue(
-                      'Speed.Accuracy:',
-                      _getSpeedAccuracyString(),
-                    ),
-                    _buildLabelValue(
-                      'Timestamp:',
-                      _location == null ? _notAvailable : _location.timestamp.toString(),
-                    ),
-                    _buildLabelValue(
-                      'SinceBoot:',
-                      _getTimestampSinceBootString(),
-                    ),
-                    const SizedBox(height: _padding),
-                    _buildLabelValue(
-                      'Status:',
-                      _status == null ? _notAvailable : describeEnum(_status),
+                    multiLineButton(_consentState, _requestConsent),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    IgnorePointer(
+                      child: Padding(
+                        padding: const EdgeInsets.all(_spacing),
+                        child: Column(
+                          children: [
+                            _buildLabelValue(
+                              'Coordinates:',
+                              _getCoordinatesString(),
+                            ),
+                            _buildLabelValue(
+                              'Horz.Accuracy:',
+                              _getHorizontalAccuracyString(),
+                            ),
+                            _buildLabelValue(
+                              'Vert.Accuracy:',
+                              _getVerticalAccuracyString(),
+                            ),
+                            _buildLabelValue(
+                              'Bearing:',
+                              _getBearingString(),
+                            ),
+                            _buildLabelValue(
+                              'Bear.Accuracy:',
+                              _getBearingAccuracyString(),
+                            ),
+                            _buildLabelValue(
+                              'Speed:',
+                              _getSpeedString(),
+                            ),
+                            _buildLabelValue(
+                              'Speed.Accuracy:',
+                              _getSpeedAccuracyString(),
+                            ),
+                            _buildLabelValue(
+                              'Timestamp:',
+                              _location == null ? _notAvailable : _location.timestamp.toString(),
+                            ),
+                            _buildLabelValue(
+                              'SinceBoot:',
+                              _getTimestampSinceBootString(),
+                            ),
+                            const SizedBox(height: _padding),
+                            _buildLabelValue(
+                              'Status:',
+                              _status == null ? _notAvailable : describeEnum(_status),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),
-              ),
+              ],
             ),
           ],
         ),
@@ -127,11 +150,41 @@ class PositioningExample extends State<MyApp> implements LocationListener, Locat
     );
   }
 
-  void _ensureUserConsentRequested() {
+  Future<void> _ensureUserConsentRequested() async {
+    // Check if user consent has been handled.
     if (_consentEngine.userConsentState == ConsentUserReply.notHandled) {
-      _consentEngine.requestUserConsent(context).then((_) => _startLocating());
+      // Show dialog.
+      await _consentEngine.requestUserConsent(context);
+    }
+
+    _updateConsentInfo();
+    _startLocating();
+  }
+
+  Future<void> _requestConsent() async {
+    if (Platform.isAndroid) {
+      await _consentEngine.requestUserConsent(context);
+      _updateConsentInfo();
+    }
+  }
+
+  // Update the button's text showing the current consent decision of the user.
+  void _updateConsentInfo() {
+    if (Platform.isIOS) {
+      setState(() {
+        _consentState = 'Info: On iOS no consent is required as on iOS no data is collected.';
+      });
+      return;
+    }
+
+    if (_consentEngine.userConsentState == ConsentUserReply.granted) {
+      setState(() {
+        _consentState = _consentGranted;
+      });
     } else {
-      _startLocating();
+      setState(() {
+        _consentState = _consentDenied;
+      });
     }
   }
 
@@ -143,7 +196,9 @@ class PositioningExample extends State<MyApp> implements LocationListener, Locat
       } else if (Platform.isAndroid) {
         Permission.activityRecognition.request().then((_) => _ensureUserConsentRequested());
       } else {
-        _ensureUserConsentRequested();
+        // A user consent request is not required on iOS.
+        _updateConsentInfo();
+        _startLocating();
       }
     });
   }
@@ -258,6 +313,19 @@ class PositioningExample extends State<MyApp> implements LocationListener, Locat
 
   Widget _createValue(String text) {
     return SizedBox(height: _labelHeight, child: Text(text));
+  }
+
+  // A helper method to add a multiline button on top of the HERE map.
+  Align multiLineButton(String buttonLabel, Function callbackFunction) {
+    return Align(
+      alignment: Alignment.topCenter,
+      child: RaisedButton(
+        color: Colors.lightBlueAccent,
+        textColor: Colors.white,
+        onPressed: callbackFunction,
+        child: Container(width: 250, child: Text(buttonLabel, style: TextStyle(fontSize: 15))),
+      ),
+    );
   }
 
   String _getCoordinatesString() {

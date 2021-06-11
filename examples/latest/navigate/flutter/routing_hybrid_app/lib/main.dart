@@ -25,50 +25,48 @@ import 'RoutingExample.dart';
 
 void main() {
   SdkContext.init(IsolateOrigin.main);
-  // Making sure that BuildContext has MaterialLocalizations widget in the widget tree,
-  // which is part of MaterialApp.
+  // Ensure that all widgets, including MyApp, have a MaterialLocalizations object available.
   runApp(MaterialApp(home: MyApp()));
 }
 
-class MyApp extends StatelessWidget {
-  // Use _context only within the scope of this widget.
-  BuildContext _context;
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   RoutingExample _routingExample;
 
   @override
   Widget build(BuildContext context) {
-    _context = context;
-
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('HERE SDK - Routing Hybrid Example'),
-        ),
-        body: Stack(
-          children: [
-            HereMap(onMapCreated: _onMapCreated),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    button('Add Route', _addRouteButtonClicked),
-                    button('Add Waypoints', _addWaypointsButtonClicked),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    button('Online', _onlineButtonClicked),
-                    button('Offline', _offlineButtonClicked),
-                    button('Clear', _clearMapButtonClicked),
-                  ],
-                ),
-              ],
-            ),
-          ],
-        ),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('HERE SDK - Routing Hybrid Example'),
+      ),
+      body: Stack(
+        children: [
+          HereMap(onMapCreated: _onMapCreated),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  button('Add Route', _addRouteButtonClicked),
+                  button('Add Waypoints', _addWaypointsButtonClicked),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  button('Online', _onlineButtonClicked),
+                  button('Offline', _offlineButtonClicked),
+                  button('Clear', _clearMapButtonClicked),
+                ],
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -119,7 +117,7 @@ class MyApp extends StatelessWidget {
   // A helper method to show a dialog.
   Future<void> _showDialog(String title, String message) async {
     return showDialog<void>(
-      context: _context,
+      context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(

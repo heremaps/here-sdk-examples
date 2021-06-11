@@ -76,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
         toggleTrackingButton.setTextOff("Camera Tracking: OFF");
         toggleTrackingButton.setChecked(true);
         toggleTrackingButton.setOnClickListener(v -> {
+            if (app == null) return;
             if (toggleTrackingButton.isChecked()) {
                 app.toggleTrackingButtonOnClicked();
             } else {
@@ -145,15 +146,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void addRouteSimulatedLocationButtonClicked(View view) {
-        app.addRouteSimulatedLocation();
+        if (app != null) {
+            app.addRouteSimulatedLocation();
+        }
     }
 
     public void addRouteDeviceLocationButtonClicked(View view) {
-        app.addRouteDeviceLocation();
+        if (app != null) {
+            app.addRouteDeviceLocation();
+        }
     }
 
     public void clearMapButtonClicked(View view) {
-        app.clearMapButtonPressed();
+        if (app != null) {
+            app.clearMapButtonPressed();
+        }
     }
 
     @Override

@@ -75,7 +75,7 @@ class RoutingExample {
   // An implementation may decide to reject a route if one or more violations are detected.
   void _logRouteViolations(here.Route route) {
     for (var section in route.sections) {
-      for (var notice in section.notices) {
+      for (var notice in section.sectionNotices) {
         print("This route contains the following warning: " + notice.code.toString());
       }
     }
