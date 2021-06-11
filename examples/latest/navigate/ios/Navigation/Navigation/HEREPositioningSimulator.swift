@@ -24,8 +24,7 @@ import heresdk
 class HEREPositioningSimulator {
 
     private var locationSimulator: LocationSimulator?
-    
-    // Does nothing when engine is already running.
+
     func startLocating(locationDelegate: LocationDelegate, route: Route) {
         if let locationSimulator = locationSimulator {
             locationSimulator.stop()
@@ -35,14 +34,13 @@ class HEREPositioningSimulator {
         locationSimulator!.start()
     }
 
-    // Does nothing when engine is already stopped.
     func stopLocating() {
         if locationSimulator != nil {
             locationSimulator!.stop()
             locationSimulator = nil
         }
     }
-    
+
     // Provides fake GPS signals based on the route geometry.
     private func createLocationSimulator(locationDelegate: LocationDelegate,
                                          route: Route) -> LocationSimulator {

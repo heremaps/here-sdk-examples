@@ -40,7 +40,7 @@ public class VoiceAssistant {
     public VoiceAssistant(Context context) {
         textToSpeech = new TextToSpeech(context.getApplicationContext(), status -> {
             if (status == TextToSpeech.ERROR) {
-                throw new RuntimeException("Initialization of Android's TextToSpeech failed: " + status);
+                Log.d(TAG, ("ERROR: Initialization of Android's TextToSpeech failed."));
             }
         });
     }

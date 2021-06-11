@@ -17,6 +17,8 @@
  * License-Filename: LICENSE
  */
 
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/core.errors.dart';
@@ -25,67 +27,102 @@ import 'package:here_sdk/routing.dart' as HERE;
 
 import 'NavigationExample.dart';
 
-// An app that allows to calculate a car route in Berlin and start navigation using simulated locations.
+// A callback to notify the hosting widget.
+typedef ShowDialogFunction = void Function(String title, String message);
+
+// An app that allows to calculate a car route and start navigation using simulated or real locations.
 class AppLogic {
-  HERE.Route _route;
-  GeoCoordinates _startGeoCoordinates = GeoCoordinates(52.512271, 13.410537);
-  GeoCoordinates _destinationGeoCoordinates = GeoCoordinates(52.530898, 13.385010);
+  MapPolyline _calculatedRouteMapPolyline;
   HereMapController _hereMapController;
   NavigationExample _navigationExample;
+  HERE.RoutingEngine _routingEngine;
+  ShowDialogFunction _showDialog;
 
-  AppLogic(HereMapController hereMapController) {
+  AppLogic(Function showDialogCallback, HereMapController hereMapController) {
+    _showDialog = showDialogCallback;
     _hereMapController = hereMapController;
 
-    double distanceToEarthInMeters = 10000;
-    _hereMapController.camera.lookAtPointWithDistance(
-      GeoCoordinates(52.520798, 13.409408),
-      distanceToEarthInMeters,
-    );
-
-    _calculateRoute();
+    try {
+      _routingEngine = HERE.RoutingEngine();
+    } on InstantiationException {
+      throw Exception('Initialization of RoutingEngine failed.');
+    }
 
     _navigationExample = NavigationExample(_hereMapController);
   }
 
-  void startNavigation() {
-    if (_route == null) {
-      print('Error: No route to navigate on.');
-      return;
-    }
+  // Shows navigation simulation along a route.
+  void startNavigationSimulation() {
+    // Once route is calculated navigation is started.
+    bool isSimulated = true;
+    _calculateRouteFromCurrentLocation(isSimulated);
+  }
 
-    _navigationExample.startNavigation(_route);
+  // Shows navigation with real location data.
+  void startNavigation() {
+    // Once route is calculated navigation is started.
+    bool isSimulated = false;
+    _calculateRouteFromCurrentLocation(isSimulated);
+  }
+
+  void setTracking(bool isTracking) {
+    _navigationExample.setTracking(isTracking);
   }
 
   void stopNavigation() {
     _navigationExample.stopNavigation();
   }
 
-  Future<void> _calculateRoute() async {
-    var startWaypoint = HERE.Waypoint.withDefaults(_startGeoCoordinates);
-    var destinationWaypoint = HERE.Waypoint.withDefaults(_destinationGeoCoordinates);
-    List<HERE.Waypoint> waypoints = [startWaypoint, destinationWaypoint];
+  void stopRendering() {
+    _navigationExample.stopRendering();
+  }
 
-    HERE.RoutingEngine routingEngine;
-
-    try {
-      routingEngine = HERE.RoutingEngine();
-    } on InstantiationException {
-      throw Exception('Initialization of RoutingEngine failed.');
+  Future<void> _calculateRouteFromCurrentLocation(bool isSimulated) async {
+    var currentLocation = _navigationExample.getLastKnownLocation();
+    if (currentLocation == null) {
+      _showDialog('Error', 'No current location found.');
+      return;
     }
 
-    await routingEngine.calculateCarRoute(waypoints, HERE.CarOptions.withDefaults(),
+    double distanceToEarthInMeters = 10000;
+    _hereMapController.camera.lookAtPointWithDistance(
+      currentLocation.coordinates,
+      distanceToEarthInMeters,
+    );
+
+    var startWaypoint = HERE.Waypoint.withDefaults(currentLocation.coordinates);
+    var destinationWaypoint = HERE.Waypoint.withDefaults(_createRandomGeoCoordinatesAroundMapCenter());
+    List<HERE.Waypoint> waypoints = [startWaypoint, destinationWaypoint];
+
+    await _routingEngine.calculateCarRoute(waypoints, HERE.CarOptions.withDefaults(),
         (HERE.RoutingError routingError, List<HERE.Route> routeList) async {
       if (routingError == null) {
-        _route = routeList.first;
-        _showRouteOnMap(_route);
+        HERE.Route _calculatedRoute = routeList.first;
+        _showRouteOnMap(_calculatedRoute);
+        _startNavigationOnRoute(isSimulated, _calculatedRoute);
       } else {
         final error = routingError.toString();
-        print('Error while calculating a route: $error');
+        _showDialog('Error', 'Error while calculating a route: $error');
       }
     });
   }
 
-  _showRouteOnMap(HERE.Route route) {
+  void _startNavigationOnRoute(bool isSimulated, HERE.Route route) {
+    if (isSimulated) {
+      // Starts simulated navigation from current location to a random destination.
+      _navigationExample.startNavigationSimulation(route);
+    } else {
+      // Starts real navigation from current location to a random destination.
+      _navigationExample.startNavigation(route);
+    }
+  }
+
+  void _showRouteOnMap(HERE.Route route) {
+    // Remove previous route, if any.
+    if (_calculatedRouteMapPolyline != null) {
+      _hereMapController.mapScene.removeMapPolyline(_calculatedRouteMapPolyline);
+    }
+
     // Show route as polyline.
     GeoPolyline routeGeoPolyline = GeoPolyline(route.polyline);
 
@@ -96,6 +133,18 @@ class AppLogic {
       Color.fromARGB(160, 0, 144, 138),
     );
 
-    _hereMapController.mapScene.addMapPolyline(routeMapPolyline);
+    _calculatedRouteMapPolyline = routeMapPolyline;
+    _hereMapController.mapScene.addMapPolyline(_calculatedRouteMapPolyline);
+  }
+
+  GeoCoordinates _createRandomGeoCoordinatesAroundMapCenter() {
+    GeoCoordinates centerGeoCoordinates = _hereMapController.camera.state.targetCoordinates;
+    double lat = centerGeoCoordinates.latitude;
+    double lon = centerGeoCoordinates.longitude;
+    return GeoCoordinates(_getRandom(lat - 0.02, lat + 0.02), _getRandom(lon - 0.02, lon + 0.02));
+  }
+
+  double _getRandom(double min, double max) {
+    return min + Random().nextDouble() * (max - min);
   }
 }

@@ -25,9 +25,7 @@ import 'GesturesExample.dart';
 
 void main() {
   SdkContext.init(IsolateOrigin.main);
-  // Making sure that BuildContext has MaterialLocalizations widget in the widget tree,
-  // which is part of MaterialApp.
-  runApp(MaterialApp(home: MyApp()));
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {

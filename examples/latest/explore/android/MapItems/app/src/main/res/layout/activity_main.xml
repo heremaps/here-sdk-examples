@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <com.here.sdk.mapview.MapView
+        android:id="@+id/map_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    </com.here.sdk.mapview.MapView>
+
+    <LinearLayout
+        android:id="@+id/button_row_1"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Anchored (2D)"
+            android:onClick="anchoredMapMarkersButtonClicked" />
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Centered (2D)"
+            android:onClick="centeredMapMarkersButtonClicked" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/button_row_2"
+        app:layout_constraintTop_toBottomOf="@+id/button_row_1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="fill_vertical"
+            android:layout_weight="1"
+            android:text="Location (Ped)"
+            android:onClick="LocationIndicatorPedButtonClicked" />
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="fill_vertical"
+            android:layout_weight="1"
+            android:text="Location (Nav)"
+            android:onClick="LocationIndicatorNavButtonClicked" />
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="fill_vertical"
+            android:layout_weight="1"
+            android:text="Active/Inactive"
+            android:onClick="LocationIndicatorActiveInactiveButtonClicked" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/button_row_3"
+        app:layout_constraintTop_toBottomOf="@+id/button_row_2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Flat"
+            android:onClick="FlatMapMarkerButtonClicked" />
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="3D OBJ"
+            android:onClick="MapMarker3DButtonClicked" />
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Clear"
+            android:onClick="clearMapButtonClicked" />
+    </LinearLayout>
+
+</android.support.constraint.ConstraintLayout>

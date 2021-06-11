@@ -266,8 +266,8 @@ public class EVRoutingExample {
     private void searchAlongARoute(Route route) {
         // We specify here that we only want to include results
         // within a max distance of xx meters from any point of the route.
-        int radiusInMeters = 200;
-        GeoCorridor routeCorridor = new GeoCorridor(route.getPolyline(), radiusInMeters);
+        int halfWidthInMeters = 200;
+        GeoCorridor routeCorridor = new GeoCorridor(route.getPolyline(), halfWidthInMeters);
         TextQuery textQuery = new TextQuery("charging station", routeCorridor,
                 mapView.getCamera().getState().targetCoordinates);
 
@@ -278,9 +278,9 @@ public class EVRoutingExample {
             public void onSearchCompleted(SearchError searchError, List<Place> items) {
                 if (searchError != null) {
                     if (searchError == SearchError.POLYLINE_TOO_LONG) {
-                        // Increasing corridor radius will result in less precise results with the benefit of a less
+                        // Increasing halfWidthInMeters will result in less precise results with the benefit of a less
                         // complex route shape.
-                        Log.d("Search", "Route too long or route corridor radius too small.");
+                        Log.d("Search", "Route too long or halfWidthInMeters too small.");
                     } else {
                         Log.d("Search", "No charging stations found along the route. Error: " + searchError);
                     }
