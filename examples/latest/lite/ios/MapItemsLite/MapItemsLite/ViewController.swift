@@ -23,7 +23,7 @@ import UIKit
 final class ViewController: UIViewController {
 
     @IBOutlet private var mapView: MapViewLite!
-    private var mapMarkerExample: MapMarkerExample!
+    private var mapItemsExample: MapItemsExample!
     private var isMapSceneLoaded = false
 
     override func viewDidLoad() {
@@ -40,25 +40,25 @@ final class ViewController: UIViewController {
         }
 
         // Start the example.
-        mapMarkerExample = MapMarkerExample(viewController: self, mapView: mapView)
+        mapItemsExample = MapItemsExample(viewController: self, mapView: mapView)
         isMapSceneLoaded = true
     }
 
     @IBAction func onAnchoredButtonClicked(_ sender: Any) {
         if isMapSceneLoaded {
-            mapMarkerExample.onAnchoredButtonClicked()
+            mapItemsExample.onAnchoredButtonClicked()
         }
     }
 
     @IBAction func onCenteredButtonClicked(_ sender: Any) {
         if isMapSceneLoaded {
-            mapMarkerExample.onCenteredButtonClicked()
+            mapItemsExample.onCenteredButtonClicked()
         }
     }
 
     @IBAction func onClearButtonClicked(_ sender: Any) {
         if isMapSceneLoaded {
-            mapMarkerExample.onClearButtonClicked()
+            mapItemsExample.onClearButtonClicked()
         }
     }
 

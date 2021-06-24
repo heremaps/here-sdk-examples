@@ -17,7 +17,7 @@
  * License-Filename: LICENSE
  */
 
-package com.here.mapmarker;
+package com.here.mapitems;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
@@ -42,13 +42,13 @@ import com.here.sdk.mapviewlite.PickMapItemsResult;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MapMarkerExample {
+public class MapItemsExample {
 
     private Context context;
     private MapViewLite mapView;
     private final List<MapMarker> mapMarkerList = new ArrayList<>();
 
-    public MapMarkerExample(Context context, MapViewLite mapView) {
+    public MapItemsExample(Context context, MapViewLite mapView) {
         this.context = context;
         this.mapView = mapView;
         Camera camera = mapView.getCamera();

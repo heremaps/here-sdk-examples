@@ -1,4 +1,4 @@
-The MapMarker example app shows how to pin images to mark specific spots on the map. You can find how this is done in [MapMarkerExample.swift](MapMarkerLite/MapMarkerExample.swift).
+The MapItems example app shows how to pin images to mark specific spots on the map. You can find how this is done in [MapItemsExample.swift](MapItemsLite/MapItemsExample.swift).
 
 Build instructions:
 -------------------

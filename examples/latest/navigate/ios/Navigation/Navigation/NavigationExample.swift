@@ -33,7 +33,8 @@ class NavigationExample : NavigableLocationDelegate,
                           RouteProgressDelegate,
                           RouteDeviationDelegate,
                           ManeuverNotificationDelegate,
-                          LaneAssistanceDelegate {
+                          LaneAssistanceDelegate,
+                          RoadAttributesDelegate {
 
     private let viewController: UIViewController
     private let mapView: MapView
@@ -77,6 +78,7 @@ class NavigationExample : NavigableLocationDelegate,
         visualNavigator.speedWarningDelegate = self
         visualNavigator.speedLimitDelegate = self
         visualNavigator.laneAssistanceDelegate = self
+        visualNavigator.roadAttributesDelegate = self
     }
 
     func startLocationProvider() {
@@ -359,6 +361,67 @@ class NavigationExample : NavigableLocationDelegate,
             }
 
             laneNumber += 1
+        }
+    }
+    
+    // Conform to the RoadAttributesDelegate.
+    // Notifies on the attributes of the current road including usage and physical characteristics.
+    func onRoadAttributesUpdated(_ roadAttributes: RoadAttributes) {
+        // This is called whenever any road attribute has changed.
+        // If all attributes are unchanged, no new event is fired.
+        // Note that a road can have more than one attribute at the same time.
+        print("Received road attributes update.");
+
+        if (roadAttributes.isBridge) {
+          // Identifies a structure that allows a road, railway, or walkway to pass over another road, railway,
+          // waterway, or valley serving map display and route guidance functionalities.
+            print("Road attributes: This is a bridge.");
+        }
+        if (roadAttributes.isControlledAccess) {
+          // Controlled access roads are roads with limited entrances and exits that allow uninterrupted
+          // high-speed traffic flow.
+            print("Road attributes: This is a controlled access road.");
+        }
+        if (roadAttributes.isDirtRoad) {
+          // Indicates whether the navigable segment is paved.
+            print("Road attributes: This is a dirt road.");
+        }
+        if (roadAttributes.isDividedRoad) {
+          // Indicates if there is a physical structure or painted road marking intended to legally prohibit
+          // left turns in right-side driving countries, right turns in left-side driving countries,
+          // and U-turns at divided intersections or in the middle of divided segments.
+            print("Road attributes: This is a divided road.");
+        }
+        if (roadAttributes.isNoThrough) {
+          // Identifies a no through road.
+            print("Road attributes: This is a no through road.");
+        }
+        if (roadAttributes.isPrivate) {
+          // Private identifies roads that are not maintained by an organization responsible for maintenance of
+          // public roads.
+            print("Road attributes: This is a private road.");
+        }
+        if (roadAttributes.isRamp) {
+          // Range is a ramp: connects roads that do not intersect at grade.
+            print("Road attributes: This is a ramp.");
+        }
+        if (roadAttributes.isRightDrivingSide) {
+          // Indicates if vehicles have to drive on the right-hand side of the road or the left-hand side.
+          // For example, in New York it is always true and in London always false as the United Kingdom is
+          // a left-hand driving country.
+            print("Road attributes: isRightDrivingSide = \(roadAttributes.isRightDrivingSide)");
+        }
+        if (roadAttributes.isRoundabout) {
+          // Indicates the presence of a roundabout.
+            print("Road attributes: This is a roundabout.");
+        }
+        if (roadAttributes.isTollway) {
+          // Identifies a road for which a fee must be paid to use the road.
+            print("Road attributes change: This is a road with toll costs.");
+        }
+        if (roadAttributes.isTunnel) {
+          // Identifies an enclosed (on all sides) passageway through or under an obstruction.
+            print("Road attributes: This is a tunnel.");
         }
     }
 

@@ -43,42 +43,12 @@ class _MyAppState extends State<MyApp> {
       appBar: AppBar(
         title: Text('HERE SDK - Map Items Example'),
       ),
+      drawer: Drawer(
+        child: ListView(children: _buildDrawerList(context)),
+      ),
       body: Stack(
         children: [
           HereMap(onMapCreated: _onMapCreated),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  button('Anchored (2D)', _anchoredMapMarkersButtonClicked),
-                  button('Centered (2D)', _centeredMapMarkersButtonClicked),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  button('Location (Ped)', _locationIndicatorPedestrianButtonClicked),
-                  button('Location (Nav)', _locationIndicatorNavigationButtonClicked),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  button('Location Active/Inactive', _locationIndicatorActiveInactiveButtonClicked),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  button('Flat', _flatMapMarkersButtonClicked),
-                  button('3D OBJ', _mapMarkers3DButtonClicked),
-                  button('Clear', _clearButtonClicked),
-                ],
-              ),
-            ],
-          ),
         ],
       ),
     );
@@ -130,9 +100,11 @@ class _MyAppState extends State<MyApp> {
   Align button(String buttonLabel, Function callbackFunction) {
     return Align(
       alignment: Alignment.topCenter,
-      child: RaisedButton(
-        color: Colors.lightBlueAccent,
-        textColor: Colors.white,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          primary: Colors.lightBlueAccent,
+          onPrimary: Colors.white,
+        ),
         onPressed: () => callbackFunction(),
         child: Text(buttonLabel, style: TextStyle(fontSize: 20)),
       ),
@@ -155,7 +127,7 @@ class _MyAppState extends State<MyApp> {
             ),
           ),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               child: Text('OK'),
               onPressed: () {
                 Navigator.of(context).pop();
@@ -165,5 +137,115 @@ class _MyAppState extends State<MyApp> {
         );
       },
     );
+  }
+
+  // A helper method to build drawer list.
+  List<Widget> _buildDrawerList(BuildContext context) {
+    List<Widget> children = [];
+
+    DrawerHeader header = DrawerHeader(
+      child: Column(
+        children: [
+          Text(
+            'HERE SDK - Map Items Example',
+            style: TextStyle(
+              fontSize: 24,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+      decoration: BoxDecoration(
+        color: Colors.blue,
+      ),
+    );
+    children.add(header);
+
+    // Add MapMarker section.
+    var mapMarkerTile = _buildMapMarkerExpansionTile(context);
+    children.add(mapMarkerTile);
+
+    // Add LocationIndicator section.
+    var locationIndicatorTile = _buildLocationIndicatorExpansionTile(context);
+    children.add(locationIndicatorTile);
+
+    // Add section to clear the map.
+    var clearTile = _buildClearTile(context);
+    children.add(clearTile);
+
+    return children;
+  }
+
+  Widget _buildMapMarkerExpansionTile(BuildContext context) {
+    return ExpansionTile(
+      title: Text("MapMarker"),
+      children: [
+        ListTile(
+          title: Text('Anchored (2D)'),
+          onTap: () {
+            Navigator.pop(context);
+            _anchoredMapMarkersButtonClicked();
+          },
+        ),
+        ListTile(
+          title: Text('Centered (2D)'),
+          onTap: () {
+            Navigator.pop(context);
+            _centeredMapMarkersButtonClicked();
+          },
+        ),
+        ListTile(
+          title: Text('Flat'),
+          onTap: () {
+            Navigator.pop(context);
+            _flatMapMarkersButtonClicked();
+          },
+        ),
+        ListTile(
+          title: Text('3D OBJ'),
+          onTap: () {
+            Navigator.pop(context);
+            _mapMarkers3DButtonClicked();
+          },
+        )
+      ],
+      initiallyExpanded: true,
+    );
+  }
+
+  Widget _buildLocationIndicatorExpansionTile(BuildContext context) {
+    return ExpansionTile(
+      title: Text("LocationIndicator"),
+      children: [
+        ListTile(
+            title: Text('Location (Ped)'),
+            onTap: () {
+              Navigator.pop(context);
+              _locationIndicatorPedestrianButtonClicked();
+            }),
+        ListTile(
+            title: Text('Location (Nav)'),
+            onTap: () {
+              Navigator.pop(context);
+              _locationIndicatorNavigationButtonClicked();
+            }),
+        ListTile(
+            title: Text('Location Active/Inactive'),
+            onTap: () {
+              Navigator.pop(context);
+              _locationIndicatorActiveInactiveButtonClicked();
+            }),
+      ],
+      initiallyExpanded: true,
+    );
+  }
+
+  Widget _buildClearTile(BuildContext context) {
+    return ListTile(
+        title: Text('Clear'),
+        onTap: () {
+          Navigator.pop(context);
+          _clearButtonClicked();
+        });
   }
 }

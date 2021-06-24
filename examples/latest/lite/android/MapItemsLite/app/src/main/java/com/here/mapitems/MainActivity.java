@@ -17,7 +17,7 @@
  * License-Filename: LICENSE
  */
 
-package com.here.mapmarker;
+package com.here.mapitems;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
 
     private PermissionsRequestor permissionsRequestor;
     private MapViewLite mapView;
-    private MapMarkerExample mapMarkerExample;
+    private MapItemsExample mapItemsExample;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onLoadScene(@Nullable MapScene.ErrorCode errorCode) {
                 if (errorCode == null) {
-                    mapMarkerExample = new MapMarkerExample(MainActivity.this, mapView);
+                    mapItemsExample = new MapItemsExample(MainActivity.this, mapView);
                 } else {
                     Log.d(TAG, "onLoadScene failed: " + errorCode.toString());
                 }
@@ -85,15 +85,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void anchoredMapMarkersButtonClicked(View view) {
-        mapMarkerExample.showAnchoredMapMarkers();
+        mapItemsExample.showAnchoredMapMarkers();
     }
 
     public void centeredMapMarkersButtonClicked(View view) {
-        mapMarkerExample.showCenteredMapMarkers();
+        mapItemsExample.showCenteredMapMarkers();
     }
 
     public void clearMapButtonClicked(View view) {
-        mapMarkerExample.clearMap();
+        mapItemsExample.clearMap();
     }
 
     @Override

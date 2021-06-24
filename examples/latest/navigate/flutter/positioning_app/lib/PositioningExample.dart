@@ -319,9 +319,11 @@ class PositioningExample extends State<MyApp> implements LocationListener, Locat
   Align multiLineButton(String buttonLabel, Function callbackFunction) {
     return Align(
       alignment: Alignment.topCenter,
-      child: RaisedButton(
-        color: Colors.lightBlueAccent,
-        textColor: Colors.white,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          primary: Colors.lightBlueAccent,
+          onPrimary: Colors.white,
+        ),
         onPressed: callbackFunction,
         child: Container(width: 250, child: Text(buttonLabel, style: TextStyle(fontSize: 15))),
       ),
