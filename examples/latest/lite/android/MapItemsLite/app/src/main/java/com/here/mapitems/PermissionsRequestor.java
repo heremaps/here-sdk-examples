@@ -17,7 +17,7 @@
  * License-Filename: LICENSE
  */
 
-package com.here.mapmarker;
+package com.here.mapitems;
 
 import android.Manifest;
 import android.app.Activity;

@@ -30,6 +30,7 @@ typedef ShowDialogFunction = void Function(String title, String message);
 class OfflineMapsExample {
   HereMapController _hereMapController;
   MapDownloader _mapDownloader;
+  MapUpdater _mapUpdater;
   OfflineSearchEngine _offlineSearchEngine;
   List<Region> _downloadableRegions = [];
   List<MapDownloaderTask> _mapDownloaderTasks = [];
@@ -48,9 +49,11 @@ class OfflineMapsExample {
     }
 
     _mapDownloader = MapDownloader.fromSdkEngine(sdkNativeEngine);
+    _mapUpdater = MapUpdater.fromSdkEngine(sdkNativeEngine);
 
     try {
       // Allows to search on already downloaded or cached map data (added for testing a downloaded region).
+      // Note that the engine cannot be used while a map update is in progress and an error will be indicated.
       _offlineSearchEngine = OfflineSearchEngine();
     } on InstantiationException {
       throw ("Initialization of OfflineSearchEngine failed.");
@@ -59,6 +62,17 @@ class OfflineMapsExample {
     // Note that the default storage path can be adapted when creating a new SDKNativeEngine.
     String storagePath = sdkNativeEngine.options.cachePath;
     _showDialog("This example allows to download the region Switzerland.", "Storage path: $storagePath");
+
+    // Checks if map updates are available for any of the already downloaded maps.
+    // If a new map download is started via MapDownloader during an update process,
+    // an NotReady error is indicated.
+    // Note that this example only shows how to download one region.
+    // Important: For production-ready apps, it is recommended to ask users whether
+    // it's okay for them to update now and to give an indication when the process has completed.
+    // - Since all regions are updated in one rush, a large amount of data may be downloaded.
+    // - By default, the update process should not be done while an app runs in background as then the
+    // download can be interrupted by the OS.
+    _checkForMapUpdates();
   }
 
   Future<void> onDownloadListClicked() async {
@@ -139,7 +153,8 @@ class OfflineMapsExample {
           if (mapLoaderError == null) {
             _showDialog("Info", "The download was paused by the user calling mapDownloaderTask.pause().");
           } else {
-            _showDialog("Error", "Download regions onPause error. The task tried to often to retry the download: $mapLoaderError");
+            _showDialog("Error",
+                "Download regions onPause error. The task tried to often to retry the download: $mapLoaderError");
           }
         }, lambda_onResume: () {
           _showDialog("Info", "A previously paused download has been resumed.");
@@ -152,7 +167,7 @@ class OfflineMapsExample {
   // Note that we ignore children of children (and so on): For example, a country may contain downloadable sub regions.
   // For this example, we just download the country including possible sub regions.
   Region _findRegion(String localizedRegionName) {
-    Region downloadableRegion = null;
+    Region downloadableRegion;
     for (Region region in _downloadableRegions) {
       if (region.name == localizedRegionName) {
         downloadableRegion = region;
@@ -221,5 +236,47 @@ class OfflineMapsExample {
       throw ("GeoBox creation failed, corners are null.");
     }
     return geoBox;
+  }
+
+  void _checkForMapUpdates() {
+    _mapUpdater.checkMapUpdate((MapLoaderError mapLoaderError, MapUpdateAvailability mapUpdateAvailability) {
+      if (mapLoaderError != null) {
+        print("MapUpdateCheck Error: " + mapLoaderError.toString());
+        return;
+      }
+
+      if (mapUpdateAvailability == MapUpdateAvailability.available) {
+        print("MapUpdateCheck: One or more map updates are available.");
+        _performMapUpdate();
+        return;
+      }
+
+      print("MapUpdateCheck: No map update available. Latest versions are already installed.");
+    });
+  }
+
+  // Downloads and installs map updates for any of the already downloaded regions.
+  // Note that this example only shows how to download one region.
+  void _performMapUpdate() {
+    // This method conveniently updates all installed regions if an update is available.
+    // Optionally, you can use the MapUpdateTask to pause / resume or cancel the update.
+    MapUpdateTask mapUpdateTask =
+        _mapUpdater.performMapUpdate(MapUpdateProgressListener.fromLambdas(lambda_onProgress: (int percentage) {
+      print("MapUpdate: Downloading and installing a map update. Progress: " + percentage.toString());
+    }, lambda_onPause: (MapLoaderError mapLoaderError) {
+      if (mapLoaderError == null) {
+        print("MapUpdate:  The map update was paused by the user calling mapUpdateTask.pause().");
+      } else {
+        print("Map update onPause error. The task tried to often to retry the update: " + mapLoaderError.toString());
+      }
+    }, lambda_onComplete: (MapLoaderError mapLoaderError) {
+      if (mapLoaderError != null) {
+        print("Map update completion error: " + mapLoaderError.toString());
+        return;
+      }
+      print("MapUpdate: One or more map update has been successfully installed.");
+    }, lambda_onResume: () {
+      print("MapUpdate: A previously paused map update has been resumed.");
+    }));
   }
 }

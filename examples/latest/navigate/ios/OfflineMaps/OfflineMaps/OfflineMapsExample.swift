@@ -21,9 +21,10 @@ import heresdk
 import UIKit
 
 class OfflineMapsExample : DownloadRegionsStatusListener {
-
+   
     private let mapView: MapView
     private let mapDownloader: MapDownloader
+    private let mapUpdater: MapUpdater
     private let offlineSearchEngine: OfflineSearchEngine
     private var downloadableRegions = [Region]()
     private var mapDownloaderTasks = [MapDownloaderTask]()
@@ -41,9 +42,11 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
         }
 
         mapDownloader = MapDownloader.fromEngine(sdkNativeEngine)
+        mapUpdater = MapUpdater.fromEngine(sdkNativeEngine)
 
         do {
             // Adding offline search engine to show that we can search on downloaded regions.
+            // Note that the engine cannot be used while a map update is in progress and an error will be indicated.
             try offlineSearchEngine = OfflineSearchEngine()
         } catch let engineInstantiationError {
             fatalError("Failed to initialize OfflineSearchEngine. Cause: \(engineInstantiationError)")
@@ -52,6 +55,17 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
         // Note that the default storage path can be adapted when creating a new SDKNativeEngine.
         let storagePath = sdkNativeEngine.options.cachePath
         showMessage("This example allows to download the region Switzerland. StoragePath: \(storagePath).")
+        
+        // Checks if map updates are available for any of the already downloaded maps.
+        // If a new map download is started via MapDownloader during an update process,
+        // an NotReady error is indicated.
+        // Note that this example only shows how to download one region.
+        // Important: For production-ready apps, it is recommended to ask users whether
+        // it's okay for them to update now and to give an indication when the process has completed.
+        // - Since all regions are updated in one rush, a large amount of data may be downloaded.
+        // - By default, the update process should not be done while an app runs in background as then the
+        // download can be interrupted by the OS.
+        checkForMapUpdates()
     }
 
     func onDownloadListClicked() {
@@ -134,7 +148,7 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
     func onResume() {
         showMessage("A previously paused download has been resumed.")
     }
-    
+
     // Finds a region in the downloaded region list.
     // Note that we ignore children of children (and so on).
     private func findRegion(localizedRegionName: String) -> Region? {
@@ -164,6 +178,66 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
         }
         showMessage("Cancelled \(mapDownloaderTasks.count) download tasks in list.")
         mapDownloaderTasks.removeAll()
+    }
+    
+    private func checkForMapUpdates() {
+        _ = mapUpdater.checkMapUpdate(completion: onMapUpdateCompled)
+    }
+
+    // Completion handler to get notified whether a map update is available or not.
+    private func onMapUpdateCompled(mapLoaderError: MapLoaderError?, mapUpdateAvailability: MapUpdateAvailability?) {
+        if let error = mapLoaderError {
+            print("MapUpdateCheck Error: \(error)")
+            return
+        }
+
+        if (mapUpdateAvailability == MapUpdateAvailability.available) {
+            print("MapUpdateCheck: One or more map updates are available.")
+            performMapUpdate()
+            return
+        }
+
+        print("MapUpdateCheck: No map update available. Latest versions are already installed.");
+    }
+    
+    // Downloads and installs map updates for any of the already downloaded regions.
+    // Note that this example only shows how to download one region.
+    private func performMapUpdate() {
+        // This method conveniently updates all installed regions if an update is available.
+        // Optionally, you can use the returned MapUpdateTask to pause / resume or cancel the update.
+        _ = mapUpdater.performMapUpdate(completion: mapUpdateListenerImpl)
+    }
+    
+    private let mapUpdateListenerImpl = MapUpdateListenerImpl()
+    
+    private class MapUpdateListenerImpl : MapUpdateProgressListener {
+        // Conform to the MapUpdateProgressListener protocol.
+        func onPause(error: heresdk.MapLoaderError?) {
+            if let mapLoaderError = error {
+                print("Map update onPause error. The task tried to often to retry the update: \(mapLoaderError).")
+            } else {
+                print("MapUpdate: The map update was paused by the user calling mapUpdateTask.pause().")
+            }
+        }
+
+        // Conform to the MapUpdateProgressListener protocol.
+        func onProgress(percentage: Int32) {
+            print("MapUpdate: Downloading and installing a map update. Progress: \(percentage).")
+        }
+        
+        // Conform to the MapUpdateProgressListener protocol.
+        func onComplete(error: MapLoaderError?) {
+            if let mapLoaderError = error {
+                print("MapUpdate completion error: \(mapLoaderError)")
+                return
+            }
+            print("MapUpdate: One or more map update has been successfully installed.")
+        }
+        
+        // Conform to the MapUpdateProgressListener protocol.
+        func onResume() {
+            print("MapUpdate: A previously paused map update has been resumed.")
+        }
     }
 
     // A test call that shows that, for example, search is possible on downloaded regions.

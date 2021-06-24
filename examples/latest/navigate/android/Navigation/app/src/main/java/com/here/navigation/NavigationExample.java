@@ -49,6 +49,8 @@ import com.here.sdk.navigation.Milestone;
 import com.here.sdk.navigation.MilestoneReachedListener;
 import com.here.sdk.navigation.NavigableLocation;
 import com.here.sdk.navigation.NavigableLocationListener;
+import com.here.sdk.navigation.RoadAttributes;
+import com.here.sdk.navigation.RoadAttributesListener;
 import com.here.sdk.navigation.RouteDeviation;
 import com.here.sdk.navigation.RouteDeviationListener;
 import com.here.sdk.navigation.RouteProgress;
@@ -332,6 +334,70 @@ public class NavigationExample {
                     Log.d(TAG, "Attention, the next next maneuver is very close.");
                     Log.d(TAG, "Please take the following lane(s) after the next maneuver: ");
                     logLaneRecommendations(nextLanes);
+                }
+            }
+        });
+
+        // Notifies on the attributes of the current road including usage and physical characteristics.
+        visualNavigator.setRoadAttributesListener(new RoadAttributesListener() {
+            @Override
+            public void onRoadAttributesUpdated(@NonNull RoadAttributes roadAttributes) {
+                // This is called whenever any road attribute has changed.
+                // If all attributes are unchanged, no new event is fired.
+                // Note that a road can have more than one attribute at the same time.
+
+                Log.d(TAG, "Received road attributes update.");
+
+                if (roadAttributes.isBridge) {
+                    // Identifies a structure that allows a road, railway, or walkway to pass over another road, railway,
+                    // waterway, or valley serving map display and route guidance functionalities.
+                    Log.d(TAG, "Road attributes: This is a bridge.");
+                }
+                if (roadAttributes.isControlledAccess) {
+                    // Controlled access roads are roads with limited entrances and exits that allow uninterrupted
+                    // high-speed traffic flow.
+                    Log.d(TAG, "Road attributes: This is a controlled access road.");
+                }
+                if (roadAttributes.isDirtRoad) {
+                    // Indicates whether the navigable segment is paved.
+                    Log.d(TAG, "Road attributes: This is a dirt road.");
+                }
+                if (roadAttributes.isDividedRoad) {
+                    // Indicates if there is a physical structure or painted road marking intended to legally prohibit
+                    // left turns in right-side driving countries, right turns in left-side driving countries,
+                    // and U-turns at divided intersections or in the middle of divided segments.
+                    Log.d(TAG, "Road attributes: This is a divided road.");
+                }
+                if (roadAttributes.isNoThrough) {
+                    // Identifies a no through road.
+                    Log.d(TAG, "Road attributes: This is a no through road.");
+                }
+                if (roadAttributes.isPrivate) {
+                    // Private identifies roads that are not maintained by an organization responsible for maintenance of
+                    // public roads.
+                    Log.d(TAG, "Road attributes: This is a private road.");
+                }
+                if (roadAttributes.isRamp) {
+                    // Range is a ramp: connects roads that do not intersect at grade.
+                    Log.d(TAG, "Road attributes: This is a ramp.");
+                }
+                if (roadAttributes.isRightDrivingSide) {
+                    // Indicates if vehicles have to drive on the right-hand side of the road or the left-hand side.
+                    // For example, in New York it is always true and in London always false as the United Kingdom is
+                    // a left-hand driving country.
+                    Log.d(TAG, "Road attributes: isRightDrivingSide = " + roadAttributes.isRightDrivingSide);
+                }
+                if (roadAttributes.isRoundabout) {
+                    // Indicates the presence of a roundabout.
+                    Log.d(TAG, "Road attributes: This is a roundabout.");
+                }
+                if (roadAttributes.isTollway) {
+                    // Identifies a road for which a fee must be paid to use the road.
+                    Log.d(TAG, "Road attributes change: This is a road with toll costs.");
+                }
+                if (roadAttributes.isTunnel) {
+                    // Identifies an enclosed (on all sides) passageway through or under an obstruction.
+                    Log.d(TAG, "Road attributes: This is a tunnel.");
                 }
             }
         });

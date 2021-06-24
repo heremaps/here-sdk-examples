@@ -201,7 +201,7 @@ class RoutingExample {
         // We specify here that we only want to include results
         // within a max distance of xx meters from any point of the route.
         let routeCorridor = GeoCorridor(polyline: route.polyline,
-                                        radiusInMeters: Int32(200))
+                                        halfWidthInMeters: Int32(200))
         let textQuery = TextQuery("charging station",
                                   in: routeCorridor,
                                   near: mapView.camera.state.targetCoordinates)
@@ -217,9 +217,9 @@ class RoutingExample {
     func onSearchCompleted(error: SearchError?, items: [Place]?) {
         if let searchError = error {
             if searchError == .polylineTooLong {
-                // Increasing corridor radius will result in less precise results with the benefit of a less
+                // Increasing halfWidthInMeters will result in less precise results with the benefit of a less
                 // complex route shape.
-                print("Route too long or route corridor radius too small.")
+                print("Route too long or halfWidthInMeters too small.")
             } else {
                 print("No charging stations found along the route. Error: \(searchError)")
             }

@@ -203,8 +203,8 @@ class EVRoutingExample {
   void _searchAlongARoute(here.Route route) {
     // We specify here that we only want to include results
     // within a max distance of xx meters from any point of the route.
-    int radiusInMeters = 200;
-    GeoCorridor routeCorridor = GeoCorridor.withRadius(route.polyline, radiusInMeters);
+    int halfWidthInMeters = 200;
+    GeoCorridor routeCorridor = GeoCorridor.make(route.polyline, halfWidthInMeters);
     TextQuery textQuery = TextQuery.withCorridorAreaAndAreaCenter(
         "charging station", routeCorridor, _hereMapController.camera.state.targetCoordinates);
 
@@ -214,9 +214,9 @@ class EVRoutingExample {
     _searchEngine.searchByText(textQuery, searchOptions, (SearchError searchError, List<Place> items) {
       if (searchError != null) {
         if (searchError == SearchError.polylineTooLong) {
-          // Increasing corridor radius will result in less precise results with the benefit of a less
+          // Increasing halfWidthInMeters will result in less precise results with the benefit of a less
           // complex route shape.
-          print("Search: Route too long or route corridor radius too small.");
+          print("Search: Route too long or halfWidthInMeters too small.");
         } else {
           print("Search: No charging stations found along the route. Error: $searchError");
         }

@@ -105,9 +105,11 @@ class _MyAppState extends State<MyApp> {
   Align button(String buttonLabel, Function callbackFunction) {
     return Align(
       alignment: Alignment.topCenter,
-      child: RaisedButton(
-        color: Colors.lightBlueAccent,
-        textColor: Colors.white,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          primary: Colors.lightBlueAccent,
+          onPrimary: Colors.white,
+        ),
         onPressed: () => callbackFunction(),
         child: Text(buttonLabel, style: TextStyle(fontSize: 20)),
       ),
@@ -130,7 +132,7 @@ class _MyAppState extends State<MyApp> {
             ),
           ),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               child: Text('OK'),
               onPressed: () {
                 Navigator.of(context).pop();

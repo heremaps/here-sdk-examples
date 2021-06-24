@@ -50,6 +50,11 @@ class RoutingExample {
 
         do {
             // Allows to calculate routes on already downloaded or cached map data.
+            // For downloading offline maps, please check the OfflineMaps example app.
+            // This app uses only cached map data that gets downloaded when the user
+            // pans the map. Please note that the OfflineRoutingEngine may not be able
+            // to calculate a route, when not all map tiles are loaded. Especially, the
+            // vector tiles for lower zoom levels are required to find possible paths. 
             try offlineRoutingEngine = OfflineRoutingEngine()
         } catch let engineInstantiationError {
             fatalError("Failed to initialize offline routing engine. Cause: \(engineInstantiationError)")

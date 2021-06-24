@@ -20,7 +20,7 @@
 import heresdk
 import UIKit
 
-class MapMarkerExample: TapDelegate {
+class MapItemsExample: TapDelegate {
 
     private var viewController: UIViewController
     private var mapView: MapViewLite
