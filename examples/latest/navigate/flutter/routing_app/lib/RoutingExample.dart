@@ -30,15 +30,14 @@ import 'package:here_sdk/routing.dart' as here;
 typedef ShowDialogFunction = void Function(String title, String message);
 
 class RoutingExample {
-  HereMapController _hereMapController;
+  final HereMapController _hereMapController;
   List<MapPolyline> _mapPolylines = [];
-  RoutingEngine _routingEngine;
-  ShowDialogFunction _showDialog;
+  late RoutingEngine _routingEngine;
+  final ShowDialogFunction _showDialog;
 
-  RoutingExample(ShowDialogFunction showDialogCallback, HereMapController hereMapController) {
-    _showDialog = showDialogCallback;
-    _hereMapController = hereMapController;
-
+  RoutingExample(ShowDialogFunction showDialogCallback, HereMapController hereMapController)
+      : _showDialog = showDialogCallback,
+        _hereMapController = hereMapController {
     double distanceToEarthInMeters = 10000;
     _hereMapController.camera.lookAtPointWithDistance(GeoCoordinates(52.520798, 13.409408), distanceToEarthInMeters);
 
@@ -57,10 +56,11 @@ class RoutingExample {
 
     List<Waypoint> waypoints = [startWaypoint, destinationWaypoint];
 
-    await _routingEngine.calculateCarRoute(waypoints, CarOptions.withDefaults(),
-        (RoutingError routingError, List<here.Route> routeList) async {
+    _routingEngine.calculateCarRoute(waypoints, CarOptions.withDefaults(),
+        (RoutingError? routingError, List<here.Route>? routeList) async {
       if (routingError == null) {
-        here.Route route = routeList.first;
+        // When error is null, then the list guaranteed to be not null.
+        here.Route route = routeList!.first;
         _showRouteDetails(route);
         _showRouteOnMap(route);
         _logRouteViolations(route);
@@ -124,7 +124,7 @@ class RoutingExample {
   }
 
   GeoCoordinates _createRandomGeoCoordinatesInViewport() {
-    GeoBox geoBox = _hereMapController.camera.boundingBox;
+    GeoBox? geoBox = _hereMapController.camera.boundingBox;
     if (geoBox == null) {
       // Happens only when map is not fully covering the viewport.
       return GeoCoordinates(52.530932, 13.384915);

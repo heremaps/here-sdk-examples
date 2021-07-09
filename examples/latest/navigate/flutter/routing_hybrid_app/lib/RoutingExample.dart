@@ -33,17 +33,16 @@ class RoutingExample {
   HereMapController _hereMapController;
   List<MapMarker> _mapMarkers = [];
   List<MapPolyline> _mapPolylines = [];
-  RoutingInterface _routingEngine;
-  RoutingEngine _onlineRoutingEngine;
-  OfflineRoutingEngine _offlineRoutingEngine;
-  GeoCoordinates _startGeoCoordinates;
-  GeoCoordinates _destinationGeoCoordinates;
+  late RoutingInterface _routingEngine;
+  late RoutingEngine _onlineRoutingEngine;
+  late OfflineRoutingEngine _offlineRoutingEngine;
+  GeoCoordinates? _startGeoCoordinates;
+  GeoCoordinates? _destinationGeoCoordinates;
   ShowDialogFunction _showDialog;
 
-  RoutingExample(ShowDialogFunction showDialogCallback, HereMapController hereMapController) {
-    _showDialog = showDialogCallback;
-    _hereMapController = hereMapController;
-
+  RoutingExample(ShowDialogFunction showDialogCallback, HereMapController hereMapController)
+      : _showDialog = showDialogCallback,
+        _hereMapController = hereMapController {
     double distanceToEarthInMeters = 10000;
     _hereMapController.camera.lookAtPointWithDistance(GeoCoordinates(52.520798, 13.409408), distanceToEarthInMeters);
 
@@ -59,7 +58,7 @@ class RoutingExample {
       // This app uses only cached map data that gets downloaded when the user
       // pans the map. Please note that the OfflineRoutingEngine may not be able
       // to calculate a route, when not all map tiles are loaded. Especially, the
-      // vector tiles for lower zoom levels are required to find possible paths. 
+      // vector tiles for lower zoom levels are required to find possible paths.
       _offlineRoutingEngine = OfflineRoutingEngine();
     } on InstantiationException {
       throw ("Initialization of OfflineRoutingEngine failed.");
@@ -75,15 +74,16 @@ class RoutingExample {
 
     _startGeoCoordinates = _createRandomGeoCoordinatesInViewport();
     _destinationGeoCoordinates = _createRandomGeoCoordinatesInViewport();
-    var startWaypoint = Waypoint.withDefaults(_startGeoCoordinates);
-    var destinationWaypoint = Waypoint.withDefaults(_destinationGeoCoordinates);
+    var startWaypoint = Waypoint.withDefaults(_startGeoCoordinates!);
+    var destinationWaypoint = Waypoint.withDefaults(_destinationGeoCoordinates!);
 
     List<Waypoint> waypoints = [startWaypoint, destinationWaypoint];
 
-    await _routingEngine.calculateCarRoute(waypoints, CarOptions.withDefaults(),
-        (RoutingError routingError, List<here.Route> routeList) async {
+    _routingEngine.calculateCarRoute(waypoints, CarOptions.withDefaults(),
+        (RoutingError? routingError, List<here.Route>? routeList) async {
       if (routingError == null) {
-        here.Route route = routeList.first;
+        // When error is null, it is guaranteed that the list is not empty.
+        here.Route route = routeList!.first;
         _showRouteDetails(route);
         _showRouteOnMap(route, route.polyline.first, route.polyline.last);
         _logRouteViolations(route);
@@ -103,8 +103,8 @@ class RoutingExample {
 
     clearMap();
 
-    var startWaypoint = Waypoint.withDefaults(_startGeoCoordinates);
-    var destinationWaypoint = Waypoint.withDefaults(_destinationGeoCoordinates);
+    var startWaypoint = Waypoint.withDefaults(_startGeoCoordinates!);
+    var destinationWaypoint = Waypoint.withDefaults(_destinationGeoCoordinates!);
 
     // Additional waypoints.
     var waypoint1 = Waypoint.withDefaults(_createRandomGeoCoordinatesInViewport());
@@ -112,10 +112,11 @@ class RoutingExample {
 
     List<Waypoint> waypoints = [startWaypoint, waypoint1, waypoint2, destinationWaypoint];
 
-    await _routingEngine.calculateCarRoute(waypoints, CarOptions.withDefaults(),
-        (RoutingError routingError, List<here.Route> routeList) async {
+    _routingEngine.calculateCarRoute(waypoints, CarOptions.withDefaults(),
+        (RoutingError? routingError, List<here.Route>? routeList) async {
       if (routingError == null) {
-        here.Route route = routeList.first;
+        // When error is null, it is guaranteed that the list is not empty.
+        here.Route route = routeList!.first;
         _showRouteDetails(route);
         _showRouteOnMap(route, route.polyline.first, route.polyline.last);
         _logRouteViolations(route);
@@ -130,7 +131,7 @@ class RoutingExample {
   // An implementation may decide to reject a route if one or more violations are detected.
   void _logRouteViolations(here.Route route) {
     for (var section in route.sections) {
-      for (var notice in section.notices) {
+      for (var notice in section.sectionNotices) {
         print("This route contains the following warning: " + notice.code.toString());
       }
     }
@@ -239,7 +240,7 @@ class RoutingExample {
   }
 
   GeoCoordinates _createRandomGeoCoordinatesInViewport() {
-    GeoBox geoBox = _hereMapController.camera.boundingBox;
+    GeoBox? geoBox = _hereMapController.camera.boundingBox;
     if (geoBox == null) {
       // Happens only when map is not fully covering the viewport.
       return GeoCoordinates(52.530932, 13.384915);

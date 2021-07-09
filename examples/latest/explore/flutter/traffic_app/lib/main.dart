@@ -28,8 +28,12 @@ void main() {
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
-  TrafficExample _trafficExample;
+class MyApp extends StatefulWidget {
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  TrafficExample? _trafficExample;
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +59,7 @@ class MyApp extends StatelessWidget {
   }
 
   void _onMapCreated(HereMapController hereMapController) {
-    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError error) {
+    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
       if (error == null) {
         _trafficExample = TrafficExample(hereMapController);
       } else {
@@ -65,11 +69,11 @@ class MyApp extends StatelessWidget {
   }
 
   void _enableAllButtonClicked() {
-    _trafficExample.enableAll();
+    _trafficExample?.enableAll();
   }
 
   void _disableAllButtonClicked() {
-    _trafficExample.disableAll();
+    _trafficExample?.disableAll();
   }
 
   // A helper method to add a button on top of the HERE map.

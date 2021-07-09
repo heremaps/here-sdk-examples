@@ -35,8 +35,8 @@ import 'package:here_sdk/location.dart';
 // In addition, users must be able to change their consent decision at any time.
 // In main.dart you can see an example how the consent handling can be implemented.
 class HEREPositioningProvider implements LocationStatusListener {
-  LocationEngine _locationEngine;
-  LocationListener updateListener;
+  late LocationEngine _locationEngine;
+  late LocationListener updateListener;
 
   HEREPositioningProvider() {
     try {
@@ -46,7 +46,7 @@ class HEREPositioningProvider implements LocationStatusListener {
     }
   }
 
-  Location getLastKnownLocation() {
+  Location? getLastKnownLocation() {
     return _locationEngine.lastKnownLocation;
   }
 
@@ -92,7 +92,5 @@ class HEREPositioningProvider implements LocationStatusListener {
   @override
   void release() {
     stop();
-    _locationEngine.release();
-    _locationEngine = null;
   }
 }

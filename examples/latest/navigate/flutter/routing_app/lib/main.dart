@@ -35,7 +35,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  RoutingExample _routingExample;
+  RoutingExample? _routingExample;
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +59,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _onMapCreated(HereMapController hereMapController) {
-    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError error) {
+    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
       if (error == null) {
         _routingExample = RoutingExample(_showDialog, hereMapController);
       } else {
@@ -69,11 +69,11 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _addRouteButtonClicked() {
-    _routingExample.addRoute();
+    _routingExample?.addRoute();
   }
 
   void _clearMapButtonClicked() {
-    _routingExample.clearMap();
+    _routingExample?.clearMap();
   }
 
   // A helper method to add a button on top of the HERE map.

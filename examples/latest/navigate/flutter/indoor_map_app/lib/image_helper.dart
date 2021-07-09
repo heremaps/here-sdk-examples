@@ -17,6 +17,8 @@
  * License-Filename: LICENSE
  */
 
+// Disabled null safety for this file:
+// @dart=2.9
 import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:here_sdk/core.dart';

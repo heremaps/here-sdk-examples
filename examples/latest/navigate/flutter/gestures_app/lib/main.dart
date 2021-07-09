@@ -25,30 +25,60 @@ import 'GesturesExample.dart';
 
 void main() {
   SdkContext.init(IsolateOrigin.main);
-  runApp(MyApp());
+  // Ensure that all widgets, including MyApp, have a MaterialLocalizations object available.
+  runApp(MaterialApp(home: MyApp()));
 }
 
-class MyApp extends StatelessWidget {
-  // Use _context only within the scope of this widget.
-  BuildContext _context;
+class MyApp extends StatefulWidget {
+  _MyAppState createState() => _MyAppState();
+}
 
+class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
-    _context = context;
-
-    return MaterialApp(
-      title: 'HERE SDK for Flutter - Gestures Example',
-      home: HereMap(onMapCreated: _onMapCreated),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('HERE SDK for Flutter - Gestures Example'),
+      ),
+      body: HereMap(onMapCreated: _onMapCreated),
     );
   }
 
   void _onMapCreated(HereMapController hereMapController) {
-    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError error) {
+    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
       if (error == null) {
-        GesturesExample(_context, hereMapController);
+        GesturesExample(_showDialog, hereMapController);
       } else {
         print("Map scene not loaded. MapError: " + error.toString());
       }
     });
+  }
+
+  // A helper method to show a dialog.
+  Future<void> _showDialog(String title, String message) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(message),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }

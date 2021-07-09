@@ -29,19 +29,14 @@ import 'package:here_sdk/routing.dart' as here;
 typedef ShowDialogFunction = void Function(String title, String message);
 
 class PublicTransportRoutingExample {
-  HereMapController _hereMapController;
+  final HereMapController _hereMapController;
   List<MapPolyline> _mapPolylines = [];
-  TransitRoutingEngine _transitRoutingEngine;
-  ShowDialogFunction _showDialog;
+  late TransitRoutingEngine _transitRoutingEngine;
+  final ShowDialogFunction _showDialog;
 
-  PublicTransportRoutingExample(
-      ShowDialogFunction showDialogCallback, HereMapController hereMapController) {
-    _showDialog = showDialogCallback;
-    _hereMapController = hereMapController;
-
+  PublicTransportRoutingExample(this._showDialog, this._hereMapController) {
     double distanceToEarthInMeters = 10000;
-    _hereMapController.camera.lookAtPointWithDistance(
-        GeoCoordinates(52.520798, 13.409408), distanceToEarthInMeters);
+    _hereMapController.camera.lookAtPointWithDistance(GeoCoordinates(52.520798, 13.409408), distanceToEarthInMeters);
 
     _transitRoutingEngine = TransitRoutingEngine();
   }
@@ -51,18 +46,15 @@ class PublicTransportRoutingExample {
     var destinationGeoCoordinates = _createRandomGeoCoordinatesInViewport();
 
     var startWaypoint = TransitWaypoint.withDefaults(startGeoCoordinates);
-    var destinationWaypoint =
-        TransitWaypoint.withDefaults(destinationGeoCoordinates);
+    var destinationWaypoint = TransitWaypoint.withDefaults(destinationGeoCoordinates);
 
     var options = TransitRouteOptions.withDefaults();
 
-    await _transitRoutingEngine.calculateRoute(
-        startWaypoint,
-        destinationWaypoint,
-        options,
-        (RoutingError routingError, List<here.Route> routeList) async {
+    _transitRoutingEngine.calculateRoute(startWaypoint, destinationWaypoint, options,
+        (RoutingError? routingError, List<here.Route>? routeList) async {
       if (routingError == null) {
-        here.Route route = routeList.first;
+        // Whenn error is null, the list is guaranteed to be non empty.
+        here.Route route = routeList!.first;
         _showRouteDetails(route);
         _showRouteOnMap(route);
         _logRouteViolations(route);
@@ -83,9 +75,8 @@ class PublicTransportRoutingExample {
   // An implementation may decide to reject a route if one or more violations are detected.
   void _logRouteViolations(here.Route route) {
     for (var section in route.sections) {
-      for (var notice in section.notices) {
-        print("This route contains the following warning: " +
-            notice.code.toString());
+      for (var notice in section.sectionNotices) {
+        print("This route contains the following warning: " + notice.code.toString());
       }
     }
   }
@@ -116,10 +107,8 @@ class PublicTransportRoutingExample {
     int estimatedTravelTimeInSeconds = route.durationInSeconds;
     int lengthInMeters = route.lengthInMeters;
 
-    String routeDetails = 'Travel Time: ' +
-        _formatTime(estimatedTravelTimeInSeconds) +
-        ', Length: ' +
-        _formatLength(lengthInMeters);
+    String routeDetails =
+        'Travel Time: ' + _formatTime(estimatedTravelTimeInSeconds) + ', Length: ' + _formatLength(lengthInMeters);
 
     _showDialog('Route Details', '$routeDetails');
   }
@@ -143,15 +132,14 @@ class PublicTransportRoutingExample {
     GeoPolyline routeGeoPolyline = GeoPolyline(route.polyline);
 
     double widthInPixels = 20;
-    MapPolyline routeMapPolyline = MapPolyline(
-        routeGeoPolyline, widthInPixels, Color.fromARGB(160, 0, 144, 138));
+    MapPolyline routeMapPolyline = MapPolyline(routeGeoPolyline, widthInPixels, Color.fromARGB(160, 0, 144, 138));
 
     _hereMapController.mapScene.addMapPolyline(routeMapPolyline);
     _mapPolylines.add(routeMapPolyline);
   }
 
   GeoCoordinates _createRandomGeoCoordinatesInViewport() {
-    GeoBox geoBox = _hereMapController.camera.boundingBox;
+    GeoBox? geoBox = _hereMapController.camera.boundingBox;
     if (geoBox == null) {
       // Happens only when map is not fully covering the viewport.
       return GeoCoordinates(52.530932, 13.384915);

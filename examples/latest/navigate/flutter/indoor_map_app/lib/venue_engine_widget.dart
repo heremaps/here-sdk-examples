@@ -17,20 +17,22 @@
  * License-Filename: LICENSE
  */
 
+// Disabled null safety for this file:
+// @dart=2.9
 import 'package:flutter/material.dart';
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/gestures.dart';
 import 'package:here_sdk/venue.data.dart';
-import 'package:indoor_map/drawing_switcher.dart';
-import 'package:indoor_map/indoor_routing_widget.dart';
-import 'package:indoor_map/level_switcher.dart';
+import 'package:indoor_map_app/drawing_switcher.dart';
+import 'package:indoor_map_app/indoor_routing_widget.dart';
+import 'package:indoor_map_app/level_switcher.dart';
 import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/venue.control.dart';
 import 'package:here_sdk/venue.dart';
 import 'package:here_sdk/venue.service.dart';
-import 'package:indoor_map/venue_search_controller.dart';
-import 'package:indoor_map/venue_tap_controller.dart';
-import 'package:indoor_map/venues_controller.dart';
+import 'package:indoor_map_app/venue_search_controller.dart';
+import 'package:indoor_map_app/venue_tap_controller.dart';
+import 'package:indoor_map_app/venues_controller.dart';
 
 import 'geometry_info.dart';
 
@@ -172,7 +174,7 @@ class VenueEngineState extends State<VenueEngineWidget> {
 }
 
 // Listener for the VenueService event.
-class VenueServiceListenerImpl extends VenueServiceListener {
+class VenueServiceListenerImpl implements VenueServiceListener {
   @override
   onInitializationCompleted(VenueServiceInitStatus result) {
     if (result != VenueServiceInitStatus.onlineSuccess) {
@@ -182,10 +184,15 @@ class VenueServiceListenerImpl extends VenueServiceListener {
 
   @override
   onVenueServiceStopped() {}
+
+  @override
+  void release() {
+    // Deprecated. Nothing to to here.
+  }
 }
 
 // A listener for the venue selection event.
-class VenueSelectionListenerImpl extends VenueSelectionListener {
+class VenueSelectionListenerImpl implements VenueSelectionListener {
   VenueEngineState _venueEngineState;
 
   VenueSelectionListenerImpl(VenueEngineState venueEngineState) {
@@ -196,10 +203,15 @@ class VenueSelectionListenerImpl extends VenueSelectionListener {
   onSelectedVenueChanged(Venue deselectedVenue, Venue selectedVenue) {
     _venueEngineState.onVenueSelectionChanged(selectedVenue);
   }
+
+  @override
+  void release() {
+    // Deprecated. Nothing to to here.
+  }
 }
 
 // A listener for the drawing selection event.
-class DrawingSelectionListenerImpl extends VenueDrawingSelectionListener {
+class DrawingSelectionListenerImpl implements VenueDrawingSelectionListener {
   VenueEngineState _venueEngineState;
 
   DrawingSelectionListenerImpl(VenueEngineState venueEngineState) {
@@ -211,10 +223,15 @@ class DrawingSelectionListenerImpl extends VenueDrawingSelectionListener {
       VenueDrawing selectedDrawing) {
     _venueEngineState.onDrawingSelectionChanged(venue);
   }
+
+  @override
+  void release() {
+    // Deprecated. Nothing to to here.
+  }
 }
 
 // A listener for the level selection event.
-class LevelSelectionListenerImpl extends VenueLevelSelectionListener {
+class LevelSelectionListenerImpl implements VenueLevelSelectionListener {
   VenueEngineState _venueEngineState;
 
   LevelSelectionListenerImpl(VenueEngineState venueEngineState) {
@@ -226,10 +243,15 @@ class LevelSelectionListenerImpl extends VenueLevelSelectionListener {
       VenueLevel selectedLevel) {
     _venueEngineState.onLevelSelectionChanged(venue);
   }
+
+  @override
+  void release() {
+    // Deprecated. Nothing to to here.
+  }
 }
 
 // A listener for the venues lifecycle event.
-class VenueLifecycleListenerImpl extends VenueLifecycleListener {
+class VenueLifecycleListenerImpl implements VenueLifecycleListener {
   VenueEngineState _venueEngineState;
 
   VenueLifecycleListenerImpl(VenueEngineState venueEngineState) {
@@ -245,10 +267,15 @@ class VenueLifecycleListenerImpl extends VenueLifecycleListener {
   onVenueRemoved(int venueId) {
     _venueEngineState.onVenuesChanged();
   }
+
+  @override
+  void release() {
+    // Deprecated. Nothing to to here.
+  }
 }
 
 // A listener for the map tap event.
-class VenueTapListenerImpl extends TapListener {
+class VenueTapListenerImpl implements TapListener {
   IndoorRoutingState _indoorRoutingState;
   VenueTapController _tapController;
 
@@ -267,10 +294,15 @@ class VenueTapListenerImpl extends TapListener {
       _tapController.onTap(origin);
     }
   }
+
+  @override
+  void release() {
+    // Deprecated. Nothing to to here.
+  }
 }
 
 // A listener for the map long press event.
-class VenueLongPressListenerImpl extends LongPressListener {
+class VenueLongPressListenerImpl implements LongPressListener {
   IndoorRoutingState _indoorRoutingState;
 
   VenueLongPressListenerImpl(IndoorRoutingState indoorRoutingState) {
@@ -283,5 +315,10 @@ class VenueLongPressListenerImpl extends LongPressListener {
       // In case if the indoor routing state is visible, set a start point.
       _indoorRoutingState.setStartPoint(origin);
     }
+  }
+
+  @override
+  void release() {
+    // Deprecated. Nothing to to here.
   }
 }

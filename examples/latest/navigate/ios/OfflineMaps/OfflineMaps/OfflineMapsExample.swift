@@ -221,8 +221,8 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
         }
 
         // Conform to the MapUpdateProgressListener protocol.
-        func onProgress(percentage: Int32) {
-            print("MapUpdate: Downloading and installing a map update. Progress: \(percentage).")
+        func onProgress(region: RegionId, percentage: Int32) {
+            print("MapUpdate: Downloading and installing a map update. Progress for \(region.id): \(percentage)%.")
         }
         
         // Conform to the MapUpdateProgressListener protocol.

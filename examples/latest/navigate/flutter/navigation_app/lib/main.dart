@@ -46,8 +46,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  AppLogic _appLogic;
-  HereMapController _hereMapController;
+  late AppLogic _appLogic;
   static const String _trackingOn = 'Tracking: ON';
   static const String _trackingOff = 'Tracking: OFF';
   String _trackingState = 'Pending ...';
@@ -99,8 +98,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _onMapCreated(HereMapController hereMapController) {
-    _hereMapController = hereMapController;
-    _hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError error) async {
+    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) async {
       if (error == null) {
         // 1. Before we start the app we want to ensure that the required permissions are handled.
         if (!await _requestPermissions()) {
@@ -119,7 +117,7 @@ class _MyAppState extends State<MyApp> {
         }
 
         // 3. User has granted required permissions and made a consent decision.
-        _appLogic = AppLogic(_showDialog, _hereMapController);
+        _appLogic = AppLogic(_showDialog, hereMapController);
         _updateTrackingState();
       } else {
         print('Map scene not loaded. MapError: ' + error.toString());
@@ -207,7 +205,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   // A helper method to add a button on top of the HERE map.
-  Align button(String buttonLabel, Function callbackFunction) {
+  Align button(String buttonLabel, VoidCallback? callbackFunction) {
     return Align(
       alignment: Alignment.topCenter,
       child: ElevatedButton(
@@ -222,7 +220,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   // A helper method to add a multiline button on top of the HERE map.
-  Align multiLineButton(String buttonLabel, Function callbackFunction) {
+  Align multiLineButton(String buttonLabel, VoidCallback? callbackFunction) {
     return Align(
       alignment: Alignment.topCenter,
       child: ElevatedButton(

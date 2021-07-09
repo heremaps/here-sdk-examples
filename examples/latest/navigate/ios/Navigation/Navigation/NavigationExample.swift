@@ -33,7 +33,7 @@ class NavigationExample : NavigableLocationDelegate,
                           RouteProgressDelegate,
                           RouteDeviationDelegate,
                           ManeuverNotificationDelegate,
-                          LaneAssistanceDelegate,
+                          ManeuverViewLaneAssistanceDelegate,
                           RoadAttributesDelegate {
 
     private let viewController: UIViewController
@@ -77,7 +77,7 @@ class NavigationExample : NavigableLocationDelegate,
         visualNavigator.milestoneReachedDelegate = self
         visualNavigator.speedWarningDelegate = self
         visualNavigator.speedLimitDelegate = self
-        visualNavigator.laneAssistanceDelegate = self
+        visualNavigator.maneuverViewLaneAssistanceDelegate = self
         visualNavigator.roadAttributesDelegate = self
     }
 
@@ -111,22 +111,8 @@ class NavigationExample : NavigableLocationDelegate,
         }
 
         let action = nextManeuver.action
-        let nextRoadName = nextManeuver.nextRoadName
-        var road = nextRoadName == nil ? nextManeuver.nextRoadNumber : nextRoadName
-
-        // On highways, we want to show the highway number instead of a possible street name,
-        // while for inner city and urban areas street names are preferred over road numbers.
-        if nextManeuver.nextRoadType == RoadType.highway {
-            road = nextManeuver.nextRoadNumber == nil ? nextRoadName : nextManeuver.nextRoadNumber
-        }
-
-        if action == ManeuverAction.arrive {
-            // We are reaching destination, so there's no next road.
-            let currentRoadName = nextManeuver.roadName
-            road = currentRoadName == nil ? nextManeuver.roadNumber : currentRoadName
-        }
-
-        let logMessage = "'\(String(describing: action))' on \(road ?? "unnamed road") in \(nextManeuverProgress.remainingDistanceInMeters) meters."
+        let roadName = getRoadName(maneuver: nextManeuver)
+        let logMessage = "'\(String(describing: action))' on \(roadName) in \(nextManeuverProgress.remainingDistanceInMeters) meters."
 
         if previousManeuverIndex != nextManeuverIndex {
             // Log only new maneuvers and ignore changes in distance.
@@ -139,6 +125,33 @@ class NavigationExample : NavigableLocationDelegate,
         previousManeuverIndex = nextManeuverIndex
     }
 
+    func getRoadName(maneuver: Maneuver) -> String {
+        let currentRoadTexts = maneuver.roadTexts
+        let nextRoadTexts = maneuver.nextRoadTexts
+
+        let locale = Locale(identifier: "en-US")
+        let currentRoadName = currentRoadTexts.names.preferredValue(for: [locale])
+        let currentRoadNumber = currentRoadTexts.numbers.preferredValue(for: [locale])
+        let nextRoadName = nextRoadTexts.names.preferredValue(for: [locale])
+        let nextRoadNumber = nextRoadTexts.numbers.preferredValue(for: [locale])
+
+        var roadName = nextRoadName == nil ? nextRoadNumber : nextRoadName
+        
+        // On highways, we want to show the highway number instead of a possible road name,
+        // while for inner city and urban areas road names are preferred over road numbers.
+        if maneuver.nextRoadType == RoadType.highway {
+            roadName = nextRoadNumber == nil ? nextRoadName : nextRoadNumber
+        }
+
+        if maneuver.action == ManeuverAction.arrive {
+            // We are approaching destination, so there's no next road.
+            roadName = currentRoadName == nil ? currentRoadNumber : currentRoadName
+        }
+
+        // Nil happens only in rare cases, when also the fallback above is nil.
+        return roadName ?? "unnamed road"
+    }
+    
     // Conform to DestinationReachedDelegate.
     // Notifies when the destination of the route is reached.
     func onDestinationReached() {
@@ -188,66 +201,34 @@ class NavigationExample : NavigableLocationDelegate,
     }
 
     private func getCurrentSpeedLimit(_ speedLimit: SpeedLimit) -> Double? {
-        // If available, it is recommended to show this value as speed limit to the user.
-        // Note that the SpeedWarningStatus only warns when speedLimit.speedLimitInMetersPerSecond is exceeded.
-        if let specialSpeedLimit = getSpecialSpeedLimit(speedLimit.specialSpeedSituations) {
-            return specialSpeedLimit
-        }
+        // Note that all values can be nil if no data is available.
 
-        // If no special speed limit is available, show the standard speed limit.
-        return speedLimit.speedLimitInMetersPerSecond
-    }
+        // The regular speed limit if available. In case of unbounded speed limit, the value is zero.
+        print("speedLimitInMetersPerSecond: \(String(describing: speedLimit.speedLimitInMetersPerSecond))")
 
-    // An example implementation that will retrieve the slowest speed limit, including advisory speed limits and
-    // weather-dependent speed limits that may or may not be valid due to the actual weather condition while driving.
-    private func getSpecialSpeedLimit(_ specialSpeedSituations: [SpecialSpeedSituation]) -> Double? {
-        var specialSpeedLimit: Double?
-        
-        // Iterates through the list of applicable special speed limits, if available.
-        for specialSpeedSituation in specialSpeedSituations {
+        // A conditional school zone speed limit as indicated on the local road signs.
+        print("schoolZoneSpeedLimitInMetersPerSecond: \(String(describing: speedLimit.schoolZoneSpeedLimitInMetersPerSecond))")
 
-            // Check if a time restriction is available and if it is currently active.
-            var timeRestrictionisPresent = false
-            var timeRestrictionisActive = false
-            for timeDomain in specialSpeedSituation.appliesDuring {
-                timeRestrictionisPresent = true
-                if timeDomain.isActive(at: Date()) {
-                    timeRestrictionisActive = true
-                }
-            }
+        // A conditional time-dependent speed limit as indicated on the local road signs.
+        // It is in effect considering the current local time provided by the device's clock.
+        print("timeDependentSpeedLimitInMetersPerSecond: \(String(describing: speedLimit.timeDependentSpeedLimitInMetersPerSecond))")
 
-            if timeRestrictionisPresent && !timeRestrictionisActive {
-                // We are not interested in currently inactive special speed limits.
-                continue
-            }
-            
-            if (specialSpeedSituation.type == .advisorySpeed) {
-                print("Contains an advisory speed limit. For safety reasons it is recommended to respect it.")
-            }
+        // A conditional non-legal speed limit that recommends a lower speed,
+        // for example, due to bad road conditions.
+        print("advisorySpeedLimitInMetersPerSecond: \(String(describing: speedLimit.advisorySpeedLimitInMetersPerSecond))")
 
-            if (specialSpeedSituation.type == .rain ||
-                    specialSpeedSituation.type == .snow ||
-                    specialSpeedSituation.type == .fog) {
-                // The HERE SDK cannot detect the current weather condition, so a driver must decide
-                // based on the situation if this speed limit applies.
-                // Note: For this example we respect weather related speed limits, even if not applicable
-                // due to the current weather condition.
-                print("Attention: This road has weather dependent speed limits!")
-            }
+        // A weather-dependent speed limit as indicated on the local road signs.
+        // The HERE SDK cannot detect the current weather condition, so a driver must decide
+        // based on the situation if this speed limit applies.
+        print("fogSpeedLimitInMetersPerSecond: \(String(describing: speedLimit.fogSpeedLimitInMetersPerSecond))")
+        print("rainSpeedLimitInMetersPerSecond: \(String(describing: speedLimit.rainSpeedLimitInMetersPerSecond))")
+        print("snowSpeedLimitInMetersPerSecond: \(String(describing: speedLimit.snowSpeedLimitInMetersPerSecond))")
 
-            let newSpecialSpeedLimit = specialSpeedSituation.specialSpeedLimitInMetersPerSecond
-            print("Found special speed limit: \(newSpecialSpeedLimit) m/s, type \(specialSpeedSituation.type).")
-            
-            if specialSpeedLimit != nil && specialSpeedLimit! > newSpecialSpeedLimit {
-                // For this example, we are only interested in the slowest special speed limit value,
-                // regardless if it is legal, advisory or bound to conditions that may require the decision
-                // of the driver.
-                specialSpeedLimit = newSpecialSpeedLimit
-            }
-        }
-        
-        print("Slowest special speed limit (m/s): \(String(describing: specialSpeedLimit)))")
-        return specialSpeedLimit
+        // For convenience, this returns the effective (lowest) speed limit between
+        // - speedLimitInMetersPerSecond
+        // - schoolZoneSpeedLimitInMetersPerSecond
+        // - timeDependentSpeedLimitInMetersPerSecond
+        return speedLimit.effectiveSpeedLimitInMetersPerSecond()
     }
     
     // Conform to NavigableLocationDelegate.
@@ -319,11 +300,9 @@ class NavigationExample : NavigableLocationDelegate,
         voiceAssistant.speak(message: text)
     }
 
-    // Conform to the LaneAssistanceDelegate.
+    // Conform to the ManeuverViewLaneAssistanceDelegate.
     // Notifies which lane(s) lead to the next (next) maneuvers.
-    // Note: This feature is in BETA state and thus there can be bugs and unexpected behavior.
-    // Related APIs may change for new releases without a deprecation process.
-    func onLaneAssistanceUpdated(_ laneAssistance: LaneAssistance) {
+    func onLaneAssistanceUpdated(_ laneAssistance: ManeuverViewLaneAssistance) {
         // This lane list is guaranteed to be non-empty.
         let lanes = laneAssistance.lanesForNextManeuver
         logLaneRecommendations(lanes)

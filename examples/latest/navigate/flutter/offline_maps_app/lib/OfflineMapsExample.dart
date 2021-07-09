@@ -29,21 +29,20 @@ typedef ShowDialogFunction = void Function(String title, String message);
 
 class OfflineMapsExample {
   HereMapController _hereMapController;
-  MapDownloader _mapDownloader;
-  MapUpdater _mapUpdater;
-  OfflineSearchEngine _offlineSearchEngine;
+  late MapDownloader _mapDownloader;
+  late MapUpdater _mapUpdater;
+  late OfflineSearchEngine _offlineSearchEngine;
   List<Region> _downloadableRegions = [];
   List<MapDownloaderTask> _mapDownloaderTasks = [];
   ShowDialogFunction _showDialog;
 
-  OfflineMapsExample(Function showDialogCallback, HereMapController hereMapController) {
-    _showDialog = showDialogCallback;
-    _hereMapController = hereMapController;
-
+  OfflineMapsExample(ShowDialogFunction showDialogCallback, HereMapController hereMapController)
+      : _showDialog = showDialogCallback,
+        _hereMapController = hereMapController {
     double distanceToEarthInMeters = 7000;
     _hereMapController.camera.lookAtPointWithDistance(GeoCoordinates(52.530932, 13.384915), distanceToEarthInMeters);
 
-    SDKNativeEngine sdkNativeEngine = SDKNativeEngine.sharedInstance;
+    SDKNativeEngine? sdkNativeEngine = SDKNativeEngine.sharedInstance;
     if (sdkNativeEngine == null) {
       throw ("SDKNativeEngine not initialized.");
     }
@@ -79,18 +78,18 @@ class OfflineMapsExample {
     print("Downloading the list of available regions.");
 
     _mapDownloader.getDownloadableRegionsWithLanguageCode(LanguageCode.deDe,
-        (MapLoaderError mapLoaderError, List<Region> list) {
+        (MapLoaderError? mapLoaderError, List<Region>? list) {
       if (mapLoaderError != null) {
         _showDialog("Error", "Downloadable regions error: $mapLoaderError");
         return;
       }
 
       // If error is null, it is guaranteed that the list will not be null.
-      _downloadableRegions = list;
+      _downloadableRegions = list!;
 
       for (Region region in _downloadableRegions) {
         print("RegionsCallback: " + region.name);
-        List<Region> childRegions = region.childRegions;
+        List<Region>? childRegions = region.childRegions;
         if (childRegions == null) {
           continue;
         }
@@ -120,7 +119,7 @@ class OfflineMapsExample {
     // Find region for Switzerland using the German name as identifier.
     // Note that we requested the list of regions in German above.
     String swizNameInGerman = "Schweiz";
-    Region region = _findRegion(swizNameInGerman);
+    Region? region = _findRegion(swizNameInGerman);
 
     if (region == null) {
       _showDialog("Error", "Error: The Swiz region was not found. Click 'Get Regions' first.");
@@ -132,8 +131,7 @@ class OfflineMapsExample {
 
     MapDownloaderTask mapDownloaderTask = _mapDownloader.downloadRegions(
         regionIDs,
-        DownloadRegionsStatusListener.fromLambdas(
-            lambda_onDownloadRegionsComplete: (MapLoaderError mapLoaderError, List<RegionId> list) {
+        DownloadRegionsStatusListener((MapLoaderError? mapLoaderError, List<RegionId>? list) {
           // Handle events from onDownloadRegionsComplete().
           if (mapLoaderError != null) {
             _showDialog("Error", "Download regions completion error: $mapLoaderError");
@@ -142,21 +140,23 @@ class OfflineMapsExample {
 
           // If error is null, it is guaranteed that the list will not be null.
           // For this example we downloaded only one hardcoded region.
-          String message = "Download Regions Status: Completed 100% for Switzerland! ID: " + list.first.id.toString();
+          String message = "Download Regions Status: Completed 100% for Switzerland! ID: " + list!.first.id.toString();
           print(message);
-        }, lambda_onProgress: (RegionId regionId, int percentage) {
+        }, (RegionId regionId, int percentage) {
           // Handle events from onProgress().
           String message =
               "Download of Switzerland. ID: " + regionId.id.toString() + ". Progress: " + percentage.toString() + "%.";
           print(message);
-        }, lambda_onPause: (MapLoaderError mapLoaderError) {
+        }, (MapLoaderError? mapLoaderError) {
+          // Handle events from onPause().
           if (mapLoaderError == null) {
             _showDialog("Info", "The download was paused by the user calling mapDownloaderTask.pause().");
           } else {
             _showDialog("Error",
                 "Download regions onPause error. The task tried to often to retry the download: $mapLoaderError");
           }
-        }, lambda_onResume: () {
+        }, () {
+          // Hnadle events from onResume().
           _showDialog("Info", "A previously paused download has been resumed.");
         }));
 
@@ -166,15 +166,15 @@ class OfflineMapsExample {
   // Finds a region in the downloaded region list.
   // Note that we ignore children of children (and so on): For example, a country may contain downloadable sub regions.
   // For this example, we just download the country including possible sub regions.
-  Region _findRegion(String localizedRegionName) {
-    Region downloadableRegion;
+  Region? _findRegion(String localizedRegionName) {
+    Region? downloadableRegion;
     for (Region region in _downloadableRegions) {
       if (region.name == localizedRegionName) {
         downloadableRegion = region;
         break;
       }
 
-      List<Region> childRegions = region.childRegions;
+      List<Region>? childRegions = region.childRegions;
       if (childRegions == null) {
         continue;
       }
@@ -211,14 +211,14 @@ class OfflineMapsExample {
     SearchOptions searchOptions = SearchOptions(LanguageCode.enUs, maxItems);
     TextQuery query = TextQuery.withBoxArea(queryString, viewportGeoBox);
 
-    _offlineSearchEngine.searchByText(query, searchOptions, (SearchError searchError, List<Place> list) async {
+    _offlineSearchEngine.searchByText(query, searchOptions, (SearchError? searchError, List<Place>? list) async {
       if (searchError != null) {
         _showDialog("Search", "Error: " + searchError.toString());
         return;
       }
 
       // If error is null, list is guaranteed to be not empty.
-      int listLength = list.length;
+      int listLength = list!.length;
       _showDialog("Test search for $queryString", "Results: $listLength. See logs for details.");
 
       // Log search results.
@@ -231,7 +231,7 @@ class OfflineMapsExample {
   }
 
   GeoBox _getMapViewGeoBox() {
-    GeoBox geoBox = _hereMapController.camera.boundingBox;
+    GeoBox? geoBox = _hereMapController.camera.boundingBox;
     if (geoBox == null) {
       throw ("GeoBox creation failed, corners are null.");
     }
@@ -239,7 +239,7 @@ class OfflineMapsExample {
   }
 
   void _checkForMapUpdates() {
-    _mapUpdater.checkMapUpdate((MapLoaderError mapLoaderError, MapUpdateAvailability mapUpdateAvailability) {
+    _mapUpdater.checkMapUpdate((MapLoaderError? mapLoaderError, MapUpdateAvailability? mapUpdateAvailability) {
       if (mapLoaderError != null) {
         print("MapUpdateCheck Error: " + mapLoaderError.toString());
         return;
@@ -261,21 +261,25 @@ class OfflineMapsExample {
     // This method conveniently updates all installed regions if an update is available.
     // Optionally, you can use the MapUpdateTask to pause / resume or cancel the update.
     MapUpdateTask mapUpdateTask =
-        _mapUpdater.performMapUpdate(MapUpdateProgressListener.fromLambdas(lambda_onProgress: (int percentage) {
-      print("MapUpdate: Downloading and installing a map update. Progress: " + percentage.toString());
-    }, lambda_onPause: (MapLoaderError mapLoaderError) {
+        _mapUpdater.performMapUpdate(MapUpdateProgressListener((RegionId regionId, int percentage) {
+      // Handle events from onProgress().
+      print("MapUpdate: Downloading and installing a map update. Progress for ${regionId.id}: $percentage%.");
+    }, (MapLoaderError? mapLoaderError) {
+      // Handle events from onPause().
       if (mapLoaderError == null) {
         print("MapUpdate:  The map update was paused by the user calling mapUpdateTask.pause().");
       } else {
         print("Map update onPause error. The task tried to often to retry the update: " + mapLoaderError.toString());
       }
-    }, lambda_onComplete: (MapLoaderError mapLoaderError) {
+    }, (MapLoaderError? mapLoaderError) {
+      // Handle events from onComplete().
       if (mapLoaderError != null) {
         print("Map update completion error: " + mapLoaderError.toString());
         return;
       }
       print("MapUpdate: One or more map update has been successfully installed.");
-    }, lambda_onResume: () {
+    }, () {
+      // Handle events from onResume():
       print("MapUpdate: A previously paused map update has been resumed.");
     }));
   }

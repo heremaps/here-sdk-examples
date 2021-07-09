@@ -34,18 +34,17 @@ typedef ShowDialogFunction = void Function(String title, String message);
 class SearchExample {
   HereMapController _hereMapController;
   MapCamera _camera;
-  MapImage _poiMapImage;
+  MapImage? _poiMapImage;
   List<MapMarker> _mapMarkerList = [];
-  SearchEngine _onlineSearchEngine;
-  OfflineSearchEngine _offlineSearchEngine;
+  late SearchEngine _onlineSearchEngine;
+  late OfflineSearchEngine _offlineSearchEngine;
   bool useOnlineSearchEngine = true;
   ShowDialogFunction _showDialog;
 
-  SearchExample(Function showDialogCallback, HereMapController hereMapController) {
-    _showDialog = showDialogCallback;
-    _hereMapController = hereMapController;
-    _camera = _hereMapController.camera;
-
+  SearchExample(ShowDialogFunction showDialogCallback, HereMapController hereMapController)
+      : _showDialog = showDialogCallback,
+        _hereMapController = hereMapController,
+        _camera = hereMapController.camera {
     double distanceToEarthInMeters = 4000;
     _camera.lookAtPointWithDistance(GeoCoordinates(52.520798, 13.409408), distanceToEarthInMeters);
 
@@ -114,16 +113,15 @@ class SearchExample {
   }
 
   void _setTapGestureHandler() {
-    _hereMapController.gestures.tapListener = TapListener.fromLambdas(lambda_onTap: (Point2D touchPoint) {
+    _hereMapController.gestures.tapListener = TapListener((Point2D touchPoint) {
       _pickMapMarker(touchPoint);
     });
   }
 
   void _setLongPressGestureHandler() {
-    _hereMapController.gestures.longPressListener =
-        LongPressListener.fromLambdas(lambda_onLongPress: (GestureState gestureState, Point2D touchPoint) {
+    _hereMapController.gestures.longPressListener = LongPressListener((GestureState gestureState, Point2D touchPoint) {
       if (gestureState == GestureState.begin) {
-        GeoCoordinates geoCoordinates = _hereMapController.viewToGeoCoordinates(touchPoint);
+        GeoCoordinates? geoCoordinates = _hereMapController.viewToGeoCoordinates(touchPoint);
         if (geoCoordinates == null) {
           return;
         }
@@ -139,41 +137,45 @@ class SearchExample {
 
     if (useOnlineSearchEngine) {
       _onlineSearchEngine.searchByCoordinates(geoCoordinates, reverseGeocodingOptions,
-          (SearchError searchError, List<Place> list) async {
+          (SearchError? searchError, List<Place>? list) async {
         _handleReverseGeocodingResults(searchError, list);
       });
     } else {
       _offlineSearchEngine.searchByCoordinates(geoCoordinates, reverseGeocodingOptions,
-          (SearchError searchError, List<Place> list) async {
+          (SearchError? searchError, List<Place>? list) async {
         _handleReverseGeocodingResults(searchError, list);
       });
     }
   }
 
   // Note that this can be called by the online or offline search engine.
-  void _handleReverseGeocodingResults(SearchError searchError, List<Place> list) {
+  void _handleReverseGeocodingResults(SearchError? searchError, List<Place>? list) {
     if (searchError != null) {
       _showDialog("Reverse geocoding", "Error: " + searchError.toString());
       return;
     }
 
     // If error is null, list is guaranteed to be not empty.
-    _showDialog("Reverse geocoded address:", list.first.address.addressText);
+    _showDialog("Reverse geocoded address:", list!.first.address.addressText);
   }
 
   void _pickMapMarker(Point2D touchPoint) {
     double radiusInPixel = 2;
     _hereMapController.pickMapItems(touchPoint, radiusInPixel, (pickMapItemsResult) {
-      List<MapMarker> mapMarkerList = pickMapItemsResult.markers;
+      if (pickMapItemsResult == null) {
+        // Pick operation failed.
+        return;
+      }
+      List<MapMarker>? mapMarkerList = pickMapItemsResult.markers;
       if (mapMarkerList.length == 0) {
         print("No map markers found.");
         return;
       }
 
       MapMarker topmostMapMarker = mapMarkerList.first;
-      Metadata metadata = topmostMapMarker.metadata;
+      Metadata? metadata = topmostMapMarker.metadata;
       if (metadata != null) {
-        CustomMetadataValue customMetadataValue = metadata.getCustomValue("key_search_result");
+        CustomMetadataValue? customMetadataValue = metadata.getCustomValue("key_search_result");
         if (customMetadataValue != null) {
           SearchResultMetadata searchResultMetadata = customMetadataValue as SearchResultMetadata;
           String title = searchResultMetadata.searchResult.title;
@@ -199,25 +201,25 @@ class SearchExample {
     SearchOptions searchOptions = SearchOptions(LanguageCode.enUs, maxItems);
 
     if (useOnlineSearchEngine) {
-      _onlineSearchEngine.searchByText(query, searchOptions, (SearchError searchError, List<Place> list) async {
+      _onlineSearchEngine.searchByText(query, searchOptions, (SearchError? searchError, List<Place>? list) async {
         _handleSearchResults(searchError, list, queryString);
       });
     } else {
-      _offlineSearchEngine.searchByText(query, searchOptions, (SearchError searchError, List<Place> list) async {
+      _offlineSearchEngine.searchByText(query, searchOptions, (SearchError? searchError, List<Place>? list) async {
         _handleSearchResults(searchError, list, queryString);
       });
     }
   }
 
   // Note that this can be called by the online or offline search engine.
-  void _handleSearchResults(SearchError searchError, List<Place> list, String queryString) {
+  void _handleSearchResults(SearchError? searchError, List<Place>? list, String queryString) {
     if (searchError != null) {
       _showDialog("Search", "Error: " + searchError.toString());
       return;
     }
 
     // If error is null, list is guaranteed to be not empty.
-    int listLength = list.length;
+    int listLength = list!.length;
     _showDialog("Search for $queryString", "Results: $listLength. Tap marker to see details.");
 
     // Add new marker for each search result on map.
@@ -225,7 +227,7 @@ class SearchExample {
       Metadata metadata = Metadata();
       metadata.setCustomValue("key_search_result", SearchResultMetadata(searchResult));
       // Note: getGeoCoordinates() may return null only for Suggestions.
-      _addPoiMapMarkerWithMetadata(searchResult.geoCoordinates, metadata);
+      _addPoiMapMarkerWithMetadata(searchResult.geoCoordinates!, metadata);
     }
   }
 
@@ -240,7 +242,7 @@ class SearchExample {
         TextQuery.withAreaCenter(
             "p", // User typed "p".
             centerGeoCoordinates),
-        searchOptions, (SearchError searchError, List<Suggestion> list) async {
+        searchOptions, (SearchError? searchError, List<Suggestion>? list) async {
       _handleSuggestionResults(searchError, list);
     });
 
@@ -248,7 +250,7 @@ class SearchExample {
         TextQuery.withAreaCenter(
             "pi", // User typed "pi".
             centerGeoCoordinates),
-        searchOptions, (SearchError searchError, List<Suggestion> list) async {
+        searchOptions, (SearchError? searchError, List<Suggestion>? list) async {
       _handleSuggestionResults(searchError, list);
     });
 
@@ -256,24 +258,24 @@ class SearchExample {
         TextQuery.withAreaCenter(
             "piz", // User typed "piz".
             centerGeoCoordinates),
-        searchOptions, (SearchError searchError, List<Suggestion> list) async {
+        searchOptions, (SearchError? searchError, List<Suggestion>? list) async {
       _handleSuggestionResults(searchError, list);
     });
   }
 
-  void _handleSuggestionResults(SearchError searchError, List<Suggestion> list) {
+  void _handleSuggestionResults(SearchError? searchError, List<Suggestion>? list) {
     if (searchError != null) {
       print("Autosuggest Error: " + searchError.toString());
       return;
     }
 
     // If error is null, list is guaranteed to be not empty.
-    int listLength = list.length;
+    int listLength = list!.length;
     print("Autosuggest results: $listLength.");
 
     for (Suggestion autosuggestResult in list) {
       String addressText = "Not a place.";
-      Place place = autosuggestResult.place;
+      Place? place = autosuggestResult.place;
       if (place != null) {
         addressText = place.address.addressText;
       }
@@ -291,18 +293,19 @@ class SearchExample {
     SearchOptions geocodingOptions = SearchOptions(LanguageCode.deDe, maxItems);
 
     if (useOnlineSearchEngine) {
-      _onlineSearchEngine.searchByAddress(query, geocodingOptions, (SearchError searchError, List<Place> list) async {
+      _onlineSearchEngine.searchByAddress(query, geocodingOptions, (SearchError? searchError, List<Place>? list) async {
         _handleGeocodingResults(searchError, list, queryString);
       });
     } else {
-      _offlineSearchEngine.searchByAddress(query, geocodingOptions, (SearchError searchError, List<Place> list) async {
+      _offlineSearchEngine.searchByAddress(query, geocodingOptions,
+          (SearchError? searchError, List<Place>? list) async {
         _handleGeocodingResults(searchError, list, queryString);
       });
     }
   }
 
   // Note that this can be called by the online or offline search engine.
-  void _handleGeocodingResults(SearchError searchError, List<Place> list, String queryString) {
+  void _handleGeocodingResults(SearchError? searchError, List<Place>? list, String queryString) {
     if (searchError != null) {
       _showDialog("Geocoding", "Error: " + searchError.toString());
       return;
@@ -310,9 +313,10 @@ class SearchExample {
 
     String locationDetails = "";
 
-    for (Place geocodingResult in list) {
+    // If error is null, list is guaranteed to be not empty.
+    for (Place geocodingResult in list!) {
       // Note: getGeoCoordinates() may return null only for Suggestions.
-      GeoCoordinates geoCoordinates = geocodingResult.geoCoordinates;
+      GeoCoordinates geoCoordinates = geocodingResult.geoCoordinates!;
       Address address = geocodingResult.address;
       locationDetails = address.addressText +
           ". GeoCoordinates: " +
@@ -335,7 +339,7 @@ class SearchExample {
       _poiMapImage = MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
     }
 
-    MapMarker mapMarker = MapMarker(geoCoordinates, _poiMapImage);
+    MapMarker mapMarker = MapMarker(geoCoordinates, _poiMapImage!);
     _hereMapController.mapScene.addMapMarker(mapMarker);
     _mapMarkerList.add(mapMarker);
 
@@ -358,9 +362,15 @@ class SearchExample {
   }
 
   GeoBox _getMapViewGeoBox() {
-    GeoBox geoBox = _camera.boundingBox;
+    GeoBox? geoBox = _camera.boundingBox;
     if (geoBox == null) {
-      throw Exception("GeoBox creation failed, corners are null.");
+      print(
+          "GeoBox creation failed, corners are null. This can happen when the map is tilted. Falling back to a fixed box.");
+      GeoCoordinates southWestCorner = GeoCoordinates(
+          _camera.state.targetCoordinates.latitude - 0.05, _camera.state.targetCoordinates.longitude - 0.05);
+      GeoCoordinates northEastCorner = GeoCoordinates(
+          _camera.state.targetCoordinates.latitude + 0.05, _camera.state.targetCoordinates.longitude + 0.05);
+      geoBox = GeoBox(southWestCorner, northEastCorner);
     }
     return geoBox;
   }

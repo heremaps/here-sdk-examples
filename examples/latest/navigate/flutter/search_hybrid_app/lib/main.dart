@@ -35,7 +35,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  SearchExample _searchExample;
+  SearchExample? _searchExample;
 
   @override
   Widget build(BuildContext context) {
@@ -53,14 +53,14 @@ class _MyAppState extends State<MyApp> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   button('Search Places', _searchButtonClicked),
-                  button('Geocode an Address', _geocodingButtonClicked),
+                  button('Geocode Address', _geocodingButtonClicked),
                 ],
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  button('Switch to Online', _onlineButtonClicked),
-                  button('Switch to Offline', _offlineButtonClicked),
+                  button('Switch Online', _onlineButtonClicked),
+                  button('Switch Offline', _offlineButtonClicked),
                 ],
               ),
             ],
@@ -71,7 +71,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _onMapCreated(HereMapController hereMapController) {
-    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError error) {
+    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
       if (error == null) {
         _searchExample = SearchExample(_showDialog, hereMapController);
       } else {
@@ -81,19 +81,19 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _searchButtonClicked() {
-    _searchExample.searchButtonClicked();
+    _searchExample?.searchButtonClicked();
   }
 
   void _geocodingButtonClicked() {
-    _searchExample.geocodeAnAddressButtonClicked();
+    _searchExample?.geocodeAnAddressButtonClicked();
   }
 
   void _onlineButtonClicked() {
-    _searchExample.useOnlineSearchEngineButtonClicked();
+    _searchExample?.useOnlineSearchEngineButtonClicked();
   }
 
   void _offlineButtonClicked() {
-    _searchExample.useOfflineSearchEngineButtonClicked();
+    _searchExample?.useOfflineSearchEngineButtonClicked();
   }
 
   // A helper method to add a button on top of the HERE map.
@@ -106,7 +106,7 @@ class _MyAppState extends State<MyApp> {
           onPrimary: Colors.white,
         ),
         onPressed: () => callbackFunction(),
-        child: Text(buttonLabel, style: TextStyle(fontSize: 20)),
+        child: Text(buttonLabel),
       ),
     );
   }

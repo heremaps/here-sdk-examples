@@ -23,9 +23,7 @@ import 'package:here_sdk/search.dart';
 class SearchResultMetadata implements CustomMetadataValue {
   Place searchResult;
 
-  SearchResultMetadata(Place place) {
-    searchResult = place;
-  }
+  SearchResultMetadata(Place place) : searchResult = place;
 
   @override
   String getTag() {
@@ -34,6 +32,6 @@ class SearchResultMetadata implements CustomMetadataValue {
 
   @override
   void release() {
-    searchResult.release();
+    // Deprecated. Nothing to do here.
   }
 }

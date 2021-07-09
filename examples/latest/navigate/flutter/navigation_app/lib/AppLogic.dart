@@ -32,23 +32,22 @@ typedef ShowDialogFunction = void Function(String title, String message);
 
 // An app that allows to calculate a car route and start navigation using simulated or real locations.
 class AppLogic {
-  MapPolyline _calculatedRouteMapPolyline;
+  MapPolyline? _calculatedRouteMapPolyline;
   HereMapController _hereMapController;
   NavigationExample _navigationExample;
-  HERE.RoutingEngine _routingEngine;
+  late HERE.RoutingEngine _routingEngine;
   ShowDialogFunction _showDialog;
 
-  AppLogic(Function showDialogCallback, HereMapController hereMapController) {
-    _showDialog = showDialogCallback;
-    _hereMapController = hereMapController;
-
+  AppLogic(ShowDialogFunction showDialogCallback, HereMapController hereMapController)
+      : _showDialog = showDialogCallback,
+        _hereMapController = hereMapController,
+        _navigationExample = NavigationExample(hereMapController)
+  {
     try {
       _routingEngine = HERE.RoutingEngine();
     } on InstantiationException {
       throw Exception('Initialization of RoutingEngine failed.');
     }
-
-    _navigationExample = NavigationExample(_hereMapController);
   }
 
   // Shows navigation simulation along a route.
@@ -94,10 +93,14 @@ class AppLogic {
     var destinationWaypoint = HERE.Waypoint.withDefaults(_createRandomGeoCoordinatesAroundMapCenter());
     List<HERE.Waypoint> waypoints = [startWaypoint, destinationWaypoint];
 
-    await _routingEngine.calculateCarRoute(waypoints, HERE.CarOptions.withDefaults(),
-        (HERE.RoutingError routingError, List<HERE.Route> routeList) async {
+    var routingOptions = HERE.CarOptions.withDefaults();
+    routingOptions.routeOptions.enableRouteHandle = true;
+
+    _routingEngine.calculateCarRoute(waypoints, routingOptions,
+        (HERE.RoutingError? routingError, List<HERE.Route>? routeList) async {
       if (routingError == null) {
-        HERE.Route _calculatedRoute = routeList.first;
+        // When error is null, it is guaranteed that the routeList is not empty.
+        HERE.Route _calculatedRoute = routeList!.first;
         _showRouteOnMap(_calculatedRoute);
         _startNavigationOnRoute(isSimulated, _calculatedRoute);
       } else {
@@ -120,7 +123,7 @@ class AppLogic {
   void _showRouteOnMap(HERE.Route route) {
     // Remove previous route, if any.
     if (_calculatedRouteMapPolyline != null) {
-      _hereMapController.mapScene.removeMapPolyline(_calculatedRouteMapPolyline);
+      _hereMapController.mapScene.removeMapPolyline(_calculatedRouteMapPolyline!);
     }
 
     // Show route as polyline.
@@ -134,7 +137,7 @@ class AppLogic {
     );
 
     _calculatedRouteMapPolyline = routeMapPolyline;
-    _hereMapController.mapScene.addMapPolyline(_calculatedRouteMapPolyline);
+    _hereMapController.mapScene.addMapPolyline(_calculatedRouteMapPolyline!);
   }
 
   GeoCoordinates _createRandomGeoCoordinatesAroundMapCenter() {

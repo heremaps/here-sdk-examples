@@ -20,8 +20,10 @@
 import 'package:flutter/material.dart';
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/mapview.dart';
+import 'package:map_items_app/MenuSectionExpansionTile.dart';
 
 import 'MapItemsExample.dart';
+import 'MapObjectsExample.dart';
 
 void main() {
   SdkContext.init(IsolateOrigin.main);
@@ -35,7 +37,8 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  MapItemsExample _mapItemsExample;
+  MapItemsExample? _mapItemsExample;
+  MapObjectsExample? _mapObjectsExample;
 
   @override
   Widget build(BuildContext context) {
@@ -55,9 +58,10 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _onMapCreated(HereMapController hereMapController) {
-    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError error) {
+    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
       if (error == null) {
         _mapItemsExample = MapItemsExample(_showDialog, hereMapController);
+        _mapObjectsExample = MapObjectsExample(hereMapController);
       } else {
         print("Map scene not loaded. MapError: " + error.toString());
       }
@@ -65,35 +69,138 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _anchoredMapMarkersButtonClicked() {
-    _mapItemsExample.showAnchoredMapMarkers();
+    _mapItemsExample?.showAnchoredMapMarkers();
   }
 
   void _centeredMapMarkersButtonClicked() {
-    _mapItemsExample.showCenteredMapMarkers();
+    _mapItemsExample?.showCenteredMapMarkers();
   }
 
   void _locationIndicatorPedestrianButtonClicked() {
-    _mapItemsExample.showLocationIndicatorPedestrian();
+    _mapItemsExample?.showLocationIndicatorPedestrian();
   }
 
   void _locationIndicatorNavigationButtonClicked() {
-    _mapItemsExample.showLocationIndicatorNavigation();
+    _mapItemsExample?.showLocationIndicatorNavigation();
   }
 
   void _locationIndicatorActiveInactiveButtonClicked() {
-    _mapItemsExample.toggleActiveStateForLocationIndicator();
+    _mapItemsExample?.toggleActiveStateForLocationIndicator();
   }
 
   void _flatMapMarkersButtonClicked() {
-    _mapItemsExample.showFlatMapMarkers();
+    _mapItemsExample?.showFlatMapMarkers();
   }
 
   void _mapMarkers3DButtonClicked() {
-    _mapItemsExample.showMapMarkers3D();
+    _mapItemsExample?.showMapMarkers3D();
+  }
+
+  void _mapObjectPolylineButtonClicked() {
+    _mapObjectsExample?.showMapPolyline();
+  }
+
+  void _mapObjectPolygonButtonClicked() {
+    _mapObjectsExample?.showMapPolygon();
+  }
+
+  void _mapObjectArrowButtonClicked() {
+    _mapObjectsExample?.showMapArrow();
+  }
+
+  void _mapObjectCircleButtonClicked() {
+    _mapObjectsExample?.showMapCircle();
   }
 
   void _clearButtonClicked() {
-    _mapItemsExample.clearMap();
+    _mapItemsExample?.clearMap();
+    _mapObjectsExample?.clearMapButtonClicked();
+  }
+
+  // A helper method to build a drawer list.
+  List<Widget> _buildDrawerList(BuildContext context) {
+    List<Widget> children = [];
+
+    DrawerHeader header = DrawerHeader(
+      child: Column(
+        children: [
+          Text(
+            'HERE SDK - Map Items Example',
+            style: TextStyle(
+              fontSize: 24,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+      decoration: BoxDecoration(
+        color: Colors.blue,
+      ),
+    );
+    children.add(header);
+
+    // Add MapMarker section.
+    var mapMarkerTile = _buildMapMarkerExpansionTile(context);
+    children.add(mapMarkerTile);
+
+    // Add LocationIndicator section.
+    var locationIndicatorTile = _buildLocationIndicatorExpansionTile(context);
+    children.add(locationIndicatorTile);
+
+    // Add MapObject section.
+    var mapObjectTile = _buildMapObjectExpansionTile(context);
+    children.add(mapObjectTile);
+
+    // Add section to clear the map.
+    var clearTile = _buildClearTile(context);
+    children.add(clearTile);
+
+    return children;
+  }
+
+  // Build the menu entries for the MapMarker section.
+  Widget _buildMapMarkerExpansionTile(BuildContext context) {
+    final List<MenuSectionItem> menuItems = [
+      MenuSectionItem("Anchored (2D)", _anchoredMapMarkersButtonClicked),
+      MenuSectionItem("Centered (2D)", _centeredMapMarkersButtonClicked),
+      MenuSectionItem("Flat", _flatMapMarkersButtonClicked),
+      MenuSectionItem("3D OBJ", _mapMarkers3DButtonClicked),
+    ];
+
+    return MenuSectionExpansionTile("MapMarker", menuItems);
+  }
+
+  // Build the menu entries for the LocationIndicator section.
+  Widget _buildLocationIndicatorExpansionTile(BuildContext context) {
+    final List<MenuSectionItem> menuItems = [
+      MenuSectionItem("Location (Ped)", _locationIndicatorPedestrianButtonClicked),
+      MenuSectionItem("Location (Nav)", _locationIndicatorNavigationButtonClicked),
+      MenuSectionItem("Location Active/Inactive", _locationIndicatorActiveInactiveButtonClicked),
+    ];
+
+    return MenuSectionExpansionTile("LocationIndicator", menuItems);
+  }
+
+  // Build the menu entries for the MapObject section.
+  Widget _buildMapObjectExpansionTile(BuildContext context) {
+    final List<MenuSectionItem> menuItems = [
+      MenuSectionItem("Polyline", _mapObjectPolylineButtonClicked),
+      MenuSectionItem("Polygon", _mapObjectPolygonButtonClicked),
+      MenuSectionItem("Arrow", _mapObjectArrowButtonClicked),
+      MenuSectionItem("Circle", _mapObjectCircleButtonClicked),
+    ];
+
+    return MenuSectionExpansionTile("MapObject", menuItems);
+  }
+
+  // Build the menu entry for the clear section.
+  Widget _buildClearTile(BuildContext context) {
+    return ListTile(
+        title: Text('Clear'),
+        onTap: () {
+          Navigator.pop(context);
+          _clearButtonClicked();
+        });
   }
 
   // A helper method to add a button on top of the HERE map.
@@ -137,115 +244,5 @@ class _MyAppState extends State<MyApp> {
         );
       },
     );
-  }
-
-  // A helper method to build drawer list.
-  List<Widget> _buildDrawerList(BuildContext context) {
-    List<Widget> children = [];
-
-    DrawerHeader header = DrawerHeader(
-      child: Column(
-        children: [
-          Text(
-            'HERE SDK - Map Items Example',
-            style: TextStyle(
-              fontSize: 24,
-              color: Colors.white,
-            ),
-          ),
-        ],
-      ),
-      decoration: BoxDecoration(
-        color: Colors.blue,
-      ),
-    );
-    children.add(header);
-
-    // Add MapMarker section.
-    var mapMarkerTile = _buildMapMarkerExpansionTile(context);
-    children.add(mapMarkerTile);
-
-    // Add LocationIndicator section.
-    var locationIndicatorTile = _buildLocationIndicatorExpansionTile(context);
-    children.add(locationIndicatorTile);
-
-    // Add section to clear the map.
-    var clearTile = _buildClearTile(context);
-    children.add(clearTile);
-
-    return children;
-  }
-
-  Widget _buildMapMarkerExpansionTile(BuildContext context) {
-    return ExpansionTile(
-      title: Text("MapMarker"),
-      children: [
-        ListTile(
-          title: Text('Anchored (2D)'),
-          onTap: () {
-            Navigator.pop(context);
-            _anchoredMapMarkersButtonClicked();
-          },
-        ),
-        ListTile(
-          title: Text('Centered (2D)'),
-          onTap: () {
-            Navigator.pop(context);
-            _centeredMapMarkersButtonClicked();
-          },
-        ),
-        ListTile(
-          title: Text('Flat'),
-          onTap: () {
-            Navigator.pop(context);
-            _flatMapMarkersButtonClicked();
-          },
-        ),
-        ListTile(
-          title: Text('3D OBJ'),
-          onTap: () {
-            Navigator.pop(context);
-            _mapMarkers3DButtonClicked();
-          },
-        )
-      ],
-      initiallyExpanded: true,
-    );
-  }
-
-  Widget _buildLocationIndicatorExpansionTile(BuildContext context) {
-    return ExpansionTile(
-      title: Text("LocationIndicator"),
-      children: [
-        ListTile(
-            title: Text('Location (Ped)'),
-            onTap: () {
-              Navigator.pop(context);
-              _locationIndicatorPedestrianButtonClicked();
-            }),
-        ListTile(
-            title: Text('Location (Nav)'),
-            onTap: () {
-              Navigator.pop(context);
-              _locationIndicatorNavigationButtonClicked();
-            }),
-        ListTile(
-            title: Text('Location Active/Inactive'),
-            onTap: () {
-              Navigator.pop(context);
-              _locationIndicatorActiveInactiveButtonClicked();
-            }),
-      ],
-      initiallyExpanded: true,
-    );
-  }
-
-  Widget _buildClearTile(BuildContext context) {
-    return ListTile(
-        title: Text('Clear'),
-        onTap: () {
-          Navigator.pop(context);
-          _clearButtonClicked();
-        });
   }
 }
