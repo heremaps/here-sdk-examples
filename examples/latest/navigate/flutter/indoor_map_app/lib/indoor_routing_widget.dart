@@ -17,6 +17,8 @@
  * License-Filename: LICENSE
  */
 
+// Disabled null safety for this file:
+// @dart=2.9
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:here_sdk/venue.dart';
@@ -26,8 +28,8 @@ import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/routing.dart';
 import 'package:here_sdk/venue.control.dart';
 import 'package:here_sdk/venue.data.dart';
-import 'package:indoor_map/image_helper.dart';
-import 'package:indoor_map/indoor_route_options_widget.dart';
+import 'package:indoor_map_app/image_helper.dart';
+import 'package:indoor_map_app/indoor_route_options_widget.dart';
 
 // Provides UI elements for indoor route calculation and displays an indoor route on the map.
 class IndoorRoutingWidget extends StatefulWidget {

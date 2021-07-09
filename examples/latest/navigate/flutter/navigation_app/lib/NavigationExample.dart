@@ -27,6 +27,9 @@ import 'package:here_sdk/location.dart';
 import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/navigation.dart';
 import 'package:here_sdk/routing.dart' as HERE;
+import 'package:here_sdk/routing.dart';
+import 'package:here_sdk/trafficawarenavigation.dart';
+import 'package:intl/locale.dart' as i18n;
 
 import 'HEREPositioningProvider.dart';
 import 'HEREPositioningSimulator.dart';
@@ -35,13 +38,14 @@ import 'LanguageCodeConverter.dart';
 // Shows how to start and stop turn-by-turn navigation along a route.
 class NavigationExample {
   HereMapController _hereMapController;
-  VisualNavigator _visualNavigator;
-  HEREPositioningSimulator _locationSimulationProvider;
-  HEREPositioningProvider _herePositioningProvider;
+  late VisualNavigator _visualNavigator;
+  late HEREPositioningSimulator _locationSimulationProvider;
+  late HEREPositioningProvider _herePositioningProvider;
+  late DynamicRoutingEngine _dynamicRoutingEngine;
+  MapMatchedLocation? _lastMapMatchedLocation;
   int _previousManeuverIndex = -1;
 
-  NavigationExample(HereMapController hereMapController) {
-    _hereMapController = hereMapController;
+  NavigationExample(HereMapController hereMapController) : _hereMapController = hereMapController {
 
     try {
       _visualNavigator = VisualNavigator();
@@ -61,10 +65,31 @@ class NavigationExample {
     _herePositioningProvider = HEREPositioningProvider();
     _herePositioningProvider.startLocating(_visualNavigator, LocationAccuracy.navigation);
 
+    _createDynamicRoutingEngine();
+
     setupListeners();
   }
 
-  Location getLastKnownLocation() {
+  void _createDynamicRoutingEngine() {
+    var pollIntervalInMinutes = 5;
+
+    // We want an update for each poll iteration, so we specify 0 difference.
+    var minTimeDifferenceInSeconds = 0;
+    var minTimeDifferencePercentage = 0.0;
+
+    var dynamicRoutingOptions =
+        DynamicRoutingEngineOptions(pollIntervalInMinutes, minTimeDifferenceInSeconds, minTimeDifferencePercentage);
+
+    try {
+      // With the dynamic routing engine you can poll the HERE backend services to search for routes with less traffic.
+      // THis can happen during guidance - or you can periodically update a route that is shown in a route planner.
+      _dynamicRoutingEngine = DynamicRoutingEngine.make(dynamicRoutingOptions);
+    } on InstantiationException {
+      throw Exception("Initialization of DynamicRoutingEngine failed.");
+    }
+  }
+
+  Location? getLastKnownLocation() {
     return _herePositioningProvider.getLastKnownLocation();
   }
 
@@ -77,6 +102,8 @@ class NavigationExample {
     // Simulates location events based on the given route.
     // The navigator is set as listener to receive location updates.
     _locationSimulationProvider.startLocating(route, _visualNavigator);
+
+    _dynamicRoutingEngine.startWithRoute(route);
   }
 
   void startNavigation(HERE.Route route) {
@@ -88,6 +115,8 @@ class NavigationExample {
     // Access the device's GPS sensor and other data.
     // The navigator is set as listener to receive location updates.
     _herePositioningProvider.startLocating(_visualNavigator, LocationAccuracy.navigation);
+
+    _dynamicRoutingEngine.startWithRoute(route);
   }
 
   void _prepareNavigation(HERE.Route route) {
@@ -117,6 +146,8 @@ class NavigationExample {
 
     // Optionally, you can stop rendering, ie. to remove the current location marker.
     //_visualNavigator.stopRendering();
+
+    _dynamicRoutingEngine.stop();
   }
 
   void stopRendering() {
@@ -124,11 +155,41 @@ class NavigationExample {
     _visualNavigator.stopRendering();
   }
 
+  String _getRoadName(Maneuver maneuver) {
+    RoadTexts currentRoadTexts = maneuver.roadTexts;
+    RoadTexts nextRoadTexts = maneuver.nextRoadTexts;
+
+    // Note: import 'package:intl/locale.dart' as i18n;
+    List<i18n.Locale> locales = [i18n.Locale.parse("en-US")];
+    String? currentRoadName = currentRoadTexts.names.getPreferredValueForLocales(locales);
+    String? currentRoadNumber = currentRoadTexts.numbers.getPreferredValueForLocales(locales);
+    String? nextRoadName = nextRoadTexts.names.getPreferredValueForLocales(locales);
+    String? nextRoadNumber = nextRoadTexts.numbers.getPreferredValueForLocales(locales);
+
+    String? roadName = nextRoadName == null ? nextRoadNumber : nextRoadName;
+
+    // On highways, we want to show the highway number instead of a possible road name,
+    // while for inner city and urban areas road names are preferred over road numbers.
+    if (maneuver.nextRoadType == RoadType.highway) {
+      roadName = nextRoadNumber == null ? nextRoadName : nextRoadNumber;
+    }
+
+    if (maneuver.action == ManeuverAction.arrive) {
+      // We are approaching the destination, so there's no next road.
+      roadName = currentRoadName == null ? currentRoadNumber : currentRoadName;
+    }
+
+    // Happens only in rare cases, when also the fallback above is null.
+    roadName ??= 'unnamed road';
+
+    return roadName;
+  }
+
   void setupListeners() {
     // Notifies on the progress along the route including maneuver instructions.
     // These maneuver instructions can be used to compose a visual representation of the next maneuver actions.
-    _visualNavigator.routeProgressListener =
-        RouteProgressListener.fromLambdas(lambda_onRouteProgressUpdated: (RouteProgress routeProgress) {
+    _visualNavigator.routeProgressListener = RouteProgressListener((RouteProgress routeProgress) {
+      // Handle results from onRouteProgressUpdated():
       List<SectionProgress> sectionProgressList = routeProgress.sectionProgress;
       // sectionProgressList is guaranteed to be non-empty.
       SectionProgress lastSectionProgress = sectionProgressList.elementAt(sectionProgressList.length - 1);
@@ -138,35 +199,24 @@ class NavigationExample {
       // Contains the progress for the next maneuver ahead and the next-next maneuvers, if any.
       List<ManeuverProgress> nextManeuverList = routeProgress.maneuverProgress;
 
-      ManeuverProgress nextManeuverProgress = nextManeuverList.first;
-      if (nextManeuverProgress == null) {
+      if (nextManeuverList.isEmpty) {
         print('No next maneuver available.');
         return;
       }
+      ManeuverProgress nextManeuverProgress = nextManeuverList.first;
 
       int nextManeuverIndex = nextManeuverProgress.maneuverIndex;
-      HERE.Maneuver nextManeuver = _visualNavigator.getManeuver(nextManeuverIndex);
+      Maneuver? nextManeuver = _visualNavigator.getManeuver(nextManeuverIndex);
       if (nextManeuver == null) {
         // Should never happen as we retrieved the next maneuver progress above.
         return;
       }
 
-      HERE.ManeuverAction action = nextManeuver.action;
-      String nextRoadName = nextManeuver.nextRoadName;
-      String road = nextRoadName ?? nextManeuver.nextRoadNumber;
-
-      if (action == HERE.ManeuverAction.arrive) {
-        // We are approaching the destination, so there's no next road.
-        String currentRoadName = nextManeuver.roadName;
-        road = currentRoadName ?? nextManeuver.roadNumber;
-      }
-
-      // Happens only in rare cases, when also the fallback is null.
-      road ??= 'unnamed road';
-
+      ManeuverAction action = nextManeuver.action;
+      String roadName = _getRoadName(nextManeuver);
       String logMessage = describeEnum(action) +
           ' on ' +
-          road +
+          roadName +
           ' in ' +
           nextManeuverProgress.remainingDistanceInMeters.toString() +
           ' meters.';
@@ -179,17 +229,26 @@ class NavigationExample {
       }
 
       _previousManeuverIndex = nextManeuverIndex;
+
+      if (_lastMapMatchedLocation != null) {
+        // Update the route based on the current location of the driver.
+        // We periodically want to search for better traffic-optimized routes.
+        _dynamicRoutingEngine.updateCurrentLocation(_lastMapMatchedLocation!, routeProgress.sectionIndex);
+      }
     });
 
     // Notifies on the current map-matched location and other useful information while driving or walking.
     // The map-matched location is used to update the map view.
-    _visualNavigator.navigableLocationListener = NavigableLocationListener.fromLambdas(
-        lambda_onNavigableLocationUpdated: (NavigableLocation currentNavigableLocation) {
-      MapMatchedLocation mapMatchedLocation = currentNavigableLocation.mapMatchedLocation;
+    _visualNavigator.navigableLocationListener =
+        NavigableLocationListener((NavigableLocation currentNavigableLocation) {
+      // Handle results from onNavigableLocationUpdated():
+      MapMatchedLocation? mapMatchedLocation = currentNavigableLocation.mapMatchedLocation;
       if (mapMatchedLocation == null) {
         print('This new location could not be map-matched. Are you off-road?');
         return;
       }
+
+      _lastMapMatchedLocation = mapMatchedLocation;
 
       var speed = currentNavigableLocation.originalLocation.speedInMetersPerSecond;
       var accuracy = currentNavigableLocation.originalLocation.speedAccuracyInMetersPerSecond;
@@ -197,15 +256,15 @@ class NavigationExample {
     });
 
     // Notifies when the destination of the route is reached.
-    _visualNavigator.destinationReachedListener =
-        DestinationReachedListener.fromLambdas(lambda_onDestinationReached: () {
+    _visualNavigator.destinationReachedListener = DestinationReachedListener(() {
+      // Handle results from onDestinationReached().
       print('Destination reached. Stopping turn-by-turn navigation.');
       stopNavigation();
     });
 
     // Notifies when a waypoint on the route is reached.
-    _visualNavigator.milestoneReachedListener =
-        MilestoneReachedListener.fromLambdas(lambda_onMilestoneReached: (Milestone milestone) {
+    _visualNavigator.milestoneReachedListener = MilestoneReachedListener((Milestone milestone) {
+      // Handle results from onMilestoneReached().
       if (milestone.waypointIndex != null) {
         print('A user-defined waypoint was reached, index of waypoint: ' + milestone.waypointIndex.toString());
         print('Original coordinates: ' + milestone.originalCoordinates.toString());
@@ -216,9 +275,9 @@ class NavigationExample {
     });
 
     // Notifies on the current speed limit valid on the current road.
-    _visualNavigator.speedLimitListener =
-        SpeedLimitListener.fromLambdas(lambda_onSpeedLimitUpdated: (SpeedLimit speedLimit) {
-      double currentSpeedLimit = _getCurrentSpeedLimit(speedLimit);
+    _visualNavigator.speedLimitListener = SpeedLimitListener((SpeedLimit speedLimit) {
+      // Handle results from onSpeedLimitUpdated().
+      double? currentSpeedLimit = _getCurrentSpeedLimit(speedLimit);
 
       if (currentSpeedLimit == null) {
         print("Warning: Speed limits unkown, data could not be retrieved.");
@@ -230,8 +289,8 @@ class NavigationExample {
     });
 
     // Notifies when the current speed limit is exceeded.
-    _visualNavigator.speedWarningListener =
-        SpeedWarningListener.fromLambdas(lambda_onSpeedWarningStatusChanged: (SpeedWarningStatus speedWarningStatus) {
+    _visualNavigator.speedWarningListener = SpeedWarningListener((SpeedWarningStatus speedWarningStatus) {
+      // Handle results from onSpeedWarningStatusChanged().
       if (speedWarningStatus == SpeedWarningStatus.speedLimitExceeded) {
         // Driver is faster than current speed limit (plus an optional offset, see setupSpeedWarnings()).
         // Play a click sound to indicate this to the driver.
@@ -249,16 +308,16 @@ class NavigationExample {
 
     // Notifies on a possible deviation from the route.
     // When deviation is too large, an app may decide to recalculate the route from current location to destination.
-    _visualNavigator.routeDeviationListener =
-        RouteDeviationListener.fromLambdas(lambda_onRouteDeviation: (RouteDeviation routeDeviation) {
-      HERE.Route route = _visualNavigator.route;
+    _visualNavigator.routeDeviationListener = RouteDeviationListener((RouteDeviation routeDeviation) {
+      // Handle results from onRouteDeviation().
+      HERE.Route? route = _visualNavigator.route;
       if (route == null) {
         // May happen in rare cases when route was set to null inbetween.
         return;
       }
 
       // Get current geographic coordinates.
-      MapMatchedLocation currentMapMatchedLocation = routeDeviation.currentLocation.mapMatchedLocation;
+      MapMatchedLocation? currentMapMatchedLocation = routeDeviation.currentLocation.mapMatchedLocation;
       GeoCoordinates currentGeoCoordinates = currentMapMatchedLocation == null
           ? routeDeviation.currentLocation.originalLocation.coordinates
           : currentMapMatchedLocation.coordinates;
@@ -266,13 +325,13 @@ class NavigationExample {
       // Get last geographic coordinates on route.
       GeoCoordinates lastGeoCoordinatesOnRoute;
       if (routeDeviation.lastLocationOnRoute != null) {
-        MapMatchedLocation lastMapMatchedLocationOnRoute = routeDeviation.lastLocationOnRoute.mapMatchedLocation;
+        MapMatchedLocation? lastMapMatchedLocationOnRoute = routeDeviation.lastLocationOnRoute!.mapMatchedLocation;
         lastGeoCoordinatesOnRoute = lastMapMatchedLocationOnRoute == null
-            ? routeDeviation.lastLocationOnRoute.originalLocation.coordinates
+            ? routeDeviation.lastLocationOnRoute!.originalLocation.coordinates
             : lastMapMatchedLocationOnRoute.coordinates;
       } else {
         print('User was never following the route. So, we take the start of the route instead.');
-        lastGeoCoordinatesOnRoute = route.sections.first.departurePlace.originalCoordinates;
+        lastGeoCoordinatesOnRoute = route.sections.first.departurePlace.originalCoordinates!;
       }
 
       int distanceInMeters = currentGeoCoordinates.distanceTo(lastGeoCoordinatesOnRoute) as int;
@@ -280,17 +339,16 @@ class NavigationExample {
     });
 
     // Notifies on voice maneuver messages.
-    _visualNavigator.maneuverNotificationListener =
-        ManeuverNotificationListener.fromLambdas(lambda_onManeuverNotification: (String voiceText) {
+    _visualNavigator.maneuverNotificationListener = ManeuverNotificationListener((String voiceText) {
+      // Handle results lambda_onManeuverNotification().
       // Flutter itself does not provide a text-to-speech engine. Use one of the available TTS plugins to speak
       // the voiceText message.
       print('Voice guidance text: $voiceText');
     });
 
     // Notifies on the attributes of the current road including usage and physical characteristics.
-    _visualNavigator.roadAttributesListener =
-        RoadAttributesListener.fromLambdas(lambda_onRoadAttributesUpdated: (RoadAttributes roadAttributes) {
-
+    _visualNavigator.roadAttributesListener = RoadAttributesListener((RoadAttributes roadAttributes) {
+      // Handle results from onRoadAttributesUpdated().
       // This is called whenever any road attribute has changed.
       // If all attributes are unchanged, no new event is fired.
       // Note that a road can have more than one attribute at the same time.
@@ -348,6 +406,16 @@ class NavigationExample {
         print('Road attributes: This is a tunnel.');
       }
     });
+
+    _dynamicRoutingEngine.listener =
+        DynamicRoutingEngineListener((Route newRoute, int etaDifferenceInMinutes, int distanceDifferenceInMeters) {
+      print('DynamicRoutingEngine: Calculated a new route.');
+      print('DynamicRoutingEngine: etaDifferenceInMinutes: $etaDifferenceInMinutes.');
+      print('DynamicRoutingEngine: distanceDifferenceInMeters: $distanceDifferenceInMeters.');
+
+      //An implementation can decide to switch to the new route:
+      //_visualNavigator.route = newRoute;
+    });
   }
 
   void setupSpeedWarnings() {
@@ -384,66 +452,35 @@ class NavigationExample {
     return languageCodeForCurrenDevice;
   }
 
-  double _getCurrentSpeedLimit(SpeedLimit speedLimit) {
-    // If available, it is recommended to show this value as speed limit to the user.
-    // Note that the SpeedWarningStatus only warns when speedLimit.speedLimitInMetersPerSecond is exceeded.
-    double specialSpeedLimit = getSpecialSpeedLimit(speedLimit.specialSpeedSituations);
-    if (specialSpeedLimit != null) {
-      return specialSpeedLimit;
-    }
+  double? _getCurrentSpeedLimit(SpeedLimit speedLimit) {
+    // Note that all speedLimit properties can be null if no data is available.
 
-    // If no special speed limit is available, show the standard speed limit.
-    return speedLimit.speedLimitInMetersPerSecond;
-  }
+    // The regular speed limit if available. In case of unbounded speed limit, the value is zero.
+    print("speedLimitInMetersPerSecond: " + speedLimit.speedLimitInMetersPerSecond.toString());
 
-  // An example implementation that will retrieve the slowest speed limit, including advisory speed limits and
-  // weather-dependent speed limits that may or may not be valid due to the actual weather condition while driving.
-  double getSpecialSpeedLimit(List<SpecialSpeedSituation> specialSpeedSituations) {
-    double specialSpeedLimit;
+    // A conditional school zone speed limit as indicated on the local road signs.
+    print("schoolZoneSpeedLimitInMetersPerSecond: " + speedLimit.schoolZoneSpeedLimitInMetersPerSecond.toString());
 
-    // Iterates through the list of applicable special speed limits, if available.
-    for (SpecialSpeedSituation specialSpeedSituation in specialSpeedSituations) {
-      // Check if a time restriction is available and if it is currently active.
-      bool timeRestrictionisPresent = false;
-      bool timeRestrictionisActive = false;
-      for (TimeDomain timeDomain in specialSpeedSituation.appliesDuring) {
-        timeRestrictionisPresent = true;
-        if (timeDomain.isActive(DateTime.now())) {
-          timeRestrictionisActive = true;
-        }
-      }
+    // A conditional time-dependent speed limit as indicated on the local road signs.
+    // It is in effect considering the current local time provided by the device's clock.
+    print(
+        "timeDependentSpeedLimitInMetersPerSecond: " + speedLimit.timeDependentSpeedLimitInMetersPerSecond.toString());
 
-      if (timeRestrictionisPresent && !timeRestrictionisActive) {
-        // We are not interested in currently inactive special speed limits.
-        continue;
-      }
+    // A conditional non-legal speed limit that recommends a lower speed,
+    // for example, due to bad road conditions.
+    print("advisorySpeedLimitInMetersPerSecond: " + speedLimit.advisorySpeedLimitInMetersPerSecond.toString());
 
-      if (specialSpeedSituation.type == SpecialSpeedSituationType.advisorySpeed) {
-        print("Contains an advisory speed limit. For safety reasons it is recommended to respect it.");
-      }
+    // A weather-dependent speed limit as indicated on the local road signs.
+    // The HERE SDK cannot detect the current weather condition, so a driver must decide
+    // based on the situation if this speed limit applies.
+    print("fogSpeedLimitInMetersPerSecond: " + speedLimit.fogSpeedLimitInMetersPerSecond.toString());
+    print("rainSpeedLimitInMetersPerSecond: " + speedLimit.rainSpeedLimitInMetersPerSecond.toString());
+    print("snowSpeedLimitInMetersPerSecond: " + speedLimit.snowSpeedLimitInMetersPerSecond.toString());
 
-      if (specialSpeedSituation.type == SpecialSpeedSituationType.rain ||
-          specialSpeedSituation.type == SpecialSpeedSituationType.snow ||
-          specialSpeedSituation.type == SpecialSpeedSituationType.fog) {
-        // The HERE SDK cannot detect the current weather condition, so a driver must decide
-        // based on the situation if this speed limit applies.
-        // Note: For this example we respect weather related speed limits, even if not applicable
-        // due to the current weather condition.
-        print("Attention: This road has weather dependent speed limits!");
-      }
-
-      double newSpecialSpeedLimit = specialSpeedSituation.specialSpeedLimitInMetersPerSecond;
-      print("Found special speed limit: $newSpecialSpeedLimit" + " m/s, type: $specialSpeedSituation.type");
-
-      if (specialSpeedLimit != null && specialSpeedLimit > newSpecialSpeedLimit) {
-        // For this example, we are only interested in the slowest special speed limit value,
-        // regardless if it is legal, advisory or bound to conditions that may require the decision
-        // of the driver.
-        specialSpeedLimit = newSpecialSpeedLimit;
-      }
-    }
-
-    print("Slowest special speed limit (m/s): $specialSpeedLimit");
-    return specialSpeedLimit;
+    // For convenience, this returns the effective (lowest) speed limit between
+    // - speedLimitInMetersPerSecond
+    // - schoolZoneSpeedLimitInMetersPerSecond
+    // - timeDependentSpeedLimitInMetersPerSecond
+    return speedLimit.effectiveSpeedLimitInMetersPerSecond();
   }
 }

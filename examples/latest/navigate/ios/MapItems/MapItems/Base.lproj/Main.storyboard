@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="v4v-xD-JXM">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
-        <capability name="Stack View standard spacing" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -14,134 +13,67 @@
             <objects>
                 <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="MapItems" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="d7N-t3-PMt">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667" />
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES" />
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="jv9-0R-Tz9" customClass="MapView" customModule="heresdk">
-                                <rect key="frame" x="0.0" y="0.0" width="375" height="667" />
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace" />
+                                <rect key="frame" x="0.0" y="44" width="375" height="623"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="EuV-uk-pie">
-                                <rect key="frame" x="8" y="8" width="359" height="106" />
-                                <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="eu1-QJ-vBV">
-                                        <rect key="frame" x="0.0" y="0.0" width="359" height="30" />
-                                        <subviews>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9Bv-Tp-mIo">
-                                                <rect key="frame" x="0.0" y="0.0" width="175.5" height="30" />
-                                                <color key="backgroundColor" red="0.0" green="0.71372549019607845" blue="0.69803921568627447" alpha="1" colorSpace="custom" customColorSpace="sRGB" />
-                                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace" />
-                                                <state key="normal" title="Anchored (2D)" />
-                                                <connections>
-                                                    <action selector="onAnchoredButtonClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="eSW-EV-CXn" />
-                                                </connections>
-                                            </button>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="IDY-a8-cO4">
-                                                <rect key="frame" x="183.5" y="0.0" width="175.5" height="30" />
-                                                <color key="backgroundColor" red="0.0" green="0.71372549019607845" blue="0.69803921568627447" alpha="1" colorSpace="custom" customColorSpace="sRGB" />
-                                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace" />
-                                                <state key="normal" title="Centered (2D)" />
-                                                <connections>
-                                                    <action selector="onCenteredButtonClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="JsO-5X-zid" />
-                                                </connections>
-                                            </button>
-                                        </subviews>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="30" id="5v9-pL-qe6" />
-                                        </constraints>
-                                    </stackView>
-                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="eu1-UJ-vBV">
-                                        <rect key="frame" x="0.0" y="38" width="359" height="30" />
-                                        <subviews>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9Bv-Up-mIo">
-                                                <rect key="frame" x="0.0" y="0.0" width="114.5" height="30"/>
-                                                <color key="backgroundColor" red="0.0" green="0.71372549019607845" blue="0.69803921568627447" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <state key="normal" title="Location (Ped)"/>
-                                                <connections>
-                                                    <action selector="onLocationIndicatorPedestrianButtonClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="lIN-nm-5W9" />
-                                                </connections>
-                                            </button>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="IDY-b8-cO4">
-                                                <rect key="frame" x="122.5" y="0.0" width="114" height="30"/>
-                                                <color key="backgroundColor" red="0.0" green="0.71372549019607845" blue="0.69803921568627447" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <state key="normal" title="Location (Nav)"/>
-                                                <connections>
-                                                    <action selector="onLocationIndicatorNavigationButtonClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Jxc-xR-Pan" />
-                                                </connections>
-                                            </button>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="IDY-g8-cO4">
-                                                <rect key="frame" x="244.5" y="0.0" width="114.5" height="30"/>
-                                                <color key="backgroundColor" red="0.0" green="0.71372549019607845" blue="0.69803921568627447" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <state key="normal" title="Active/Inactive"/>
-                                                <connections>
-                                                    <action selector="onLocationIndicatorStateClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="STE-Kl-2ye"/>
-                                                </connections>
-                                            </button>
-                                        </subviews>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="30" id="5z9-pL-qe6" />
-                                        </constraints>
-                                    </stackView>
-                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="as1-DF-vOV">
-                                        <rect key="frame" x="0.0" y="76" width="359" height="30" />
-                                        <subviews>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Sa7-AF-waV">
-                                                <rect key="frame" x="0.0" y="0.0" width="114.5" height="30" />
-                                                <color key="backgroundColor" red="0.0" green="0.71372549019999998" blue="0.69803921570000005" alpha="1" colorSpace="custom" customColorSpace="sRGB" />
-                                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace" />
-                                                <state key="normal" title="Flat" />
-                                                <connections>
-                                                    <action selector="onFlatMapMarkerButtonClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="jm1-XZ-rnR" />
-                                                </connections>
-                                            </button>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9Cv-Dp-mPr">
-                                                <rect key="frame" x="122.5" y="0.0" width="114" height="30" />
-                                                <color key="backgroundColor" red="0.0" green="0.71372549019607845" blue="0.69803921568627447" alpha="1" colorSpace="custom" customColorSpace="sRGB" />
-                                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace" />
-                                                <state key="normal" title="3D OBJ" />
-                                                <connections>
-                                                    <action selector="onMapMarker3DClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="H7X-SE-2rc" />
-                                                </connections>
-                                            </button>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="dqL-zX-9qE">
-                                                <rect key="frame" x="244.5" y="0.0" width="114.5" height="30" />
-                                                <color key="backgroundColor" red="0.0" green="0.71372549019607845" blue="0.69803921568627447" alpha="1" colorSpace="custom" customColorSpace="sRGB" />
-                                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace" />
-                                                <state key="normal" title="Clear" />
-                                                <connections>
-                                                    <action selector="onClearButtonClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="jZg-EG-yGH" />
-                                                </connections>
-                                            </button>
-                                        </subviews>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="30" id="5c9-pL-qe6" />
-                                        </constraints>
-                                    </stackView>
-                                </subviews>
-                            </stackView>
                         </subviews>
-                        <viewLayoutGuide key="safeArea" id="7yx-63-l25" />
-                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace" />
+                        <viewLayoutGuide key="safeArea" id="7yx-63-l25"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="jv9-0R-Tz9" firstAttribute="bottom" secondItem="7yx-63-l25" secondAttribute="bottom" id="QZw-vd-qP4" />
-                            <constraint firstAttribute="trailing" secondItem="jv9-0R-Tz9" secondAttribute="trailing" id="eJ4-sm-GpV" />
-                            <constraint firstItem="EuV-uk-pie" firstAttribute="top" secondItem="7yx-63-l25" secondAttribute="top" constant="8" id="gUs-5Z-wuO" />
-                            <constraint firstItem="EuV-uk-pie" firstAttribute="leading" secondItem="7yx-63-l25" secondAttribute="leading" constant="8" id="hKD-gY-oEd" />
-                            <constraint firstItem="7yx-63-l25" firstAttribute="trailing" secondItem="EuV-uk-pie" secondAttribute="trailing" constant="8" id="i4u-yl-y1k" />
-                            <constraint firstItem="jv9-0R-Tz9" firstAttribute="top" secondItem="7yx-63-l25" secondAttribute="top" id="p05-LZ-W6d" />
-                            <constraint firstItem="jv9-0R-Tz9" firstAttribute="leading" secondItem="d7N-t3-PMt" secondAttribute="leading" id="qOE-QK-qnt" />
+                            <constraint firstItem="jv9-0R-Tz9" firstAttribute="bottom" secondItem="7yx-63-l25" secondAttribute="bottom" id="QZw-vd-qP4"/>
+                            <constraint firstAttribute="trailing" secondItem="jv9-0R-Tz9" secondAttribute="trailing" id="eJ4-sm-GpV"/>
+                            <constraint firstItem="jv9-0R-Tz9" firstAttribute="top" secondItem="7yx-63-l25" secondAttribute="top" id="p05-LZ-W6d"/>
+                            <constraint firstItem="jv9-0R-Tz9" firstAttribute="leading" secondItem="d7N-t3-PMt" secondAttribute="leading" id="qOE-QK-qnt"/>
                         </constraints>
                     </view>
+                    <navigationItem key="navigationItem" id="cZn-Ym-r7w">
+                        <barButtonItem key="leftBarButtonItem" image="menu" id="2Ng-kq-l9E">
+                            <connections>
+                                <action selector="onMenuButtonClicked:" destination="BYZ-38-t0r" id="ehv-bP-gQr"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
-                        <outlet property="mapView" destination="jv9-0R-Tz9" id="2AS-Uk-Z0n" />
+                        <outlet property="mapView" destination="jv9-0R-Tz9" id="2AS-Uk-Z0n"/>
+                        <segue destination="CcK-xI-3wi" kind="presentation" identifier="showMenu" id="9zN-H6-9S7"/>
                     </connections>
                 </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder" />
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="49.275362318840585" y="28.532608695652176" />
+            <point key="canvasLocation" x="988" y="28.335832083958024"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="KFi-M6-gYB">
+            <objects>
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="v4v-xD-JXM" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="plY-0Z-FHG">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="BYZ-38-t0r" kind="relationship" relationship="rootViewController" id="vx3-Or-vcF"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="GTq-RJ-DOA" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="48.799999999999997" y="28.335832083958024"/>
+        </scene>
+        <!--Menu-->
+        <scene sceneID="tQD-fZ-LXP">
+            <objects>
+                <viewControllerPlaceholder storyboardName="Menu" id="CcK-xI-3wi" sceneMemberID="viewController"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="77b-fF-iJT" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1716" y="28"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="menu" width="25" height="25"/>
+    </resources>
 </document>

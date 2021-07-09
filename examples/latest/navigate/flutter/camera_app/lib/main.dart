@@ -33,7 +33,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
-  CameraExample _cameraExample;
+  CameraExample? _cameraExample;
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +58,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   }
 
   void _onMapCreated(HereMapController hereMapController) {
-    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError error) {
+    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
       if (error == null) {
         _cameraExample = CameraExample(hereMapController);
       } else {
@@ -68,7 +68,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   }
 
   void _moveButtonClicked() {
-    _cameraExample.move();
+    _cameraExample?.move();
   }
 
   // A helper method to add a button on top of the HERE map.

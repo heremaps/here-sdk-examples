@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.here.sdk.examples.venues">
+    package="com.here.sdk.examples.indoor_map_app">
     <!-- io.flutter.app.FlutterApplication is an android.app.Application that
          calls FlutterMain.startInitialization(this); in its onCreate method.
          In most cases you can leave this as-is, but you if you want to provide
@@ -7,7 +7,7 @@
          FlutterApplication and put your custom class here. -->
     <application
         android:name="io.flutter.app.FlutterApplication"
-        android:label="Indoor Map Example"
+        android:label="Indoor Map"
         android:icon="@mipmap/ic_launcher">
 
         <!-- Set your credentials for the HERE SDK. Talk to your HERE representative to enable your

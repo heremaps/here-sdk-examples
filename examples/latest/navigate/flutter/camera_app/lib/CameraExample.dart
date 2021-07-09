@@ -25,13 +25,11 @@ import 'package:here_sdk/mapview.dart';
 
 // This example shows how to animate the MapCamera from A to B with the Camera's flyTo()-method
 class CameraExample {
-  HereMapController _hereMapController;
+  final HereMapController _hereMapController;
   final double distanceToEarthInMeters = 5000;
-  MapPolygon centerMapCircle;
+  MapPolygon? centerMapCircle;
 
-  CameraExample(HereMapController hereMapController) {
-    _hereMapController = hereMapController;
-
+  CameraExample(HereMapController hereMapController) : _hereMapController = hereMapController {
     // Set initial map center to a location in Berlin.
     GeoCoordinates mapCenter = GeoCoordinates(52.530932, 13.384915);
     _hereMapController.camera.lookAtPointWithDistance(mapCenter, distanceToEarthInMeters);
@@ -49,10 +47,10 @@ class CameraExample {
 
   void _setNewMapCircle(GeoCoordinates geoCoordinates) {
     if (centerMapCircle != null) {
-      _hereMapController.mapScene.removeMapPolygon(centerMapCircle);
+      _hereMapController.mapScene.removeMapPolygon(centerMapCircle!);
     }
     centerMapCircle = _createMapCircle(geoCoordinates);
-    _hereMapController.mapScene.addMapPolygon(centerMapCircle);
+    _hereMapController.mapScene.addMapPolygon(centerMapCircle!);
   }
 
   MapPolygon _createMapCircle(GeoCoordinates geoCoordinates) {
@@ -67,7 +65,7 @@ class CameraExample {
   }
 
   GeoCoordinates _createRandomGeoCoordinatesNearby() {
-    GeoBox geoBox = _hereMapController.camera.boundingBox;
+    GeoBox? geoBox = _hereMapController.camera.boundingBox;
     if (geoBox == null) {
       // Happens only when map is not fully covering the viewport.
       return GeoCoordinates(52.530932, 13.384915);

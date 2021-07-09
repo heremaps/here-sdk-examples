@@ -364,7 +364,7 @@ class LanguageCodeConverter {
       return Locale("en", "US");
     }
 
-    return _languageCodeMap[languageCode];
+    return _languageCodeMap[languageCode]!;
   }
 
   static LanguageCode getLanguageCode(Locale locale) {
@@ -373,12 +373,12 @@ class LanguageCodeConverter {
 
     for (var languageCodeEntry in _languageCodeMap.keys) {
       if (country == null) {
-        if (language == _languageCodeMap[languageCodeEntry].languageCode) {
+        if (language == _languageCodeMap[languageCodeEntry]!.languageCode) {
           return languageCodeEntry;
         }
       } else {
-        if (language == _languageCodeMap[languageCodeEntry].languageCode &&
-            country == _languageCodeMap[languageCodeEntry].countryCode) {
+        if (language == _languageCodeMap[languageCodeEntry]!.languageCode &&
+            country == _languageCodeMap[languageCodeEntry]!.countryCode) {
           return languageCodeEntry;
         }
       }
@@ -390,7 +390,7 @@ class LanguageCodeConverter {
 
   static LanguageCode getLanguageCodeFromIdentifier(String identifier) {
     for (var languageCodeEntry in _languageCodeMap.keys) {
-      if (identifier == _languageCodeMap[languageCodeEntry].toLanguageTag()) {
+      if (identifier == _languageCodeMap[languageCodeEntry]!.toLanguageTag()) {
         return languageCodeEntry;
       }
     }

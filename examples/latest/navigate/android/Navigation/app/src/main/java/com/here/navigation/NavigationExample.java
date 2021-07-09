@@ -44,6 +44,8 @@ import com.here.sdk.navigation.LaneRecommendationState;
 import com.here.sdk.navigation.ManeuverNotificationListener;
 import com.here.sdk.navigation.ManeuverNotificationOptions;
 import com.here.sdk.navigation.ManeuverProgress;
+import com.here.sdk.navigation.ManeuverViewLaneAssistance;
+import com.here.sdk.navigation.ManeuverViewLaneAssistanceListener;
 import com.here.sdk.navigation.MapMatchedLocation;
 import com.here.sdk.navigation.Milestone;
 import com.here.sdk.navigation.MilestoneReachedListener;
@@ -56,23 +58,21 @@ import com.here.sdk.navigation.RouteDeviationListener;
 import com.here.sdk.navigation.RouteProgress;
 import com.here.sdk.navigation.RouteProgressListener;
 import com.here.sdk.navigation.SectionProgress;
-import com.here.sdk.navigation.SpecialSpeedSituation;
-import com.here.sdk.navigation.SpecialSpeedSituationType;
 import com.here.sdk.navigation.SpeedLimit;
 import com.here.sdk.navigation.SpeedLimitListener;
 import com.here.sdk.navigation.SpeedLimitOffset;
 import com.here.sdk.navigation.SpeedWarningListener;
 import com.here.sdk.navigation.SpeedWarningOptions;
 import com.here.sdk.navigation.SpeedWarningStatus;
-import com.here.sdk.navigation.TimeDomain;
 import com.here.sdk.navigation.VisualNavigator;
 import com.here.sdk.routing.Maneuver;
 import com.here.sdk.routing.ManeuverAction;
+import com.here.sdk.routing.RoadTexts;
 import com.here.sdk.routing.RoadType;
 import com.here.sdk.routing.Route;
 import com.here.sdk.routing.Section;
 
-import java.util.Date;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -158,27 +158,8 @@ public class NavigationExample {
                 }
 
                 ManeuverAction action = nextManeuver.getAction();
-                String nextRoadName = nextManeuver.getNextRoadName();
-                String road = nextRoadName == null ? nextManeuver.getNextRoadNumber() : nextRoadName;
-
-                // On highways, we want to show the highway number instead of a possible street name,
-                // while for inner city and urban areas street names are preferred over road numbers.
-                if (nextManeuver.getNextRoadType() == RoadType.HIGHWAY) {
-                    road = nextManeuver.getNextRoadNumber() == null ? nextRoadName : nextManeuver.getNextRoadNumber();
-                }
-
-                if (action == ManeuverAction.ARRIVE) {
-                    // We are approaching the destination, so there's no next road.
-                    String currentRoadName = nextManeuver.getRoadName();
-                    road = currentRoadName == null ? nextManeuver.getRoadNumber() : currentRoadName;
-                }
-
-                if (road == null) {
-                    // Happens only in rare cases, when also the fallback is null.
-                    road = "unnamed road";
-                }
-
-                String logMessage = action.name() + " on " + road +
+                String roadName = getRoadName(nextManeuver);
+                String logMessage = action.name() + " on " + roadName +
                         " in " + nextManeuverProgress.remainingDistanceInMeters + " meters.";
 
                 if (previousManeuverIndex != nextManeuverIndex) {
@@ -320,16 +301,14 @@ public class NavigationExample {
         });
 
         // Notifies which lane(s) lead to the next (next) maneuvers.
-        // Note: This feature is in BETA state and thus there can be bugs and unexpected behavior.
-        // Related APIs may change for new releases without a deprecation process.
-        visualNavigator.setLaneAssistanceListener(new LaneAssistanceListener() {
+        visualNavigator.setManeuverViewLaneAssistanceListener(new ManeuverViewLaneAssistanceListener() {
             @Override
-            public void onLaneAssistanceUpdated(@NonNull LaneAssistance laneAssistance) {
+            public void onLaneAssistanceUpdated(@NonNull ManeuverViewLaneAssistance maneuverViewLaneAssistance) {
                 // This lane list is guaranteed to be non-empty.
-                List<Lane> lanes = laneAssistance.lanesForNextManeuver;
+                List<Lane> lanes = maneuverViewLaneAssistance.lanesForNextManeuver;
                 logLaneRecommendations(lanes);
 
-                List<Lane> nextLanes = laneAssistance.lanesForNextNextManeuver;
+                List<Lane> nextLanes = maneuverViewLaneAssistance.lanesForNextNextManeuver;
                 if (!nextLanes.isEmpty()) {
                     Log.d(TAG, "Attention, the next next maneuver is very close.");
                     Log.d(TAG, "Please take the following lane(s) after the next maneuver: ");
@@ -403,13 +382,44 @@ public class NavigationExample {
         });
     }
 
+    private String getRoadName(Maneuver maneuver) {
+        RoadTexts currentRoadTexts = maneuver.getRoadTexts();
+        RoadTexts nextRoadTexts = maneuver.getNextRoadTexts();
+
+        List<Locale> locales = Arrays.asList(new Locale("eng"));
+        String currentRoadName = currentRoadTexts.names.getPreferredValueForLocales(locales);
+        String currentRoadNumber = currentRoadTexts.numbers.getPreferredValueForLocales(locales);
+        String nextRoadName = nextRoadTexts.names.getPreferredValueForLocales(locales);
+        String nextRoadNumber = nextRoadTexts.numbers.getPreferredValueForLocales(locales);
+
+        String roadName = nextRoadName == null ? nextRoadNumber : nextRoadName;
+
+        // On highways, we want to show the highway number instead of a possible road name,
+        // while for inner city and urban areas road names are preferred over road numbers.
+        if (maneuver.getNextRoadType() == RoadType.HIGHWAY) {
+            roadName = nextRoadNumber == null ? nextRoadName : nextRoadNumber;
+        }
+
+        if (maneuver.getAction() == ManeuverAction.ARRIVE) {
+            // We are approaching the destination, so there's no next road.
+            roadName = currentRoadName == null ? currentRoadNumber : currentRoadName;
+        }
+
+        if (roadName == null) {
+            // Happens only in rare cases, when also the fallback is null.
+            roadName = "unnamed road";
+        }
+
+        return roadName;
+    }
+
     private void logLaneRecommendations(List<Lane> lanes) {
         // The lane at index 0 is the leftmost lane adjacent to the middle of the road.
         // The lane at the last index is the rightmost lane.
         // Note: Left-hand countries are not yet supported.
         int laneNumber = 0;
         for (Lane lane : lanes) {
-            // This state is only possible if laneAssistance.lanesForNextNextManeuver is not empty.
+            // This state is only possible if maneuverViewLaneAssistance.lanesForNextNextManeuver is not empty.
             // For example, when two lanes go left, this lanes leads only to the next maneuver,
             // but not to the maneuver after the next maneuver, while the highly recommended lane also leads
             // to this next next maneuver.
@@ -432,68 +442,35 @@ public class NavigationExample {
     }
 
     private Double getCurrentSpeedLimit(SpeedLimit speedLimit) {
-        // If available, it is recommended to show this value as speed limit to the user.
-        // Note that the SpeedWarningStatus only warns when speedLimit.speedLimitInMetersPerSecond is exceeded.
-        Double specialSpeedLimit = getSpecialSpeedLimit(speedLimit.specialSpeedSituations);
-        if (specialSpeedLimit != null ) {
-            return specialSpeedLimit;
-        }
 
-        // If no special speed limit is available, show the standard speed limit.
-        return speedLimit.speedLimitInMetersPerSecond;
-    }
+        // Note that all values can be null if no data is available.
 
-    // An example implementation that will retrieve the slowest speed limit, including advisory speed limits and
-    // weather-dependent speed limits that may or may not be valid due to the actual weather condition while driving.
-    private Double getSpecialSpeedLimit(List<SpecialSpeedSituation> specialSpeedSituations) {
-        Double specialSpeedLimit = null;
+        // The regular speed limit if available. In case of unbounded speed limit, the value is zero.
+        Log.d(TAG,"speedLimitInMetersPerSecond: " + speedLimit.speedLimitInMetersPerSecond);
 
-        // Iterates through the list of applicable special speed limits, if available.
-        for (SpecialSpeedSituation specialSpeedSituation : specialSpeedSituations) {
+        // A conditional school zone speed limit as indicated on the local road signs.
+        Log.d(TAG,"schoolZoneSpeedLimitInMetersPerSecond: " + speedLimit.schoolZoneSpeedLimitInMetersPerSecond);
 
-            // Check if a time restriction is available and if it is currently active.
-            boolean timeRestrictionisPresent = false;
-            boolean timeRestrictionisActive = false;
-            for (TimeDomain timeDomain : specialSpeedSituation.appliesDuring) {
-                timeRestrictionisPresent = true;
-                if (timeDomain.isActive(new Date())) {
-                    timeRestrictionisActive = true;
-                }
-            }
+        // A conditional time-dependent speed limit as indicated on the local road signs.
+        // It is in effect considering the current local time provided by the device's clock.
+        Log.d(TAG,"timeDependentSpeedLimitInMetersPerSecond: " + speedLimit.timeDependentSpeedLimitInMetersPerSecond);
 
-            if (timeRestrictionisPresent && !timeRestrictionisActive) {
-                // We are not interested in currently inactive special speed limits.
-                continue;
-            }
+        // A conditional non-legal speed limit that recommends a lower speed,
+        // for example, due to bad road conditions.
+        Log.d(TAG,"advisorySpeedLimitInMetersPerSecond: " + speedLimit.advisorySpeedLimitInMetersPerSecond);
 
-            if (specialSpeedSituation.type == SpecialSpeedSituationType.ADVISORY_SPEED) {
-                Log.d(TAG, "Contains an advisory speed limit. For safety reasons it is recommended to respect it.");
-            }
+        // A weather-dependent speed limit as indicated on the local road signs.
+        // The HERE SDK cannot detect the current weather condition, so a driver must decide
+        // based on the situation if this speed limit applies.
+        Log.d(TAG,"fogSpeedLimitInMetersPerSecond: " + speedLimit.fogSpeedLimitInMetersPerSecond);
+        Log.d(TAG,"rainSpeedLimitInMetersPerSecond: " + speedLimit.rainSpeedLimitInMetersPerSecond);
+        Log.d(TAG,"snowSpeedLimitInMetersPerSecond: " + speedLimit.snowSpeedLimitInMetersPerSecond);
 
-            if (specialSpeedSituation.type == SpecialSpeedSituationType.RAIN ||
-                    specialSpeedSituation.type == SpecialSpeedSituationType.SNOW ||
-                    specialSpeedSituation.type == SpecialSpeedSituationType.FOG) {
-                // The HERE SDK cannot detect the current weather condition, so a driver must decide
-                // based on the situation if this speed limit applies.
-                // Note: For this example we respect weather related speed limits, even if not applicable
-                // due to the current weather condition.
-                Log.d(TAG, "Attention: This road has weather dependent speed limits!");
-            }
-
-            Double newSpecialSpeedLimit = specialSpeedSituation.specialSpeedLimitInMetersPerSecond;
-            Log.d(TAG, "Found special speed limit: " + newSpecialSpeedLimit +
-                    " m/s, type: " + specialSpeedSituation.type);
-
-            if (specialSpeedLimit != null && specialSpeedLimit > newSpecialSpeedLimit) {
-                // For this example, we are only interested in the slowest special speed limit value,
-                // regardless if it is legal, advisory or bound to conditions that may require the decision
-                // of the driver.
-                specialSpeedLimit = newSpecialSpeedLimit;
-            }
-        }
-
-        Log.d(TAG, "Slowest special speed limit (m/s): " + specialSpeedLimit);
-        return specialSpeedLimit;
+        // For convenience, this returns the effective (lowest) speed limit between
+        // - speedLimitInMetersPerSecond
+        // - schoolZoneSpeedLimitInMetersPerSecond
+        // - timeDependentSpeedLimitInMetersPerSecond
+        return speedLimit.effectiveSpeedLimitInMetersPerSecond();
     }
 
     public void startNavigation(Route route, boolean isSimulated) {

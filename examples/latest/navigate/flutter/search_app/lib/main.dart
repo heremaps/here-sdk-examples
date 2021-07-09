@@ -35,7 +35,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  SearchExample _searchExample;
+  SearchExample? _searchExample;
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +59,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _onMapCreated(HereMapController hereMapController) {
-    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError error) {
+    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
       if (error == null) {
         _searchExample = SearchExample(_showDialog, hereMapController);
       } else {
@@ -69,11 +69,11 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _searchButtonClicked() {
-    _searchExample.searchButtonClicked();
+    _searchExample?.searchButtonClicked();
   }
 
   void _geocodeAnAddressButtonClicked() {
-    _searchExample.geocodeAnAddressButtonClicked();
+    _searchExample?.geocodeAnAddressButtonClicked();
   }
 
   // A helper method to add a button on top of the HERE map.

@@ -25,22 +25,18 @@ import 'package:here_sdk/routing.dart' as HERE;
 // A class that provides simulated location updates along a given route.
 // The frequency of the provided updates can be set via LocationSimulatorOptions.
 class HEREPositioningSimulator {
-  HERE.LocationSimulator _locationSimulator;
+  HERE.LocationSimulator? _locationSimulator;
 
   // Provides location updates based on the given route (route playback).
   void startLocating(HERE.Route route, HERE.LocationListener locationListener) {
     _locationSimulator?.stop();
 
     _locationSimulator = _createLocationSimulator(route, locationListener);
-    _locationSimulator.start();
+    _locationSimulator!.start();
   }
 
   void stop() {
-    if (_locationSimulator != null) {
-      _locationSimulator.stop();
-      _locationSimulator.release();
-      _locationSimulator = null;
-    }
+    _locationSimulator?.stop();
   }
 
   // Provides fake GPS signals based on the route geometry.

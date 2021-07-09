@@ -7,7 +7,7 @@
          FlutterApplication and put your custom class here. -->
     <application
         android:name="io.flutter.app.FlutterApplication"
-        android:label="search_app"
+        android:label="Search"
         android:icon="@mipmap/ic_launcher">
 
         <!-- Set your HERE SDK for Flutter credentials below. -->

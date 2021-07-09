@@ -17,6 +17,8 @@
  * License-Filename: LICENSE
  */
 
+// Disabled null safety for this file:
+// @dart=2.9
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:here_sdk/routing.dart';

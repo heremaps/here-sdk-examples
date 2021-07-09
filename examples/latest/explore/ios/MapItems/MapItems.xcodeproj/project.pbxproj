@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2A22B0F4269330C5006F0B16 /* MapObjectsExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A22B0F3269330C5006F0B16 /* MapObjectsExample.swift */; };
+		2AB696EB268439550007B12B /* MenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AB696EA268439550007B12B /* MenuViewController.swift */; };
+		2AB696ED26843D1B0007B12B /* Menu.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AB696EC26843D1B0007B12B /* Menu.storyboard */; };
 		C88C017223CDFCB200043918 /* heresdk.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = C88C017123CDFCB200043918 /* heresdk.xcframework */; };
 		C88C017323CDFCB200043918 /* heresdk.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = C88C017123CDFCB200043918 /* heresdk.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		C8B73DB625FE8CBA00A943DD /* poi_texture.png in Resources */ = {isa = PBXBuildFile; fileRef = C8B73DB225FE8CBA00A943DD /* poi_texture.png */; };
@@ -36,6 +39,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		2A22B0F3269330C5006F0B16 /* MapObjectsExample.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapObjectsExample.swift; sourceTree = "<group>"; };
+		2AB696EA268439550007B12B /* MenuViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuViewController.swift; sourceTree = "<group>"; };
+		2AB696EC26843D1B0007B12B /* Menu.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Menu.storyboard; sourceTree = "<group>"; };
 		C88C017123CDFCB200043918 /* heresdk.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = heresdk.xcframework; sourceTree = "<group>"; };
 		C8B73DB225FE8CBA00A943DD /* poi_texture.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = poi_texture.png; sourceTree = "<group>"; };
 		C8B73DB325FE8CBA00A943DD /* plane.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = plane.obj; sourceTree = "<group>"; };
@@ -104,12 +110,15 @@
 			isa = PBXGroup;
 			children = (
 				C8D0BB4B2167D6B6002FD93D /* AppDelegate.swift */,
-				C8D0BB4D2167D6B6002FD93D /* ViewController.swift */,
-				C8D0BB602167D87D002FD93D /* MapItemsExample.swift */,
-				C8D0BB4F2167D6B6002FD93D /* Main.storyboard */,
 				C8D0BB522167D6B7002FD93D /* Assets.xcassets */,
-				C8D0BB542167D6B7002FD93D /* LaunchScreen.storyboard */,
 				C8D0BB572167D6B7002FD93D /* Info.plist */,
+				C8D0BB542167D6B7002FD93D /* LaunchScreen.storyboard */,
+				C8D0BB4F2167D6B6002FD93D /* Main.storyboard */,
+				C8D0BB602167D87D002FD93D /* MapItemsExample.swift */,
+				2A22B0F3269330C5006F0B16 /* MapObjectsExample.swift */,
+				2AB696EC26843D1B0007B12B /* Menu.storyboard */,
+				2AB696EA268439550007B12B /* MenuViewController.swift */,
+				C8D0BB4D2167D6B6002FD93D /* ViewController.swift */,
 			);
 			path = MapItems;
 			sourceTree = "<group>";
@@ -177,6 +186,7 @@
 				C8D0BB562167D6B7002FD93D /* LaunchScreen.storyboard in Resources */,
 				C8B73DB925FE8CBA00A943DD /* obstacle_texture.png in Resources */,
 				C8D0BB532167D6B7002FD93D /* Assets.xcassets in Resources */,
+				2AB696ED26843D1B0007B12B /* Menu.storyboard in Resources */,
 				C8B73DB725FE8CBA00A943DD /* plane.obj in Resources */,
 				C8B73DB625FE8CBA00A943DD /* poi_texture.png in Resources */,
 				C8B73DB825FE8CBA00A943DD /* obstacle.obj in Resources */,
@@ -191,9 +201,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2A22B0F4269330C5006F0B16 /* MapObjectsExample.swift in Sources */,
 				C8D0BB612167D87D002FD93D /* MapItemsExample.swift in Sources */,
 				C8D0BB4E2167D6B6002FD93D /* ViewController.swift in Sources */,
 				C8D0BB4C2167D6B6002FD93D /* AppDelegate.swift in Sources */,
+				2AB696EB268439550007B12B /* MenuViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -343,7 +355,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = "";
-				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = arm64;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",

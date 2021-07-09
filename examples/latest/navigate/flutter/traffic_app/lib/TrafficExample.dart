@@ -23,9 +23,7 @@ import 'package:here_sdk/mapview.dart';
 class TrafficExample {
   HereMapController _hereMapController;
 
-  TrafficExample(HereMapController hereMapController) {
-    _hereMapController = hereMapController;
-
+  TrafficExample(this._hereMapController) {
     double distanceToEarthInMeters = 10000;
     _hereMapController.camera.lookAtPointWithDistance(GeoCoordinates(52.520798, 13.409408), distanceToEarthInMeters);
   }

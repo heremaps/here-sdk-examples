@@ -302,8 +302,8 @@ public class OfflineMapsExample {
         // Optionally, you can use the MapUpdateTask to pause / resume or cancel the update.
         MapUpdateTask mapUpdateTask = mapUpdater.performMapUpdate(new MapUpdateProgressListener() {
             @Override
-            public void onProgress(int percentage) {
-                Log.d("MapUpdate", "Downloading and installing a map update. Progress: " + percentage);
+            public void onProgress(@NonNull RegionId regionId, int percentage) {
+                Log.d("MapUpdate", "Downloading and installing a map update. Progress for " + regionId.id + ": " + percentage);
             }
 
             @Override

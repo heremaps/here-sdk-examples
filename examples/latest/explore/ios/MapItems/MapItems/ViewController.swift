@@ -24,13 +24,17 @@ final class ViewController: UIViewController {
 
     @IBOutlet private var mapView: MapView!
     private var mapItemsExample: MapItemsExample!
+    private var mapObjectsExample: MapObjectsExample!
     private var isMapSceneLoaded = false
+    private var menuSections: [MenuSection] = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         // Load the map scene using a map style to render the map with.
         mapView.mapScene.loadScene(mapScheme: .normalDay, completion: onLoadScene)
+
+        menuSections = buildMenuSections()
     }
 
     func onLoadScene(mapError: MapError?) {
@@ -41,59 +45,139 @@ final class ViewController: UIViewController {
 
         // Start the example.
         mapItemsExample = MapItemsExample(viewController: self, mapView: mapView)
+        mapObjectsExample = MapObjectsExample(mapView: mapView)
         isMapSceneLoaded = true
     }
+    
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        mapView.handleLowMemory()
+    }
 
-    @IBAction func onAnchoredButtonClicked(_ sender: Any) {
+    override func prepare(for segue: UIStoryboardSegue, sender _: Any?) {
+        if segue.identifier == "showMenu" {
+            if let vc = segue.destination as? MenuViewController {
+                vc.menuSections = menuSections
+            }
+        }
+    }
+
+    @IBAction func onMenuButtonClicked(_ sender: UIBarButtonItem) {
+        performSegue(withIdentifier: "showMenu", sender: nil)
+    }
+    
+    private func onAnchoredButtonClicked(_ sender: Any) {
         if isMapSceneLoaded {
             mapItemsExample.onAnchoredButtonClicked()
         }
     }
     
-    @IBAction func onCenteredButtonClicked(_ sender: Any) {
+    private func onCenteredButtonClicked(_ sender: Any) {
         if isMapSceneLoaded {
             mapItemsExample.onCenteredButtonClicked()
         }
     }
     
-    @IBAction func onLocationIndicatorPedestrianButtonClicked(_ sender: Any) {
+    private func onLocationIndicatorPedestrianButtonClicked(_ sender: Any) {
         if isMapSceneLoaded {
             mapItemsExample.onLocationIndicatorPedestrianButtonClicked()
         }
     }
     
-    @IBAction func onLocationIndicatorNavigationButtonClicked(_ sender: Any) {
+    private func onLocationIndicatorNavigationButtonClicked(_ sender: Any) {
         if isMapSceneLoaded {
             mapItemsExample.onLocationIndicatorNavigationButtonClicked()
         }
     }
     
-    @IBAction func onLocationIndicatorStateClicked(_ sender: Any) {
+    private func onLocationIndicatorStateClicked(_ sender: Any) {
         if isMapSceneLoaded {
             mapItemsExample.toggleActiveStateForLocationIndicator()
         }
     }
     
-    @IBAction func onFlatMapMarkerButtonClicked(_ sender: Any) {
+    private func onFlatMapMarkerButtonClicked(_ sender: Any) {
         if isMapSceneLoaded {
             mapItemsExample.onFlatMapMarkerButtonClicked()
         }
     }
 
-    @IBAction func onMapMarker3DClicked(_ sender: Any) {
+    private func onMapMarker3DClicked(_ sender: Any) {
         if isMapSceneLoaded {
             mapItemsExample.onMapMarker3DClicked()
         }
     }
-    
-    @IBAction func onClearButtonClicked(_ sender: Any) {
+
+    private func onMapItemPolylineClicked(_ sender: Any) {
         if isMapSceneLoaded {
-            mapItemsExample.onClearButtonClicked()
+            mapObjectsExample.onMapPolylineClicked()
         }
     }
 
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        mapView.handleLowMemory()
+    private func onMapItemPolygonClicked(_ sender: Any) {
+        if isMapSceneLoaded {
+            mapObjectsExample.onMapPolygonClicked()
+        }
+    }
+
+    private func onMapItemCircleClicked(_ sender: Any) {
+        if isMapSceneLoaded {
+            mapObjectsExample.onMapCircleClicked()
+        }
+    }
+
+    private func onMapItemArrowClicked(_ sender: Any) {
+        if isMapSceneLoaded {
+            mapObjectsExample.onMapArrowClicked()
+        }
+    }
+
+    private func onClearButtonClicked(_ sender: Any) {
+        if isMapSceneLoaded {
+            mapItemsExample.onClearButtonClicked()
+            mapObjectsExample.onClearButtonClicked()
+        }
+    }
+
+    // A helper method to build drawer menu items.
+    private func buildMenuSections() -> [MenuSection] {
+        return [
+            buildMapMarkerMenuSection(),
+            buildLocationIndicatorMenuSection(),
+            buildMapObjectMenuSection(),
+            buildClearMenuSection()
+        ]
+    }
+
+    private func buildMapMarkerMenuSection() -> MenuSection {
+        return MenuSection(title: "Map Marker", items: [
+            MenuItem(title: "Anchored (2D)", onSelect: onAnchoredButtonClicked),
+            MenuItem(title: "Centered (2D)", onSelect: onCenteredButtonClicked),
+            MenuItem(title: "Flat", onSelect: onFlatMapMarkerButtonClicked),
+            MenuItem(title: "3D Marker", onSelect: onMapMarker3DClicked)
+        ])
+    }
+
+    private func buildLocationIndicatorMenuSection() -> MenuSection {
+        return MenuSection(title: "Location Indicator", items: [
+            MenuItem(title: "Pedestrian Style", onSelect: onLocationIndicatorPedestrianButtonClicked),
+            MenuItem(title: "Navigation Style", onSelect: onLocationIndicatorNavigationButtonClicked),
+            MenuItem(title: "Set Active/Inactive", onSelect: onLocationIndicatorStateClicked)
+        ])
+    }
+
+    private func buildMapObjectMenuSection() -> MenuSection {
+        return MenuSection(title: "Map Object", items: [
+            MenuItem(title: "Polyline", onSelect: onMapItemPolylineClicked),
+            MenuItem(title: "Polygon", onSelect: onMapItemPolygonClicked),
+            MenuItem(title: "Circle", onSelect: onMapItemCircleClicked),
+            MenuItem(title: "Arrow", onSelect: onMapItemArrowClicked)
+        ])
+    }
+
+    private func buildClearMenuSection() -> MenuSection {
+        return MenuSection(title: "", items: [
+            MenuItem(title: "Clear All Map Items", onSelect: onClearButtonClicked)
+        ])
     }
 }

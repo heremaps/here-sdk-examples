@@ -28,8 +28,12 @@ void main() {
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
-  MapViewPinsExample _mapViewPinsExample;
+class MyApp extends StatefulWidget {
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  MapViewPinsExample? _mapViewPinsExample;
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +60,7 @@ class MyApp extends StatelessWidget {
   }
 
   void _onMapCreated(HereMapController hereMapController) {
-    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError error) {
+    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
       if (error == null) {
         _mapViewPinsExample = MapViewPinsExample(hereMapController);
       } else {
@@ -66,15 +70,15 @@ class MyApp extends StatelessWidget {
   }
 
   void _addDefaultMapViewPinButtonClicked() {
-    _mapViewPinsExample.addDefaultMapViewPinButtonClicked();
+    _mapViewPinsExample?.addDefaultMapViewPinButtonClicked();
   }
 
   void _addAnchoredMapViewPinButtonClicked() {
-    _mapViewPinsExample.addAnchoredMapViewPinButtonClicked();
+    _mapViewPinsExample?.addAnchoredMapViewPinButtonClicked();
   }
 
   void _clearMapButtonClicked() {
-    _mapViewPinsExample.clearMap();
+    _mapViewPinsExample?.clearMap();
   }
 
   // A helper method to add a button on top of the HERE map.

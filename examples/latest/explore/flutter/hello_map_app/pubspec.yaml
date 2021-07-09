@@ -1,5 +1,9 @@
-name: hellomap
+name: hello_map_app
 description: An app that shows how to integrate the HERE SDK for Flutter to show a map.
+
+# The following line prevents the package from being accidentally published to
+# pub.dev using `pub publish`. This is preferred for private packages.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -14,8 +18,8 @@ description: An app that shows how to integrate the HERE SDK for Flutter to show
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.10.0 <3.0.0"
-  flutter: ">=1.22.0"
+  sdk: ">=2.12.0 <3.0.0"
+  flutter: ">=2.0.6"
 
 dependencies:
   flutter:

@@ -39,16 +39,16 @@ class EVRoutingExample {
   List<MapMarker> _mapMarkers = [];
   List<MapPolyline> _mapPolylines = [];
   List<MapPolygon> _mapPolygons = [];
-  RoutingEngine _routingEngine;
-  SearchEngine _searchEngine;
-  GeoCoordinates _startGeoCoordinates;
-  GeoCoordinates _destinationGeoCoordinates;
-  ShowDialogFunction _showDialog;
+  late RoutingEngine _routingEngine;
+  late SearchEngine _searchEngine;
+  GeoCoordinates? _startGeoCoordinates;
+  GeoCoordinates? _destinationGeoCoordinates;
+  final ShowDialogFunction _showDialog;
   List<String> chargingStationsIDs = [];
 
-  EVRoutingExample(Function showDialogCallback, HereMapController this._hereMapController) {
-    _showDialog = showDialogCallback;
-
+  EVRoutingExample(ShowDialogFunction showDialogCallback, HereMapController hereMapController)
+      : _showDialog = showDialogCallback,
+        _hereMapController = hereMapController {
     double distanceToEarthInMeters = 10000;
     _hereMapController.camera.lookAtPointWithDistance(GeoCoordinates(52.520798, 13.409408), distanceToEarthInMeters);
 
@@ -73,14 +73,15 @@ class EVRoutingExample {
 
     _startGeoCoordinates = _createRandomGeoCoordinatesInViewport();
     _destinationGeoCoordinates = _createRandomGeoCoordinatesInViewport();
-    var startWaypoint = Waypoint(_startGeoCoordinates);
-    var destinationWaypoint = Waypoint(_destinationGeoCoordinates);
+    var startWaypoint = Waypoint(_startGeoCoordinates!);
+    var destinationWaypoint = Waypoint(_destinationGeoCoordinates!);
     List<Waypoint> waypoints = [startWaypoint, destinationWaypoint];
 
     _routingEngine.calculateEVCarRoute(waypoints, _getEVCarOptions(),
-        (RoutingError routingError, List<here.Route> routeList) {
+        (RoutingError? routingError, List<here.Route>? routeList) {
       if (routingError == null) {
-        here.Route route = routeList.first;
+        // When error is null, the list is guaranteed to be non empty.
+        here.Route route = routeList!.first;
         _showRouteOnMap(route);
         _logRouteViolations(route);
         _logEVDetails(route);
@@ -136,7 +137,11 @@ class EVRoutingExample {
     int sectionIndex = 0;
     List<Section> sections = route.sections;
     for (Section section in sections) {
-      EVDetails evDetails = section.evDetails;
+      EVDetails? evDetails = section.evDetails;
+      if (evDetails == null) {
+        print("No EVDetails found.");
+        return;
+      }
       print("EVDetails: Estimated net energy consumption in kWh for this section: " +
           evDetails.consumptionInKilowattHour.toString());
       for (PostAction postAction in section.postActions) {
@@ -164,25 +169,25 @@ class EVRoutingExample {
       print("EVDetails: Section " +
           sectionIndex.toString() +
           ": Estimated departure battery charge in kWh: " +
-          section.departure.chargeInKilowattHours.toString());
+          section.departurePlace.chargeInKilowattHours.toString());
       print("EVDetails: Section " +
           sectionIndex.toString() +
           ": Estimated arrival battery charge in kWh: " +
-          section.arrival.chargeInKilowattHours.toString());
+          section.arrivalPlace.chargeInKilowattHours.toString());
 
       // Only charging stations that are needed to reach the destination are listed below.
-      ChargingStation depStation = section.departure.chargingStation;
+      ChargingStation? depStation = section.departurePlace.chargingStation;
       if (depStation != null && depStation.id != null && !chargingStationsIDs.contains(depStation.id)) {
-        print("EVDetails: Section " + sectionIndex.toString() + ", name of charging station: " + depStation.name);
-        chargingStationsIDs.add(depStation.id);
-        _addCircleMapMarker(section.departure.mapMatchedCoordinates, "assets/required_charging.png");
+        print("EVDetails: Section " + sectionIndex.toString() + ", name of charging station: " + depStation.name.toString());
+        chargingStationsIDs.add(depStation.id.toString());
+        _addCircleMapMarker(section.departurePlace.mapMatchedCoordinates, "assets/required_charging.png");
       }
 
-      ChargingStation arrStation = section.departure.chargingStation;
+      ChargingStation? arrStation = section.departurePlace.chargingStation;
       if (arrStation != null && arrStation.id != null && !chargingStationsIDs.contains(arrStation.id)) {
-        print("EVDetails: Section " + sectionIndex.toString() + ", name of charging station: " + arrStation.name);
-        chargingStationsIDs.add(arrStation.id);
-        _addCircleMapMarker(section.arrival.mapMatchedCoordinates, "assets/required_charging.png");
+        print("EVDetails: Section " + sectionIndex.toString() + ", name of charging station: " + arrStation.name.toString());
+        chargingStationsIDs.add(arrStation.id.toString());
+        _addCircleMapMarker(section.arrivalPlace.mapMatchedCoordinates, "assets/required_charging.png");
       }
 
       sectionIndex += 1;
@@ -193,7 +198,7 @@ class EVRoutingExample {
   // An implementation may decide to reject a route if one or more violations are detected.
   void _logRouteViolations(here.Route route) {
     for (var section in route.sections) {
-      for (var notice in section.notices) {
+      for (var notice in section.sectionNotices) {
         print("This route contains the following warning: " + notice.code.toString());
       }
     }
@@ -211,7 +216,7 @@ class EVRoutingExample {
     int maxItems = 30;
     SearchOptions searchOptions = SearchOptions(LanguageCode.enUs, maxItems);
 
-    _searchEngine.searchByText(textQuery, searchOptions, (SearchError searchError, List<Place> items) {
+    _searchEngine.searchByText(textQuery, searchOptions, (SearchError? searchError, List<Place>? items) {
       if (searchError != null) {
         if (searchError == SearchError.polylineTooLong) {
           // Increasing halfWidthInMeters will result in less precise results with the benefit of a less
@@ -224,14 +229,14 @@ class EVRoutingExample {
       }
 
       // If error is nil, it is guaranteed that the items will not be nil.
-      print("Search: Search along route found ${items.length} charging stations:");
+      print("Search: Search along route found ${items!.length} charging stations:");
       for (Place place in items) {
         if (chargingStationsIDs.contains(place.id)) {
           print(
               "Search: Skipping: This charging station was already required to reach the destination (see red charging icon).");
         } else {
           // Only suggestions may not contain geoCoordinates, so it's safe to unwrap this search result's coordinates.
-          _addCircleMapMarker(place.geoCoordinates, "assets/charging.png");
+          _addCircleMapMarker(place.geoCoordinates!, "assets/charging.png");
           print("Search: " + place.address.addressText);
         }
       }
@@ -255,13 +260,13 @@ class EVRoutingExample {
     List<int> rangeValues = [400];
 
     // With null we choose the default option for the resulting polygon shape.
-    int maxPoints;
-    IsolineOptionsCalculation calculationOptions = IsolineOptionsCalculation(
-        IsolineRangeType.consumptionInWattHours, rangeValues, IsolineCalculationMode.balanced, maxPoints);
+    int? maxPoints;
+    IsolineOptionsCalculation calculationOptions = IsolineOptionsCalculation.withNoDefaults(
+        IsolineRangeType.consumptionInWattHours, rangeValues, IsolineCalculationMode.balanced, maxPoints, RoutePlaceDirection.departure);
     IsolineOptions isolineOptions = IsolineOptions.withEVCarOptions(calculationOptions, _getEVCarOptions());
 
-    _routingEngine.calculateIsoline(Waypoint(_startGeoCoordinates), isolineOptions,
-        (RoutingError routingError, List<Isoline> list) {
+    _routingEngine.calculateIsoline(Waypoint(_startGeoCoordinates!), isolineOptions,
+        (RoutingError? routingError, List<Isoline>? list) {
       if (routingError != null) {
         _showDialog("Error while calculating reachable area:", routingError.toString());
         return;
@@ -270,7 +275,7 @@ class EVRoutingExample {
       // When routingError is nil, the isolines list is guaranteed to contain at least one isoline.
       // The number of isolines matches the number of requested range values. Here we have used one range value,
       // so only one isoline object is expected.
-      Isoline isoline = list.first;
+      Isoline isoline = list!.first;
 
       // If there is more than one polygon, the other polygons indicate separate areas, for example, islands, that
       // can only be reached by a ferry.
@@ -321,9 +326,13 @@ class EVRoutingExample {
     _hereMapController.mapScene.addMapPolyline(routeMapPolyline);
     _mapPolylines.add(routeMapPolyline);
 
+    if (_startGeoCoordinates == null || _destinationGeoCoordinates == null) {
+      return;
+    }
+
     // Draw a circle to indicate starting point and destination.
-    _addCircleMapMarker(_startGeoCoordinates, "assets/green_dot.png");
-    _addCircleMapMarker(_destinationGeoCoordinates, "assets/red_dot.png");
+    _addCircleMapMarker(_startGeoCoordinates!, "assets/green_dot.png");
+    _addCircleMapMarker(_destinationGeoCoordinates!, "assets/red_dot.png");
   }
 
   void _addCircleMapMarker(GeoCoordinates geoCoordinates, String imageName) {
@@ -338,7 +347,7 @@ class EVRoutingExample {
   }
 
   GeoCoordinates _createRandomGeoCoordinatesInViewport() {
-    GeoBox geoBox = _hereMapController.camera.boundingBox;
+    GeoBox? geoBox = _hereMapController.camera.boundingBox;
     if (geoBox == null) {
       // Happens only when map is not fully covering the viewport.
       return GeoCoordinates(52.530932, 13.384915);

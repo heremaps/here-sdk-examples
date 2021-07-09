@@ -17,13 +17,15 @@
  * License-Filename: LICENSE
  */
 
+// Disabled null safety for this file:
+// @dart=2.9
 import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:here_sdk/venue.control.dart';
 import 'package:here_sdk/venue.data.dart';
-import 'package:indoor_map/venue_tap_controller.dart';
+import 'package:indoor_map_app/venue_tap_controller.dart';
 
 class VenueSearchController extends StatefulWidget {
   final VenueSearchControllerState state;

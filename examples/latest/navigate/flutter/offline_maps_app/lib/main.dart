@@ -35,7 +35,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  OfflineMapsExample _offlineMapsExample;
+  OfflineMapsExample? _offlineMapsExample;
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +71,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _onMapCreated(HereMapController hereMapController) {
-    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError error) {
+    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
       if (error == null) {
         _offlineMapsExample = OfflineMapsExample(_showDialog, hereMapController);
       } else {
@@ -81,19 +81,19 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _regionsButtonClicked() {
-    _offlineMapsExample.onDownloadListClicked();
+    _offlineMapsExample?.onDownloadListClicked();
   }
 
   void _downloadButtonClicked() {
-    _offlineMapsExample.onDownloadMapClicked();
+    _offlineMapsExample?.onDownloadMapClicked();
   }
 
   void _cancelButtonClicked() {
-    _offlineMapsExample.onCancelMapDownloadClicked();
+    _offlineMapsExample?.onCancelMapDownloadClicked();
   }
 
   void _testButtonClicked() {
-    _offlineMapsExample.onSearchPlaceClicked();
+    _offlineMapsExample?.onSearchPlaceClicked();
   }
 
   // A helper method to add a button on top of the HERE map.

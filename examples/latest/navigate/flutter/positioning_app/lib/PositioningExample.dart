@@ -41,10 +41,10 @@ class PositioningExample extends State<MyApp> implements LocationListener, Locat
   final LocationEngine _locationEngine = LocationEngine();
   final ConsentEngine _consentEngine = ConsentEngine();
 
-  HereMapController _hereMapController;
-  LocationIndicator _locationIndicator;
-  Location _location;
-  LocationEngineStatus _status;
+  HereMapController? _hereMapController;
+  LocationIndicator? _locationIndicator;
+  Location? _location;
+  LocationEngineStatus? _status;
 
   // When using HERE Positioning in your app, it is required to request and to show the user's consent decision.
   // In addition, users must be able to change their consent decision at any time.
@@ -125,7 +125,7 @@ class PositioningExample extends State<MyApp> implements LocationListener, Locat
                             ),
                             _buildLabelValue(
                               'Timestamp:',
-                              _location == null ? _notAvailable : _location.timestamp.toString(),
+                              _location?.timestamp.toString() ?? _notAvailable,
                             ),
                             _buildLabelValue(
                               'SinceBoot:',
@@ -134,7 +134,7 @@ class PositioningExample extends State<MyApp> implements LocationListener, Locat
                             const SizedBox(height: _padding),
                             _buildLabelValue(
                               'Status:',
-                              _status == null ? _notAvailable : describeEnum(_status),
+                              _status == null ? _notAvailable : describeEnum(_status!),
                             ),
                           ],
                         ),
@@ -206,7 +206,7 @@ class PositioningExample extends State<MyApp> implements LocationListener, Locat
   void _onMapCreated(HereMapController hereMapController) {
     _requestPermissions();
     _hereMapController = hereMapController;
-    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError error) {
+    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
       if (error != null) {
         print("Map scene not loaded. MapError: " + error.toString());
         Navigator.pop(context);
@@ -215,7 +215,7 @@ class PositioningExample extends State<MyApp> implements LocationListener, Locat
   }
 
   void _startLocating() {
-    Location location = _locationEngine.lastKnownLocation;
+    Location? location = _locationEngine.lastKnownLocation;
 
     if (location != null) {
       print("Last known location: " +
@@ -241,11 +241,11 @@ class PositioningExample extends State<MyApp> implements LocationListener, Locat
     }
     // Set-up location indicator.
     _locationIndicator = LocationIndicator();
-    _locationIndicator.locationIndicatorStyle = LocationIndicatorIndicatorStyle.pedestrian;
-    _locationIndicator.updateLocation(myLocation);
-    _hereMapController.addLifecycleListener(_locationIndicator);
+    _locationIndicator!.locationIndicatorStyle = LocationIndicatorIndicatorStyle.pedestrian;
+    _locationIndicator!.updateLocation(myLocation);
+    _hereMapController?.addLifecycleListener(_locationIndicator!);
     // Point camera at given location.
-    _hereMapController.camera.lookAtPointWithDistance(
+    _hereMapController?.camera.lookAtPointWithDistance(
       myLocation.coordinates,
       _cameraDistanceInMeters,
     );
@@ -256,10 +256,14 @@ class PositioningExample extends State<MyApp> implements LocationListener, Locat
   }
 
   void _updateMyLocationOnMap(Location myLocation) {
+    if (_locationIndicator == null) {
+      return;
+    }
+
     // Update location indicator's location.
-    _locationIndicator.updateLocation(myLocation);
+    _locationIndicator!.updateLocation(myLocation);
     // Point camera at given location.
-    _hereMapController.camera.lookAtPoint(myLocation.coordinates);
+    _hereMapController!.camera.lookAtPoint(myLocation.coordinates);
     // Update state's location.
     setState(() {
       _location = myLocation;
@@ -324,7 +328,7 @@ class PositioningExample extends State<MyApp> implements LocationListener, Locat
           primary: Colors.lightBlueAccent,
           onPrimary: Colors.white,
         ),
-        onPressed: callbackFunction,
+        onPressed: () => callbackFunction(),
         child: Container(width: 250, child: Text(buttonLabel, style: TextStyle(fontSize: 15))),
       ),
     );
@@ -334,57 +338,36 @@ class PositioningExample extends State<MyApp> implements LocationListener, Locat
     if (_location == null) {
       return _notAvailable;
     }
-    return _location.coordinates.latitude.toStringAsFixed(6) +
+    return _location!.coordinates.latitude.toStringAsFixed(6) +
         ', ' +
-        _location.coordinates.longitude.toStringAsFixed(6);
+        _location!.coordinates.longitude.toStringAsFixed(6);
   }
 
   String _getHorizontalAccuracyString() {
-    if (_location == null || _location.horizontalAccuracyInMeters == null) {
-      return _notAvailable;
-    }
-    return _location.horizontalAccuracyInMeters.toStringAsFixed(1) + ' m';
+    return '${_location?.horizontalAccuracyInMeters?.toStringAsFixed(1) ?? _notAvailable}' + ' m';
   }
 
   String _getVerticalAccuracyString() {
-    if (_location == null || _location.verticalAccuracyInMeters == null) {
-      return _notAvailable;
-    }
-    return _location.verticalAccuracyInMeters.toStringAsFixed(1) + ' m';
+    return '${_location?.verticalAccuracyInMeters?.toStringAsFixed(1) ?? _notAvailable}' + ' m';
   }
 
   String _getBearingString() {
-    if (_location == null || _location.bearingInDegrees == null) {
-      return _notAvailable;
-    }
-    return _location.bearingInDegrees.toStringAsFixed(1) + ' °';
+    return '${_location?.bearingInDegrees?.toStringAsFixed(1) ?? _notAvailable}' + ' °';
   }
 
   String _getBearingAccuracyString() {
-    if (_location == null || _location.bearingAccuracyInDegrees == null) {
-      return _notAvailable;
-    }
-    return _location.bearingAccuracyInDegrees.toStringAsFixed(1) + ' °';
+    return '${_location?.bearingAccuracyInDegrees?.toStringAsFixed(1) ?? _notAvailable}' + ' °';
   }
 
   String _getSpeedString() {
-    if (_location == null || _location.speedInMetersPerSecond == null) {
-      return _notAvailable;
-    }
-    return _location.speedInMetersPerSecond.toStringAsFixed(1) + ' m/s';
+    return '${_location?.speedInMetersPerSecond?.toStringAsFixed(1) ?? _notAvailable}' + ' m/s';
   }
 
   String _getSpeedAccuracyString() {
-    if (_location == null || _location.speedAccuracyInMetersPerSecond == null) {
-      return _notAvailable;
-    }
-    return _location.speedAccuracyInMetersPerSecond.toStringAsFixed(1) + ' m/s';
+    return '${_location?.speedAccuracyInMetersPerSecond?.toStringAsFixed(1) ?? _notAvailable}' + ' m/s';
   }
 
   String _getTimestampSinceBootString() {
-    if (_location == null || _location.timestampSinceBootInMilliseconds == null) {
-      return _notAvailable;
-    }
-    return _location.timestampSinceBootInMilliseconds.toStringAsFixed(1) + ' ms';
+    return '${_location?.timestampSinceBootInMilliseconds?.toStringAsFixed(1) ?? _notAvailable}' + ' ms';
   }
 }

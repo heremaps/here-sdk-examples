@@ -18,7 +18,7 @@
          FlutterApplication and put your custom class here. -->
     <application
         android:name="io.flutter.app.FlutterApplication"
-        android:label="navigation_app"
+        android:label="Navigation"
         android:icon="@mipmap/ic_launcher">
 
         <!-- Set your credentials for the HERE SDK. -->

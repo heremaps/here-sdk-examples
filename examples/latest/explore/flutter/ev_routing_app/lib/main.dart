@@ -35,7 +35,7 @@ class EVRoutingApp extends StatefulWidget {
 }
 
 class _EVRoutingAppState extends State<EVRoutingApp> {
-  EVRoutingExample _evRoutingExample;
+  EVRoutingExample? _evRoutingExample;
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +60,7 @@ class _EVRoutingAppState extends State<EVRoutingApp> {
   }
 
   void _onMapCreated(HereMapController hereMapController) {
-    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError error) {
+    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
       if (error == null) {
         _evRoutingExample = EVRoutingExample(_showDialog, hereMapController);
       } else {
@@ -70,15 +70,15 @@ class _EVRoutingAppState extends State<EVRoutingApp> {
   }
 
   void _addEVRouteButtonClicked() {
-    _evRoutingExample.addEVRoute();
+    _evRoutingExample?.addEVRoute();
   }
 
   void _reachableAreaButtonClicked() {
-    _evRoutingExample.showReachableArea();
+    _evRoutingExample?.showReachableArea();
   }
 
   void _clearMapButtonClicked() {
-    _evRoutingExample.clearMap();
+    _evRoutingExample?.clearMap();
   }
 
   // A helper method to add a button on top of the HERE map.

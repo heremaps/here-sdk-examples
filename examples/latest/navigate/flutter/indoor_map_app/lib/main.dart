@@ -17,11 +17,13 @@
  * License-Filename: LICENSE
  */
 
+// Disabled null safety for this file:
+// @dart=2.9
 import 'package:flutter/material.dart';
-import 'package:indoor_map/geometry_info.dart';
-import 'package:indoor_map/indoor_routing_widget.dart';
-import 'package:indoor_map/settings_page.dart';
-import 'package:indoor_map/venue_engine_widget.dart';
+import 'package:indoor_map_app/geometry_info.dart';
+import 'package:indoor_map_app/indoor_routing_widget.dart';
+import 'package:indoor_map_app/settings_page.dart';
+import 'package:indoor_map_app/venue_engine_widget.dart';
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/venue.dart';

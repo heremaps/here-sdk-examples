@@ -33,7 +33,7 @@ import java.util.List;
 // A class that creates car Routes with the HERE SDK.
 public class RouteCalculator {
 
-    private RoutingEngine routingEngine;
+    private final RoutingEngine routingEngine;
 
     public RouteCalculator() {
         try {

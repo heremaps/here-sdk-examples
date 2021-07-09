@@ -17,19 +17,20 @@
  * License-Filename: LICENSE
  */
 
-import 'package:flutter/material.dart';
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/gestures.dart';
 import 'package:here_sdk/mapview.dart';
 
+// A callback to notify the hosting widget.
+typedef ShowDialogFunction = void Function(String title, String message);
+
 class GesturesExample {
-  BuildContext _context;
-  HereMapController _hereMapController;
+  final HereMapController _hereMapController;
+  final ShowDialogFunction _showDialog;
 
-  GesturesExample(BuildContext context, HereMapController hereMapController) {
-    _context = context;
-    _hereMapController = hereMapController;
-
+  GesturesExample(ShowDialogFunction showDialogCallback, HereMapController hereMapController)
+      : _showDialog = showDialogCallback,
+        _hereMapController = hereMapController {
     double distanceToEarthInMeters = 8000;
     _hereMapController.camera.lookAtPointWithDistance(GeoCoordinates(52.530932, 13.384915), distanceToEarthInMeters);
 
@@ -43,31 +44,28 @@ class GesturesExample {
   }
 
   void _setTapGestureHandler() {
-    _hereMapController.gestures.tapListener = TapListener.fromLambdas(lambda_onTap: (Point2D touchPoint) {
+    _hereMapController.gestures.tapListener = TapListener((Point2D touchPoint) {
       var geoCoordinates = _toString(_hereMapController.viewToGeoCoordinates(touchPoint));
       print('Tap at: $geoCoordinates');
     });
   }
 
   void _setDoubleTapGestureHandler() {
-    _hereMapController.gestures.doubleTapListener =
-        DoubleTapListener.fromLambdas(lambda_onDoubleTap: (Point2D touchPoint) {
+    _hereMapController.gestures.doubleTapListener = DoubleTapListener((Point2D touchPoint) {
       var geoCoordinates = _toString(_hereMapController.viewToGeoCoordinates(touchPoint));
       print('DoubleTap at: $geoCoordinates');
     });
   }
 
   void _setTwoFingerTapGestureHandler() {
-    _hereMapController.gestures.twoFingerTapListener =
-        TwoFingerTapListener.fromLambdas(lambda_onTwoFingerTap: (Point2D touchCenterPoint) {
+    _hereMapController.gestures.twoFingerTapListener = TwoFingerTapListener((Point2D touchCenterPoint) {
       var geoCoordinates = _toString(_hereMapController.viewToGeoCoordinates(touchCenterPoint));
       print('TwoFingerTap at: $geoCoordinates');
     });
   }
 
   void _setLongPressGestureHandler() {
-    _hereMapController.gestures.longPressListener =
-        LongPressListener.fromLambdas(lambda_onLongPress: (GestureState gestureState, Point2D touchPoint) {
+    _hereMapController.gestures.longPressListener = LongPressListener((GestureState gestureState, Point2D touchPoint) {
       var geoCoordinates = _toString(_hereMapController.viewToGeoCoordinates(touchPoint));
 
       if (gestureState == GestureState.begin) {
@@ -84,34 +82,13 @@ class GesturesExample {
     });
   }
 
-  String _toString(GeoCoordinates geoCoordinates) {
-    return geoCoordinates.latitude.toString() + ", " + geoCoordinates.longitude.toString();
-  }
+  String _toString(GeoCoordinates? geoCoordinates) {
+    if (geoCoordinates == null) {
+      // This can happen, when there is no map view touched, for example, when the screen was tilted and
+      // the touch point is on the horizon.
+      return "Error: No valid geo coordinates.";
+    }
 
-  Future<void> _showDialog(String title, String message) async {
-    return showDialog<void>(
-      context: _context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(title),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(message),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
+    return geoCoordinates.latitude.toString() + ", " + geoCoordinates.longitude.toString();
   }
 }

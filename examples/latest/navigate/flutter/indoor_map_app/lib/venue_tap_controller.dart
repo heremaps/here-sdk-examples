@@ -17,14 +17,16 @@
  * License-Filename: LICENSE
  */
 
+// Disabled null safety for this file:
+// @dart=2.9
 import 'package:flutter/cupertino.dart';
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/venue.control.dart';
 import 'package:here_sdk/venue.data.dart';
 import 'package:here_sdk/venue.style.dart';
-import 'package:indoor_map/geometry_info.dart';
-import 'package:indoor_map/image_helper.dart';
+import 'package:indoor_map_app/geometry_info.dart';
+import 'package:indoor_map_app/image_helper.dart';
 
 class VenueTapController {
   final HereMapController hereMapController;

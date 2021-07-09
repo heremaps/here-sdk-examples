@@ -22,28 +22,26 @@ import 'package:here_sdk/core.dart';
 import 'package:here_sdk/mapview.dart';
 
 class MapViewPinsExample {
-  HereMapController _hereMapController;
-  final GeoCoordinates MAP_CENTER_GEO_COORDINATES = GeoCoordinates(52.520798, 13.409408);
+  final HereMapController _hereMapController;
+  final GeoCoordinates mapCenterGeoCoordinates = GeoCoordinates(52.520798, 13.409408);
 
-  MapViewPinsExample(HereMapController hereMapController) {
-    _hereMapController = hereMapController;
-
+  MapViewPinsExample(HereMapController hereMapController) : _hereMapController = hereMapController {
     double distanceToEarthInMeters = 7000;
-    _hereMapController.camera.lookAtPointWithDistance(MAP_CENTER_GEO_COORDINATES, distanceToEarthInMeters);
+    _hereMapController.camera.lookAtPointWithDistance(mapCenterGeoCoordinates, distanceToEarthInMeters);
 
     // Add circle to indicate map center.
-    _addCirclePolygon(MAP_CENTER_GEO_COORDINATES);
+    _addCirclePolygon(mapCenterGeoCoordinates);
   }
 
   void addDefaultMapViewPinButtonClicked() {
     _hereMapController.pinWidget(
-        _createWidget("Centered ViewPin", Color.fromARGB(150, 0, 194, 138)), MAP_CENTER_GEO_COORDINATES);
+        _createWidget("Centered ViewPin", Color.fromARGB(150, 0, 194, 138)), mapCenterGeoCoordinates);
   }
 
   void addAnchoredMapViewPinButtonClicked() {
     var widgetPin = _hereMapController.pinWidget(
-        _createWidget("Anchored MapViewPin", Color.fromARGB(200, 0, 144, 138)), MAP_CENTER_GEO_COORDINATES);
-    widgetPin.anchor = Anchor2D.withHorizontalAndVertical(0.5, 1);
+        _createWidget("Anchored MapViewPin", Color.fromARGB(200, 0, 144, 138)), mapCenterGeoCoordinates);
+    widgetPin?.anchor = Anchor2D.withHorizontalAndVertical(0.5, 1);
   }
 
   void clearMap() {
@@ -70,7 +68,7 @@ class MapViewPinsExample {
 
   void _addCirclePolygon(GeoCoordinates geoCoordinates) {
     double radiusInMeters = 120;
-    GeoCircle geoCircle = GeoCircle(MAP_CENTER_GEO_COORDINATES, radiusInMeters);
+    GeoCircle geoCircle = GeoCircle(mapCenterGeoCoordinates, radiusInMeters);
 
     GeoPolygon geoPolygon = GeoPolygon.withGeoCircle(geoCircle);
     Color fillColor = Color.fromARGB(160, 255, 165, 0);

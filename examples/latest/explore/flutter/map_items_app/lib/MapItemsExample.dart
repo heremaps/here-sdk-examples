@@ -29,19 +29,18 @@ import 'package:here_sdk/mapview.dart';
 typedef ShowDialogFunction = void Function(String title, String message);
 
 class MapItemsExample {
-  HereMapController _hereMapController;
+  final HereMapController _hereMapController;
   List<MapMarker> _mapMarkerList = [];
   List<MapMarker3D> _mapMarker3DList = [];
   List<LocationIndicator> _locationIndicatorList = [];
-  MapImage _poiMapImage;
-  MapImage _photoMapImage;
-  MapImage _circleMapImage;
-  ShowDialogFunction _showDialog;
+  MapImage? _poiMapImage;
+  MapImage? _photoMapImage;
+  MapImage? _circleMapImage;
+  final ShowDialogFunction _showDialog;
 
-  MapItemsExample(ShowDialogFunction showDialogCallback, HereMapController hereMapController) {
-    _showDialog = showDialogCallback;
-    _hereMapController = hereMapController;
-
+  MapItemsExample(ShowDialogFunction showDialogCallback, HereMapController hereMapController)
+      : _showDialog = showDialogCallback,
+        _hereMapController = hereMapController {
     double distanceToEarthInMeters = 8000;
     _hereMapController.camera.lookAtPointWithDistance(GeoCoordinates(52.530932, 13.384915), distanceToEarthInMeters);
 
@@ -124,19 +123,16 @@ class MapItemsExample {
   void clearMap() {
     for (var mapMarker in _mapMarkerList) {
       _hereMapController.mapScene.removeMapMarker(mapMarker);
-      mapMarker.release();
     }
     _mapMarkerList.clear();
 
     for (var mapMarker3D in _mapMarker3DList) {
       _hereMapController.mapScene.removeMapMarker3d(mapMarker3D);
-      mapMarker3D.release();
     }
     _mapMarker3DList.clear();
 
     for (var locationIndicator in _locationIndicatorList) {
       _hereMapController.removeLifecycleListener(locationIndicator);
-      locationIndicator.release();
     }
     _locationIndicatorList.clear();
   }
@@ -152,7 +148,7 @@ class MapItemsExample {
     // Here the bottom, middle position should point to the location.
     Anchor2D anchor2D = Anchor2D.withHorizontalAndVertical(0.5, 1);
 
-    MapMarker mapMarker = MapMarker.withAnchor(geoCoordinates, _poiMapImage, anchor2D);
+    MapMarker mapMarker = MapMarker.withAnchor(geoCoordinates, _poiMapImage!, anchor2D);
     mapMarker.drawOrder = drawOrder;
 
     Metadata metadata = Metadata();
@@ -170,7 +166,7 @@ class MapItemsExample {
       _photoMapImage = MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
     }
 
-    MapMarker mapMarker = MapMarker(geoCoordinates, _photoMapImage);
+    MapMarker mapMarker = MapMarker(geoCoordinates, _photoMapImage!);
     mapMarker.drawOrder = drawOrder;
 
     _hereMapController.mapScene.addMapMarker(mapMarker);
@@ -184,7 +180,7 @@ class MapItemsExample {
       _circleMapImage = MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
     }
 
-    MapMarker mapMarker = MapMarker(geoCoordinates, _circleMapImage);
+    MapMarker mapMarker = MapMarker(geoCoordinates, _circleMapImage!);
     mapMarker.drawOrder = drawOrder;
 
     _hereMapController.mapScene.addMapMarker(mapMarker);
@@ -258,7 +254,7 @@ class MapItemsExample {
   }
 
   void _setTapGestureHandler() {
-    _hereMapController.gestures.tapListener = TapListener.fromLambdas(lambda_onTap: (Point2D touchPoint) {
+    _hereMapController.gestures.tapListener = TapListener((Point2D touchPoint) {
       _pickMapMarker(touchPoint);
     });
   }
@@ -266,6 +262,10 @@ class MapItemsExample {
   void _pickMapMarker(Point2D touchPoint) {
     double radiusInPixel = 2;
     _hereMapController.pickMapItems(touchPoint, radiusInPixel, (pickMapItemsResult) {
+      if (pickMapItemsResult == null) {
+        // Pick operation failed.
+        return;
+      }
       // Note that 3D map markers can't be picked yet. Only marker, polgon and polyline map items are pickable.
       List<MapMarker> mapMarkerList = pickMapItemsResult.markers;
       if (mapMarkerList.length == 0) {
@@ -274,7 +274,7 @@ class MapItemsExample {
       }
 
       MapMarker topmostMapMarker = mapMarkerList.first;
-      Metadata metadata = topmostMapMarker.metadata;
+      Metadata? metadata = topmostMapMarker.metadata;
       if (metadata != null) {
         String message = metadata.getString("key_poi") ?? "No message found.";
         _showDialog("Map Marker picked", message);
@@ -298,7 +298,7 @@ class MapItemsExample {
   }
 
   GeoCoordinates _createRandomGeoCoordinatesAroundMapCenter() {
-    GeoCoordinates centerGeoCoordinates = _hereMapController.viewToGeoCoordinates(
+    GeoCoordinates? centerGeoCoordinates = _hereMapController.viewToGeoCoordinates(
         Point2D(_hereMapController.viewportSize.width / 2, _hereMapController.viewportSize.height / 2));
     if (centerGeoCoordinates == null) {
       // Should never happen for center coordinates.
