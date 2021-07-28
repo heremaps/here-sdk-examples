@@ -29,7 +29,9 @@ import 'package:permission_handler/permission_handler.dart';
 
 import 'main.dart';
 
-class PositioningExample extends State<MyApp> implements LocationListener, LocationStatusListener {
+class PositioningExample extends State<MyApp>
+    with WidgetsBindingObserver
+    implements LocationListener, LocationStatusListener {
   static const String _notAvailable = "--";
   static const double _spacing = 8;
   static const double _padding = 20;
@@ -56,16 +58,22 @@ class PositioningExample extends State<MyApp> implements LocationListener, Locat
   @override
   void initState() {
     super.initState();
-    _locationEngine.addLocationListener(this);
-    _locationEngine.addLocationStatusListener(this);
+    WidgetsBinding.instance!.addObserver(this);
   }
 
   @override
   void dispose() {
-    _locationEngine.removeLocationStatusListener(this);
-    _locationEngine.removeLocationListener(this);
-    _stopLocating();
+    WidgetsBinding.instance!.removeObserver(this);
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.detached) {
+      _stopLocating();
+    } else if (state == AppLifecycleState.resumed) {
+      _startLocating();
+    }
   }
 
   @override
@@ -228,10 +236,14 @@ class PositioningExample extends State<MyApp> implements LocationListener, Locat
 
     _addMyLocationToMap(location);
 
+    _locationEngine.addLocationListener(this);
+    _locationEngine.addLocationStatusListener(this);
     _locationEngine.startWithLocationAccuracy(LocationAccuracy.bestAvailable);
   }
 
   void _stopLocating() {
+    _locationEngine.removeLocationStatusListener(this);
+    _locationEngine.removeLocationListener(this);
     _locationEngine.stop();
   }
 

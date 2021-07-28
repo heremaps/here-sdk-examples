@@ -25,6 +25,7 @@ final class ViewController: UIViewController {
     @IBOutlet private var mapView: MapView!
     private var mapItemsExample: MapItemsExample!
     private var mapObjectsExample: MapObjectsExample!
+    private var mapViewPinsExample: MapViewPinsExample!
     private var isMapSceneLoaded = false
     private var menuSections: [MenuSection] = []
 
@@ -37,7 +38,7 @@ final class ViewController: UIViewController {
         menuSections = buildMenuSections()
     }
 
-    func onLoadScene(mapError: MapError?) {
+    private func onLoadScene(mapError: MapError?) {
         guard mapError == nil else {
             print("Error: Map scene not loaded, \(String(describing: mapError))")
             return
@@ -46,6 +47,7 @@ final class ViewController: UIViewController {
         // Start the example.
         mapItemsExample = MapItemsExample(viewController: self, mapView: mapView)
         mapObjectsExample = MapObjectsExample(mapView: mapView)
+	mapViewPinsExample = MapViewPinsExample(mapView: mapView)
         isMapSceneLoaded = true
     }
     
@@ -132,10 +134,23 @@ final class ViewController: UIViewController {
         }
     }
 
+    private func onDefaultPinButtonClicked(_ sender: Any) {
+        if isMapSceneLoaded {
+            mapViewPinsExample.onDefaultButtonClicked()
+        }
+    }
+
+    private func onAnchoredPinButtonClicked(_ sender: Any) {
+        if isMapSceneLoaded {
+            mapViewPinsExample.onAnchoredButtonClicked()
+        }
+    }
+
     private func onClearButtonClicked(_ sender: Any) {
         if isMapSceneLoaded {
             mapItemsExample.onClearButtonClicked()
             mapObjectsExample.onClearButtonClicked()
+            mapViewPinsExample.onClearButtonClicked()
         }
     }
 
@@ -145,6 +160,7 @@ final class ViewController: UIViewController {
             buildMapMarkerMenuSection(),
             buildLocationIndicatorMenuSection(),
             buildMapObjectMenuSection(),
+            buildMapViewPinsMenuSection(),
             buildClearMenuSection()
         ]
     }
@@ -172,6 +188,13 @@ final class ViewController: UIViewController {
             MenuItem(title: "Polygon", onSelect: onMapItemPolygonClicked),
             MenuItem(title: "Circle", onSelect: onMapItemCircleClicked),
             MenuItem(title: "Arrow", onSelect: onMapItemArrowClicked)
+        ])
+    }
+
+    private func buildMapViewPinsMenuSection() -> MenuSection {
+        return MenuSection(title: "MapView Pins", items: [
+            MenuItem(title: "Default", onSelect: onDefaultPinButtonClicked),
+            MenuItem(title: "Anchored", onSelect: onAnchoredPinButtonClicked)
         ])
     }
 

@@ -17,8 +17,6 @@
  * License-Filename: LICENSE
  */
 
-// Disabled null safety for this file:
-// @dart=2.9
 import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
@@ -30,20 +28,20 @@ import 'package:indoor_map_app/venue_tap_controller.dart';
 class VenueSearchController extends StatefulWidget {
   final VenueSearchControllerState state;
 
-  VenueSearchController({@required this.state});
+  VenueSearchController({required this.state});
 
   @override
   VenueSearchControllerState createState() => state;
 }
 
 class VenueSearchControllerState extends State<VenueSearchController> {
-  VenueTapController _tapController;
-  Venue _venue;
+  VenueTapController? _tapController;
+  Venue? _venue;
   bool _isOpen = false;
   TextEditingController _filterController = TextEditingController();
-  VenueGeometryFilterType _filterType = VenueGeometryFilterType.name;
+  VenueGeometryFilterType? _filterType = VenueGeometryFilterType.name;
 
-  set(VenueTapController tapController) {
+  set(VenueTapController? tapController) {
     _tapController = tapController;
   }
 
@@ -57,7 +55,7 @@ class VenueSearchControllerState extends State<VenueSearchController> {
     });
   }
 
-  setVenue(Venue venue) {
+  setVenue(Venue? venue) {
     setState(() {
       _venue = venue;
     });
@@ -69,8 +67,7 @@ class VenueSearchControllerState extends State<VenueSearchController> {
       return SizedBox.shrink();
     }
 
-    final filteredList =
-        _venue.venueModel.filterGeometry(_filterController.text, _filterType);
+    final filteredList = _venue!.venueModel.filterGeometry(_filterController.text, _filterType!);
     final height = min(filteredList.length, 8);
 
     Widget listView = ListView(
@@ -88,22 +85,19 @@ class VenueSearchControllerState extends State<VenueSearchController> {
             width: 200,
             child: TextField(
                 controller: _filterController,
-                decoration: InputDecoration(
-                    border: InputBorder.none,
-                    hintText: 'Search inside the venue'),
+                decoration: InputDecoration(border: InputBorder.none, hintText: 'Search inside the venue'),
                 onChanged: (text) {
                   _setFilter(text);
                 }),
           ),
           DropdownButton<VenueGeometryFilterType>(
             value: _filterType,
-            onChanged: (VenueGeometryFilterType filterType) {
+            onChanged: (VenueGeometryFilterType? filterType) {
               setState(() {
                 _filterType = filterType;
               });
             },
-            items: VenueGeometryFilterType.values
-                .map((VenueGeometryFilterType type) {
+            items: VenueGeometryFilterType.values.map((VenueGeometryFilterType type) {
               return DropdownMenuItem<VenueGeometryFilterType>(
                 value: type,
                 child: Text(
@@ -157,7 +151,7 @@ class VenueSearchControllerState extends State<VenueSearchController> {
         ),
       ),
       onPressed: () {
-        _tapController.selectGeometry(geometry, geometry.center, true);
+        _tapController!.selectGeometry(geometry, geometry.center, true);
         setOpen(false);
       },
     );

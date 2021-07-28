@@ -19,7 +19,6 @@
 
 package com.here.navigation;
 
-import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.routing.CalculateRouteCallback;
 import com.here.sdk.routing.CarOptions;
@@ -43,18 +42,19 @@ public class RouteCalculator {
         }
     }
 
-    public void calculateRoute(GeoCoordinates startGeoCoordinates,
-                               GeoCoordinates destinationGeoCoordinates,
+    public void calculateRoute(Waypoint startWaypoint,
+                               Waypoint destinationWaypoint,
                                CalculateRouteCallback calculateRouteCallback) {
-        Waypoint startWaypoint = new Waypoint(startGeoCoordinates);
-        Waypoint destinationWaypoint = new Waypoint(destinationGeoCoordinates);
-
         List<Waypoint> waypoints =
                 new ArrayList<>(Arrays.asList(startWaypoint, destinationWaypoint));
 
+        // A route handle is required for the DynamicRoutingEngine to get updates on traffic-optimized routes.
+        CarOptions routingOptions = new CarOptions();
+        routingOptions.routeOptions.enableRouteHandle = true;
+
         routingEngine.calculateRoute(
                 waypoints,
-                new CarOptions(),
+                routingOptions,
                 calculateRouteCallback);
     }
 }

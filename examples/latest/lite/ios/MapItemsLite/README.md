@@ -1,4 +1,4 @@
-The MapItems example app shows how to pin images to mark specific spots on the map. You can find how this is done in [MapItemsExample.swift](MapItemsLite/MapItemsExample.swift).
+The MapItems example app shows how to pin images to mark specific spots on the map. You can find how this is done in [MapItemsExample.swift](MapItemsLite/MapItemsExample.swift). The app also shows how to add `MapPolyline`, `MapPolygon`, and `MapCircle` instances to the map. You can find how this is done in [MapObjectsExample.swift](MapItemsLite/MapObjectsExample.swift).
 
 Build instructions:
 -------------------

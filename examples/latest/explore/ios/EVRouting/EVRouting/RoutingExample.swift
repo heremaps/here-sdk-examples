@@ -146,22 +146,22 @@ class RoutingExample {
                 }
             }
 
-            print("Section \(sectionIndex): Estimated departure battery charge in kWh: \(String(describing: section.departure.chargeInKilowattHours))")
-            print("Section \(sectionIndex): Estimated arrival battery charge in kWh: \(String(describing: section.arrival.chargeInKilowattHours))")
+            print("Section \(sectionIndex): Estimated departure battery charge in kWh: \(String(describing: section.departurePlace.chargeInKilowattHours))")
+            print("Section \(sectionIndex): Estimated arrival battery charge in kWh: \(String(describing: section.arrivalPlace.chargeInKilowattHours))")
 
             // Only charging stations that are needed to reach the destination are listed below.
-            let depStation = section.departure.chargingStation
+            let depStation = section.departurePlace.chargingStation
             if depStation != nil  && !chargingStationsIDs.contains(depStation?.id ?? "-1") {
                 print("Section \(sectionIndex), name of charging station: \(String(describing: depStation?.name))")
                 chargingStationsIDs.append(depStation?.id ?? "-1")
-                addCircleMapMarker(geoCoordinates: section.departure.mapMatchedCoordinates, imageName: "required_charging.png")
+                addCircleMapMarker(geoCoordinates: section.departurePlace.mapMatchedCoordinates, imageName: "required_charging.png")
             }
 
-            let arrStation = section.departure.chargingStation
+            let arrStation = section.departurePlace.chargingStation
             if arrStation != nil && !chargingStationsIDs.contains(arrStation?.id ?? "-1") {
                 print("Section \(sectionIndex), name of charging station: \(String(describing: arrStation?.name))")
                 chargingStationsIDs.append(arrStation?.id ?? "-1")
-                addCircleMapMarker(geoCoordinates: section.arrival.mapMatchedCoordinates, imageName: "required_charging.png")
+                addCircleMapMarker(geoCoordinates: section.arrivalPlace.mapMatchedCoordinates, imageName: "required_charging.png")
             }
 
             sectionIndex += 1
@@ -173,7 +173,7 @@ class RoutingExample {
     private func logRouteViolations(route: Route) {
         let sections = route.sections
         for section in sections {
-            for notice in section.notices {
+            for notice in section.sectionNotices {
                 print("This route contains the following warning: \(notice.code)")
             }
         }

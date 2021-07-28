@@ -34,23 +34,25 @@ class NavigationExample : NavigableLocationDelegate,
                           RouteDeviationDelegate,
                           ManeuverNotificationDelegate,
                           ManeuverViewLaneAssistanceDelegate,
-                          RoadAttributesDelegate {
+                          JunctionViewLaneAssistanceDelegate,
+                          RoadAttributesDelegate,
+                          DynamicRoutingEngineDelegate,
+                          TruckRestrictionsWarningDelegate,
+                          RoadTextsDelegate {
 
     private let viewController: UIViewController
     private let mapView: MapView
     private let visualNavigator: VisualNavigator
+    private var dynamicRoutingEngine: DynamicRoutingEngine?
     private let herePositioningProvider: HEREPositioningProvider
     private let herePositioningSimulator: HEREPositioningSimulator
     private let voiceAssistant: VoiceAssistant
-    private let routeCalculator: RouteCalculator
+    private var lastMapMatchedLocation: MapMatchedLocation?
     private var previousManeuverIndex: Int32 = -1
 
     init(viewController: UIViewController, mapView: MapView) {
         self.viewController = viewController
         self.mapView = mapView
-
-        // Needed for rerouting, when user leaves route.
-        routeCalculator = RouteCalculator()
 
         do {
             // Without a route set, this starts tracking mode.
@@ -69,6 +71,9 @@ class NavigationExample : NavigableLocationDelegate,
         // A helper class for TTS.
         voiceAssistant = VoiceAssistant()
 
+        dynamicRoutingEngine = createDynamicRoutingEngine()
+        dynamicRoutingEngine!.delegate = self
+        
         visualNavigator.navigableLocationDelegate = self
         visualNavigator.routeDeviationDelegate = self
         visualNavigator.routeProgressDelegate = self
@@ -78,7 +83,10 @@ class NavigationExample : NavigableLocationDelegate,
         visualNavigator.speedWarningDelegate = self
         visualNavigator.speedLimitDelegate = self
         visualNavigator.maneuverViewLaneAssistanceDelegate = self
+        visualNavigator.junctionViewLaneAssistanceDelegate = self
         visualNavigator.roadAttributesDelegate = self
+        visualNavigator.truckRestrictionsWarningDelegate = self
+        visualNavigator.roadTextsDelegate = self
     }
 
     func startLocationProvider() {
@@ -88,6 +96,28 @@ class NavigationExample : NavigableLocationDelegate,
                                               accuracy: .navigation)
     }
 
+    func createDynamicRoutingEngine() -> DynamicRoutingEngine {
+        let pollIntervalInMinutes: Int32 = 5
+
+        // We want an update for each poll iteration, so we specify 0 difference.
+        let minTimeDifferenceInSeconds: Int32 = 0
+        let minTimeDifferencePercentage = 0.0
+
+        let dynamicRoutingOptions =
+            DynamicRoutingEngineOptions(pollIntervalInMinutes: pollIntervalInMinutes,
+                                        minTimeDifferenceInSeconds: minTimeDifferenceInSeconds,
+                                        minTimeDifferencePercentage: minTimeDifferencePercentage)
+        
+        do {
+            // With the dynamic routing engine you can poll the HERE backend services to search for routes with less traffic.
+            // THis can happen during guidance - or you can periodically update a route that is shown in a route planner.
+            let dynamicRoutingEngine = try DynamicRoutingEngine(options: dynamicRoutingOptions)
+            return dynamicRoutingEngine
+        } catch let engineInstantiationError {
+            fatalError("Failed to initialize DynamicRoutingEngine. Cause: \(engineInstantiationError)")
+        }
+    }
+    
     // Conform to RouteProgressDelegate.
     // Notifies on the progress along the route including maneuver instructions.
     func onRouteProgressUpdated(_ routeProgress: RouteProgress) {
@@ -123,6 +153,13 @@ class NavigationExample : NavigableLocationDelegate,
         }
 
         previousManeuverIndex = nextManeuverIndex
+        
+        if let lastMapMatchedLocation = lastMapMatchedLocation {
+           // Update the route based on the current location of the driver.
+           // We periodically want to search for better traffic-optimized routes.
+            dynamicRoutingEngine!.updateCurrentLocation(mapMatchedLocation: lastMapMatchedLocation,
+                                                       sectionIndex: routeProgress.sectionIndex)
+       }
     }
 
     func getRoadName(maneuver: Maneuver) -> String {
@@ -239,6 +276,8 @@ class NavigationExample : NavigableLocationDelegate,
             return
         }
 
+        lastMapMatchedLocation = navigableLocation.mapMatchedLocation!
+        
         let speed = navigableLocation.originalLocation.speedInMetersPerSecond
         let accuracy = navigableLocation.originalLocation.speedAccuracyInMetersPerSecond
         print("Driving speed: \(String(describing: speed)) plus/minus accuracy of \(String(describing: accuracy)).")
@@ -277,23 +316,8 @@ class NavigationExample : NavigableLocationDelegate,
 
         let distanceInMeters = currentGeoCoordinates.distance(to: lastGeoCoordinatesOnRoute)
         print("RouteDeviation in meters is \(distanceInMeters)")
-
-        // Calculate a new route when deviation is too large. Note that this ignores route alternatives
-        // and always takes the first route. Route alternatives are not supported for this example app.
-        if (distanceInMeters > 30) {
-            let destination = visualNavigator.route?.sections.last?.arrivalPlace.originalCoordinates
-            routeCalculator.calculateRoute(start: currentGeoCoordinates,
-                                           destination: destination!) { (routingError, routes) in
-                if routingError == nil {
-                    // When routingError is nil, routes is guaranteed to contain at least one route.
-                    self.visualNavigator.route = routes!.first
-                    self.showMessage("Rerouting completed.")
-                    print("A new route was calculated, length: \(String(describing: self.visualNavigator.route?.lengthInMeters)) m.")
-                }
-            }
-        }
     }
-
+    
     // Conform to ManeuverNotificationDelegate.
     // Notifies on voice maneuver messages.
     func onManeuverNotification(_ text: String) {
@@ -315,6 +339,18 @@ class NavigationExample : NavigableLocationDelegate,
         }
     }
 
+    // Conform to the JunctionViewLaneAssistanceDelegate.
+    // Notfies which lane(s) lead to the next maneuvers at complex junctions.
+    func onLaneAssistanceUpdated(_ laneAssistance: JunctionViewLaneAssistance) {
+        let lanes = laneAssistance.lanesForNextJunction        
+        if (lanes.isEmpty) {
+          print("You have passed the complex junction.")
+        } else {
+          print("Attention, a complex junction is ahead.")
+          logLaneRecommendations(lanes)
+        }
+    }
+    
     private func logLaneRecommendations(_ lanes: [Lane]) {
         // The lane at index 0 is the leftmost lane adjacent to the middle of the road.
         // The lane at the last index is the rightmost lane.
@@ -403,6 +439,53 @@ class NavigationExample : NavigableLocationDelegate,
             print("Road attributes: This is a tunnel.");
         }
     }
+    
+    // Conform to the DynamicRoutingEngineDelegate.
+    // Notifies on traffic-optimized routes that are considered better than the current route.
+    func onBetterRouteFound(newRoute: Route,
+                            etaDifferenceInSeconds: Int32,
+                            distanceDifferenceInMeters: Int32) {
+        print("DynamicRoutingEngine: Calculated a new route.");
+        print("DynamicRoutingEngine: etaDifferenceInSeconds: \(etaDifferenceInSeconds).");
+        print("DynamicRoutingEngine: distanceDifferenceInMeters: \(distanceDifferenceInMeters).");
+
+        // An implementation can decide to switch to the new route:
+        // visualNavigator.route = newRoute
+    }
+    
+    // Conform to the TruckRestrictionsWarningDelegate.
+    // Notifies truck drivers on road restrictions ahead. This event notifies on truck restrictions in general,
+    // so it will also deliver events, when the transport type was to a non-truck transport type.
+    // The given restrictions are based on the HERE database of the road network ahead.
+    func onTruckRestrictionsWarningUpdated(_ restrictions: [TruckRestrictionWarning]) {
+        // The list is guaranteed to be non-empty.
+        for truckRestrictionWarning in restrictions {
+            print("TruckRestrictionWarning in \(truckRestrictionWarning.distanceInMeters) meters.")
+            // One of the following restrictions applies ahead, if more restrictions apply at the same time,
+            // they are part of another TruckRestrictionWarning element contained in the list.
+            if (truckRestrictionWarning.weightRestriction != nil) {
+              // For now only one weight type (= truck) is exposed.
+              let type = truckRestrictionWarning.weightRestriction!.type;
+              let value = truckRestrictionWarning.weightRestriction!.valueInKilograms
+              print("TruckRestriction for weight (kg): \(type): \(value)")
+            }
+            if (truckRestrictionWarning.dimensionRestriction != nil) {
+              // Can be either a length, width or height restriction of the truck. For example, a height
+              // restriction can apply for a tunnel. Other possible restrictions are delivered in
+              // separate TruckRestrictionWarning objects contained in the list, if any.
+              let type = truckRestrictionWarning.dimensionRestriction!.type;
+              let value = truckRestrictionWarning.dimensionRestriction!.valueInCentimeters;
+              print("TruckRestriction for dimension: \(type): \(value)")
+            }
+        }
+    }
+    
+    // Conform to RoadTextsDelegate
+    // Notifies whenever any textual attribute of the current road changes, i.e., the current road texts differ
+    // from the previous one. This can be useful during tracking mode, when no maneuver information is provided.
+    func onRoadTextsUpdated(_ roadTexts: RoadTexts) {
+        // See getRoadName() how to get the current road name from the provided RoadTexts.
+    }
 
     func startNavigation(route: Route,
                                 isSimulated: Bool) {
@@ -419,12 +502,15 @@ class NavigationExample : NavigableLocationDelegate,
             enableDevicePositioning()
             showMessage("Starting navgation.")
         }
+        
+        dynamicRoutingEngine!.start(route: route)
     }
 
     func stopNavigation() {
         // Switches to tracking mode when a route was set before, otherwise tracking mode is kept.
         // Without a route the navigator will only notify on the current map-matched location
         // including info such as speed and current street name.
+        dynamicRoutingEngine!.stop();
         visualNavigator.route = nil
         enableDevicePositioning()
         showMessage("Tracking device's location.")
@@ -452,8 +538,8 @@ class NavigationExample : NavigableLocationDelegate,
         visualNavigator.cameraMode = CameraTrackingMode.disabled
     }
 
-    func getLastKnownGeoCoordinates() -> GeoCoordinates? {
-        return herePositioningProvider.getLastKnownLocation()?.coordinates
+    func getLastKnownLocation() -> Location? {
+        return herePositioningProvider.getLastKnownLocation()
     }
 
     private func setupSpeedWarnings() {

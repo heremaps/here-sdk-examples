@@ -17,8 +17,6 @@
  * License-Filename: LICENSE
  */
 
-// Disabled null safety for this file:
-// @dart=2.9
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -27,14 +25,14 @@ import 'package:here_sdk/venue.control.dart';
 class VenuesController extends StatefulWidget {
   final VenuesControllerState state;
 
-  VenuesController({@required this.state});
+  VenuesController({required this.state});
 
   @override
   VenuesControllerState createState() => state;
 }
 
 class VenuesControllerState extends State<VenuesController> {
-  VenueMap _venueMap;
+  VenueMap? _venueMap;
   bool _isOpen = false;
 
   set(VenueMap venueMap) {
@@ -53,11 +51,11 @@ class VenuesControllerState extends State<VenuesController> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_isOpen || _venueMap == null || _venueMap.venues.length == 0) {
+    if (!_isOpen || _venueMap == null || _venueMap!.venues.length == 0) {
       return SizedBox.shrink();
     }
 
-    final venueList = _venueMap.venues.values;
+    final venueList = _venueMap!.venues.values;
     final height = min(venueList.length, 8);
 
     Widget listView = ListView(
@@ -69,18 +67,17 @@ class VenuesControllerState extends State<VenuesController> {
     return Container(
       padding: EdgeInsets.only(top: 5, right: 4, left: 4),
       color: Colors.white,
-      child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Container(height: kMinInteractiveDimension * height, child: listView)
-      ]),
+      child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [Container(height: kMinInteractiveDimension * height, child: listView)]),
     );
   }
 
   Widget _venueItemBuilder(BuildContext context, Venue venue) {
-    String name = venue.venueModel.id.toString() +
-        ": " +
-        venue.venueModel.properties["name"].asString;
+    String name = venue.venueModel.id.toString() + ": " + venue.venueModel.properties["name"]!.asString;
     return Stack(children: [
-      Align(alignment: Alignment.centerLeft,
+      Align(
+        alignment: Alignment.centerLeft,
         child: Container(
           padding: EdgeInsets.only(right: kMinInteractiveDimension),
           child: FlatButton(
@@ -93,23 +90,23 @@ class VenuesControllerState extends State<VenuesController> {
               ),
             ),
             onPressed: () {
-              _venueMap.selectedVenue = venue;
+              _venueMap!.selectedVenue = venue;
               setOpen(false);
             },
           ),
         ),
       ),
-      Align(alignment: Alignment.centerRight,
+      Align(
+        alignment: Alignment.centerRight,
         child: Container(
           width: kMinInteractiveDimension * 0.75,
           child: FlatButton(
             color: Colors.redAccent,
             padding: EdgeInsets.zero,
-            child: Icon(Icons.close,
-                color: Colors.white, size: kMinInteractiveDimension * 0.75),
+            child: Icon(Icons.close, color: Colors.white, size: kMinInteractiveDimension * 0.75),
             onPressed: () {
               setState(() {
-                _venueMap.removeVenue(venue);
+                _venueMap!.removeVenue(venue);
               });
             },
           ),

@@ -34,6 +34,9 @@ import 'package:here_sdk/location.dart';
 // it is required to request and to show the user's consent decision.
 // In addition, users must be able to change their consent decision at any time.
 // In main.dart you can see an example how the consent handling can be implemented.
+//
+// Note that this app does not show how to get background location updates. If you want to enable
+// background location updates, please refer to the "Get Locations" section in the Developer's Guide.
 class HEREPositioningProvider implements LocationStatusListener {
   late LocationEngine _locationEngine;
   late LocationListener updateListener;

@@ -17,8 +17,6 @@
  * License-Filename: LICENSE
  */
 
-// Disabled null safety for this file:
-// @dart=2.9
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:here_sdk/routing.dart';
@@ -27,7 +25,7 @@ import 'package:here_sdk/routing.dart';
 class IndoorRouteOptionsWidget extends StatefulWidget {
   final IndoorRouteOptionsState state;
 
-  IndoorRouteOptionsWidget({@required this.state});
+  IndoorRouteOptionsWidget({required this.state});
 
   @override
   IndoorRouteOptionsState createState() => state;
@@ -37,12 +35,13 @@ class IndoorRouteOptionsState extends State<IndoorRouteOptionsWidget> {
   bool _isEnabled = false;
   IndoorRouteOptions _options = IndoorRouteOptions.withDefaults();
   Map<IndoorFeatures, bool> _avoidFeatures = {
-    IndoorFeatures.elevator : false,
-    IndoorFeatures.escalator : false,
-    IndoorFeatures.stairs : false,
-    IndoorFeatures.movingWalkway : false,
-    IndoorFeatures.ramp : false,
-    IndoorFeatures.transition : false};
+    IndoorFeatures.elevator: false,
+    IndoorFeatures.escalator: false,
+    IndoorFeatures.stairs: false,
+    IndoorFeatures.movingWalkway: false,
+    IndoorFeatures.ramp: false,
+    IndoorFeatures.transition: false
+  };
 
   bool get isEnabled => _isEnabled;
 
@@ -79,182 +78,183 @@ class IndoorRouteOptionsState extends State<IndoorRouteOptionsWidget> {
     return Container(
       alignment: Alignment.centerLeft,
       padding: EdgeInsets.only(top: 10, left: 5, bottom: 10),
-      child: Column( children: [
-        Row( children: [
-          Container(
-            child: Text(
-              "Route mode:",
-              textAlign: TextAlign.start,
-            ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                child: Text(
+                  "Route mode:",
+                  textAlign: TextAlign.start,
+                ),
+              ),
+              Container(
+                child: Row(children: [
+                  Radio(
+                    value: OptimizationMode.fastest,
+                    groupValue: _options.routeOptions.optimizationMode,
+                    onChanged: (OptimizationMode? value) {
+                      setState(() {
+                        _options.routeOptions.optimizationMode = value!;
+                      });
+                    },
+                  ),
+                  Text('Fast'),
+                ]),
+              ),
+              Container(
+                child: Row(children: [
+                  Radio(
+                    value: OptimizationMode.shortest,
+                    groupValue: _options.routeOptions.optimizationMode,
+                    onChanged: (OptimizationMode? value) {
+                      setState(() {
+                        _options.routeOptions.optimizationMode = value!;
+                      });
+                    },
+                  ),
+                  Text('Short'),
+                ]),
+              ),
+            ],
           ),
-          Container(
-            child: Row(
-              children: [
-                Radio(
-                  value: OptimizationMode.fastest,
-                  groupValue: _options.routeOptions.optimizationMode,
-                  onChanged: (OptimizationMode value) {
+          Row(
+            children: [
+              Container(
+                child: Text(
+                  "Transport mode:",
+                  textAlign: TextAlign.start,
+                ),
+              ),
+              Container(
+                child: Row(children: [
+                  Radio(
+                    value: IndoorTransportMode.pedestrian,
+                    groupValue: _options.transportMode,
+                    onChanged: (IndoorTransportMode? value) {
+                      setState(() {
+                        _options.transportMode = value!;
+                      });
+                    },
+                  ),
+                  Text('Pedestrian'),
+                ]),
+              ),
+              Container(
+                child: Row(children: [
+                  Radio(
+                    value: IndoorTransportMode.car,
+                    groupValue: _options.transportMode,
+                    onChanged: (IndoorTransportMode? value) {
+                      setState(() {
+                        _options.transportMode = value!;
+                      });
+                    },
+                  ),
+                  Text('Car'),
+                ]),
+              ),
+            ],
+          ),
+          Container(alignment: Alignment.centerLeft, padding: EdgeInsets.only(top: 10), child: Text("Avoid features:")),
+          Row(
+            children: [
+              Container(
+                width: 170,
+                alignment: Alignment.centerLeft,
+                child: CheckboxListTile(
+                  title: Text("Elevator"),
+                  value: _avoidFeatures[IndoorFeatures.elevator],
+                  onChanged: (newValue) {
                     setState(() {
-                      _options.routeOptions.optimizationMode = value;
+                      _setAvoidIndoorFeature(IndoorFeatures.elevator, newValue!);
                     });
                   },
+                  controlAffinity: ListTileControlAffinity.leading,
                 ),
-                Text('Fast'),
-              ]
-            ),
-          ),
-          Container(
-            child: Row(
-              children: [
-                Radio(
-                  value: OptimizationMode.shortest,
-                  groupValue: _options.routeOptions.optimizationMode,
-                  onChanged: (OptimizationMode value) {
+              ),
+              Container(
+                width: 170,
+                alignment: Alignment.centerRight,
+                child: CheckboxListTile(
+                  title: Text("Moving walkway"),
+                  value: _avoidFeatures[IndoorFeatures.movingWalkway],
+                  onChanged: (newValue) {
                     setState(() {
-                      _options.routeOptions.optimizationMode = value;
+                      _setAvoidIndoorFeature(IndoorFeatures.movingWalkway, newValue!);
                     });
                   },
+                  controlAffinity: ListTileControlAffinity.leading,
                 ),
-                Text('Short'),
-              ]
-            ),
+              )
+            ],
           ),
-        ],),
-        Row( children: [
-          Container(
-            child: Text(
-              "Transport mode:",
-              textAlign: TextAlign.start,
-            ),
-          ),
-          Container(
-            child: Row(
-              children: [
-                Radio(
-                  value: IndoorTransportMode.pedestrian,
-                  groupValue: _options.transportMode,
-                  onChanged: (IndoorTransportMode value) {
+          Row(
+            children: [
+              Container(
+                width: 170,
+                alignment: Alignment.centerLeft,
+                child: CheckboxListTile(
+                  title: Text("Escalator"),
+                  value: _avoidFeatures[IndoorFeatures.escalator],
+                  onChanged: (newValue) {
                     setState(() {
-                      _options.transportMode = value;
+                      _setAvoidIndoorFeature(IndoorFeatures.escalator, newValue!);
                     });
                   },
+                  controlAffinity: ListTileControlAffinity.leading,
                 ),
-                Text('Pedestrian'),
-              ]
-            ),
-          ),
-          Container(
-            child: Row(
-              children: [
-                Radio(
-                  value: IndoorTransportMode.car,
-                  groupValue: _options.transportMode,
-                  onChanged: (IndoorTransportMode value) {
+              ),
+              Container(
+                width: 170,
+                alignment: Alignment.centerRight,
+                child: CheckboxListTile(
+                  title: Text("Ramp"),
+                  value: _avoidFeatures[IndoorFeatures.ramp],
+                  onChanged: (newValue) {
                     setState(() {
-                      _options.transportMode = value;
+                      _setAvoidIndoorFeature(IndoorFeatures.ramp, newValue!);
                     });
                   },
+                  controlAffinity: ListTileControlAffinity.leading,
                 ),
-                Text('Car'),
-              ]
-            ),
+              )
+            ],
           ),
-        ],),
-        Container(
-          alignment: Alignment.centerLeft,
-          padding: EdgeInsets.only(top: 10),
-          child: Text("Avoid features:")),
-        Row( children: [
-          Container(
-            width: 170,
-            alignment: Alignment.centerLeft,
-            child: CheckboxListTile(
-              title: Text("Elevator"),
-              value: _avoidFeatures[IndoorFeatures.elevator],
-              onChanged: (newValue) {
-                setState(() {
-                  _setAvoidIndoorFeature(IndoorFeatures.elevator, newValue);
-                });
-              },
-              controlAffinity: ListTileControlAffinity.leading,
-            ),
+          Row(
+            children: [
+              Container(
+                width: 170,
+                alignment: Alignment.centerLeft,
+                child: CheckboxListTile(
+                  title: Text("Stairs"),
+                  value: _avoidFeatures[IndoorFeatures.stairs],
+                  onChanged: (newValue) {
+                    setState(() {
+                      _setAvoidIndoorFeature(IndoorFeatures.stairs, newValue!);
+                    });
+                  },
+                  controlAffinity: ListTileControlAffinity.leading,
+                ),
+              ),
+              Container(
+                width: 170,
+                alignment: Alignment.centerRight,
+                child: CheckboxListTile(
+                  title: Text("Transition"),
+                  value: _avoidFeatures[IndoorFeatures.transition],
+                  onChanged: (newValue) {
+                    setState(() {
+                      _setAvoidIndoorFeature(IndoorFeatures.transition, newValue!);
+                    });
+                  },
+                  controlAffinity: ListTileControlAffinity.leading,
+                ),
+              )
+            ],
           ),
-          Container(
-            width: 170,
-            alignment: Alignment.centerRight,
-            child: CheckboxListTile(
-              title: Text("Moving walkway"),
-              value: _avoidFeatures[IndoorFeatures.movingWalkway],
-              onChanged: (newValue) {
-                setState(() {
-                  _setAvoidIndoorFeature(IndoorFeatures.movingWalkway, newValue);
-                });
-              },
-              controlAffinity: ListTileControlAffinity.leading,
-            ),
-          )
-        ],),
-        Row( children: [
-          Container(
-            width: 170,
-            alignment: Alignment.centerLeft,
-            child: CheckboxListTile(
-              title: Text("Escalator"),
-              value: _avoidFeatures[IndoorFeatures.escalator],
-              onChanged: (newValue) {
-                setState(() {
-                  _setAvoidIndoorFeature(IndoorFeatures.escalator, newValue);
-                });
-              },
-              controlAffinity: ListTileControlAffinity.leading,
-            ),
-          ),
-          Container(
-            width: 170,
-            alignment: Alignment.centerRight,
-            child: CheckboxListTile(
-              title: Text("Ramp"),
-              value: _avoidFeatures[IndoorFeatures.ramp],
-              onChanged: (newValue) {
-                setState(() {
-                  _setAvoidIndoorFeature(IndoorFeatures.ramp, newValue);
-                });
-              },
-              controlAffinity: ListTileControlAffinity.leading,
-            ),
-          )
-        ],),
-        Row( children: [
-          Container(
-            width: 170,
-            alignment: Alignment.centerLeft,
-            child: CheckboxListTile(
-              title: Text("Stairs"),
-              value: _avoidFeatures[IndoorFeatures.stairs],
-              onChanged: (newValue) {
-                setState(() {
-                  _setAvoidIndoorFeature(IndoorFeatures.stairs, newValue);
-                });
-              },
-              controlAffinity: ListTileControlAffinity.leading,
-            ),
-          ),
-          Container(
-            width: 170,
-            alignment: Alignment.centerRight,
-            child: CheckboxListTile(
-              title: Text("Transition"),
-              value: _avoidFeatures[IndoorFeatures.transition],
-              onChanged: (newValue) {
-                setState(() {
-                  _setAvoidIndoorFeature(IndoorFeatures.transition, newValue);
-                });
-              },
-              controlAffinity: ListTileControlAffinity.leading,
-            ),
-          )
-        ],),
-      ],),
+        ],
+      ),
     );
   }
 }

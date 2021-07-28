@@ -17,8 +17,6 @@
  * License-Filename: LICENSE
  */
 
-// Disabled null safety for this file:
-// @dart=2.9
 import 'package:flutter/material.dart';
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/gestures.dart';
@@ -39,7 +37,7 @@ import 'geometry_info.dart';
 class VenueEngineWidget extends StatefulWidget {
   final VenueEngineState state;
 
-  VenueEngineWidget({@required this.state});
+  VenueEngineWidget({required this.state});
 
   @override
   VenueEngineState createState() => state;
@@ -48,18 +46,18 @@ class VenueEngineWidget extends StatefulWidget {
 // The VenueEngineState listens to different venue events and helps another
 // widgets react on changes.
 class VenueEngineState extends State<VenueEngineWidget> {
-  HereMapController _hereMapController;
-  VenueEngine _venueEngine;
-  IndoorRoutingState _indoorRoutingState;
-  GeometryInfoState _geometryInfoState;
-  VenueServiceListener _serviceListener;
-  VenueSelectionListener _venueSelectionListener;
-  VenueDrawingSelectionListener _drawingSelectionListener;
-  VenueLevelSelectionListener _levelSelectionListener;
-  VenueLifecycleListenerImpl _venueLifecycleListener;
-  VenueTapController _venueTapController;
-  VenueTapListenerImpl _tapListener;
-  VenueLongPressListenerImpl _longPressListener;
+  HereMapController? _hereMapController;
+  VenueEngine? _venueEngine;
+  IndoorRoutingState? _indoorRoutingState;
+  GeometryInfoState? _geometryInfoState;
+  late VenueServiceListener _serviceListener;
+  late VenueSelectionListener _venueSelectionListener;
+  late VenueDrawingSelectionListener _drawingSelectionListener;
+  late VenueLevelSelectionListener _levelSelectionListener;
+  late VenueLifecycleListenerImpl _venueLifecycleListener;
+  VenueTapController? _venueTapController;
+  VenueTapListenerImpl? _tapListener;
+  VenueLongPressListenerImpl? _longPressListener;
   final _drawingSwitcherState = DrawingSwitcherState();
   final _levelSwitcherState = LevelSwitcherState();
   final _venueSearchState = VenueSearchControllerState();
@@ -79,7 +77,7 @@ class VenueEngineState extends State<VenueEngineWidget> {
     ]);
   }
 
-  VenueEngine get venueEngine => _venueEngine;
+  VenueEngine? get venueEngine => _venueEngine;
 
   VenueSearchControllerState getVenueSearchState() {
     return _venueSearchState;
@@ -89,8 +87,8 @@ class VenueEngineState extends State<VenueEngineWidget> {
     return _venuesState;
   }
 
-  set(HereMapController hereMapController, VenueEngine venueEngine,
-      IndoorRoutingState indoorRoutingState, GeometryInfoState geometryInfoState) {
+  set(HereMapController hereMapController, VenueEngine venueEngine, IndoorRoutingState indoorRoutingState,
+      GeometryInfoState geometryInfoState) {
     _hereMapController = hereMapController;
     _venueEngine = venueEngine;
     _indoorRoutingState = indoorRoutingState;
@@ -100,15 +98,15 @@ class VenueEngineState extends State<VenueEngineWidget> {
   selectVenue(int venueId) {
     if (_venueEngine != null) {
       // Select venue by ID.
-      _venueEngine.venueMap.selectVenueAsync(venueId);
+      _venueEngine!.venueMap.selectVenueAsync(venueId);
     }
   }
 
   onVenueEngineCreated() {
-    var venueMap = venueEngine.venueMap;
+    var venueMap = venueEngine!.venueMap;
     // Add needed listeners.
     _serviceListener = VenueServiceListenerImpl();
-    _venueEngine.venueService.addServiceListener(_serviceListener);
+    _venueEngine!.venueService.addServiceListener(_serviceListener);
     _venueSelectionListener = VenueSelectionListenerImpl(this);
     _drawingSelectionListener = DrawingSelectionListenerImpl(this);
     _levelSelectionListener = LevelSelectionListenerImpl(this);
@@ -119,56 +117,54 @@ class VenueEngineState extends State<VenueEngineWidget> {
     venueMap.addVenueLifecycleListener(_venueLifecycleListener);
     // Create a venue tap controller.
     _venueTapController = VenueTapController(
-        hereMapController: _hereMapController,
-        venueMap: venueMap,
-        geometryInfoState: _geometryInfoState);
-    _indoorRoutingState.set(_hereMapController, venueEngine);
+        hereMapController: _hereMapController, venueMap: venueMap, geometryInfoState: _geometryInfoState);
+    _indoorRoutingState!.set(_hereMapController, venueEngine!);
     _tapListener = VenueTapListenerImpl(_indoorRoutingState, _venueTapController);
     _longPressListener = VenueLongPressListenerImpl(_indoorRoutingState);
     // Set a tap listener.
-    _hereMapController.gestures.tapListener = _tapListener;
-    _hereMapController.gestures.longPressListener = _longPressListener;
+    _hereMapController!.gestures.tapListener = _tapListener;
+    _hereMapController!.gestures.longPressListener = _longPressListener;
     _venueSearchState.set(_venueTapController);
     _venuesState.set(venueMap);
     // Start VenueEngine. Once authentication is done, the authentication
     // callback will be triggered. Afterwards, VenueEngine will start
     // VenueService. Once VenueService is initialized,
     // VenueServiceListener.onInitializationCompleted method will be called.
-    venueEngine.start(_onAuthCallback);
+    venueEngine!.start(_onAuthCallback);
   }
 
-  _onAuthCallback(AuthenticationError error, AuthenticationData data) {
+  _onAuthCallback(AuthenticationError? error, AuthenticationData? data) {
     if (error != null) {
       print("Failed to authenticate the venue engine: " + error.toString());
     }
   }
 
-  onVenueSelectionChanged(Venue selectedVenue) {
+  onVenueSelectionChanged(Venue? selectedVenue) {
     _venueSearchState.setVenue(selectedVenue);
     if (selectedVenue != null) {
       // Move camera to the selected venue.
-      _hereMapController.camera.lookAtPoint(selectedVenue.venueModel.center);
+      _hereMapController!.camera.lookAtPoint(selectedVenue.venueModel.center);
     }
     // Update the selected drawing with a new selected venue.
     onDrawingSelectionChanged(selectedVenue);
   }
 
-  onDrawingSelectionChanged(Venue selectedVenue) {
+  onDrawingSelectionChanged(Venue? selectedVenue) {
     // Update the DrawingSwitcherState.
     _drawingSwitcherState.onDrawingsChanged(selectedVenue);
     // Update the selected level with a new selected drawing.
     onLevelSelectionChanged(selectedVenue);
   }
 
-  onLevelSelectionChanged(Venue selectedVenue) {
+  onLevelSelectionChanged(Venue? selectedVenue) {
     // Update the LevelSwitcherState.
     _levelSwitcherState.onLevelsChanged(selectedVenue);
     // Deselect the geometry in case of a selection of a level.
-    _venueTapController.onLevelChanged(selectedVenue);
+    _venueTapController!.onLevelChanged(selectedVenue);
   }
 
   onVenuesChanged() {
-    onVenueSelectionChanged(_venueEngine.venueMap.selectedVenue);
+    onVenueSelectionChanged(_venueEngine!.venueMap.selectedVenue);
     _venuesState.setState(() {});
   }
 }
@@ -193,14 +189,14 @@ class VenueServiceListenerImpl implements VenueServiceListener {
 
 // A listener for the venue selection event.
 class VenueSelectionListenerImpl implements VenueSelectionListener {
-  VenueEngineState _venueEngineState;
+  late VenueEngineState _venueEngineState;
 
   VenueSelectionListenerImpl(VenueEngineState venueEngineState) {
     _venueEngineState = venueEngineState;
   }
 
   @override
-  onSelectedVenueChanged(Venue deselectedVenue, Venue selectedVenue) {
+  onSelectedVenueChanged(Venue? deselectedVenue, Venue? selectedVenue) {
     _venueEngineState.onVenueSelectionChanged(selectedVenue);
   }
 
@@ -212,15 +208,14 @@ class VenueSelectionListenerImpl implements VenueSelectionListener {
 
 // A listener for the drawing selection event.
 class DrawingSelectionListenerImpl implements VenueDrawingSelectionListener {
-  VenueEngineState _venueEngineState;
+  late VenueEngineState _venueEngineState;
 
   DrawingSelectionListenerImpl(VenueEngineState venueEngineState) {
     _venueEngineState = venueEngineState;
   }
 
   @override
-  onDrawingSelected(Venue venue, VenueDrawing deselectedDrawing,
-      VenueDrawing selectedDrawing) {
+  onDrawingSelected(Venue venue, VenueDrawing? deselectedDrawing, VenueDrawing selectedDrawing) {
     _venueEngineState.onDrawingSelectionChanged(venue);
   }
 
@@ -232,15 +227,14 @@ class DrawingSelectionListenerImpl implements VenueDrawingSelectionListener {
 
 // A listener for the level selection event.
 class LevelSelectionListenerImpl implements VenueLevelSelectionListener {
-  VenueEngineState _venueEngineState;
+  late VenueEngineState _venueEngineState;
 
   LevelSelectionListenerImpl(VenueEngineState venueEngineState) {
     _venueEngineState = venueEngineState;
   }
 
   @override
-  onLevelSelected(Venue venue, VenueDrawing drawing, VenueLevel deselectedLevel,
-      VenueLevel selectedLevel) {
+  onLevelSelected(Venue venue, VenueDrawing drawing, VenueLevel? deselectedLevel, VenueLevel selectedLevel) {
     _venueEngineState.onLevelSelectionChanged(venue);
   }
 
@@ -252,7 +246,7 @@ class LevelSelectionListenerImpl implements VenueLevelSelectionListener {
 
 // A listener for the venues lifecycle event.
 class VenueLifecycleListenerImpl implements VenueLifecycleListener {
-  VenueEngineState _venueEngineState;
+  late VenueEngineState _venueEngineState;
 
   VenueLifecycleListenerImpl(VenueEngineState venueEngineState) {
     _venueEngineState = venueEngineState;
@@ -276,22 +270,22 @@ class VenueLifecycleListenerImpl implements VenueLifecycleListener {
 
 // A listener for the map tap event.
 class VenueTapListenerImpl implements TapListener {
-  IndoorRoutingState _indoorRoutingState;
-  VenueTapController _tapController;
+  IndoorRoutingState? _indoorRoutingState;
+  VenueTapController? _tapController;
 
-  VenueTapListenerImpl(IndoorRoutingState indoorRoutingState, VenueTapController tapController) {
+  VenueTapListenerImpl(IndoorRoutingState? indoorRoutingState, VenueTapController? tapController) {
     _indoorRoutingState = indoorRoutingState;
     _tapController = tapController;
   }
 
   @override
   onTap(Point2D origin) {
-    if (_indoorRoutingState.isEnabled) {
+    if (_indoorRoutingState!.isEnabled) {
       // In case if the indoor routing state is visible, set a destination point.
-      _indoorRoutingState.setDestinationPoint(origin);
+      _indoorRoutingState!.setDestinationPoint(origin);
     } else {
       // Otherwise, redirect the event to the venue tap controller.
-      _tapController.onTap(origin);
+      _tapController!.onTap(origin);
     }
   }
 
@@ -303,17 +297,17 @@ class VenueTapListenerImpl implements TapListener {
 
 // A listener for the map long press event.
 class VenueLongPressListenerImpl implements LongPressListener {
-  IndoorRoutingState _indoorRoutingState;
+  IndoorRoutingState? _indoorRoutingState;
 
-  VenueLongPressListenerImpl(IndoorRoutingState indoorRoutingState) {
+  VenueLongPressListenerImpl(IndoorRoutingState? indoorRoutingState) {
     _indoorRoutingState = indoorRoutingState;
   }
 
   @override
-  onLongPress(GestureState state, Point2D origin  ) {
-    if (_indoorRoutingState.isEnabled) {
+  onLongPress(GestureState state, Point2D origin) {
+    if (_indoorRoutingState!.isEnabled) {
       // In case if the indoor routing state is visible, set a start point.
-      _indoorRoutingState.setStartPoint(origin);
+      _indoorRoutingState!.setStartPoint(origin);
     }
   }
 

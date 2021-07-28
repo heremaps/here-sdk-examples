@@ -35,31 +35,45 @@ class MapObjectsExample {
   }
 
   void showMapPolyline() {
-    _clearMap();
+    clearMap();
     _mapPolyline = _createPolyline();
     _mapScene.addMapPolyline(_mapPolyline!);
   }
 
   void showMapArrow() {
-    _clearMap();
+    clearMap();
     _mapArrow = _createMapArrow();
     _mapScene.addMapArrow(_mapArrow!);
   }
 
   void showMapPolygon() {
-    _clearMap();
+    clearMap();
     _mapPolygon = _createPolygon();
     _mapScene.addMapPolygon(_mapPolygon!);
   }
 
   void showMapCircle() {
-    _clearMap();
+    clearMap();
     _mapCircle = _createMapCircle();
     _mapScene.addMapPolygon(_mapCircle!);
   }
 
-  void clearMapButtonClicked() {
-    _clearMap();
+  void clearMap() {
+    if (_mapPolyline != null) {
+      _mapScene.removeMapPolyline(_mapPolyline!);
+    }
+
+    if (_mapArrow != null) {
+      _mapScene.removeMapArrow(_mapArrow!);
+    }
+
+    if (_mapPolygon != null) {
+      _mapScene.removeMapPolygon(_mapPolygon!);
+    }
+
+    if (_mapCircle != null) {
+      _mapScene.removeMapPolygon(_mapCircle!);
+    }
   }
 
   MapPolyline? _createPolyline() {
@@ -137,23 +151,5 @@ class MapObjectsExample {
     MapPolygon mapPolygon = MapPolygon(geoPolygon, fillColor);
 
     return mapPolygon;
-  }
-
-  void _clearMap() {
-    if (_mapPolyline != null) {
-      _mapScene.removeMapPolyline(_mapPolyline!);
-    }
-
-    if (_mapArrow != null) {
-      _mapScene.removeMapArrow(_mapArrow!);
-    }
-
-    if (_mapPolygon != null) {
-      _mapScene.removeMapPolygon(_mapPolygon!);
-    }
-
-    if (_mapCircle != null) {
-      _mapScene.removeMapPolygon(_mapCircle!);
-    }
   }
 }

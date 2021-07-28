@@ -21,9 +21,9 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:here_sdk/core.dart';
-import 'package:here_sdk/core.errors.dart';
 import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/routing.dart' as HERE;
+import 'package:navigation_app/RouteCalculator.dart';
 
 import 'NavigationExample.dart';
 
@@ -35,20 +35,14 @@ class AppLogic {
   MapPolyline? _calculatedRouteMapPolyline;
   HereMapController _hereMapController;
   NavigationExample _navigationExample;
-  late HERE.RoutingEngine _routingEngine;
   ShowDialogFunction _showDialog;
+  RouteCalculator _routeCalculator;
 
   AppLogic(ShowDialogFunction showDialogCallback, HereMapController hereMapController)
       : _showDialog = showDialogCallback,
         _hereMapController = hereMapController,
-        _navigationExample = NavigationExample(hereMapController)
-  {
-    try {
-      _routingEngine = HERE.RoutingEngine();
-    } on InstantiationException {
-      throw Exception('Initialization of RoutingEngine failed.');
-    }
-  }
+        _navigationExample = NavigationExample(hereMapController),
+        _routeCalculator = RouteCalculator() {}
 
   // Shows navigation simulation along a route.
   void startNavigationSimulation() {
@@ -72,8 +66,8 @@ class AppLogic {
     _navigationExample.stopNavigation();
   }
 
-  void stopRendering() {
-    _navigationExample.stopRendering();
+  void detach() {
+    _navigationExample.detach();
   }
 
   Future<void> _calculateRouteFromCurrentLocation(bool isSimulated) async {
@@ -90,13 +84,13 @@ class AppLogic {
     );
 
     var startWaypoint = HERE.Waypoint.withDefaults(currentLocation.coordinates);
+
+    // If a driver is moving, the bearing value can help to improve the route calculation.
+    startWaypoint.headingInDegrees = currentLocation.bearingInDegrees;
+
     var destinationWaypoint = HERE.Waypoint.withDefaults(_createRandomGeoCoordinatesAroundMapCenter());
-    List<HERE.Waypoint> waypoints = [startWaypoint, destinationWaypoint];
 
-    var routingOptions = HERE.CarOptions.withDefaults();
-    routingOptions.routeOptions.enableRouteHandle = true;
-
-    _routingEngine.calculateCarRoute(waypoints, routingOptions,
+    _routeCalculator.calculateCarRoute(startWaypoint, destinationWaypoint,
         (HERE.RoutingError? routingError, List<HERE.Route>? routeList) async {
       if (routingError == null) {
         // When error is null, it is guaranteed that the routeList is not empty.

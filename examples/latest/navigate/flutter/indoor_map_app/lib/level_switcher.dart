@@ -17,8 +17,6 @@
  * License-Filename: LICENSE
  */
 
-// Disabled null safety for this file:
-// @dart=2.9
 import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
@@ -30,19 +28,19 @@ import 'package:here_sdk/venue.data.dart';
 class LevelSwitcher extends StatefulWidget {
   final LevelSwitcherState state;
 
-  LevelSwitcher({@required this.state});
+  LevelSwitcher({required this.state});
 
   @override
   LevelSwitcherState createState() => state;
 }
 
 class LevelSwitcherState extends State<LevelSwitcher> {
-  Venue _selectedVenue;
-  VenueDrawing _selectedDrawing;
-  VenueLevel _selectedLevel;
+  Venue? _selectedVenue;
+  VenueDrawing? _selectedDrawing;
+  VenueLevel? _selectedLevel;
   final int _maxNumberOfVisibleLevels = 5;
 
-  onLevelsChanged(Venue selectedVenue) {
+  onLevelsChanged(Venue? selectedVenue) {
     setState(() {
       _selectedVenue = selectedVenue;
       if (selectedVenue != null) {
@@ -59,14 +57,12 @@ class LevelSwitcherState extends State<LevelSwitcher> {
   Widget build(BuildContext context) {
     // Don't show the level switcher if no venue is selected or there is only
     // one level in the drawing.
-    if (_selectedDrawing == null ||
-        _selectedDrawing.levels.length < 2 ||
-        _selectedLevel == null) {
+    if (_selectedDrawing == null || _selectedDrawing!.levels.length < 2 || _selectedLevel == null) {
       return SizedBox.shrink();
     }
 
     // Find scroll position.
-    final visibleHeight = _getVisibleHeight(_selectedDrawing.levels.length);
+    final visibleHeight = _getVisibleHeight(_selectedDrawing!.levels.length);
     final scrollIndex = _getScrollIndex();
     final scrollPosition = max(0, scrollIndex * kMinInteractiveDimension);
     final scrollController = new ScrollController();
@@ -78,19 +74,17 @@ class LevelSwitcherState extends State<LevelSwitcher> {
       reverse: true,
       controller: scrollController,
       itemExtent: kMinInteractiveDimension,
-      children: _selectedDrawing.levels.map((VenueLevel level) {
+      children: _selectedDrawing!.levels.map((VenueLevel level) {
         return _levelItemBuilder(context, level);
       }).toList(),
     );
 
     // Scroll the list view to make the selected level in the middle of
     // the list, if possible.
-    if (_selectedDrawing.levels.length > _maxNumberOfVisibleLevels) {
+    if (_selectedDrawing!.levels.length > _maxNumberOfVisibleLevels) {
       Future.delayed(Duration(milliseconds: 100), () {
-        scrollController.animateTo(
-            _centerLevelInVisibleArea(visibleHeight, scrollPosition),
-            duration: new Duration(milliseconds: 400),
-            curve: Curves.linear);
+        scrollController.animateTo(_centerLevelInVisibleArea(visibleHeight, scrollPosition as double),
+            duration: new Duration(milliseconds: 400), curve: Curves.linear);
       });
     }
 
@@ -104,7 +98,7 @@ class LevelSwitcherState extends State<LevelSwitcher> {
         ),
         child: SizedBox(
           width: kMinInteractiveDimension,
-          height: _getVisibleHeight(_selectedDrawing.levels.length),
+          height: _getVisibleHeight(_selectedDrawing!.levels.length),
           child: listView,
         ),
       ),
@@ -113,7 +107,7 @@ class LevelSwitcherState extends State<LevelSwitcher> {
 
   // Create a list view item from the level.
   Widget _levelItemBuilder(BuildContext context, VenueLevel level) {
-    bool isSelectedLevel = level.id == _selectedLevel.id;
+    bool isSelectedLevel = level.id == _selectedLevel!.id;
     return FlatButton(
       color: isSelectedLevel ? Colors.blue : Colors.white,
       padding: EdgeInsets.zero,
@@ -127,7 +121,7 @@ class LevelSwitcherState extends State<LevelSwitcher> {
       ),
       onPressed: () {
         // Select a level, if the user clicks on the item.
-        _selectedVenue.selectedLevel = level;
+        _selectedVenue!.selectedLevel = level;
       },
     );
   }
@@ -137,27 +131,25 @@ class LevelSwitcherState extends State<LevelSwitcher> {
   // the offset in begin or in the end of the list.
   int _getScrollIndex() {
     int indexOffset = (_maxNumberOfVisibleLevels / 2).floor();
-    if (_selectedVenue.selectedLevelIndex < indexOffset) {
+    if (_selectedVenue!.selectedLevelIndex < indexOffset) {
       return indexOffset;
     }
-    int backOffset = _selectedDrawing.levels.length - 1 - indexOffset;
-    if (_selectedVenue.selectedLevelIndex > backOffset) {
+    int backOffset = _selectedDrawing!.levels.length - 1 - indexOffset;
+    if (_selectedVenue!.selectedLevelIndex > backOffset) {
       return backOffset;
     }
 
-    return _selectedVenue.selectedLevelIndex;
+    return _selectedVenue!.selectedLevelIndex;
   }
 
   // Get a visible height of the list view with levels.
   double _getVisibleHeight(int levelsCount) {
-    final int numberOfVisibleLevels =
-        min(_maxNumberOfVisibleLevels, levelsCount);
+    final int numberOfVisibleLevels = min(_maxNumberOfVisibleLevels, levelsCount);
     return numberOfVisibleLevels * kMinInteractiveDimension;
   }
 
   // Returns a scroll offset to put the level to the center of the list view.
   double _centerLevelInVisibleArea(double visibleHeight, double levelPosition) {
-    return max(
-        0.0, levelPosition - (visibleHeight - kMinInteractiveDimension) / 2);
+    return max(0.0, levelPosition - (visibleHeight - kMinInteractiveDimension) / 2);
   }
 }

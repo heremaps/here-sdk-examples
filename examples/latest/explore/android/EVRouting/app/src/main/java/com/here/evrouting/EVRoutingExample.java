@@ -206,22 +206,22 @@ public class EVRoutingExample {
                 }
             }
 
-            Log.d("EVDetails", "Section " + sectionIndex + ": Estimated departure battery charge in kWh: " + section.getDeparture().chargeInKilowattHours);
-            Log.d("EVDetails", "Section " + sectionIndex + ": Estimated arrival battery charge in kWh: " + section.getArrival().chargeInKilowattHours);
+            Log.d("EVDetails", "Section " + sectionIndex + ": Estimated departure battery charge in kWh: " + section.getDeparturePlace().chargeInKilowattHours);
+            Log.d("EVDetails", "Section " + sectionIndex + ": Estimated arrival battery charge in kWh: " + section.getArrivalPlace().chargeInKilowattHours);
 
             // Only charging stations that are needed to reach the destination are listed below.
-            ChargingStation depStation = section.getDeparture().chargingStation;
+            ChargingStation depStation = section.getDeparturePlace().chargingStation;
             if (depStation != null  && depStation.id != null && !chargingStationsIDs.contains(depStation.id)) {
                 Log.d("EVDetails", "Section " + sectionIndex + ", name of charging station: " + depStation.name);
                 chargingStationsIDs.add(depStation.id);
-                addCircleMapMarker(section.getDeparture().mapMatchedCoordinates, R.drawable.required_charging);
+                addCircleMapMarker(section.getDeparturePlace().mapMatchedCoordinates, R.drawable.required_charging);
             }
 
-            ChargingStation arrStation = section.getDeparture().chargingStation;
+            ChargingStation arrStation = section.getDeparturePlace().chargingStation;
             if (arrStation != null && arrStation.id != null && !chargingStationsIDs.contains(arrStation.id)) {
                 Log.d("EVDetails", "Section " + sectionIndex + ", name of charging station: " + arrStation.name);
                 chargingStationsIDs.add(arrStation.id);
-                addCircleMapMarker(section.getArrival().mapMatchedCoordinates, R.drawable.required_charging);
+                addCircleMapMarker(section.getArrivalPlace().mapMatchedCoordinates, R.drawable.required_charging);
             }
 
             sectionIndex += 1;

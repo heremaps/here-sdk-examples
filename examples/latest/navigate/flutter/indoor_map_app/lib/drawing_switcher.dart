@@ -17,8 +17,6 @@
  * License-Filename: LICENSE
  */
 
-// Disabled null safety for this file:
-// @dart=2.9
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:here_sdk/venue.control.dart';
@@ -28,22 +26,21 @@ import 'package:here_sdk/venue.data.dart';
 class DrawingSwitcher extends StatefulWidget {
   final DrawingSwitcherState state;
 
-  DrawingSwitcher({@required this.state});
+  DrawingSwitcher({required this.state});
 
   @override
   DrawingSwitcherState createState() => state;
 }
 
 class DrawingSwitcherState extends State<DrawingSwitcher> {
-  Venue _selectedVenue;
-  VenueDrawing _selectedDrawing;
+  Venue? _selectedVenue;
+  VenueDrawing? _selectedDrawing;
   bool _isOpen = false;
 
-  onDrawingsChanged(Venue selectedVenue) {
+  onDrawingsChanged(Venue? selectedVenue) {
     setState(() {
       _selectedVenue = selectedVenue;
-      _selectedDrawing =
-          selectedVenue != null ? selectedVenue.selectedDrawing : null;
+      _selectedDrawing = selectedVenue != null ? selectedVenue.selectedDrawing : null;
     });
   }
 
@@ -51,8 +48,7 @@ class DrawingSwitcherState extends State<DrawingSwitcher> {
   Widget build(BuildContext context) {
     // Don't show the drawing switcher if no venue is selected or there is only
     // one drawing in the venue.
-    if (_selectedDrawing == null ||
-        _selectedVenue.venueModel.drawings.length < 2) {
+    if (_selectedDrawing == null || _selectedVenue!.venueModel.drawings.length < 2) {
       return SizedBox.shrink();
     }
 
@@ -62,7 +58,7 @@ class DrawingSwitcherState extends State<DrawingSwitcher> {
       shrinkWrap: true,
       reverse: true,
       itemExtent: kMinInteractiveDimension,
-      children: _selectedVenue.venueModel.drawings.map((VenueDrawing drawing) {
+      children: _selectedVenue!.venueModel.drawings.map((VenueDrawing drawing) {
         return _drawingItemBuilder(context, drawing);
       }).toList(),
     );
@@ -76,8 +72,7 @@ class DrawingSwitcherState extends State<DrawingSwitcher> {
             alignment: Alignment.topCenter,
             child: SizedBox(
               width: 200,
-              height: _selectedVenue.venueModel.drawings.length *
-                  kMinInteractiveDimension,
+              height: _selectedVenue!.venueModel.drawings.length * kMinInteractiveDimension,
               child: _isOpen ? listView : null,
             ),
           ),
@@ -86,9 +81,8 @@ class DrawingSwitcherState extends State<DrawingSwitcher> {
             width: kMinInteractiveDimension,
             child: FlatButton(
               padding: EdgeInsets.zero,
-              child: Icon(Icons.menu,
-                  color: _isOpen ? Colors.blue : Colors.black,
-                  size: kMinInteractiveDimension * 0.75),
+              child:
+                  Icon(Icons.menu, color: _isOpen ? Colors.blue : Colors.black, size: kMinInteractiveDimension * 0.75),
               onPressed: () {
                 // Hide or show the list with drawings.
                 setState(() {
@@ -104,8 +98,8 @@ class DrawingSwitcherState extends State<DrawingSwitcher> {
 
   // Create a list view item from the drawing.
   Widget _drawingItemBuilder(BuildContext context, VenueDrawing drawing) {
-    bool isSelectedDrawing = drawing.id == _selectedDrawing.id;
-    Property nameProp = drawing.properties["name"];
+    bool isSelectedDrawing = drawing.id == _selectedDrawing!.id;
+    Property? nameProp = drawing.properties["name"];
     return FlatButton(
       color: isSelectedDrawing ? Colors.blue : Colors.white,
       padding: EdgeInsets.zero,
@@ -121,7 +115,7 @@ class DrawingSwitcherState extends State<DrawingSwitcher> {
         // Hide the list with drawings.
         _isOpen = false;
         // Select a drawing, if the user clicks on the item.
-        _selectedVenue.selectedDrawing = drawing;
+        _selectedVenue!.selectedDrawing = drawing;
       },
     );
   }

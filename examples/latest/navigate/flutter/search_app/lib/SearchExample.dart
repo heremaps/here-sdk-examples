@@ -305,7 +305,8 @@ class SearchExample {
   GeoBox _getMapViewGeoBox() {
     GeoBox? geoBox = _camera.boundingBox;
     if (geoBox == null) {
-      print("GeoBox creation failed, corners are null. This can happen when the map is tilted. Falling back to a fixed box.");
+      print(
+          "GeoBox creation failed, corners are null. This can happen when the map is tilted. Falling back to a fixed box.");
       GeoCoordinates southWestCorner = GeoCoordinates(
           _camera.state.targetCoordinates.latitude - 0.05, _camera.state.targetCoordinates.longitude - 0.05);
       GeoCoordinates northEastCorner = GeoCoordinates(
