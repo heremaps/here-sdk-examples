@@ -17,8 +17,6 @@
  * License-Filename: LICENSE
  */
 
-// Disabled null safety for this file:
-// @dart=2.9
 import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:here_sdk/core.dart';
@@ -32,11 +30,10 @@ class ImageHelper {
   }
 
   // Creates a marker with a file name of an image and an anchor.
-  static Future<MapMarker> initMapMarker(String fileName, Anchor2D anchor) async
-  {
+  static Future<MapMarker> initMapMarker(String fileName, Anchor2D? anchor) async {
     anchor ??= new Anchor2D();
     final imagePixelData = await ImageHelper.loadFileAsUint8List(fileName);
-    return MapMarker.withAnchor(GeoCoordinates(0.0, 0.0),
-        MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png), anchor);
+    return MapMarker.withAnchor(
+        GeoCoordinates(0.0, 0.0), MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png), anchor);
   }
 }

@@ -17,6 +17,12 @@ allprojects {
         google()
         jcenter()
     }
+
+    gradle.projectsEvaluated {
+        tasks.withType(JavaCompile) {
+            options.deprecation = true
+        }
+    }
 }
 
 task clean(type: Delete) {

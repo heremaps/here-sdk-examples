@@ -35,8 +35,8 @@ class App : LongPressDelegate {
     private let navigationExample: NavigationExample
     private var mapMarkers = [MapMarker]()
     private var mapPolylineList = [MapPolyline]()
-    private var startGeoCoordinates: GeoCoordinates?
-    private var destinationGeoCoordinates: GeoCoordinates?
+    private var startingWaypoint: Waypoint?
+    private var destinationWaypoint: Waypoint?
     private var isLongpressDestination = false
 
     init(viewController: UIViewController, mapView: MapView) {
@@ -91,8 +91,8 @@ class App : LongPressDelegate {
         }
 
         // Calculates a car route.
-        routeCalculator.calculateRoute(start: startGeoCoordinates!,
-                                       destination: destinationGeoCoordinates!) { (routingError, routes) in
+        routeCalculator.calculateRoute(start: startingWaypoint!,
+                                       destination: destinationWaypoint!) { (routingError, routes) in
            if let error = routingError {
                self.showDialog(title: "Error while calculating a route:", message: "\(error)")
                return
@@ -106,25 +106,30 @@ class App : LongPressDelegate {
     }
 
     private func determineRouteWaypoints(isSimulated: Bool) -> Bool {
-        if !isSimulated && navigationExample.getLastKnownGeoCoordinates() == nil {
+        if !isSimulated && navigationExample.getLastKnownLocation() == nil {
             showDialog(title: "Error", message: "No location found.")
             return false
         }
 
         if isSimulated {
-            startGeoCoordinates = getMapViewCenter()
+            startingWaypoint = Waypoint(coordinates: getMapViewCenter())
         } else {
-            startGeoCoordinates = navigationExample.getLastKnownGeoCoordinates()
-            mapView.camera.lookAt(point: startGeoCoordinates!)
+            let location = navigationExample.getLastKnownLocation()!
+            startingWaypoint = Waypoint(coordinates: location.coordinates)
+
+            // If a driver is moving, the bearing value can help to improve the route calculation.
+            startingWaypoint?.headingInDegrees = location.bearingInDegrees
+
+            mapView.camera.lookAt(point: location.coordinates)
         }
 
         if !isLongpressDestination {
-            destinationGeoCoordinates = createRandomGeoCoordinatesAroundMapCenter()
+            destinationWaypoint = Waypoint(coordinates: createRandomGeoCoordinatesAroundMapCenter())
         }
 
         // Add circles to indicate start and destination of route.
-        addCircleMapMarker(geoCoordinates: startGeoCoordinates!, imageName: "green_dot.png")
-        addCircleMapMarker(geoCoordinates: destinationGeoCoordinates!, imageName: "green_dot.png")
+        addCircleMapMarker(geoCoordinates: startingWaypoint!.coordinates, imageName: "green_dot.png")
+        addCircleMapMarker(geoCoordinates: destinationWaypoint!.coordinates, imageName: "green_dot.png")
 
         return true
     }
@@ -205,8 +210,8 @@ class App : LongPressDelegate {
         if state == GestureState.begin {
             clearWaypointMapMarker()
             clearRoute()
-            destinationGeoCoordinates = geoCoordinates
-            addCircleMapMarker(geoCoordinates: destinationGeoCoordinates!, imageName: "green_dot.png")
+            destinationWaypoint = Waypoint(coordinates: geoCoordinates)
+            addCircleMapMarker(geoCoordinates: destinationWaypoint!.coordinates, imageName: "green_dot.png")
             isLongpressDestination = true
             showMessage("New long press destination set.")
         }

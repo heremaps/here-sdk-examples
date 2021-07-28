@@ -25,6 +25,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.here.sdk.core.Color;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.GeoPolyline;
+import com.here.sdk.core.Location;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.gestures.GestureState;
 import com.here.sdk.mapview.MapImage;
@@ -33,6 +34,7 @@ import com.here.sdk.mapview.MapMarker;
 import com.here.sdk.mapview.MapPolyline;
 import com.here.sdk.mapview.MapView;
 import com.here.sdk.routing.Route;
+import com.here.sdk.routing.Waypoint;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,8 +53,8 @@ public class App {
     private final MapView mapView;
     private final List<MapMarker> mapMarkerList = new ArrayList<>();
     private final List<MapPolyline> mapPolylines = new ArrayList<>();
-    private GeoCoordinates startGeoCoordinates;
-    private GeoCoordinates destinationGeoCoordinates;
+    private Waypoint startWaypoint;
+    private Waypoint destinationWaypoint;
     private boolean isLongpressDestination;
     private final RouteCalculator routeCalculator;
     private final NavigationExample navigationExample;
@@ -107,7 +109,7 @@ public class App {
         }
 
         // Calculates a car route.
-        routeCalculator.calculateRoute(startGeoCoordinates, destinationGeoCoordinates, (routingError, routes) -> {
+        routeCalculator.calculateRoute(startWaypoint, destinationWaypoint, (routingError, routes) -> {
             if (routingError == null) {
                 Route route = routes.get(0);
                 showRouteOnMap(route);
@@ -119,25 +121,28 @@ public class App {
     }
 
     private boolean determineRouteWaypoints(boolean isSimulated) {
-        if (!isSimulated && navigationExample.getLastKnownGeoCoordinates() == null) {
+        if (!isSimulated && navigationExample.getLastKnownLocation() == null) {
             showDialog("Error", "No location found.");
             return false;
         }
 
         if (isSimulated) {
-            startGeoCoordinates = getMapViewCenter();
+            startWaypoint = new Waypoint(getMapViewCenter());
         } else {
-            startGeoCoordinates = navigationExample.getLastKnownGeoCoordinates();
-            mapView.getCamera().lookAt(startGeoCoordinates);
+            Location location = navigationExample.getLastKnownLocation();
+            startWaypoint = new Waypoint(location.coordinates);
+            // If a driver is moving, the bearing value can help to improve the route calculation.
+            startWaypoint.headingInDegrees = location.bearingInDegrees;
+            mapView.getCamera().lookAt(location.coordinates);
         }
 
         if (!isLongpressDestination) {
-            destinationGeoCoordinates = createRandomGeoCoordinatesAroundMapCenter();
+            destinationWaypoint = new Waypoint(createRandomGeoCoordinatesAroundMapCenter());
         }
 
         // Add circles to indicate start and destination of route.
-        addCircleMapMarker(startGeoCoordinates, R.drawable.green_dot);
-        addCircleMapMarker(destinationGeoCoordinates, R.drawable.green_dot);
+        addCircleMapMarker(startWaypoint.coordinates, R.drawable.green_dot);
+        addCircleMapMarker(destinationWaypoint.coordinates, R.drawable.green_dot);
 
         return true;
     }
@@ -215,8 +220,8 @@ public class App {
             if (gestureState == GestureState.BEGIN) {
                 clearWaypointMapMarker();
                 clearRoute();
-                destinationGeoCoordinates = geoCoordinates;
-                addCircleMapMarker(destinationGeoCoordinates, R.drawable.green_dot);
+                destinationWaypoint = new Waypoint(geoCoordinates);
+                addCircleMapMarker(geoCoordinates, R.drawable.green_dot);
                 isLongpressDestination = true;
                 Snackbar.make(mapView, "New long press destination set.", Snackbar.LENGTH_SHORT).show();
             }

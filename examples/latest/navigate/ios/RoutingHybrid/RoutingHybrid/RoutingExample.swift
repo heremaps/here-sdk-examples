@@ -98,7 +98,7 @@ class RoutingExample {
     private func logRouteViolations(route: Route) {
         let sections = route.sections
         for section in sections {
-            for notice in section.notices {
+            for notice in section.sectionNotices {
                 print("This route contains the following warning: \(notice.code)")
             }
         }

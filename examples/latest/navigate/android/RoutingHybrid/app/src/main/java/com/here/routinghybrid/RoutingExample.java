@@ -40,13 +40,13 @@ import com.here.sdk.routing.CalculateRouteCallback;
 import com.here.sdk.routing.CarOptions;
 import com.here.sdk.routing.Maneuver;
 import com.here.sdk.routing.ManeuverAction;
-import com.here.sdk.routing.Notice;
 import com.here.sdk.routing.OfflineRoutingEngine;
 import com.here.sdk.routing.Route;
 import com.here.sdk.routing.RoutingEngine;
 import com.here.sdk.routing.RoutingError;
 import com.here.sdk.routing.RoutingInterface;
 import com.here.sdk.routing.Section;
+import com.here.sdk.routing.SectionNotice;
 import com.here.sdk.routing.Waypoint;
 
 import java.util.ArrayList;
@@ -58,13 +58,13 @@ public class RoutingExample {
 
     private static final String TAG = RoutingExample.class.getName();
 
-    private Context context;
-    private MapView mapView;
+    private final Context context;
+    private final MapView mapView;
     private final List<MapMarker> mapMarkerList = new ArrayList<>();
     private final List<MapPolyline> mapPolylines = new ArrayList<>();
     private RoutingInterface routingEngine;
-    private RoutingEngine onlineRoutingEngine;
-    private OfflineRoutingEngine offlineRoutingEngine;
+    private final RoutingEngine onlineRoutingEngine;
+    private final OfflineRoutingEngine offlineRoutingEngine;
     private GeoCoordinates startGeoCoordinates;
     private GeoCoordinates destinationGeoCoordinates;
 
@@ -129,7 +129,7 @@ public class RoutingExample {
     // An implementation may decide to reject a route if one or more violations are detected.
     private void logRouteViolations(Route route) {
         for (Section section : route.getSections()) {
-            for (Notice notice : section.getNotices()) {
+            for (SectionNotice notice : section.getSectionNotices()) {
                 Log.e(TAG, "This route contains the following warning: " + notice.code.toString());
             }
         }

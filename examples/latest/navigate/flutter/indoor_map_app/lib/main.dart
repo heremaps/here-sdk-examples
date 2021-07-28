@@ -17,8 +17,6 @@
  * License-Filename: LICENSE
  */
 
-// Disabled null safety for this file:
-// @dart=2.9
 import 'package:flutter/material.dart';
 import 'package:indoor_map_app/geometry_info.dart';
 import 'package:indoor_map_app/indoor_routing_widget.dart';
@@ -68,8 +66,7 @@ class MainPage extends StatelessWidget {
               padding: EdgeInsets.only(left: 5, right: 5),
               // Widget for opening venue by provided ID.
               child: TextField(
-                  decoration: InputDecoration(
-                      border: InputBorder.none, hintText: 'Enter a venue ID'),
+                  decoration: InputDecoration(border: InputBorder.none, hintText: 'Enter a venue ID'),
                   onSubmitted: (text) {
                     try {
                       // Try to parse a venue id.
@@ -87,12 +84,10 @@ class MainPage extends StatelessWidget {
               child: FlatButton(
                 color: Colors.white,
                 padding: EdgeInsets.zero,
-                child: Icon(Icons.search,
-                    color: Colors.black, size: kMinInteractiveDimension),
+                child: Icon(Icons.search, color: Colors.black, size: kMinInteractiveDimension),
                 onPressed: () {
                   _venueEngineState.getVenuesControllerState().setOpen(false);
-                  final venueSearchState =
-                      _venueEngineState.getVenueSearchState();
+                  final venueSearchState = _venueEngineState.getVenueSearchState();
                   venueSearchState.setOpen(!venueSearchState.isOpen());
                 },
               ),
@@ -103,8 +98,7 @@ class MainPage extends StatelessWidget {
               child: FlatButton(
                 color: Colors.white,
                 padding: EdgeInsets.zero,
-                child: Icon(Icons.directions,
-                  color: Colors.black, size: kMinInteractiveDimension),
+                child: Icon(Icons.directions, color: Colors.black, size: kMinInteractiveDimension),
                 onPressed: () {
                   _indoorRoutingState.isEnabled = !_indoorRoutingState.isEnabled;
                 },
@@ -116,12 +110,10 @@ class MainPage extends StatelessWidget {
               child: FlatButton(
                 color: Colors.white,
                 padding: EdgeInsets.zero,
-                child: Icon(Icons.edit,
-                    color: Colors.black, size: kMinInteractiveDimension),
+                child: Icon(Icons.edit, color: Colors.black, size: kMinInteractiveDimension),
                 onPressed: () {
                   _venueEngineState.getVenueSearchState().setOpen(false);
-                  final venuesState =
-                      _venueEngineState.getVenuesControllerState();
+                  final venuesState = _venueEngineState.getVenuesControllerState();
                   venuesState.setOpen(!venuesState.isOpen());
                 },
               ),
@@ -132,8 +124,7 @@ class MainPage extends StatelessWidget {
               child: FlatButton(
                 color: Colors.white,
                 padding: EdgeInsets.zero,
-                child: Icon(Icons.settings,
-                    color: Colors.black, size: kMinInteractiveDimension),
+                child: Icon(Icons.settings, color: Colors.black, size: kMinInteractiveDimension),
                 onPressed: () => Navigator.pushNamed(context, '/settings'),
               ),
             )
@@ -157,21 +148,18 @@ class MainPage extends StatelessWidget {
 
   void _onMapCreated(HereMapController hereMapController) {
     // Load a scene from the HERE SDK to render the map with a map scheme.
-    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay,
-        (MapError error) {
+    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
       if (error != null) {
         print('Map scene not loaded. MapError: ${error.toString()}');
         return;
       }
 
       const double distanceToEarthInMeters = 500;
-      hereMapController.camera.lookAtPointWithDistance(
-          GeoCoordinates(52.530932, 13.384915), distanceToEarthInMeters);
+      hereMapController.camera.lookAtPointWithDistance(GeoCoordinates(52.530932, 13.384915), distanceToEarthInMeters);
 
       // Hide the extruded building layer, so that it does not overlap
       // with the venues.
-      hereMapController.mapScene.setLayerState(
-          MapSceneLayers.extrudedBuildings, MapSceneLayerState.hidden);
+      hereMapController.mapScene.setLayerState(MapSceneLayers.extrudedBuildings, MapSceneLayerState.hidden);
       // Create a venue engine object. Once the initialization is done,
       // a callback will be called.
       var venueEngine = VenueEngine.make(_onVenueEngineCreated);

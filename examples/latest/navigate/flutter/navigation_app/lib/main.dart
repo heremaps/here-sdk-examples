@@ -45,7 +45,7 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   late AppLogic _appLogic;
   static const String _trackingOn = 'Tracking: ON';
   static const String _trackingOff = 'Tracking: OFF';
@@ -137,12 +137,12 @@ class _MyAppState extends State<MyApp> {
       return false;
     }
 
-    // This permission is only needed on Android devices.
-    if (Platform.isAndroid && !await Permission.activityRecognition.request().isGranted) {
-      return false;
+    if (Platform.isAndroid) {
+      // This permission is optionally needed on Android devices >= Q to improve the positioning signal.
+      Permission.activityRecognition.request();
     }
 
-    // All permissions granted.
+    // All required permissions granted.
     return true;
   }
 
@@ -198,10 +198,22 @@ class _MyAppState extends State<MyApp> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance!.addObserver(this);
+  }
+
+  @override
   void dispose() {
-    _appLogic.stopNavigation();
-    _appLogic.stopRendering();
+    WidgetsBinding.instance!.removeObserver(this);
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.detached) {
+      _appLogic.detach();
+    }
   }
 
   // A helper method to add a button on top of the HERE map.

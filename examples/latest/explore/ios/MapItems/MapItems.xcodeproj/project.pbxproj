@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		2A22B0F4269330C5006F0B16 /* MapObjectsExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A22B0F3269330C5006F0B16 /* MapObjectsExample.swift */; };
+		2A92B863269D250B005F7A18 /* MapViewPinsExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A92B862269D250B005F7A18 /* MapViewPinsExample.swift */; };
 		2AB696EB268439550007B12B /* MenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AB696EA268439550007B12B /* MenuViewController.swift */; };
 		2AB696ED26843D1B0007B12B /* Menu.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AB696EC26843D1B0007B12B /* Menu.storyboard */; };
 		C88C017223CDFCB200043918 /* heresdk.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = C88C017123CDFCB200043918 /* heresdk.xcframework */; };
@@ -40,6 +41,7 @@
 
 /* Begin PBXFileReference section */
 		2A22B0F3269330C5006F0B16 /* MapObjectsExample.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapObjectsExample.swift; sourceTree = "<group>"; };
+		2A92B862269D250B005F7A18 /* MapViewPinsExample.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapViewPinsExample.swift; sourceTree = "<group>"; };
 		2AB696EA268439550007B12B /* MenuViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuViewController.swift; sourceTree = "<group>"; };
 		2AB696EC26843D1B0007B12B /* Menu.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Menu.storyboard; sourceTree = "<group>"; };
 		C88C017123CDFCB200043918 /* heresdk.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = heresdk.xcframework; sourceTree = "<group>"; };
@@ -116,6 +118,7 @@
 				C8D0BB4F2167D6B6002FD93D /* Main.storyboard */,
 				C8D0BB602167D87D002FD93D /* MapItemsExample.swift */,
 				2A22B0F3269330C5006F0B16 /* MapObjectsExample.swift */,
+				2A92B862269D250B005F7A18 /* MapViewPinsExample.swift */,
 				2AB696EC26843D1B0007B12B /* Menu.storyboard */,
 				2AB696EA268439550007B12B /* MenuViewController.swift */,
 				C8D0BB4D2167D6B6002FD93D /* ViewController.swift */,
@@ -201,6 +204,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2A92B863269D250B005F7A18 /* MapViewPinsExample.swift in Sources */,
 				2A22B0F4269330C5006F0B16 /* MapObjectsExample.swift in Sources */,
 				C8D0BB612167D87D002FD93D /* MapItemsExample.swift in Sources */,
 				C8D0BB4E2167D6B6002FD93D /* ViewController.swift in Sources */,

@@ -46,7 +46,6 @@ class NavigationExample {
   int _previousManeuverIndex = -1;
 
   NavigationExample(HereMapController hereMapController) : _hereMapController = hereMapController {
-
     try {
       _visualNavigator = VisualNavigator();
     } on InstantiationException {
@@ -83,7 +82,7 @@ class NavigationExample {
     try {
       // With the dynamic routing engine you can poll the HERE backend services to search for routes with less traffic.
       // THis can happen during guidance - or you can periodically update a route that is shown in a route planner.
-      _dynamicRoutingEngine = DynamicRoutingEngine.make(dynamicRoutingOptions);
+      _dynamicRoutingEngine = DynamicRoutingEngine(dynamicRoutingOptions);
     } on InstantiationException {
       throw Exception("Initialization of DynamicRoutingEngine failed.");
     }
@@ -135,24 +134,27 @@ class NavigationExample {
     }
   }
 
-  // Starts tracking the device's location using HERE Positioning.
   void stopNavigation() {
     // Stop in case it was started before.
     _locationSimulationProvider.stop();
-
-    // Leaves navigation and enables tracking mode. The camera may optionally follow, see toggleTracking().
-    _visualNavigator.route = null;
-    _herePositioningProvider.startLocating(_visualNavigator, LocationAccuracy.navigation);
-
-    // Optionally, you can stop rendering, ie. to remove the current location marker.
-    //_visualNavigator.stopRendering();
-
     _dynamicRoutingEngine.stop();
+    startTracking();
   }
 
-  void stopRendering() {
+  void detach() {
     // It is recommended to stop rendering before leaving the app.
+    // This also removes the current location marker.
     _visualNavigator.stopRendering();
+
+    // It is recommended to stop the LocationEngine before leaving the app.
+    _herePositioningProvider.stop();
+  }
+
+  // Starts tracking the device's location using HERE Positioning.
+  void startTracking() {
+    // Leaves guidance (if it was running) and enables tracking mode. The camera may optionally follow, see toggleTracking().
+    _visualNavigator.route = null;
+    _herePositioningProvider.startLocating(_visualNavigator, LocationAccuracy.navigation);
   }
 
   String _getRoadName(Maneuver maneuver) {
@@ -407,15 +409,105 @@ class NavigationExample {
       }
     });
 
+    // Notifies on traffic-optimized routes that are considered better than the current route.
     _dynamicRoutingEngine.listener =
-        DynamicRoutingEngineListener((Route newRoute, int etaDifferenceInMinutes, int distanceDifferenceInMeters) {
+        DynamicRoutingEngineListener((Route newRoute, int etaDifferenceInSeconds, int distanceDifferenceInMeters) {
       print('DynamicRoutingEngine: Calculated a new route.');
-      print('DynamicRoutingEngine: etaDifferenceInMinutes: $etaDifferenceInMinutes.');
+      print('DynamicRoutingEngine: etaDifferenceInSeconds: $etaDifferenceInSeconds.');
       print('DynamicRoutingEngine: distanceDifferenceInMeters: $distanceDifferenceInMeters.');
 
-      //An implementation can decide to switch to the new route:
-      //_visualNavigator.route = newRoute;
+      // An implementation can decide to switch to the new route:
+      // _visualNavigator.route = newRoute;
     });
+
+    // Notifies which lane(s) lead to the next (next) maneuvers.
+    _visualNavigator.maneuverViewLaneAssistanceListener =
+        ManeuverViewLaneAssistanceListener((ManeuverViewLaneAssistance laneAssistance) {
+      // Handle events from onLaneAssistanceUpdated().
+      // This lane list is guaranteed to be non-empty.
+      List<Lane> lanes = laneAssistance.lanesForNextManeuver;
+      logLaneRecommendations(lanes);
+
+      List<Lane> nextLanes = laneAssistance.lanesForNextNextManeuver;
+      if (!nextLanes.isEmpty) {
+        print("Attention, the next next maneuver is very close.");
+        print("Please take the following lane(s) after the next maneuver: ");
+        logLaneRecommendations(nextLanes);
+      }
+    });
+
+    // Notfies which lane(s) lead to the next maneuvers at complex junctions.
+    _visualNavigator.junctionViewLaneAssistanceListener =
+        JunctionViewLaneAssistanceListener((JunctionViewLaneAssistance junctionViewLaneAssistance) {
+      List<Lane> lanes = junctionViewLaneAssistance.lanesForNextJunction;
+      if (lanes.isEmpty) {
+        print("You have passed the complex junction.");
+      } else {
+        print("Attention, a complex junction is ahead.");
+        logLaneRecommendations(lanes);
+      }
+    });
+
+    // Notifies truck drivers on road restrictions ahead. This event notifies on truck restrictions in general,
+    // so it will also deliver events, when the transport type was to a non-truck transport type.
+    // The given restrictions are based on the HERE database of the road network ahead.
+    _visualNavigator.truckRestrictionsWarningListener =
+        TruckRestrictionsWarningListener((List<TruckRestrictionWarning> list) {
+      // The list is guaranteed to be non-empty.
+      for (TruckRestrictionWarning truckRestrictionWarning in list) {
+        print("TruckRestrictionWarning in ${truckRestrictionWarning.distanceInMeters} meters.");
+        // One of the following restrictions applies ahead, if more restrictions apply at the same time,
+        // they are part of another TruckRestrictionWarning element contained in the list.
+        if (truckRestrictionWarning.weightRestriction != null) {
+          // For now only one weight type (= truck) is exposed.
+          WeightRestrictionType type = truckRestrictionWarning.weightRestriction!.type;
+          int value = truckRestrictionWarning.weightRestriction!.valueInKilograms;
+          print("TruckRestriction for weight (kg): ${type.toString()}: $value");
+        }
+        if (truckRestrictionWarning.dimensionRestriction != null) {
+          // Can be either a length, width or height restriction of the truck. For example, a height
+          // restriction can apply for a tunnel. Other possible restrictions are delivered in
+          // separate TruckRestrictionWarning objects contained in the list, if any.
+          DimensionRestrictionType type = truckRestrictionWarning.dimensionRestriction!.type;
+          int value = truckRestrictionWarning.dimensionRestriction!.valueInCentimeters;
+          print("TruckRestriction for dimension: ${type.toString()}: $value");
+        }
+      }
+    });
+
+    // Notifies whenever any textual attribute of the current road changes, i.e., the current road texts differ
+    // from the previous one. This can be useful during tracking mode, when no maneuver information is provided.
+    _visualNavigator.roadTextsListener = RoadTextsListener((RoadTexts roadTexts) {
+      // See _getRoadName() how to get the current road name from the provided RoadTexts.
+    });
+  }
+
+  void logLaneRecommendations(List<Lane> lanes) {
+    // The lane at index 0 is the leftmost lane adjacent to the middle of the road.
+    // The lane at the last index is the rightmost lane.
+    // Note: Left-hand countries are not yet supported.
+    int laneNumber = 0;
+    for (Lane lane in lanes) {
+      // This state is only possible if laneAssistance.lanesForNextNextManeuver is not empty.
+      // For example, when two lanes go left, this lanes leads only to the next maneuver,
+      // but not to the maneuver after the next maneuver, while the highly recommended lane also leads
+      // to this next next maneuver.
+      if (lane.recommendationState == LaneRecommendationState.recommended) {
+        print("Lane $laneNumber leads to next maneuver, but not to the next next maneuver.");
+      }
+
+      // If laneAssistance.lanesForNextNextManeuver is not empty, this lane leads also to the
+      // maneuver after the next maneuver.
+      if (lane.recommendationState == LaneRecommendationState.highlyRecommended) {
+        print("Lane $laneNumber leads to next maneuver and eventually to the next next maneuver.");
+      }
+
+      if (lane.recommendationState == LaneRecommendationState.notRecommended) {
+        print("Do not take lane $laneNumber to follow the route.");
+      }
+
+      laneNumber++;
+    }
   }
 
   void setupSpeedWarnings() {

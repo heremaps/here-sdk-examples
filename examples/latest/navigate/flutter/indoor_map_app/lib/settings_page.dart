@@ -17,8 +17,6 @@
  * License-Filename: LICENSE
  */
 
-// Disabled null safety for this file:
-// @dart=2.9
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:here_sdk/core.engine.dart';
@@ -40,15 +38,13 @@ class SettingsPage extends StatelessWidget {
             padding: EdgeInsets.only(left: 8, right: 8),
             child: TextField(
               controller: accessIdController,
-              decoration: InputDecoration(
-                  border: InputBorder.none, hintText: 'Enter an access ID'),
+              decoration: InputDecoration(border: InputBorder.none, hintText: 'Enter an access ID'),
             )),
         Container(
             padding: EdgeInsets.only(left: 8, right: 8),
             child: TextField(
               controller: accessSecretController,
-              decoration: InputDecoration(
-                  border: InputBorder.none, hintText: 'Enter an access secret'),
+              decoration: InputDecoration(border: InputBorder.none, hintText: 'Enter an access secret'),
             )),
         FlatButton(
             color: Colors.blue,
@@ -62,10 +58,9 @@ class SettingsPage extends StatelessWidget {
               ),
             ),
             onPressed: () async {
-              if (accessIdController.text.isNotEmpty &&
-                  accessSecretController.text.isNotEmpty) {
-                SDKNativeEngine.sharedInstance.setAccessKey(
-                    accessIdController.text, accessSecretController.text);
+              if (accessIdController.text.isNotEmpty && accessSecretController.text.isNotEmpty) {
+                // accessIdController.text cannot be set at runtime after an engine was created, unless a new SDKNativeEngine is created.
+                SDKNativeEngine.sharedInstance!.setAccessKeySecret(accessSecretController.text);
                 _engine.start(null);
               }
             })

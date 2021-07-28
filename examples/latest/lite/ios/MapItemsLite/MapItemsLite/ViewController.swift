@@ -24,13 +24,17 @@ final class ViewController: UIViewController {
 
     @IBOutlet private var mapView: MapViewLite!
     private var mapItemsExample: MapItemsExample!
+    private var mapObjectsExample: MapObjectsExample!
     private var isMapSceneLoaded = false
+    private var menuSections: [MenuSection] = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         // Load the map scene using a map style to render the map with.
         mapView.mapScene.loadScene(mapStyle: .normalDay, callback: onLoadScene)
+
+        menuSections = buildMenuSections()
     }
 
     func onLoadScene(errorCode: MapSceneLite.ErrorCode?) {
@@ -41,29 +45,91 @@ final class ViewController: UIViewController {
 
         // Start the example.
         mapItemsExample = MapItemsExample(viewController: self, mapView: mapView)
+        mapObjectsExample = MapObjectsExample(mapView: mapView)
         isMapSceneLoaded = true
     }
 
-    @IBAction func onAnchoredButtonClicked(_ sender: Any) {
+    override func prepare(for segue: UIStoryboardSegue, sender _: Any?) {
+        if segue.identifier == "showMenu" {
+            if let vc = segue.destination as? MenuViewController {
+                vc.menuSections = menuSections
+            }
+        }
+    }
+
+    @IBAction func onMenuButtonClicked(_ sender: UIBarButtonItem) {
+        performSegue(withIdentifier: "showMenu", sender: nil)
+    }
+
+    private func onAnchoredButtonClicked(_ sender: Any) {
         if isMapSceneLoaded {
             mapItemsExample.onAnchoredButtonClicked()
         }
     }
 
-    @IBAction func onCenteredButtonClicked(_ sender: Any) {
+    private func onCenteredButtonClicked(_ sender: Any) {
         if isMapSceneLoaded {
             mapItemsExample.onCenteredButtonClicked()
         }
     }
+    
+    private func onMapItemPolylineClicked(_ sender: Any) {
+        if isMapSceneLoaded {
+            mapObjectsExample.onMapPolylineClicked()
+        }
+    }
 
-    @IBAction func onClearButtonClicked(_ sender: Any) {
+    private func onMapItemPolygonClicked(_ sender: Any) {
+        if isMapSceneLoaded {
+            mapObjectsExample.onMapPolygonClicked()
+        }
+    }
+
+    private func onMapItemCircleClicked(_ sender: Any) {
+        if isMapSceneLoaded {
+            mapObjectsExample.onMapCircleClicked()
+        }
+    }
+
+    private func onClearButtonClicked(_ sender: Any) {
         if isMapSceneLoaded {
             mapItemsExample.onClearButtonClicked()
+            mapObjectsExample.onClearButtonClicked()
         }
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         mapView.handleLowMemory()
+    }
+
+    // A helper method to build drawer menu items.
+    private func buildMenuSections() -> [MenuSection] {
+        return [
+            buildMapMarkerMenuSection(),
+            buildMapObjectMenuSection(),
+            buildClearMenuSection()
+        ]
+    }
+
+    private func buildMapMarkerMenuSection() -> MenuSection {
+        return MenuSection(title: "Map Marker", items: [
+            MenuItem(title: "Anchored (2D)", onSelect: onAnchoredButtonClicked),
+            MenuItem(title: "Centered (2D)", onSelect: onCenteredButtonClicked),
+        ])
+    }
+
+    private func buildMapObjectMenuSection() -> MenuSection {
+        return MenuSection(title: "Map Object", items: [
+            MenuItem(title: "Polyline", onSelect: onMapItemPolylineClicked),
+            MenuItem(title: "Polygon", onSelect: onMapItemPolygonClicked),
+            MenuItem(title: "Circle", onSelect: onMapItemCircleClicked)
+        ])
+    }
+
+    private func buildClearMenuSection() -> MenuSection {
+        return MenuSection(title: "", items: [
+            MenuItem(title: "Clear All Map Items", onSelect: onClearButtonClicked)
+        ])
     }
 }

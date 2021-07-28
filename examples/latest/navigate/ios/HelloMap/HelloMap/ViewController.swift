@@ -23,11 +23,11 @@ import UIKit
 class ViewController: UIViewController {
 
     var mapView : MapView!
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Initialize MapViewLite without a storyboard.
+        // Initialize MapView without a storyboard.
         mapView = MapView(frame: view.bounds)
         view.addSubview(mapView)
 

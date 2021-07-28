@@ -178,14 +178,20 @@ class EVRoutingExample {
       // Only charging stations that are needed to reach the destination are listed below.
       ChargingStation? depStation = section.departurePlace.chargingStation;
       if (depStation != null && depStation.id != null && !chargingStationsIDs.contains(depStation.id)) {
-        print("EVDetails: Section " + sectionIndex.toString() + ", name of charging station: " + depStation.name.toString());
+        print("EVDetails: Section " +
+            sectionIndex.toString() +
+            ", name of charging station: " +
+            depStation.name.toString());
         chargingStationsIDs.add(depStation.id.toString());
         _addCircleMapMarker(section.departurePlace.mapMatchedCoordinates, "assets/required_charging.png");
       }
 
       ChargingStation? arrStation = section.departurePlace.chargingStation;
       if (arrStation != null && arrStation.id != null && !chargingStationsIDs.contains(arrStation.id)) {
-        print("EVDetails: Section " + sectionIndex.toString() + ", name of charging station: " + arrStation.name.toString());
+        print("EVDetails: Section " +
+            sectionIndex.toString() +
+            ", name of charging station: " +
+            arrStation.name.toString());
         chargingStationsIDs.add(arrStation.id.toString());
         _addCircleMapMarker(section.arrivalPlace.mapMatchedCoordinates, "assets/required_charging.png");
       }
@@ -262,7 +268,11 @@ class EVRoutingExample {
     // With null we choose the default option for the resulting polygon shape.
     int? maxPoints;
     IsolineOptionsCalculation calculationOptions = IsolineOptionsCalculation.withNoDefaults(
-        IsolineRangeType.consumptionInWattHours, rangeValues, IsolineCalculationMode.balanced, maxPoints, RoutePlaceDirection.departure);
+        IsolineRangeType.consumptionInWattHours,
+        rangeValues,
+        IsolineCalculationMode.balanced,
+        maxPoints,
+        RoutePlaceDirection.departure);
     IsolineOptions isolineOptions = IsolineOptions.withEVCarOptions(calculationOptions, _getEVCarOptions());
 
     _routingEngine.calculateIsoline(Waypoint(_startGeoCoordinates!), isolineOptions,

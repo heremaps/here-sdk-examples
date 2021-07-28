@@ -66,8 +66,8 @@ public class SearchExample {
     private final MapView mapView;
     private final MapCamera camera;
     private final List<MapMarker> mapMarkerList = new ArrayList<>();
-    private SearchEngine searchEngine;
-    private OfflineSearchEngine offlineSearchEngine;
+    private final SearchEngine searchEngine;
+    private final OfflineSearchEngine offlineSearchEngine;
 
     public SearchExample(Context context, MapView mapView) {
         this.context = context;
@@ -156,7 +156,7 @@ public class SearchExample {
         }
     }
 
-    private SearchCallback addressSearchCallback = new SearchCallback() {
+    private final SearchCallback addressSearchCallback = new SearchCallback() {
         @Override
         public void onSearchCompleted(@Nullable SearchError searchError, @Nullable List<Place> list) {
             if (searchError != null) {
@@ -220,7 +220,7 @@ public class SearchExample {
         }
     }
 
-    private SearchCallback querySearchCallback = new SearchCallback() {
+    private final SearchCallback querySearchCallback = new SearchCallback() {
         @Override
         public void onSearchCompleted(@Nullable SearchError searchError, @Nullable List<Place> list) {
             if (searchError != null) {
@@ -321,7 +321,7 @@ public class SearchExample {
         }
     }
 
-    private SearchCallback geocodeAddressSearchCallback = new SearchCallback() {
+    private final SearchCallback geocodeAddressSearchCallback = new SearchCallback() {
         @Override
         public void onSearchCompleted(SearchError searchError, List<Place> list) {
             if (searchError != null) {

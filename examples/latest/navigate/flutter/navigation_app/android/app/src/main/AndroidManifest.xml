@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.here.sdk.example">
+    package="com.here.sdk.examples.navigation_app">
 
     <!-- Required for HERE Positioning -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />

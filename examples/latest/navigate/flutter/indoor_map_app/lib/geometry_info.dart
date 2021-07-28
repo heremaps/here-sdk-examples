@@ -17,8 +17,6 @@
  * License-Filename: LICENSE
  */
 
-// Disabled null safety for this file:
-// @dart=2.9
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:here_sdk/venue.data.dart';
@@ -26,18 +24,18 @@ import 'package:here_sdk/venue.data.dart';
 class GeometryInfo extends StatefulWidget {
   final GeometryInfoState state;
 
-  GeometryInfo({@required this.state});
+  GeometryInfo({required this.state});
 
   @override
   GeometryInfoState createState() => state;
 }
 
 class GeometryInfoState extends State<GeometryInfo> {
-  VenueGeometry _geometry;
+  VenueGeometry? _geometry;
 
-  VenueGeometry get geometry => _geometry;
+  VenueGeometry? get geometry => _geometry;
 
-  set geometry(VenueGeometry geometry) {
+  set geometry(VenueGeometry? geometry) {
     setState(() {
       _geometry = geometry;
     });
@@ -55,7 +53,7 @@ class GeometryInfoState extends State<GeometryInfo> {
       padding: EdgeInsets.all(5),
       child: Text(
         // Show a name of the geometry.
-        geometry.name ?? "",
+        geometry!.name,
         textAlign: TextAlign.start,
       ),
     );

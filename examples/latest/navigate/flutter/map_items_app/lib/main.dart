@@ -24,6 +24,7 @@ import 'package:map_items_app/MenuSectionExpansionTile.dart';
 
 import 'MapItemsExample.dart';
 import 'MapObjectsExample.dart';
+import 'MapViewPinsExample.dart';
 
 void main() {
   SdkContext.init(IsolateOrigin.main);
@@ -39,6 +40,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   MapItemsExample? _mapItemsExample;
   MapObjectsExample? _mapObjectsExample;
+  MapViewPinsExample? _mapViewPinsExample;
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +64,7 @@ class _MyAppState extends State<MyApp> {
       if (error == null) {
         _mapItemsExample = MapItemsExample(_showDialog, hereMapController);
         _mapObjectsExample = MapObjectsExample(hereMapController);
+        _mapViewPinsExample = MapViewPinsExample(hereMapController);
       } else {
         print("Map scene not loaded. MapError: " + error.toString());
       }
@@ -112,9 +115,18 @@ class _MyAppState extends State<MyApp> {
     _mapObjectsExample?.showMapCircle();
   }
 
+  void _addDefaultMapViewPinButtonClicked() {
+    _mapViewPinsExample?.showDefaultMapViewPin();
+  }
+
+  void _addAnchoredMapViewPinButtonClicked() {
+    _mapViewPinsExample?.showAnchoredMapViewPin();
+  }
+
   void _clearButtonClicked() {
     _mapItemsExample?.clearMap();
-    _mapObjectsExample?.clearMapButtonClicked();
+    _mapObjectsExample?.clearMap();
+    _mapViewPinsExample?.clearMap();
   }
 
   // A helper method to build a drawer list.
@@ -150,6 +162,10 @@ class _MyAppState extends State<MyApp> {
     // Add MapObject section.
     var mapObjectTile = _buildMapObjectExpansionTile(context);
     children.add(mapObjectTile);
+
+    // Add MapViewPins section.
+    var mapViewPinsTile = _buildMapViewPinsExpansionTile(context);
+    children.add(mapViewPinsTile);
 
     // Add section to clear the map.
     var clearTile = _buildClearTile(context);
@@ -191,6 +207,16 @@ class _MyAppState extends State<MyApp> {
     ];
 
     return MenuSectionExpansionTile("MapObject", menuItems);
+  }
+
+  // Build the menu entries for the MapViewPins section.
+  Widget _buildMapViewPinsExpansionTile(BuildContext context) {
+    final List<MenuSectionItem> menuItems = [
+      MenuSectionItem("Default", _addDefaultMapViewPinButtonClicked),
+      MenuSectionItem("Anchored", _addAnchoredMapViewPinButtonClicked),
+    ];
+
+    return MenuSectionExpansionTile("MapViewPins", menuItems);
   }
 
   // Build the menu entry for the clear section.
