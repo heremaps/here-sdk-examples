@@ -74,24 +74,24 @@ class CameraExample: TapDelegate, MapCameraObserver {
 
     // Rotate the map by x degrees. Tip: Try to see what happens for negative values.
     private func rotateMap(bearingStepInDegrees: Double) {
-        let currentBearing = camera.state.targetOrientation.bearing
+        let currentBearing = camera.state.orientationAtTarget.bearing
         let newBearing = currentBearing + bearingStepInDegrees
 
         //By default, bearing will be clamped to the range (0, 360].
-        let orientationUpdate = MapCamera.OrientationUpdate(bearing: newBearing,
-                                                            tilt: nil)
-        camera.setTargetOrientation(orientation: orientationUpdate)
+        let orientationUpdate = GeoOrientationUpdate(bearing: newBearing,
+                                                     tilt: nil)
+        camera.setOrientationAtTarget(orientationUpdate)
     }
 
     // Tilt the map by x degrees.
     private func tiltMap(tiltStepInDegrees: Double) {
-        let currentTilt = camera.state.targetOrientation.tilt
+        let currentTilt = camera.state.orientationAtTarget.tilt
         let newTilt = currentTilt + tiltStepInDegrees
 
         //By default, tilt will be clamped to the range [0, 70].
-        let orientationUpdate = MapCamera.OrientationUpdate(bearing: nil,
-                                                            tilt: newTilt)
-        camera.setTargetOrientation(orientation: orientationUpdate)
+        let orientationUpdate = GeoOrientationUpdate(bearing: nil,
+                                                     tilt: newTilt)
+        camera.setOrientationAtTarget(orientationUpdate)
     }
 
     // Conform to the TapDelegate protocol.

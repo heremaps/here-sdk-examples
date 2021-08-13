@@ -436,7 +436,7 @@ class NavigationExample {
       }
     });
 
-    // Notfies which lane(s) lead to the next maneuvers at complex junctions.
+    // Notfies which lane(s) allow to follow the route.
     _visualNavigator.junctionViewLaneAssistanceListener =
         JunctionViewLaneAssistanceListener((JunctionViewLaneAssistance junctionViewLaneAssistance) {
       List<Lane> lanes = junctionViewLaneAssistance.lanesForNextJunction;

@@ -1,4 +1,4 @@
-The MapItems example app shows how to pin images to mark specific spots on the map. You can find how this is done in [MapItemsExample.java](app/src/main/java/com/here/mapitems/MapItemsExample.java).
+The MapItems example app shows how to pin images to mark specific spots on the map. You can find how this is done in [MapItemsExample.java](app/src/main/java/com/here/mapitems/MapItemsExample.java). The app also shows how to add `MapPolyline`, `MapPolygon`, and `MapCircle` instances to the map. You can find how this is done in [MapObjectsExample.java](app/src/main/java/com/here/mapitems/MapObjectsExample.java).
 
 Build instructions:
 -------------------

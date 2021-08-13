@@ -72,6 +72,11 @@ class OfflineMapsExample {
     // - By default, the update process should not be done while an app runs in background as then the
     // download can be interrupted by the OS.
     _checkForMapUpdates();
+
+    // Checks the status of already downloaded map data and eventually repairs it.
+    // Important: For production-ready apps, it is recommended to not do such operations silently in
+    // the background and instead inform the user.
+    _checkInstallationStatus();
   }
 
   Future<void> onDownloadListClicked() async {
@@ -282,5 +287,25 @@ class OfflineMapsExample {
       // Handle events from onResume():
       print("MapUpdate: A previously paused map update has been resumed.");
     }));
+  }
+
+  _checkInstallationStatus() {
+    // Note that this value will not change during the lifetime of an app.
+    PersistentMapStatus persistentMapStatus = _mapDownloader.getInitialPersistentMapStatus();
+    if (persistentMapStatus != PersistentMapStatus.ok) {
+      // Something went wrong after the app was closed the last time. It seems the offline map data is
+      // corrupted. This can eventually happen, when an ongoing map download was interrupted due to a crash.
+      print("PersistentMapStatus: The persistent map data seems to be corrupted. Trying to repair.");
+
+      // Let's try to repair.
+      _mapDownloader.repairPersistentMap((PersistentMapRepairError? persistentMapRepairError) {
+        if (persistentMapRepairError == null) {
+          print("RepairPersistentMap: Repair operation completed successfully!");
+          return;
+        }
+
+        print("RepairPersistentMap: Repair operation failed: " + persistentMapRepairError.toString());
+      });
+    }
   }
 }

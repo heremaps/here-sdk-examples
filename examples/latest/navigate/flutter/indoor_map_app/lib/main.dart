@@ -162,7 +162,7 @@ class MainPage extends StatelessWidget {
       hereMapController.mapScene.setLayerState(MapSceneLayers.extrudedBuildings, MapSceneLayerState.hidden);
       // Create a venue engine object. Once the initialization is done,
       // a callback will be called.
-      var venueEngine = VenueEngine.make(_onVenueEngineCreated);
+      var venueEngine = VenueEngine(_onVenueEngineCreated);
       _venueEngineState.set(hereMapController, venueEngine, _indoorRoutingState, _geometryInfoState);
     });
   }

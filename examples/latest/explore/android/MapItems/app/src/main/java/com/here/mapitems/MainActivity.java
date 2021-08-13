@@ -20,12 +20,18 @@
 package com.here.mapitems;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-import android.view.View;
 
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.here.sdk.core.GeoCoordinates;
+import com.here.sdk.mapview.MapCamera;
 import com.here.sdk.mapview.MapError;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
@@ -38,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     private PermissionsRequestor permissionsRequestor;
     private MapView mapView;
     private MapItemsExample mapItemsExample;
+    private MapObjectsExample mapObjectsExample;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,46 +84,18 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onLoadScene(@Nullable MapError mapError) {
                 if (mapError == null) {
+                    mapObjectsExample = new MapObjectsExample(mapView);
                     mapItemsExample = new MapItemsExample(MainActivity.this, mapView);
+
+                    MapCamera camera = mapView.getCamera();
+                    double distanceInMeters = 1000 * 10;
+                    camera.lookAt(new GeoCoordinates(52.520798, 13.409408), distanceInMeters);
                 } else {
                     Log.d(TAG, "onLoadScene failed: " + mapError.toString());
                 }
             }
         });
     }
-
-    public void anchoredMapMarkersButtonClicked(View view) {
-        mapItemsExample.showAnchoredMapMarkers();
-    }
-
-    public void centeredMapMarkersButtonClicked(View view) {
-        mapItemsExample.showCenteredMapMarkers();
-    }
-
-    public void LocationIndicatorPedButtonClicked(View view) {
-        mapItemsExample.showLocationIndicatorPedestrian();
-    }
-
-    public void LocationIndicatorNavButtonClicked(View view) {
-        mapItemsExample.showLocationIndicatorNavigation();
-    }
-
-    public void LocationIndicatorActiveInactiveButtonClicked(View view) {
-        mapItemsExample.toggleActiveStateForLocationIndicator();
-    }
-
-    public void FlatMapMarkerButtonClicked(View view) {
-        mapItemsExample.showFlatMarker();
-    }
-
-    public void MapMarker3DButtonClicked(View view) {
-        mapItemsExample.showMapMarker3D();
-    }
-
-    public void clearMapButtonClicked(View view) {
-        mapItemsExample.clearMap();
-    }
-
 
     @Override
     protected void onPause() {
@@ -134,5 +113,63 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         mapView.onDestroy();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater=getMenuInflater();
+        inflater.inflate(R.menu.map_option_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()){
+            // Map Objects:
+            case R.id.arrow_menu_item:
+                mapObjectsExample.showMapArrow();
+                return true;
+            case R.id.circle_menu_item:
+                mapObjectsExample.showMapCircle();
+                return true;
+            case R.id.polygon_menu_item:
+                mapObjectsExample.showMapPolygon();
+                return true;
+            case R.id.polyline_menu_item:
+                mapObjectsExample.showMapPolyline();
+                return true;
+            case R.id.clear_map_objects_menu_item:
+                mapObjectsExample.clearMapButtonClicked();
+                return true;
+
+            // Map Marker:
+            case R.id.anchored_2D_menu_item:
+                mapItemsExample.showAnchoredMapMarkers();
+                return true;
+            case R.id.centered_2D_menu_item:
+                mapItemsExample.showCenteredMapMarkers();
+                return true;
+            case R.id.location_ped_menu_item:
+                mapItemsExample.showLocationIndicatorPedestrian();
+                return true;
+            case R.id.location_nav_menu_item:
+                mapItemsExample.showLocationIndicatorNavigation();
+                return true;
+            case R.id.active_inactive_menu_item:
+                mapItemsExample.toggleActiveStateForLocationIndicator();
+                return true;
+            case R.id.flat_menu_item:
+                mapItemsExample.showFlatMarker();
+                return true;
+            case R.id.obj_3D_menu_item:
+                mapItemsExample.showMapMarker3D();
+                return true;
+            case R.id.clear_map_marker_menu_item:
+                mapItemsExample.clearMap();
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 }

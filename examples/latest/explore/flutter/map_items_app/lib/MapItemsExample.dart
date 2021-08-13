@@ -286,15 +286,15 @@ class MapItemsExample {
   }
 
   void _tiltMap() {
-    MapCameraOrientationUpdate targetOrientation = MapCameraOrientationUpdate.withDefaults();
-    targetOrientation.tilt = 60;
-    _hereMapController.camera.setTargetOrientation(targetOrientation);
+    double bearing = _hereMapController.camera.state.orientationAtTarget.bearing;
+    double tilt = 60;
+    _hereMapController.camera.setOrientationAtTarget(GeoOrientationUpdate(bearing, tilt));
   }
 
   void _unTiltMap() {
-    MapCameraOrientationUpdate targetOrientation = MapCameraOrientationUpdate.withDefaults();
-    targetOrientation.tilt = 0;
-    _hereMapController.camera.setTargetOrientation(targetOrientation);
+    double bearing = _hereMapController.camera.state.orientationAtTarget.bearing;
+    double tilt = 0;
+    _hereMapController.camera.setOrientationAtTarget(GeoOrientationUpdate(bearing, tilt));
   }
 
   GeoCoordinates _createRandomGeoCoordinatesAroundMapCenter() {

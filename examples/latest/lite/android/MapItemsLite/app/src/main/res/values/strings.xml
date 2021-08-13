@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">Map Items Example - HERE SDK for Android</string>
+    <string name="app_name">HERE SDK - Map Items Example</string>
+    <string name="drawer_open">Drawer Open</string>
+    <string name="drawer_close">Drawer Close</string>
 </resources>
