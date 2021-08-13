@@ -51,9 +51,6 @@ public class MapItemsExample {
     public MapItemsExample(Context context, MapViewLite mapView) {
         this.context = context;
         this.mapView = mapView;
-        Camera camera = mapView.getCamera();
-        camera.setTarget(new GeoCoordinates(52.520798, 13.409408));
-        camera.setZoomLevel(15);
 
         // Setting a tap handler to pick markers from map
         setTapGestureHandler();

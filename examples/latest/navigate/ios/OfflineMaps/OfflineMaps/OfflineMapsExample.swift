@@ -66,6 +66,11 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
         // - By default, the update process should not be done while an app runs in background as then the
         // download can be interrupted by the OS.
         checkForMapUpdates()
+        
+        // Checks the status of already downloaded map data and eventually repairs it.
+        // Important: For production-ready apps, it is recommended to not do such operations silently in
+        // the background and instead inform the user.
+        checkInstallationStatus()
     }
 
     func onDownloadListClicked() {
@@ -271,6 +276,28 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
         }
     }
 
+    private func checkInstallationStatus() {
+        // Note that this value will not change during the lifetime of an app.
+        let persistentMapStatus = mapDownloader.getInitialPersistentMapStatus()
+        if persistentMapStatus != PersistentMapStatus.ok {
+            // Something went wrong after the app was closed the last time. It seems the offline map data is
+            // corrupted. This can eventually happen, when an ongoing map download was interrupted due to a crash.
+            print("PersistentMapStatus: The persistent map data seems to be corrupted. Trying to repair.")
+
+            // Let's try to repair.
+            mapDownloader.repairPersistentMap(completion: onMapRepairCompleted)
+        }
+    }
+    
+    // Completion handler to get notified whether map reparation was successful or not.
+    private func onMapRepairCompleted(persistentMapRepairError: PersistentMapRepairError?) {
+        if persistentMapRepairError == nil {
+            print("RepairPersistentMap: Repair operation completed successfully!")
+            return
+        }
+        print("RepairPersistentMap: Repair operation failed: \(String(describing: persistentMapRepairError))")
+    }
+    
     // A permanent view to show scrollablelog content.
     private var messageTextView = UITextView()
     private func showMessage(_ message: String) {

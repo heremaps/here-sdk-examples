@@ -215,7 +215,7 @@ class EVRoutingExample {
     // We specify here that we only want to include results
     // within a max distance of xx meters from any point of the route.
     int halfWidthInMeters = 200;
-    GeoCorridor routeCorridor = GeoCorridor.make(route.polyline, halfWidthInMeters);
+    GeoCorridor routeCorridor = GeoCorridor(route.polyline, halfWidthInMeters);
     TextQuery textQuery = TextQuery.withCorridorAreaAndAreaCenter(
         "charging station", routeCorridor, _hereMapController.camera.state.targetCoordinates);
 

@@ -73,7 +73,7 @@ class NavigationExample : NavigableLocationDelegate,
 
         dynamicRoutingEngine = createDynamicRoutingEngine()
         dynamicRoutingEngine!.delegate = self
-        
+
         visualNavigator.navigableLocationDelegate = self
         visualNavigator.routeDeviationDelegate = self
         visualNavigator.routeProgressDelegate = self
@@ -107,7 +107,7 @@ class NavigationExample : NavigableLocationDelegate,
             DynamicRoutingEngineOptions(pollIntervalInMinutes: pollIntervalInMinutes,
                                         minTimeDifferenceInSeconds: minTimeDifferenceInSeconds,
                                         minTimeDifferencePercentage: minTimeDifferencePercentage)
-        
+
         do {
             // With the dynamic routing engine you can poll the HERE backend services to search for routes with less traffic.
             // THis can happen during guidance - or you can periodically update a route that is shown in a route planner.
@@ -117,7 +117,7 @@ class NavigationExample : NavigableLocationDelegate,
             fatalError("Failed to initialize DynamicRoutingEngine. Cause: \(engineInstantiationError)")
         }
     }
-    
+
     // Conform to RouteProgressDelegate.
     // Notifies on the progress along the route including maneuver instructions.
     func onRouteProgressUpdated(_ routeProgress: RouteProgress) {
@@ -153,7 +153,7 @@ class NavigationExample : NavigableLocationDelegate,
         }
 
         previousManeuverIndex = nextManeuverIndex
-        
+
         if let lastMapMatchedLocation = lastMapMatchedLocation {
            // Update the route based on the current location of the driver.
            // We periodically want to search for better traffic-optimized routes.
@@ -173,7 +173,7 @@ class NavigationExample : NavigableLocationDelegate,
         let nextRoadNumber = nextRoadTexts.numbers.preferredValue(for: [locale])
 
         var roadName = nextRoadName == nil ? nextRoadNumber : nextRoadName
-        
+
         // On highways, we want to show the highway number instead of a possible road name,
         // while for inner city and urban areas road names are preferred over road numbers.
         if maneuver.nextRoadType == RoadType.highway {
@@ -188,7 +188,7 @@ class NavigationExample : NavigableLocationDelegate,
         // Nil happens only in rare cases, when also the fallback above is nil.
         return roadName ?? "unnamed road"
     }
-    
+
     // Conform to DestinationReachedDelegate.
     // Notifies when the destination of the route is reached.
     func onDestinationReached() {
@@ -267,7 +267,7 @@ class NavigationExample : NavigableLocationDelegate,
         // - timeDependentSpeedLimitInMetersPerSecond
         return speedLimit.effectiveSpeedLimitInMetersPerSecond()
     }
-    
+
     // Conform to NavigableLocationDelegate.
     // Notifies on the current map-matched location and other useful information while driving or walking.
     func onNavigableLocationUpdated(_ navigableLocation: NavigableLocation) {
@@ -277,7 +277,7 @@ class NavigationExample : NavigableLocationDelegate,
         }
 
         lastMapMatchedLocation = navigableLocation.mapMatchedLocation!
-        
+
         let speed = navigableLocation.originalLocation.speedInMetersPerSecond
         let accuracy = navigableLocation.originalLocation.speedAccuracyInMetersPerSecond
         print("Driving speed: \(String(describing: speed)) plus/minus accuracy of \(String(describing: accuracy)).")
@@ -317,7 +317,7 @@ class NavigationExample : NavigableLocationDelegate,
         let distanceInMeters = currentGeoCoordinates.distance(to: lastGeoCoordinatesOnRoute)
         print("RouteDeviation in meters is \(distanceInMeters)")
     }
-    
+
     // Conform to ManeuverNotificationDelegate.
     // Notifies on voice maneuver messages.
     func onManeuverNotification(_ text: String) {
@@ -340,9 +340,9 @@ class NavigationExample : NavigableLocationDelegate,
     }
 
     // Conform to the JunctionViewLaneAssistanceDelegate.
-    // Notfies which lane(s) lead to the next maneuvers at complex junctions.
+    // Notfies which lane(s) allow to follow the route.
     func onLaneAssistanceUpdated(_ laneAssistance: JunctionViewLaneAssistance) {
-        let lanes = laneAssistance.lanesForNextJunction        
+        let lanes = laneAssistance.lanesForNextJunction
         if (lanes.isEmpty) {
           print("You have passed the complex junction.")
         } else {
@@ -350,7 +350,7 @@ class NavigationExample : NavigableLocationDelegate,
           logLaneRecommendations(lanes)
         }
     }
-    
+
     private func logLaneRecommendations(_ lanes: [Lane]) {
         // The lane at index 0 is the leftmost lane adjacent to the middle of the road.
         // The lane at the last index is the rightmost lane.
@@ -378,7 +378,7 @@ class NavigationExample : NavigableLocationDelegate,
             laneNumber += 1
         }
     }
-    
+
     // Conform to the RoadAttributesDelegate.
     // Notifies on the attributes of the current road including usage and physical characteristics.
     func onRoadAttributesUpdated(_ roadAttributes: RoadAttributes) {
@@ -439,7 +439,7 @@ class NavigationExample : NavigableLocationDelegate,
             print("Road attributes: This is a tunnel.");
         }
     }
-    
+
     // Conform to the DynamicRoutingEngineDelegate.
     // Notifies on traffic-optimized routes that are considered better than the current route.
     func onBetterRouteFound(newRoute: Route,
@@ -452,7 +452,7 @@ class NavigationExample : NavigableLocationDelegate,
         // An implementation can decide to switch to the new route:
         // visualNavigator.route = newRoute
     }
-    
+
     // Conform to the TruckRestrictionsWarningDelegate.
     // Notifies truck drivers on road restrictions ahead. This event notifies on truck restrictions in general,
     // so it will also deliver events, when the transport type was to a non-truck transport type.
@@ -479,7 +479,7 @@ class NavigationExample : NavigableLocationDelegate,
             }
         }
     }
-    
+
     // Conform to RoadTextsDelegate
     // Notifies whenever any textual attribute of the current road changes, i.e., the current road texts differ
     // from the previous one. This can be useful during tracking mode, when no maneuver information is provided.
@@ -502,7 +502,7 @@ class NavigationExample : NavigableLocationDelegate,
             enableDevicePositioning()
             showMessage("Starting navgation.")
         }
-        
+
         dynamicRoutingEngine!.start(route: route)
     }
 

@@ -23,7 +23,7 @@ import 'package:here_sdk/core.engine.dart';
 import 'package:here_sdk/venue.dart';
 
 class SettingsPage extends StatelessWidget {
-  final VenueEngine _engine = VenueEngine.make(null);
+  final VenueEngine _engine = VenueEngine(null);
   final accessIdController = TextEditingController();
   final accessSecretController = TextEditingController();
 

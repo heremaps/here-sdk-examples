@@ -305,15 +305,19 @@ class MapItemsExample: TapDelegate {
     }
 
     private func tiltMap() {
-        var targetOrientation = MapCamera.OrientationUpdate()
-        targetOrientation.tilt = 60
-        mapView.camera.setTargetOrientation(orientation: targetOrientation)
+        let bearing = mapView.camera.state.orientationAtTarget.bearing
+        let tilt: Double = 60
+        let targetOrientation = GeoOrientationUpdate(bearing: bearing,
+                                                     tilt: tilt)
+        mapView.camera.setOrientationAtTarget(targetOrientation)
     }
 
     private func unTiltMap() {
-        var targetOrientation = MapCamera.OrientationUpdate()
-        targetOrientation.tilt = 0
-        mapView.camera.setTargetOrientation(orientation: targetOrientation)
+        let bearing = mapView.camera.state.orientationAtTarget.bearing
+        let tilt: Double = 0
+        let targetOrientation = GeoOrientationUpdate(bearing: bearing,
+                                                     tilt: tilt)
+        mapView.camera.setOrientationAtTarget(targetOrientation)
     }
 
     private func showDialog(title: String, message: String) {

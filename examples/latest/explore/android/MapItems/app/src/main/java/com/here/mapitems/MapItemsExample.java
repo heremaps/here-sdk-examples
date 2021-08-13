@@ -21,16 +21,18 @@ package com.here.mapitems;
 
 import android.content.Context;
 import android.content.res.AssetManager;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+
 import com.here.sdk.core.Anchor2D;
-import com.here.sdk.core.Color;
 import com.here.sdk.core.GeoCoordinates;
+import com.here.sdk.core.GeoOrientation;
+import com.here.sdk.core.GeoOrientationUpdate;
 import com.here.sdk.core.Location;
-import com.here.sdk.core.Location.Builder.FinalBuilder;
 import com.here.sdk.core.Metadata;
 import com.here.sdk.core.Point2D;
 import com.here.sdk.gestures.TapListener;
@@ -52,8 +54,8 @@ import java.util.List;
 
 public class MapItemsExample {
 
-    private Context context;
-    private MapView mapView;
+    private final Context context;
+    private final MapView mapView;
     private final List<MapMarker> mapMarkerList = new ArrayList<>();
     private final List<MapMarker3D> mapMarker3DList = new ArrayList<>();
     private final List<LocationIndicator> locationIndicatorList = new ArrayList<>();
@@ -61,9 +63,6 @@ public class MapItemsExample {
     public MapItemsExample(Context context, MapView mapView) {
         this.context = context;
         this.mapView = mapView;
-        MapCamera camera = mapView.getCamera();
-        double distanceInMeters = 1000 * 10;
-        camera.lookAt(new GeoCoordinates(52.520798, 13.409408), distanceInMeters);
 
         // Setting a tap handler to pick markers from map.
         setTapGestureHandler();
@@ -283,7 +282,7 @@ public class MapItemsExample {
     private void setTapGestureHandler() {
         mapView.getGestures().setTapListener(new TapListener() {
             @Override
-            public void onTap(Point2D touchPoint) {
+            public void onTap(@NonNull Point2D touchPoint) {
                 pickMapMarker(touchPoint);
             }
         });
@@ -293,7 +292,11 @@ public class MapItemsExample {
         float radiusInPixel = 2;
         mapView.pickMapItems(touchPoint, radiusInPixel, new MapViewBase.PickMapItemsCallback() {
             @Override
-            public void onPickMapItems(@NonNull PickMapItemsResult pickMapItemsResult) {
+            public void onPickMapItems(@Nullable PickMapItemsResult pickMapItemsResult) {
+                if (pickMapItemsResult == null) {
+                    // An error occurred while performing the pick operation.
+                    return;
+                }
                 // Note that 3D map markers can't be picked yet. Only marker, polgon and polyline map items are pickable.
                 List<MapMarker> mapMarkerList = pickMapItemsResult.getMarkers();
                 if (mapMarkerList.size() == 0) {
@@ -320,15 +323,15 @@ public class MapItemsExample {
     }
 
     private void tiltMap() {
-        MapCamera.OrientationUpdate targetOrientation = new MapCamera.OrientationUpdate();
-        targetOrientation.tilt = 60D;
-        mapView.getCamera().setTargetOrientation(targetOrientation);
+        double bearing = mapView.getCamera().getState().orientationAtTarget.bearing;
+        double tilt =  60;
+        mapView.getCamera().setOrientationAtTarget(new GeoOrientationUpdate(bearing, tilt));
     }
 
     private void unTiltMap() {
-        MapCamera.OrientationUpdate targetOrientation = new MapCamera.OrientationUpdate();
-        targetOrientation.tilt = 0D;
-        mapView.getCamera().setTargetOrientation(targetOrientation);
+        double bearing = mapView.getCamera().getState().orientationAtTarget.bearing;
+        double tilt =  0;
+        mapView.getCamera().setOrientationAtTarget(new GeoOrientationUpdate(bearing, tilt));
     }
 
     private void showDialog(String title, String message) {

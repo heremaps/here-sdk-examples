@@ -39,8 +39,11 @@ import com.here.sdk.maploader.MapUpdateAvailability;
 import com.here.sdk.maploader.MapUpdateProgressListener;
 import com.here.sdk.maploader.MapUpdateTask;
 import com.here.sdk.maploader.MapUpdater;
+import com.here.sdk.maploader.PersistentMapRepairError;
+import com.here.sdk.maploader.PersistentMapStatus;
 import com.here.sdk.maploader.Region;
 import com.here.sdk.maploader.RegionId;
+import com.here.sdk.maploader.RepairPersistentMapCallback;
 import com.here.sdk.mapview.MapCamera;
 import com.here.sdk.mapview.MapView;
 import com.here.sdk.search.OfflineSearchEngine;
@@ -107,6 +110,11 @@ public class OfflineMapsExample {
         // - By default, the update process should not be done while an app runs in background as then the
         // download can be interrupted by the OS.
         checkForMapUpdates();
+
+        // Checks the status of already downloaded map data and eventually repairs it.
+        // Important: For production-ready apps, it is recommended to not do such operations silently in
+        // the background and instead inform the user.
+        checkInstallationStatus();
     }
 
     public void onDownloadListClicked() {
@@ -335,5 +343,28 @@ public class OfflineMapsExample {
                 Log.d("MapUpdate", message);
             }
         });
+    }
+
+    private void checkInstallationStatus() {
+        // Note that this value will not change during the lifetime of an app.
+        PersistentMapStatus persistentMapStatus = mapDownloader.getInitialPersistentMapStatus();
+        if (persistentMapStatus != PersistentMapStatus.OK) {
+            // Something went wrong after the app was closed the last time. It seems the offline map data is
+            // corrupted. This can eventually happen, when an ongoing map download was interrupted due to a crash.
+            Log.d("PersistentMapStatus", "The persistent map data seems to be corrupted. Trying to repair.");
+
+            // Let's try to repair.
+            mapDownloader.repairPersistentMap(new RepairPersistentMapCallback() {
+                @Override
+                public void onCompleted(@Nullable PersistentMapRepairError persistentMapRepairError) {
+                    if (persistentMapRepairError == null) {
+                        Log.d("RepairPersistentMap", "Repair operation completed successfully!");
+                        return;
+                    }
+
+                    Log.d("RepairPersistentMap", "Repair operation failed: " + persistentMapRepairError.name());
+                }
+            });
+        }
     }
 }
