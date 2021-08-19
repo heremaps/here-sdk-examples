@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
     private MapView mapView;
     private MapItemsExample mapItemsExample;
     private MapObjectsExample mapObjectsExample;
+    private MapViewPinExample mapViewPinExample;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
                 if (mapError == null) {
                     mapObjectsExample = new MapObjectsExample(mapView);
                     mapItemsExample = new MapItemsExample(MainActivity.this, mapView);
+                    mapViewPinExample = new MapViewPinExample(MainActivity.this, mapView);
 
                     MapCamera camera = mapView.getCamera();
                     double distanceInMeters = 1000 * 10;
@@ -166,6 +168,17 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             case R.id.clear_map_marker_menu_item:
                 mapItemsExample.clearMap();
+                return true;
+
+            // MapView Pins:
+            case R.id.default_menu_item:
+                mapViewPinExample.showMapViewPin();
+                return true;
+            case R.id.anchored_menu_item:
+                mapViewPinExample.showAnchoredMapViewPin();
+                return true;
+            case R.id.clear_map_view_pins_menu_item:
+                mapViewPinExample.clearMap();
                 return true;
 
             default:

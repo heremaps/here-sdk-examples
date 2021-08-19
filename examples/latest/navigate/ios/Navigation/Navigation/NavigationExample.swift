@@ -36,7 +36,7 @@ class NavigationExample : NavigableLocationDelegate,
                           ManeuverViewLaneAssistanceDelegate,
                           JunctionViewLaneAssistanceDelegate,
                           RoadAttributesDelegate,
-                          DynamicRoutingEngineDelegate,
+                          DynamicRoutingDelegate,
                           TruckRestrictionsWarningDelegate,
                           RoadTextsDelegate {
 
@@ -72,7 +72,6 @@ class NavigationExample : NavigableLocationDelegate,
         voiceAssistant = VoiceAssistant()
 
         dynamicRoutingEngine = createDynamicRoutingEngine()
-        dynamicRoutingEngine!.delegate = self
 
         visualNavigator.navigableLocationDelegate = self
         visualNavigator.routeDeviationDelegate = self
@@ -440,7 +439,7 @@ class NavigationExample : NavigableLocationDelegate,
         }
     }
 
-    // Conform to the DynamicRoutingEngineDelegate.
+    // Conform to the DynamicRoutingDelegate.
     // Notifies on traffic-optimized routes that are considered better than the current route.
     func onBetterRouteFound(newRoute: Route,
                             etaDifferenceInSeconds: Int32,
@@ -453,6 +452,11 @@ class NavigationExample : NavigableLocationDelegate,
         // visualNavigator.route = newRoute
     }
 
+    // Conform to the DynamicRoutingDelegate.
+    func onRoutingError(routingError: RoutingError) {
+        print("Error while dynamically searching for a better route: \(routingError).");
+    }
+    
     // Conform to the TruckRestrictionsWarningDelegate.
     // Notifies truck drivers on road restrictions ahead. This event notifies on truck restrictions in general,
     // so it will also deliver events, when the transport type was to a non-truck transport type.
@@ -503,9 +507,17 @@ class NavigationExample : NavigableLocationDelegate,
             showMessage("Starting navgation.")
         }
 
-        dynamicRoutingEngine!.start(route: route)
+        startDynamicSearchForBetterRoutes(route)
     }
 
+    private func startDynamicSearchForBetterRoutes(_ route: Route) {
+        do {
+            try dynamicRoutingEngine?.start(route: route, delegate: self)
+        } catch let instantiationError {
+            fatalError("Start of DynamicRoutingEngine failed: \(instantiationError). Is the RouteHandle missing?")
+        }
+    }
+    
     func stopNavigation() {
         // Switches to tracking mode when a route was set before, otherwise tracking mode is kept.
         // Without a route the navigator will only notify on the current map-matched location

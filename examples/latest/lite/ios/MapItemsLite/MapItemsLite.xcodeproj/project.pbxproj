@@ -12,6 +12,7 @@
 		2A92B861269BF96C005F7A18 /* Menu.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A92B85E269BF96C005F7A18 /* Menu.storyboard */; };
 		C88C017223CDFCB200043918 /* heresdk.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = C88C017123CDFCB200043918 /* heresdk.xcframework */; };
 		C88C017323CDFCB200043918 /* heresdk.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = C88C017123CDFCB200043918 /* heresdk.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		C8B411F026CACE2B00B3E023 /* MapOverlaysExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8B411EF26CACE2B00B3E023 /* MapOverlaysExample.swift */; };
 		C8D0BB4C2167D6B6002FD93D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D0BB4B2167D6B6002FD93D /* AppDelegate.swift */; };
 		C8D0BB4E2167D6B6002FD93D /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D0BB4D2167D6B6002FD93D /* ViewController.swift */; };
 		C8D0BB512167D6B6002FD93D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C8D0BB4F2167D6B6002FD93D /* Main.storyboard */; };
@@ -39,6 +40,7 @@
 		2A92B85D269BF96C005F7A18 /* MapObjectsExample.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapObjectsExample.swift; sourceTree = "<group>"; };
 		2A92B85E269BF96C005F7A18 /* Menu.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Menu.storyboard; sourceTree = "<group>"; };
 		C88C017123CDFCB200043918 /* heresdk.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = heresdk.xcframework; sourceTree = "<group>"; };
+		C8B411EF26CACE2B00B3E023 /* MapOverlaysExample.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapOverlaysExample.swift; sourceTree = "<group>"; };
 		C8D0BB482167D6B6002FD93D /* MapItemsLite.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MapItemsLite.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C8D0BB4B2167D6B6002FD93D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C8D0BB4D2167D6B6002FD93D /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -89,14 +91,15 @@
 		C8D0BB4A2167D6B6002FD93D /* MapItemsLite */ = {
 			isa = PBXGroup;
 			children = (
-				C8D0BB4B2167D6B6002FD93D /* AppDelegate.swift */,
 				C8D0BB522167D6B7002FD93D /* Assets.xcassets */,
 				C8D0BB572167D6B7002FD93D /* Info.plist */,
 				C8D0BB542167D6B7002FD93D /* LaunchScreen.storyboard */,
 				C8D0BB4F2167D6B6002FD93D /* Main.storyboard */,
+				2A92B85E269BF96C005F7A18 /* Menu.storyboard */,
+				C8D0BB4B2167D6B6002FD93D /* AppDelegate.swift */,
 				C8D0BB602167D87D002FD93D /* MapItemsExample.swift */,
 				2A92B85D269BF96C005F7A18 /* MapObjectsExample.swift */,
-				2A92B85E269BF96C005F7A18 /* Menu.storyboard */,
+				C8B411EF26CACE2B00B3E023 /* MapOverlaysExample.swift */,
 				2A92B85C269BF96C005F7A18 /* MenuViewController.swift */,
 				C8D0BB4D2167D6B6002FD93D /* ViewController.swift */,
 			);
@@ -177,6 +180,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C8B411F026CACE2B00B3E023 /* MapOverlaysExample.swift in Sources */,
 				2A92B860269BF96C005F7A18 /* MapObjectsExample.swift in Sources */,
 				C8D0BB612167D87D002FD93D /* MapItemsExample.swift in Sources */,
 				C8D0BB4E2167D6B6002FD93D /* ViewController.swift in Sources */,

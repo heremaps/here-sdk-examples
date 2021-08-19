@@ -42,4 +42,17 @@
       </menu>
     </item>
 
+    <item android:id="@+id/MapViewPins"
+        android:title="MapView Pins"
+        app:showAsAction="never">
+        <menu>
+            <item android:id="@+id/default_menu_item"
+                android:title="Default"/>
+            <item android:id="@+id/anchored_menu_item"
+                android:title="Anchored"/>
+            <item android:id="@+id/clear_map_view_pins_menu_item"
+                android:title="Clear Map"/>
+        </menu>
+    </item>
+
 </menu>

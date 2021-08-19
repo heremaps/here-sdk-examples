@@ -102,7 +102,7 @@ class NavigationExample {
     // The navigator is set as listener to receive location updates.
     _locationSimulationProvider.startLocating(route, _visualNavigator);
 
-    _dynamicRoutingEngine.startWithRoute(route);
+    _startDynamicSearchForBetterRoutes(route);
   }
 
   void startNavigation(HERE.Route route) {
@@ -115,7 +115,28 @@ class NavigationExample {
     // The navigator is set as listener to receive location updates.
     _herePositioningProvider.startLocating(_visualNavigator, LocationAccuracy.navigation);
 
-    _dynamicRoutingEngine.startWithRoute(route);
+    _startDynamicSearchForBetterRoutes(route);
+  }
+
+  void _startDynamicSearchForBetterRoutes(HERE.Route route) {
+    try {
+      _dynamicRoutingEngine.start(
+          route,
+          // Notifies on traffic-optimized routes that are considered better than the current route.
+          DynamicRoutingListener((Route newRoute, int etaDifferenceInSeconds, int distanceDifferenceInMeters) {
+            print('DynamicRoutingEngine: Calculated a new route.');
+            print('DynamicRoutingEngine: etaDifferenceInSeconds: $etaDifferenceInSeconds.');
+            print('DynamicRoutingEngine: distanceDifferenceInMeters: $distanceDifferenceInMeters.');
+
+            // An implementation can decide to switch to the new route:
+            // _visualNavigator.route = newRoute;
+          }, (RoutingError routingError) {
+            final error = routingError.toString();
+            print('Error while dynamically searching for a better route: $error');
+          }));
+    } on DynamicRoutingEngineStartException {
+      throw Exception("Start of DynamicRoutingEngine failed. Is the RouteHandle missing?");
+    }
   }
 
   void _prepareNavigation(HERE.Route route) {
@@ -409,17 +430,6 @@ class NavigationExample {
       }
     });
 
-    // Notifies on traffic-optimized routes that are considered better than the current route.
-    _dynamicRoutingEngine.listener =
-        DynamicRoutingEngineListener((Route newRoute, int etaDifferenceInSeconds, int distanceDifferenceInMeters) {
-      print('DynamicRoutingEngine: Calculated a new route.');
-      print('DynamicRoutingEngine: etaDifferenceInSeconds: $etaDifferenceInSeconds.');
-      print('DynamicRoutingEngine: distanceDifferenceInMeters: $distanceDifferenceInMeters.');
-
-      // An implementation can decide to switch to the new route:
-      // _visualNavigator.route = newRoute;
-    });
-
     // Notifies which lane(s) lead to the next (next) maneuvers.
     _visualNavigator.maneuverViewLaneAssistanceListener =
         ManeuverViewLaneAssistanceListener((ManeuverViewLaneAssistance laneAssistance) {
@@ -429,7 +439,7 @@ class NavigationExample {
       logLaneRecommendations(lanes);
 
       List<Lane> nextLanes = laneAssistance.lanesForNextNextManeuver;
-      if (!nextLanes.isEmpty) {
+      if (nextLanes.isNotEmpty) {
         print("Attention, the next next maneuver is very close.");
         print("Please take the following lane(s) after the next maneuver: ");
         logLaneRecommendations(nextLanes);

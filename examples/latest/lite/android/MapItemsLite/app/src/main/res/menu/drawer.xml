@@ -28,6 +28,17 @@
         </menu>
     </item>
 
+    <item android:title="MapView Pins">
+        <menu>
+            <item
+                android:id="@+id/menu_default_pins"
+                android:title="Default" />
+            <item
+                android:id="@+id/menu_menu_anchored_pins"
+                android:title="Anchored" />
+        </menu>
+    </item>
+
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/menu_clear"

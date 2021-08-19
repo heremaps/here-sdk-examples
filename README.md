@@ -11,7 +11,7 @@ The [HERE SDK](https://developer.here.com/products/here-sdk) enables you to buil
   <img src="images/here_sdk.jpg" width="500" />
 </p></center>
 
-The HERE SDK consumes data from the [HERE Platform](https://www.here.com/products/platform) and follows modern design principles incorporating microservices and highly modularized components. Currently, the HERE SDK supports three platforms: Android, iOS and Flutter.
+The HERE SDK consumes data from the [HERE Platform](https://www.here.com/products/platform) and follows modern design principles incorporating microservices and modularized components. Currently, the HERE SDK supports three platforms: Android, iOS and Flutter.
 
 For an overview of the existing features, please check the _Developer's Guide_ for the platform of your choice. Here you will also find numerous code snippets, detailed tutorials, the _API Reference_ and the latest _Release Notes_:
 
@@ -21,7 +21,7 @@ For an overview of the existing features, please check the _Developer's Guide_ f
 
 > For now, the _Navigate Edition_ is only available upon request. Please contact your HERE representative to receive access including a set of evaluation credentials.
 
-## List of Available Example Apps (Version 4.8.1.0)
+## List of Available Example Apps (Version 4.8.2.0)
 In this repository you can find the [latest example apps](examples/latest) that show key features of the HERE SDK in ready-to-use applications:
 
 - **HelloMap**: Shows the classic 'Hello World'.
@@ -30,15 +30,15 @@ In this repository you can find the [latest example apps](examples/latest) that 
 - **CustomMapStyles**: Shows how to load custom map schemes made with the _HERE Style Editor_. Exclusively available for the _Explore Edition_ and the _Navigate Edition_).
 - **Gestures**: Shows how to handle gestures.
 - **OfflineMaps**: Shows how the HERE SDK can work fully offline and how offline map data can be downloaded for continents and countries. Exclusively available for the _Navigate Edition_.
-- **MapItems**: Shows how to add circles, polygons and polylines, 2D and 3D map markers to locate POIs (and more) on the map. 3D map markers are exclusively available for the _Explore and Navigate Editions_.
-- **MapViewPins** / **MapOverlaysLite**: Shows how to add standard platform views to the map.
+- **MapItems**: Shows how to add circles, polygons and polylines, native views, 2D and 3D map markers to locate POIs (and more) on the map. 3D map markers are exclusively available for the _Explore and Navigate Editions_.
 - **Routing**: Shows how to calculate routes and add them to the map.
 - **RoutingHybrid**: Shows how to calculate routes and add them to the map. Also shows how to calculate routes offline, when no internet connection is available. Exclusively available for the _Navigate Edition_.
 - **EVRouting**: Shows how to calculate routes for _electric vehicles_ and how to calculate the area of reach with _isoline routing_. Also shows how to search along a route.
 - **Public Transit**: Shows how to calculate routes for public transportation vehicles such as subways, trains, or busses.
 - **Search**: Shows how to search POIs and add them to the map. Shows also geocoding and reverse geocoding.
 - **SearchHybrid**: Shows how to search POIs and add them to the map. Shows geocoding and reverse geocoding. Also shows how to search offline, when no internet connection is available. Exclusively available for the _Navigate Edition_.
-- **Navigation**: Shows turn-by-turn navigation and tracking. Exclusively available for the _Navigate Edition_.
+- **NavigationQuickStart**: Shows how to get started with turn-by-turn navigation. Exclusively available for the _Navigate Edition_.
+- **Navigation**: Gives an overview of how to implement many of the available turn-by-turn navigation and tracking features. Exclusively available for the _Navigate Edition_.
 - **Positioning**: Shows how to integrate HERE Positioning. Exclusively available for the _Navigate Edition_.
 - **Traffic**: Shows how to search for real-time traffic and how to visualize it on the map.
 - **StandAloneEngine**: Shows how to use an engine without a map view.
