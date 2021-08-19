@@ -42,7 +42,7 @@ class AppLogic {
       : _showDialog = showDialogCallback,
         _hereMapController = hereMapController,
         _navigationExample = NavigationExample(hereMapController),
-        _routeCalculator = RouteCalculator() {}
+        _routeCalculator = RouteCalculator();
 
   // Shows navigation simulation along a route.
   void startNavigationSimulation() {

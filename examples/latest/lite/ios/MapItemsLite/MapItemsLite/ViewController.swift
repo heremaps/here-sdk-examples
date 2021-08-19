@@ -25,6 +25,7 @@ final class ViewController: UIViewController {
     @IBOutlet private var mapView: MapViewLite!
     private var mapItemsExample: MapItemsExample!
     private var mapObjectsExample: MapObjectsExample!
+    private var mapOverlaysExample: MapOverlaysExample!
     private var isMapSceneLoaded = false
     private var menuSections: [MenuSection] = []
 
@@ -43,9 +44,10 @@ final class ViewController: UIViewController {
             return
         }
 
-        // Start the example.
+        // Start the examples.
         mapItemsExample = MapItemsExample(viewController: self, mapView: mapView)
         mapObjectsExample = MapObjectsExample(mapView: mapView)
+        mapOverlaysExample = MapOverlaysExample(mapView: mapView)
         isMapSceneLoaded = true
     }
 
@@ -91,10 +93,23 @@ final class ViewController: UIViewController {
         }
     }
 
+    private func onDefaultPinButtonClicked(_ sender: Any) {
+        if isMapSceneLoaded {
+            mapOverlaysExample.onDefaultButtonClicked()
+        }
+    }
+    
+    private func onAnchoredPinButtonClicked(_ sender: Any) {
+        if isMapSceneLoaded {
+            mapOverlaysExample.onAnchoredButtonClicked()
+        }
+    }
+    
     private func onClearButtonClicked(_ sender: Any) {
         if isMapSceneLoaded {
             mapItemsExample.onClearButtonClicked()
             mapObjectsExample.onClearButtonClicked()
+            mapOverlaysExample.onClearButtonClicked()
         }
     }
 
@@ -108,6 +123,7 @@ final class ViewController: UIViewController {
         return [
             buildMapMarkerMenuSection(),
             buildMapObjectMenuSection(),
+            buildMapOverlaysMenuSection(),
             buildClearMenuSection()
         ]
     }
@@ -127,6 +143,13 @@ final class ViewController: UIViewController {
         ])
     }
 
+    private func buildMapOverlaysMenuSection() -> MenuSection {
+        return MenuSection(title: "Map Overlay", items: [
+            MenuItem(title: "Default", onSelect: onDefaultPinButtonClicked),
+            MenuItem(title: "Anchored", onSelect: onAnchoredPinButtonClicked),
+        ])
+    }
+    
     private func buildClearMenuSection() -> MenuSection {
         return MenuSection(title: "", items: [
             MenuItem(title: "Clear All Map Items", onSelect: onClearButtonClicked)

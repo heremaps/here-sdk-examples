@@ -47,6 +47,7 @@ public class MainActivity extends AppCompatActivity
     private MapViewLite mapView;
     private MapItemsExample mapItemsExample;
     private MapObjectsExample mapObjectsExample;
+    private MapOverlayExample mapOverlayExample;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,6 +109,7 @@ public class MainActivity extends AppCompatActivity
                 if (errorCode == null) {
                     mapItemsExample = new MapItemsExample(MainActivity.this, mapView);
 					mapObjectsExample = new MapObjectsExample(mapView);
+                    mapOverlayExample = new MapOverlayExample(MainActivity.this, mapView);
 
                     Camera mapViewCamera = mapView.getCamera();
                     mapViewCamera.setTarget(new GeoCoordinates(52.530932, 13.384915));
@@ -139,9 +141,6 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-
-        int id = menuItem.getItemId();
-
         switch(menuItem.getItemId()){
             case R.id.menu_marker_anchored:
                 mapItemsExample.showAnchoredMapMarkers();
@@ -158,9 +157,16 @@ public class MainActivity extends AppCompatActivity
             case R.id.menu_menu_objects_circle:
                 mapObjectsExample.showMapCircle();
                 break;
+            case R.id.menu_default_pins:
+                mapOverlayExample.showMapOverlay();
+                break;
+            case R.id.menu_menu_anchored_pins:
+                mapOverlayExample.showAnchoredMapOverlay();
+                break;
             case R.id.menu_clear:
                 mapItemsExample.clearMap();
                 mapObjectsExample.clearMap();
+                mapOverlayExample.clearMap();
                 break;
         }
 

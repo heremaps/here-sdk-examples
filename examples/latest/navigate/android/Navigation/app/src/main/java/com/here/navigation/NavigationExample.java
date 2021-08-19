@@ -76,9 +76,10 @@ import com.here.sdk.routing.ManeuverAction;
 import com.here.sdk.routing.RoadTexts;
 import com.here.sdk.routing.RoadType;
 import com.here.sdk.routing.Route;
+import com.here.sdk.routing.RoutingError;
 import com.here.sdk.trafficawarenavigation.DynamicRoutingEngine;
-import com.here.sdk.trafficawarenavigation.DynamicRoutingEngineListener;
 import com.here.sdk.trafficawarenavigation.DynamicRoutingEngineOptions;
+import com.here.sdk.trafficawarenavigation.DynamicRoutingListener;
 
 import java.util.Arrays;
 import java.util.List;
@@ -416,24 +417,6 @@ public class NavigationExample {
             }
         });
 
-        // Notifies on traffic-optimized routes that are considered better than the current route.
-        dynamicRoutingEngine.setListener(new DynamicRoutingEngineListener() {
-            public void onBetterRouteFound(
-                Route betterRoute,
-                int etaDifferenceInSeconds,
-                int distanceDifferenceInMeters) {
-            Log.d(TAG, "DynamicRoutingEngine: Calculated a new route.");
-            Log.d(TAG, "DynamicRoutingEngine: etaDifferenceInSeconds: " + etaDifferenceInSeconds + ".");
-            Log.d(TAG, "DynamicRoutingEngine: distanceDifferenceInMeters: " + distanceDifferenceInMeters + ".");
-
-            String logMessage = "Calculated a new route. etaDifferenceInSeconds: " + etaDifferenceInSeconds +
-                                    " distanceDifferenceInMeters: " + distanceDifferenceInMeters;
-            snackbar.setText("DynamicRoutingEngine update: " + logMessage).show();
-
-            // An implementation can decide to switch to the new route:
-            // visualNavigator.setRoute(newRoute);
-        }});
-
         // Notifies truck drivers on road restrictions ahead. This event notifies on truck restrictions in general,
         // so it will also deliver events, when the transport type was to a non-truck transport type.
         // The given restrictions are based on the HERE database of the road network ahead.
@@ -579,7 +562,35 @@ public class NavigationExample {
             snackbar.setText("Starting navgation.").show();
         }
 
-        dynamicRoutingEngine.start(route);
+        startDynamicSearchForBetterRoutes(route);
+    }
+
+    private void startDynamicSearchForBetterRoutes(Route route) {
+        try {
+            dynamicRoutingEngine.start(route, new DynamicRoutingListener() {
+                // Notifies on traffic-optimized routes that are considered better than the current route.
+                @Override
+                public void onBetterRouteFound(@NonNull Route route, int etaDifferenceInSeconds, int distanceDifferenceInMeters) {
+                    Log.d(TAG, "DynamicRoutingEngine: Calculated a new route.");
+                    Log.d(TAG, "DynamicRoutingEngine: etaDifferenceInSeconds: " + etaDifferenceInSeconds + ".");
+                    Log.d(TAG, "DynamicRoutingEngine: distanceDifferenceInMeters: " + distanceDifferenceInMeters + ".");
+
+                    String logMessage = "Calculated a new route. etaDifferenceInSeconds: " + etaDifferenceInSeconds +
+                            " distanceDifferenceInMeters: " + distanceDifferenceInMeters;
+                    snackbar.setText("DynamicRoutingEngine update: " + logMessage).show();
+
+                    // An implementation can decide to switch to the new route:
+                    // visualNavigator.setRoute(newRoute);
+                }
+
+                @Override
+                public void onRoutingError(@NonNull RoutingError routingError) {
+                    Log.d(TAG,"Error while dynamically searching for a better route: " + routingError.name());
+                }
+            });
+        } catch (DynamicRoutingEngine.StartException e) {
+            throw new RuntimeException("Start of DynamicRoutingEngine failed. Is the RouteHandle missing?");
+        }
     }
 
     public void stopNavigation() {

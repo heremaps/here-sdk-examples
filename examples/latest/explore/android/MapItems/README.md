@@ -1,4 +1,4 @@
-The MapItems example app shows how to pin images and 3D objects to mark specific spots on the map. You can find how this is done in [MapItemsExample.java](app/src/main/java/com/here/mapitems/MapItemsExample.java).
+The MapItems example app shows how to pin images, native views and 3D objects to mark specific spots on the map. You can find how this is done in [MapItemsExample.java](app/src/main/java/com/here/mapitems/MapItemsExample.java).
 
 Build instructions:
 -------------------
