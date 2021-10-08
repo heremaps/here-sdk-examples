@@ -22,23 +22,36 @@ import 'package:here_sdk/core.dart';
 import 'package:here_sdk/mapview.dart';
 
 class MapViewPinsExample {
-  final HereMapController _hereMapController;
-  final GeoCoordinates mapCenterGeoCoordinates = GeoCoordinates(52.520798, 13.409408);
+  final double distanceInMeters = 1000 * 10;
+  final GeoCoordinates mapCenterGeoCoordinates = GeoCoordinates(52.51760485151816, 13.380312380535472);
 
-  MapViewPinsExample(HereMapController hereMapController) : _hereMapController = hereMapController {
+  final HereMapController _hereMapController;
+  final MapCamera _mapCamera;
+
+  MapViewPinsExample(HereMapController hereMapController)
+      : _hereMapController = hereMapController,
+        _mapCamera = hereMapController.camera {
     double distanceToEarthInMeters = 7000;
-    _hereMapController.camera.lookAtPointWithDistance(mapCenterGeoCoordinates, distanceToEarthInMeters);
+    _mapCamera.lookAtPointWithDistance(mapCenterGeoCoordinates, distanceToEarthInMeters);
 
     // Add circle to indicate map center.
     _addCirclePolygon(mapCenterGeoCoordinates);
   }
 
   void showDefaultMapViewPin() {
+    // Move map to expected location.
+    _mapCamera.flyToWithOptionsAndDistance(
+        mapCenterGeoCoordinates, distanceInMeters, new MapCameraFlyToOptions.withDefaults());
+
     _hereMapController.pinWidget(
         _createWidget("Centered ViewPin", Color.fromARGB(150, 0, 194, 138)), mapCenterGeoCoordinates);
   }
 
   void showAnchoredMapViewPin() {
+    // Move map to expected location.
+    _mapCamera.flyToWithOptionsAndDistance(
+        mapCenterGeoCoordinates, distanceInMeters, new MapCameraFlyToOptions.withDefaults());
+
     var widgetPin = _hereMapController.pinWidget(
         _createWidget("Anchored MapViewPin", Color.fromARGB(200, 0, 144, 138)), mapCenterGeoCoordinates);
     widgetPin?.anchor = Anchor2D.withHorizontalAndVertical(0.5, 1);
@@ -67,6 +80,10 @@ class MapViewPinsExample {
   }
 
   void _addCirclePolygon(GeoCoordinates geoCoordinates) {
+    // Move map to expected location.
+    _mapCamera.flyToWithOptionsAndDistance(
+        mapCenterGeoCoordinates, distanceInMeters, new MapCameraFlyToOptions.withDefaults());
+
     double radiusInMeters = 120;
     GeoCircle geoCircle = GeoCircle(mapCenterGeoCoordinates, radiusInMeters);
 

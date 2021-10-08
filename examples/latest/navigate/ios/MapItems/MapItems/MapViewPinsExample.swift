@@ -22,13 +22,16 @@ import UIKit
 
 class MapViewPinsExample {
 
-    private var mapView: MapView
-    private let mapCenterGeoCoordinates = GeoCoordinates(latitude: 52.520798, longitude: 13.409408)
+    private let distanceInMeters = 1000 * 10.0
+    private let mapCenterGeoCoordinates = GeoCoordinates(latitude: 52.51760485151816, longitude: 13.380312380535472)
+    
+    private let mapView: MapView
+    private let mapCamera: MapCamera
 
     init(mapView: MapView) {
         self.mapView = mapView
-        let camera = mapView.camera
-        camera.lookAt(point: mapCenterGeoCoordinates, distanceInMeters: 7000)
+        mapCamera = mapView.camera
+        mapCamera.lookAt(point: mapCenterGeoCoordinates, distanceInMeters: 7000)
 
         // Add circle to indicate map center.
         addCirclePolygon(mapCenterGeoCoordinates);
@@ -47,6 +50,9 @@ class MapViewPinsExample {
     }
 
     private func showMapViewPins() {
+        // Move map to expected location.
+        mapCamera.flyTo(target: mapCenterGeoCoordinates, distanceInMeters: distanceInMeters, animationOptions: MapCamera.FlyToOptions())
+        
         let textView = UITextView(frame: CGRect(x: 0, y: 0, width: 200, height: 40))
         textView.textAlignment = .center
         textView.isEditable = false
@@ -59,6 +65,9 @@ class MapViewPinsExample {
     }
 
     private func showAnchoredMapViewPins() {
+        // Move map to expected location.
+        mapCamera.flyTo(target: mapCenterGeoCoordinates, distanceInMeters: distanceInMeters, animationOptions: MapCamera.FlyToOptions())
+        
         let textView = UITextView(frame: CGRect(x: 0, y: 0, width: 200, height: 40))
         textView.textAlignment = .center
         textView.isEditable = false
@@ -78,6 +87,9 @@ class MapViewPinsExample {
     }
 
     private func addCirclePolygon(_ geoCoordinates: GeoCoordinates) {
+        // Move map to expected location.
+        mapCamera.flyTo(target: mapCenterGeoCoordinates, distanceInMeters: distanceInMeters, animationOptions: MapCamera.FlyToOptions())
+        
         let geoCircle = GeoCircle(center: geoCoordinates,
                                   radiusInMeters: 50.0)
 

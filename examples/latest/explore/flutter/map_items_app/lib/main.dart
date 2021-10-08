@@ -79,6 +79,10 @@ class _MyAppState extends State<MyApp> {
     _mapItemsExample?.showCenteredMapMarkers();
   }
 
+  void _mapMarkerClusterButtonClicked() {
+    _mapItemsExample?.showMapMarkerCluster();
+  }
+
   void _locationIndicatorPedestrianButtonClicked() {
     _mapItemsExample?.showLocationIndicatorPedestrian();
   }
@@ -179,6 +183,7 @@ class _MyAppState extends State<MyApp> {
     final List<MenuSectionItem> menuItems = [
       MenuSectionItem("Anchored (2D)", _anchoredMapMarkersButtonClicked),
       MenuSectionItem("Centered (2D)", _centeredMapMarkersButtonClicked),
+      MenuSectionItem("MapMarkerCluster", _mapMarkerClusterButtonClicked),
       MenuSectionItem("Flat", _flatMapMarkersButtonClicked),
       MenuSectionItem("3D OBJ", _mapMarkers3DButtonClicked),
     ];

@@ -29,7 +29,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Override point for customization after application launch.
         return true
     }
-
+    
+    func applicationDidEnterBackground(_ application: UIApplication) {
+        // Prevent GPU calls when the app runs in background.
+        MapView.pause()
+    }
+    
+    func applicationWillEnterForeground(_ application: UIApplication) {
+        MapView.resume()
+    }
+    
     func applicationWillTerminate(_ application: UIApplication) {
         // Deinitializes map renderer and releases all of its resources.
         // All existing MapView instances will become invalid after this call.

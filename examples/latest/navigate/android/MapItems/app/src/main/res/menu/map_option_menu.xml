@@ -27,6 +27,8 @@
               android:title="Anchored (2D)"/>
           <item android:id="@+id/centered_2D_menu_item"
               android:title="Centered (2D)"/>
+          <item android:id="@+id/map_marker_cluster_menu_item"
+              android:title="MapMarkerCluster"/>
           <item android:id="@+id/location_ped_menu_item"
               android:title="Location (PED)"/>
           <item android:id="@+id/location_nav_menu_item"

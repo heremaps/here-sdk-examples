@@ -31,12 +31,17 @@ import com.here.sdk.mapview.MapPolygon;
 import com.here.sdk.mapview.MapPolyline;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapView;
+import com.here.sdk.mapview.MapCamera.FlyToOptions;
 
 import java.util.ArrayList;
 
 public class MapObjectsExample {
 
-    private MapScene mapScene;
+    private static final double DISTANCE_IN_METERS = 1000 * 10;
+    private static final  GeoCoordinates BERLIN_GEO_COORDINATES = new GeoCoordinates(52.51760485151816, 13.380312380535472);
+
+    private final MapScene mapScene;
+    private final MapCamera mapCamera;
     private MapPolyline mapPolyline;
     private MapArrow mapArrow;
     private MapPolygon mapPolygon;
@@ -44,28 +49,41 @@ public class MapObjectsExample {
 
     public MapObjectsExample(MapView mapView) {
         mapScene = mapView.getMapScene();
+        mapCamera = mapView.getCamera();
     }
 
     public void showMapPolyline() {
         clearMap();
+        // Move map to expected location.
+        mapCamera.flyTo(BERLIN_GEO_COORDINATES, DISTANCE_IN_METERS, new FlyToOptions());
+
         mapPolyline = createPolyline();
         mapScene.addMapPolyline(mapPolyline);
     }
 
     public void showMapArrow() {
         clearMap();
+        // Move map to expected location.
+        mapCamera.flyTo(BERLIN_GEO_COORDINATES, DISTANCE_IN_METERS, new FlyToOptions());
+
         mapArrow = createMapArrow();
         mapScene.addMapArrow(mapArrow);
     }
 
     public void showMapPolygon() {
         clearMap();
+        // Move map to expected location.
+        mapCamera.flyTo(BERLIN_GEO_COORDINATES, DISTANCE_IN_METERS, new FlyToOptions());
+
         mapPolygon = createPolygon();
         mapScene.addMapPolygon(mapPolygon);
     }
 
     public void showMapCircle() {
         clearMap();
+        // Move map to expected location.
+        mapCamera.flyTo(BERLIN_GEO_COORDINATES, DISTANCE_IN_METERS, new FlyToOptions());
+
         mapCircle = createMapCircle();
         mapScene.addMapPolygon(mapCircle);
     }
@@ -142,7 +160,7 @@ public class MapObjectsExample {
 
     private MapPolygon createMapCircle() {
         float radiusInMeters = 300;
-        GeoCircle geoCircle = new GeoCircle(new GeoCoordinates(52.530932, 13.384915), radiusInMeters);
+        GeoCircle geoCircle = new GeoCircle(new GeoCoordinates(52.51760485151816, 13.380312380535472), radiusInMeters);
 
         GeoPolygon geoPolygon = new GeoPolygon(geoCircle);
         Color fillColor = Color.valueOf(0, 0.56f, 0.54f, 0.63f); // RGBA

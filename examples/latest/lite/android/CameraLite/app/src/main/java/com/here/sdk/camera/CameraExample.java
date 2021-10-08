@@ -21,8 +21,8 @@
 
  import android.app.Activity;
  import android.content.Context;
- import android.support.annotation.NonNull;
- import android.support.v7.app.AlertDialog.Builder;
+ import androidx.annotation.NonNull;
+ import androidx.appcompat.app.AlertDialog.Builder;
  import android.util.Log;
  import android.view.animation.AccelerateDecelerateInterpolator;
  import android.widget.ImageView;

@@ -319,7 +319,7 @@ class NavigationExample {
         // Play a click sound to indicate this to the driver.
         // As Flutter itself does not provide support for sounds,
         // alternatively use a 3rd party plugin to play an alert sound of your choice.
-        // Note that this may not include temporary special speed limits, see SpeedLimitDelegate.
+        // Note that this may not include temporary special speed limits, see SpeedLimitListener.
         SystemSound.play(SystemSoundType.click);
         print('Speed limit exceeded.');
       }

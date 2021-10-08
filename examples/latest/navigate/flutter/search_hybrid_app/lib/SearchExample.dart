@@ -231,36 +231,62 @@ class SearchExample {
     }
   }
 
-  // Note: Suggestions are not available for the OfflineSearchEngine.
   Future<void> _autoSuggestExample() async {
     GeoCoordinates centerGeoCoordinates = _getMapViewCenter();
     int maxItems = 5;
     SearchOptions searchOptions = SearchOptions(LanguageCode.enUs, maxItems);
 
-    // Simulate a user typing a search term.
-    _onlineSearchEngine.suggest(
-        TextQuery.withAreaCenter(
-            "p", // User typed "p".
-            centerGeoCoordinates),
-        searchOptions, (SearchError? searchError, List<Suggestion>? list) async {
-      _handleSuggestionResults(searchError, list);
-    });
+    if (useOnlineSearchEngine) {
+      // Simulate a user typing a search term.
+      _onlineSearchEngine.suggest(
+          TextQuery.withAreaCenter(
+              "p", // User typed "p".
+              centerGeoCoordinates),
+          searchOptions, (SearchError? searchError, List<Suggestion>? list) async {
+        _handleSuggestionResults(searchError, list);
+      });
 
-    _onlineSearchEngine.suggest(
-        TextQuery.withAreaCenter(
-            "pi", // User typed "pi".
-            centerGeoCoordinates),
-        searchOptions, (SearchError? searchError, List<Suggestion>? list) async {
-      _handleSuggestionResults(searchError, list);
-    });
+      _onlineSearchEngine.suggest(
+          TextQuery.withAreaCenter(
+              "pi", // User typed "pi".
+              centerGeoCoordinates),
+          searchOptions, (SearchError? searchError, List<Suggestion>? list) async {
+        _handleSuggestionResults(searchError, list);
+      });
 
-    _onlineSearchEngine.suggest(
-        TextQuery.withAreaCenter(
-            "piz", // User typed "piz".
-            centerGeoCoordinates),
-        searchOptions, (SearchError? searchError, List<Suggestion>? list) async {
-      _handleSuggestionResults(searchError, list);
-    });
+      _onlineSearchEngine.suggest(
+          TextQuery.withAreaCenter(
+              "piz", // User typed "piz".
+              centerGeoCoordinates),
+          searchOptions, (SearchError? searchError, List<Suggestion>? list) async {
+        _handleSuggestionResults(searchError, list);
+      });
+    } else {
+      // Simulate a user typing a search term.
+      _offlineSearchEngine.suggest(
+          TextQuery.withAreaCenter(
+              "p", // User typed "p".
+              centerGeoCoordinates),
+          searchOptions, (SearchError? searchError, List<Suggestion>? list) async {
+        _handleSuggestionResults(searchError, list);
+      });
+
+      _offlineSearchEngine.suggest(
+          TextQuery.withAreaCenter(
+              "pi", // User typed "pi".
+              centerGeoCoordinates),
+          searchOptions, (SearchError? searchError, List<Suggestion>? list) async {
+        _handleSuggestionResults(searchError, list);
+      });
+
+      _offlineSearchEngine.suggest(
+          TextQuery.withAreaCenter(
+              "piz", // User typed "piz".
+              centerGeoCoordinates),
+          searchOptions, (SearchError? searchError, List<Suggestion>? list) async {
+        _handleSuggestionResults(searchError, list);
+      });
+    }
   }
 
   void _handleSuggestionResults(SearchError? searchError, List<Suggestion>? list) {

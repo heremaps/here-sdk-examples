@@ -80,6 +80,12 @@ final class ViewController: UIViewController {
         }
     }
     
+    private func onMapMarkerClusterButtonClicked(_ sender: Any) {
+        if isMapSceneLoaded {
+            mapItemsExample.onMapMarkerClusterButtonClicked()
+        }
+    }
+    
     private func onLocationIndicatorPedestrianButtonClicked(_ sender: Any) {
         if isMapSceneLoaded {
             mapItemsExample.onLocationIndicatorPedestrianButtonClicked()
@@ -169,6 +175,7 @@ final class ViewController: UIViewController {
         return MenuSection(title: "Map Marker", items: [
             MenuItem(title: "Anchored (2D)", onSelect: onAnchoredButtonClicked),
             MenuItem(title: "Centered (2D)", onSelect: onCenteredButtonClicked),
+            MenuItem(title: "MapMarkerCluster", onSelect: onMapMarkerClusterButtonClicked),
             MenuItem(title: "Flat", onSelect: onFlatMapMarkerButtonClicked),
             MenuItem(title: "3D Marker", onSelect: onMapMarker3DClicked)
         ])

@@ -129,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadMapScene() {
-        mapView.getMapScene().loadScene(MapScheme.GREY_DAY, new MapScene.LoadSceneCallback() {
+        mapView.getMapScene().loadScene(MapScheme.NORMAL_DAY, new MapScene.LoadSceneCallback() {
             @Override
             public void onLoadScene(@Nullable MapError mapError) {
                 if (mapError == null) {

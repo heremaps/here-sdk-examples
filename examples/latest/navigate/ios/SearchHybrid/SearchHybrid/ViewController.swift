@@ -56,6 +56,18 @@ final class ViewController: UIViewController {
         }
     }
 
+    @IBAction func onSwitchOnlineClicked(_ sender: Any) {
+        if isMapSceneLoaded {
+            searchExample.onSwitchOnlineButtonClicked()
+        }
+    }
+    
+    @IBAction func onSwitchOfflineClicked(_ sender: Any) {
+        if isMapSceneLoaded {
+            searchExample.onSwitchOfflineButtonClicked()
+        }
+    }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         mapView.handleLowMemory()

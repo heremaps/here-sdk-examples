@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -15,6 +15,7 @@
 
     <LinearLayout
         app:layout_constraintTop_toTopOf="parent"
+        android:id="@+id/first_button_row"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
@@ -33,4 +34,24 @@
             android:onClick="geocodeAnAddressButtonClicked" />
     </LinearLayout>
 
-</android.support.constraint.ConstraintLayout>
+    <LinearLayout
+        app:layout_constraintTop_toBottomOf="@+id/first_button_row"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Switch Online"
+            android:onClick="switchOnlineButtonClicked" />
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Switch Offline"
+            android:onClick="switchOfflineButtonClicked" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

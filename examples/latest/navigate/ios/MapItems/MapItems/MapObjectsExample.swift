@@ -22,16 +22,20 @@ import UIKit
 
 class MapObjectsExample {
 
-    private var mapScene: MapScene
+    private let distanceInMeters = 1000 * 10.0
+    private let berlinGeoCoordinates = GeoCoordinates(latitude: 52.51760485151816, longitude: 13.380312380535472)
+    
+    private let mapScene: MapScene
     private var mapPolyline: MapPolyline?
     private var mapPolygon: MapPolygon?
     private var mapCircle: MapPolygon?
     private var mapArrow: MapArrow?
+    private let mapCamera: MapCamera
 
     init(mapView: MapView) {
         // Configure the map.
-        let camera = mapView.camera
-        camera.lookAt(point: GeoCoordinates(latitude: 52.530932, longitude: 13.384915),
+        mapCamera = mapView.camera
+        mapCamera.lookAt(point: GeoCoordinates(latitude: 52.51760485151816, longitude: 13.380312380535472),
                       distanceInMeters: 1000 * 7)
 
         mapScene = mapView.mapScene
@@ -39,24 +43,36 @@ class MapObjectsExample {
 
     func onMapPolylineClicked() {
         clearMap()
+        // Move map to expected location.
+        mapCamera.flyTo(target: berlinGeoCoordinates, distanceInMeters: distanceInMeters, animationOptions: MapCamera.FlyToOptions())
+        
         mapPolyline = createMapPolyline()
         mapScene.addMapPolyline(mapPolyline!)
     }
 
     func onMapPolygonClicked() {
         clearMap()
+        // Move map to expected location.
+        mapCamera.flyTo(target: berlinGeoCoordinates, distanceInMeters: distanceInMeters, animationOptions: MapCamera.FlyToOptions())
+        
         mapPolygon = createMapPolygon()
         mapScene.addMapPolygon(mapPolygon!)
     }
 
     func onMapCircleClicked() {
         clearMap()
+        // Move map to expected location.
+        mapCamera.flyTo(target: berlinGeoCoordinates, distanceInMeters: distanceInMeters, animationOptions: MapCamera.FlyToOptions())
+        
         mapCircle = createMapCircle()
         mapScene.addMapPolygon(mapCircle!)
     }
 
     func onMapArrowClicked() {
         clearMap()
+        // Move map to expected location.
+        mapCamera.flyTo(target: berlinGeoCoordinates, distanceInMeters: distanceInMeters, animationOptions: MapCamera.FlyToOptions())
+        
         mapArrow = createMapArrow()
         mapScene.addMapArrow(mapArrow!)
     }
@@ -96,7 +112,7 @@ class MapObjectsExample {
     }
 
     private func createMapCircle() -> MapPolygon {
-        let geoCircle = GeoCircle(center: GeoCoordinates(latitude: 52.530932, longitude: 13.384915),
+        let geoCircle = GeoCircle(center: GeoCoordinates(latitude: 52.51760485151816, longitude: 13.380312380535472),
                                   radiusInMeters: 300.0)
 
         let geoPolygon = GeoPolygon(geoCircle: geoCircle)

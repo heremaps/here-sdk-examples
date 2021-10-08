@@ -22,18 +22,18 @@ import UIKit
 
 class MapItemsExample: TapDelegate {
 
-    private var viewController: UIViewController
-    private var mapView: MapView
+    private let viewController: UIViewController
+    private let mapView: MapView
     private var mapMarkers = [MapMarker]()
     private var mapMarkers3D = [MapMarker3D]()
+    private var mapMarkerClusters = [MapMarkerCluster]()
     private var locationIndicators = [LocationIndicator]()
-    private let mapCenterGeoCoordinates = GeoCoordinates(latitude: 52.520798, longitude: 13.409408)
+    private let mapCenterGeoCoordinates = GeoCoordinates(latitude: 52.51760485151816, longitude: 13.380312380535472)
 
     init(viewController: UIViewController, mapView: MapView) {
         self.viewController = viewController
         self.mapView = mapView
-        let camera = mapView.camera
-        camera.lookAt(point: mapCenterGeoCoordinates,
+        mapView.camera.lookAt(point: mapCenterGeoCoordinates,
                       distanceInMeters: 1000 * 10)
 
         // Setting a tap delegate to pick markers from map.
@@ -69,6 +69,43 @@ class MapItemsExample: TapDelegate {
         addCircleMapMarker(geoCoordinates: geoCoordinates)
     }
 
+    func onMapMarkerClusterButtonClicked() {
+        guard
+            let image = UIImage(named: "blue_square.png"),
+            let imageData = image.pngData() else {
+                print("Error: Image not found.")
+                return
+        }
+
+        let clusterMapImage = MapImage(pixelData: imageData,
+                                       imageFormat: ImageFormat.png)
+
+        let mapMarkerCluster = MapMarkerCluster(imageStyle: MapMarkerCluster.ImageStyle(image: clusterMapImage))
+        mapView.mapScene.addMapMarkerCluster(mapMarkerCluster)
+        mapMarkerClusters.append(mapMarkerCluster)
+
+        for _ in 1...10 {
+            mapMarkerCluster.addMapMarker(marker: createRandomMapMarkerInViewport())
+        }
+    }
+    
+    func createRandomMapMarkerInViewport() -> MapMarker {
+        let geoCoordinates = createRandomGeoCoordinatesAroundMapCenter()
+        guard
+            let image = UIImage(named: "green_square.png"),
+            let imageData = image.pngData() else {
+                fatalError("Error: Image not found.")                
+        }
+
+        let mapImage = MapImage(pixelData: imageData,
+                                       imageFormat: ImageFormat.png)
+        let mapMarker = MapMarker(at: geoCoordinates, image: mapImage)
+        let metadata = Metadata()
+        metadata.setString(key: "key_cluster", value: "This is a marker that can be clustered.")
+        mapMarker.metadata = metadata
+        return mapMarker
+    }
+    
     func onLocationIndicatorPedestrianButtonClicked() {
         unTiltMap()
 
@@ -262,6 +299,11 @@ class MapItemsExample: TapDelegate {
             mapView.removeLifecycleDelegate(locationIndicator)
         }
         locationIndicators.removeAll()
+        
+        for mapMarkerCluster in mapMarkerClusters {
+            mapView.mapScene.removeMapMarkerCluster(mapMarkerCluster)
+        }
+        mapMarkerClusters.removeAll()
     }
 
     // Conform to the TapDelegate protocol.
@@ -281,6 +323,17 @@ class MapItemsExample: TapDelegate {
             return
         }
 
+        // Check if this is a MapMarkerCluster.
+        if let clusterMessage = topmostMapMarker.metadata?.getString(key: "key_cluster") {
+            if let listSize = pickedMapItems?.markers.count {
+                if listSize > 1 {
+                    showDialog(title: "Map Marker Cluster picked", message: "Number of contained markers: \(listSize)")
+                    return
+                }
+            }
+            showDialog(title: "Map Marker picked", message: clusterMessage)
+        }
+        
         showDialog(title: "Map marker picked:", message: "Location: \(topmostMapMarker.coordinates)")
     }
 

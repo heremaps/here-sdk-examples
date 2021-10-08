@@ -239,7 +239,7 @@ public class NavigationExample {
                 if (speedWarningStatus == SpeedWarningStatus.SPEED_LIMIT_EXCEEDED) {
                     // Driver is faster than current speed limit (plus an optional offset).
                     // Play a notification sound to alert the driver.
-                    // Note that this may not include temporary special speed limits, see SpeedLimitDelegate.
+                    // Note that this may not include temporary special speed limits, see SpeedLimitListener.
                     Uri ringtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
                     Ringtone ringtone = RingtoneManager.getRingtone(context, ringtoneUri);
                     ringtone.play();
@@ -570,7 +570,7 @@ public class NavigationExample {
             dynamicRoutingEngine.start(route, new DynamicRoutingListener() {
                 // Notifies on traffic-optimized routes that are considered better than the current route.
                 @Override
-                public void onBetterRouteFound(@NonNull Route route, int etaDifferenceInSeconds, int distanceDifferenceInMeters) {
+                public void onBetterRouteFound(@NonNull Route newRoute, int etaDifferenceInSeconds, int distanceDifferenceInMeters) {
                     Log.d(TAG, "DynamicRoutingEngine: Calculated a new route.");
                     Log.d(TAG, "DynamicRoutingEngine: etaDifferenceInSeconds: " + etaDifferenceInSeconds + ".");
                     Log.d(TAG, "DynamicRoutingEngine: distanceDifferenceInMeters: " + distanceDifferenceInMeters + ".");
