@@ -89,9 +89,8 @@ public class MainActivity extends AppCompatActivity {
                     mapItemsExample = new MapItemsExample(MainActivity.this, mapView);
                     mapViewPinExample = new MapViewPinExample(MainActivity.this, mapView);
 
-                    MapCamera camera = mapView.getCamera();
-                    double distanceInMeters = 1000 * 10;
-                    camera.lookAt(new GeoCoordinates(52.520798, 13.409408), distanceInMeters);
+                    double distanceInMeters = 1000 * 20;
+                    mapView.getCamera().lookAt(new GeoCoordinates(52.51760485151816, 13.380312380535472), distanceInMeters);
                 } else {
                     Log.d(TAG, "onLoadScene failed: " + mapError.toString());
                 }
@@ -150,6 +149,9 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             case R.id.centered_2D_menu_item:
                 mapItemsExample.showCenteredMapMarkers();
+                return true;
+            case R.id.map_marker_cluster_menu_item:
+                mapItemsExample.showMapMarkerCluster();
                 return true;
             case R.id.location_ped_menu_item:
                 mapItemsExample.showLocationIndicatorPedestrian();

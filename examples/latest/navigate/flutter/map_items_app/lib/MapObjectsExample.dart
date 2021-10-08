@@ -23,37 +23,60 @@ import 'package:here_sdk/core.errors.dart';
 import 'package:here_sdk/mapview.dart';
 
 class MapObjectsExample {
+  final double _distanceInMeters = 1000 * 10;
+  final GeoCoordinates _berlinGeoCoordinates = new GeoCoordinates(52.51760485151816, 13.380312380535472);
+
   final MapScene _mapScene;
+  final MapCamera _mapCamera;
   MapPolyline? _mapPolyline;
   MapArrow? _mapArrow;
   MapPolygon? _mapPolygon;
   MapPolygon? _mapCircle;
 
-  MapObjectsExample(HereMapController hereMapController) : _mapScene = hereMapController.mapScene {
+  MapObjectsExample(HereMapController hereMapController)
+      : _mapScene = hereMapController.mapScene,
+        _mapCamera = hereMapController.camera {
     double distanceToEarthInMeters = 5000;
-    hereMapController.camera.lookAtPointWithDistance(GeoCoordinates(52.530932, 13.384915), distanceToEarthInMeters);
+    hereMapController.camera
+        .lookAtPointWithDistance(GeoCoordinates(52.51760485151816, 13.380312380535472), distanceToEarthInMeters);
   }
 
   void showMapPolyline() {
     clearMap();
+    // Move map to expected location.
+    _mapCamera.flyToWithOptionsAndDistance(
+        _berlinGeoCoordinates, _distanceInMeters, new MapCameraFlyToOptions.withDefaults());
+
     _mapPolyline = _createPolyline();
     _mapScene.addMapPolyline(_mapPolyline!);
   }
 
   void showMapArrow() {
     clearMap();
+    // Move map to expected location.
+    _mapCamera.flyToWithOptionsAndDistance(
+        _berlinGeoCoordinates, _distanceInMeters, new MapCameraFlyToOptions.withDefaults());
+
     _mapArrow = _createMapArrow();
     _mapScene.addMapArrow(_mapArrow!);
   }
 
   void showMapPolygon() {
     clearMap();
+    // Move map to expected location.
+    _mapCamera.flyToWithOptionsAndDistance(
+        _berlinGeoCoordinates, _distanceInMeters, new MapCameraFlyToOptions.withDefaults());
+
     _mapPolygon = _createPolygon();
     _mapScene.addMapPolygon(_mapPolygon!);
   }
 
   void showMapCircle() {
     clearMap();
+    // Move map to expected location.
+    _mapCamera.flyToWithOptionsAndDistance(
+        _berlinGeoCoordinates, _distanceInMeters, new MapCameraFlyToOptions.withDefaults());
+
     _mapCircle = _createMapCircle();
     _mapScene.addMapPolygon(_mapCircle!);
   }
@@ -144,7 +167,7 @@ class MapObjectsExample {
 
   MapPolygon _createMapCircle() {
     double radiusInMeters = 300;
-    GeoCircle geoCircle = GeoCircle(GeoCoordinates(52.530932, 13.384915), radiusInMeters);
+    GeoCircle geoCircle = GeoCircle(GeoCoordinates(52.51760485151816, 13.380312380535472), radiusInMeters);
 
     GeoPolygon geoPolygon = GeoPolygon.withGeoCircle(geoCircle);
     Color fillColor = Color.fromARGB(160, 0, 144, 138);

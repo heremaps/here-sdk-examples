@@ -20,8 +20,7 @@
 package com.here.evrouting;
 
 import android.content.Context;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 import android.util.Log;
 
 import com.here.sdk.core.Color;
@@ -49,13 +48,13 @@ import com.here.sdk.routing.Isoline;
 import com.here.sdk.routing.IsolineCalculationMode;
 import com.here.sdk.routing.IsolineOptions;
 import com.here.sdk.routing.IsolineRangeType;
-import com.here.sdk.routing.Notice;
 import com.here.sdk.routing.OptimizationMode;
 import com.here.sdk.routing.PostAction;
 import com.here.sdk.routing.Route;
 import com.here.sdk.routing.RoutingEngine;
 import com.here.sdk.routing.RoutingError;
 import com.here.sdk.routing.Section;
+import com.here.sdk.routing.SectionNotice;
 import com.here.sdk.routing.Waypoint;
 import com.here.sdk.search.Place;
 import com.here.sdk.search.SearchCallback;
@@ -233,7 +232,7 @@ public class EVRoutingExample {
     private void logRouteViolations(Route route) {
         List<Section> sections = route.getSections();
         for (Section section : sections) {
-            for (Notice notice : section.getNotices()) {
+            for (SectionNotice notice : section.getSectionNotices()) {
                 Log.d("RouteViolations", "This route contains the following warning: " + notice.code);
             }
         }

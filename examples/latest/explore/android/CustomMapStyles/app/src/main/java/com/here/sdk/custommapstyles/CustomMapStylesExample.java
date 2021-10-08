@@ -21,7 +21,7 @@
 
  import android.content.Context;
  import android.content.res.AssetManager;
- import android.support.annotation.Nullable;
+ import androidx.annotation.Nullable;
  import android.util.Log;
 
  import com.here.sdk.core.GeoCoordinates;

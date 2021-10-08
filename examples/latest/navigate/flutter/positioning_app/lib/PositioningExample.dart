@@ -133,7 +133,7 @@ class PositioningExample extends State<MyApp>
                             ),
                             _buildLabelValue(
                               'Timestamp:',
-                              _location?.timestamp.toString() ?? _notAvailable,
+                              _location?.time.toString() ?? _notAvailable,
                             ),
                             _buildLabelValue(
                               'SinceBoot:',
@@ -231,7 +231,8 @@ class PositioningExample extends State<MyApp>
           ", " +
           location.coordinates.longitude.toString());
     } else {
-      location = Location.withDefaults(_defaultGeoCoordinates, DateTime.now());
+      location = Location.withCoordinates(_defaultGeoCoordinates);
+      location.time = DateTime.now();
     }
 
     _addMyLocationToMap(location);

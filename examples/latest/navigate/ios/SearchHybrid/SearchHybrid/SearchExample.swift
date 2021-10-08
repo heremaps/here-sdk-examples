@@ -18,7 +18,6 @@
  */
 
 import heresdk
-import Network
 import UIKit
 
 class SearchExample: TapDelegate,
@@ -29,8 +28,10 @@ class SearchExample: TapDelegate,
     private var mapMarkers = [MapMarker]()
     private var searchEngine: SearchEngine
     private var offlineSearchEngine: OfflineSearchEngine
-    private var isDeviceConnected = false
-    private let networkPathMonitor = NWPathMonitor()
+    
+    // An application may define a logic to determine whether a device is connected or not.
+    // For this example app, the flag is set from UI.
+    private var isDeviceConnected = true
 
     init(viewController: UIViewController, mapView: MapView) {
         self.viewController = viewController
@@ -55,9 +56,6 @@ class SearchExample: TapDelegate,
         mapView.gestures.tapDelegate = self
         mapView.gestures.longPressDelegate = self
 
-        // Detect whether we should search online or offline.
-        setNetworkUpdateHandler()
-
         showDialog(title: "Note", message: "Long press on map to get the address for that position using reverse geocoding.")
     }
 
@@ -74,6 +72,16 @@ class SearchExample: TapDelegate,
         geocodeAnAddress()
     }
 
+    func onSwitchOnlineButtonClicked() {
+        isDeviceConnected = true
+        showDialog(title: "Note", message: "The app uses now the SearchEngine.")
+    }
+    
+    func onSwitchOfflineButtonClicked() {
+        isDeviceConnected = false
+        showDialog(title: "Note", message: "The app uses now the OfflineSearchEngine.")
+    }
+    
     private func searchExample() {
         let searchTerm = "Pizza"
         searchInViewport(queryString: searchTerm)
@@ -130,24 +138,38 @@ class SearchExample: TapDelegate,
         }
     }
 
-    // Note: Suggestions are only supported by online SearchEngine.
     private func autoSuggestExample() {
         let centerGeoCoordinates = getMapViewCenter()
         let autosuggestOptions = SearchOptions(languageCode: LanguageCode.enUs,
                                                maxItems: 5)
 
-        // Simulate a user typing a search term.
-        _ = searchEngine.suggest(textQuery: TextQuery("p", near: centerGeoCoordinates),
-                                 options: autosuggestOptions,
-                                 completion: onSearchCompleted)
+        if isDeviceConnected {
+            // Simulate a user typing a search term.
+            _ = searchEngine.suggest(textQuery: TextQuery("p", near: centerGeoCoordinates),
+                                     options: autosuggestOptions,
+                                     completion: onSearchCompleted)
 
-        _ = searchEngine.suggest(textQuery: TextQuery("pi", near: centerGeoCoordinates),
-                                 options: autosuggestOptions,
-                                 completion: onSearchCompleted)
+            _ = searchEngine.suggest(textQuery: TextQuery("pi", near: centerGeoCoordinates),
+                                     options: autosuggestOptions,
+                                     completion: onSearchCompleted)
 
-        _ = searchEngine.suggest(textQuery: TextQuery("piz", near: centerGeoCoordinates),
-                                 options: autosuggestOptions,
-                                 completion: onSearchCompleted)
+            _ = searchEngine.suggest(textQuery: TextQuery("piz", near: centerGeoCoordinates),
+                                     options: autosuggestOptions,
+                                     completion: onSearchCompleted)
+        } else {
+            // Simulate a user typing a search term.
+            _ = offlineSearchEngine.suggest(textQuery: TextQuery("p", near: centerGeoCoordinates),
+                                     options: autosuggestOptions,
+                                     completion: onSearchCompleted)
+
+            _ = offlineSearchEngine.suggest(textQuery: TextQuery("pi", near: centerGeoCoordinates),
+                                     options: autosuggestOptions,
+                                     completion: onSearchCompleted)
+
+            _ = offlineSearchEngine.suggest(textQuery: TextQuery("piz", near: centerGeoCoordinates),
+                                     options: autosuggestOptions,
+                                     completion: onSearchCompleted)
+        }
     }
 
     // Completion handler to receive auto suggestion results.
@@ -328,23 +350,6 @@ class SearchExample: TapDelegate,
 
         // Note: This algorithm assumes an unrotated map view.
         return GeoBox(southWestCorner: southWestCorner, northEastCorner: northEastCorner)
-    }
-
-    // Warning: This only observes state changes of the network adapters of a device
-    // and it may not detect subsequent losses of Internet access.
-    private func setNetworkUpdateHandler() {
-        // Register for changes in network connectivity.
-        networkPathMonitor.pathUpdateHandler = { path in
-            if path.status == .satisfied {
-                self.isDeviceConnected = true
-            } else {
-                self.isDeviceConnected = false
-            }
-        }
-
-        // Start watching for network changes.
-        let queue = DispatchQueue.global(qos: .background)
-        networkPathMonitor.start(queue: queue)
     }
 
     private func clearMap() {

@@ -31,18 +31,22 @@ typedef ShowDialogFunction = void Function(String title, String message);
 class MapItemsExample {
   final HereMapController _hereMapController;
   List<MapMarker> _mapMarkerList = [];
+  List<MapMarkerCluster> _mapMarkerClusterList = [];
   List<MapMarker3D> _mapMarker3DList = [];
   List<LocationIndicator> _locationIndicatorList = [];
   MapImage? _poiMapImage;
   MapImage? _photoMapImage;
   MapImage? _circleMapImage;
+  MapImage? _blueSquareMapImage;
+  MapImage? _greenSquareMapImage;
   final ShowDialogFunction _showDialog;
 
   MapItemsExample(ShowDialogFunction showDialogCallback, HereMapController hereMapController)
       : _showDialog = showDialogCallback,
         _hereMapController = hereMapController {
     double distanceToEarthInMeters = 8000;
-    _hereMapController.camera.lookAtPointWithDistance(GeoCoordinates(52.530932, 13.384915), distanceToEarthInMeters);
+    _hereMapController.camera
+        .lookAtPointWithDistance(GeoCoordinates(52.51760485151816, 13.380312380535472), distanceToEarthInMeters);
 
     // Setting a tap handler to pick markers from map.
     _setTapGestureHandler();
@@ -75,6 +79,36 @@ class MapItemsExample {
 
     // Centered on location. Shown above the photo marker to indicate the location.
     _addCircleMapMarker(geoCoordinates, 1);
+  }
+
+  Future<void> showMapMarkerCluster() async {
+    // Reuse existing MapImage for new map markers.
+    if (_blueSquareMapImage == null) {
+      Uint8List imagePixelData = await _loadFileAsUint8List('assets/blue_square.png');
+      _blueSquareMapImage = MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
+    }
+
+    MapMarkerCluster mapMarkerCluster = MapMarkerCluster(MapMarkerClusterImageStyle(_blueSquareMapImage!));
+    _hereMapController.mapScene.addMapMarkerCluster(mapMarkerCluster);
+    _mapMarkerClusterList.add(mapMarkerCluster);
+
+    for (int i = 0; i < 10; i++) {
+      mapMarkerCluster.addMapMarker(await _createRandomMapMarkerInViewport());
+    }
+  }
+
+  Future<MapMarker> _createRandomMapMarkerInViewport() async {
+    // Reuse existing MapImage for new map markers.
+    if (_greenSquareMapImage == null) {
+      Uint8List imagePixelData = await _loadFileAsUint8List('assets/green_square.png');
+      _greenSquareMapImage = MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
+    }
+
+    MapMarker mapMarker = MapMarker(_createRandomGeoCoordinatesAroundMapCenter(), _greenSquareMapImage!);
+    Metadata metadata = Metadata();
+    metadata.setString("key_cluster", "This is a marker that can be clustered.");
+    mapMarker.metadata = metadata;
+    return mapMarker;
   }
 
   void showLocationIndicatorPedestrian() {
@@ -130,6 +164,11 @@ class MapItemsExample {
       _hereMapController.mapScene.removeMapMarker3d(mapMarker3D);
     }
     _mapMarker3DList.clear();
+
+    for (var mapMarkerCluster in _mapMarkerClusterList) {
+      _hereMapController.mapScene.removeMapMarkerCluster(mapMarkerCluster);
+    }
+    _mapMarkerClusterList.clear();
 
     for (var locationIndicator in _locationIndicatorList) {
       _hereMapController.removeLifecycleListener(locationIndicator);
@@ -193,7 +232,8 @@ class MapItemsExample {
 
     // A LocationIndicator is intended to mark the user's current location,
     // including a bearing direction.
-    Location location = Location.withDefaults(geoCoordinates, DateTime.now());
+    Location location = Location.withCoordinates(geoCoordinates);
+    location.time = DateTime.now();
     location.bearingInDegrees = _getRandom(0, 360);
 
     locationIndicator.updateLocation(location);
@@ -268,7 +308,8 @@ class MapItemsExample {
       }
       // Note that 3D map markers can't be picked yet. Only marker, polgon and polyline map items are pickable.
       List<MapMarker> mapMarkerList = pickMapItemsResult.markers;
-      if (mapMarkerList.length == 0) {
+      int listLength = mapMarkerList.length;
+      if (listLength == 0) {
         print("No map markers found.");
         return;
       }
@@ -277,6 +318,17 @@ class MapItemsExample {
       Metadata? metadata = topmostMapMarker.metadata;
       if (metadata != null) {
         String message = metadata.getString("key_poi") ?? "No message found.";
+
+        // Check if this is a MapMarkerCluster.
+        String? clusterMessage = metadata.getString("key_cluster");
+        if (clusterMessage != null) {
+          message = clusterMessage;
+          if (listLength > 1) {
+            _showDialog("Map Marker Cluster picked", "Number of contained markers: " + listLength.toString());
+            return;
+          }
+        }
+
         _showDialog("Map Marker picked", message);
         return;
       }

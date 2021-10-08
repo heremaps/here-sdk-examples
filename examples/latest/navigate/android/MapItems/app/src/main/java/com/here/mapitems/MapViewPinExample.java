@@ -37,22 +37,28 @@ import java.util.List;
 
 public class MapViewPinExample {
 
+    private static final double DISTANCE_IN_METERS = 1000 * 10;
+    private static final GeoCoordinates MAP_CENTER_GEO_COORDINATES = new GeoCoordinates(52.51760485151816, 13.380312380535472);
+
     private Context context;
-    private MapView mapView;
-    private static final GeoCoordinates MAP_CENTER_GEO_COORDINATES = new GeoCoordinates(52.520798, 13.409408);
+    private final MapView mapView;
+    private final MapCamera mapCamera;
 
     public MapViewPinExample(Context context, MapView mapView) {
         this.context = context;
         this.mapView = mapView;
-        MapCamera camera = mapView.getCamera();
+        mapCamera = mapView.getCamera();
         double distanceToEarthInMeters = 7000;
-        camera.lookAt(MAP_CENTER_GEO_COORDINATES, distanceToEarthInMeters);
+        mapCamera.lookAt(MAP_CENTER_GEO_COORDINATES, distanceToEarthInMeters);
 
         // Add circle to indicate map center.
         addCirclePolygon(MAP_CENTER_GEO_COORDINATES);
     }
 
     public void showMapViewPin() {
+        // Move map to expected location.
+        mapCamera.flyTo(MAP_CENTER_GEO_COORDINATES, DISTANCE_IN_METERS, new MapCamera.FlyToOptions());
+
         TextView textView = new TextView(context);
         textView.setTextColor(Color.parseColor("#FFFFFF"));
         textView.setText("Centered ViewPin");
@@ -66,6 +72,9 @@ public class MapViewPinExample {
     }
 
     public void showAnchoredMapViewPin() {
+        // Move map to expected location.
+        mapCamera.flyTo(MAP_CENTER_GEO_COORDINATES, DISTANCE_IN_METERS, new MapCamera.FlyToOptions());
+
         TextView textView = new TextView(context);
         textView.setTextColor(Color.parseColor("#FFFFFF"));
         textView.setText("Anchored MapViewPin");
@@ -87,6 +96,9 @@ public class MapViewPinExample {
     }
 
     private void addCirclePolygon(GeoCoordinates geoCoordinates) {
+        // Move map to expected location.
+        mapCamera.flyTo(MAP_CENTER_GEO_COORDINATES, DISTANCE_IN_METERS, new MapCamera.FlyToOptions());
+
         float radiusInMeters = 50;
         GeoCircle geoCircle = new GeoCircle(geoCoordinates, radiusInMeters);
 

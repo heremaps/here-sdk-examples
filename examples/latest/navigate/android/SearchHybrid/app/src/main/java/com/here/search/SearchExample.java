@@ -20,12 +20,12 @@
 package com.here.search;
 
 import android.content.Context;
-import android.net.ConnectivityManager;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 
 import com.here.sdk.core.Anchor2D;
 import com.here.sdk.core.CustomMetadataValue;
@@ -68,6 +68,7 @@ public class SearchExample {
     private final List<MapMarker> mapMarkerList = new ArrayList<>();
     private final SearchEngine searchEngine;
     private final OfflineSearchEngine offlineSearchEngine;
+    private boolean isDeviceConnected = true;
 
     public SearchExample(Context context, MapView mapView) {
         this.context = context;
@@ -280,30 +281,50 @@ public class SearchExample {
         }
     };
 
-    // Note: Suggestions are not available for the OfflineSearchEngine.
     private void autoSuggestExample() {
         GeoCoordinates centerGeoCoordinates = getMapViewCenter();
         int maxItems = 5;
         SearchOptions searchOptions = new SearchOptions(LanguageCode.EN_US, maxItems);
 
-        // Simulate a user typing a search term.
-        searchEngine.suggest(
-                new TextQuery("p", // User typed "p".
-                        centerGeoCoordinates),
-                searchOptions,
-                autosuggestCallback);
+        if (isDeviceConnected()) {
+            // Simulate a user typing a search term.
+            searchEngine.suggest(
+                    new TextQuery("p", // User typed "p".
+                            centerGeoCoordinates),
+                    searchOptions,
+                    autosuggestCallback);
 
-        searchEngine.suggest(
-                new TextQuery("pi", // User typed "pi".
-                        centerGeoCoordinates),
-                searchOptions,
-                autosuggestCallback);
+            searchEngine.suggest(
+                    new TextQuery("pi", // User typed "pi".
+                            centerGeoCoordinates),
+                    searchOptions,
+                    autosuggestCallback);
 
-        searchEngine.suggest(
-                new TextQuery("piz", // User typed "piz".
-                        centerGeoCoordinates),
-                searchOptions,
-                autosuggestCallback);
+            searchEngine.suggest(
+                    new TextQuery("piz", // User typed "piz".
+                            centerGeoCoordinates),
+                    searchOptions,
+                    autosuggestCallback);
+        } else {
+            // Simulate a user typing a search term.
+            offlineSearchEngine.suggest(
+                    new TextQuery("p", // User typed "p".
+                            centerGeoCoordinates),
+                    searchOptions,
+                    autosuggestCallback);
+
+            offlineSearchEngine.suggest(
+                    new TextQuery("pi", // User typed "pi".
+                            centerGeoCoordinates),
+                    searchOptions,
+                    autosuggestCallback);
+
+            offlineSearchEngine.suggest(
+                    new TextQuery("piz", // User typed "piz".
+                            centerGeoCoordinates),
+                    searchOptions,
+                    autosuggestCallback);
+        }
     }
 
     private void geocodeAddressAtLocation(String queryString, GeoCoordinates geoCoordinates) {
@@ -396,12 +417,20 @@ public class SearchExample {
         mapMarkerList.clear();
     }
 
-    // Note: This method checks if the device is offline or not, but it does not check if the device is
-    // able to initiate a connection to the internet.
+    public void onSwitchOnlineButtonClicked() {
+        isDeviceConnected = true;
+        Toast.makeText(context,"The app will now use the SearchEngine.", Toast.LENGTH_LONG).show();
+    }
+
+    public void onSwitchOfflineButtonClicked() {
+        isDeviceConnected = false;
+        Toast.makeText(context,"The app will now use the OfflineSearchEngine.", Toast.LENGTH_LONG).show();
+    }
+
     private boolean isDeviceConnected() {
-        ConnectivityManager connectivityManager
-                = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        return connectivityManager.getActiveNetworkInfo() != null;
+        // An application may define here a logic to determine whether a device is connected or not.
+        // For this example app, the flag is set from UI.
+        return isDeviceConnected;
     }
 
     private void showDialog(String title, String message) {

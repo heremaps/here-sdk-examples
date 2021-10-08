@@ -43,6 +43,7 @@ import com.here.sdk.mapview.MapImageFactory;
 import com.here.sdk.mapview.MapMarker;
 import com.here.sdk.mapview.MapMarker3D;
 import com.here.sdk.mapview.MapMarker3DModel;
+import com.here.sdk.mapview.MapMarkerCluster;
 import com.here.sdk.mapview.MapView;
 import com.here.sdk.mapview.MapViewBase;
 import com.here.sdk.mapview.PickMapItemsResult;
@@ -58,6 +59,7 @@ public class MapItemsExample {
     private final MapView mapView;
     private final List<MapMarker> mapMarkerList = new ArrayList<>();
     private final List<MapMarker3D> mapMarker3DList = new ArrayList<>();
+    private final List<MapMarkerCluster> mapMarkerClusterList = new ArrayList<>();
     private final List<LocationIndicator> locationIndicatorList = new ArrayList<>();
 
     public MapItemsExample(Context context, MapView mapView) {
@@ -96,6 +98,27 @@ public class MapItemsExample {
         // Centered on location. Shown above the photo marker to indicate the location.
         // The draw order is determined from what is first added to the map.
         addCircleMapMarker(geoCoordinates);
+    }
+
+    public void showMapMarkerCluster() {
+        MapImage clusterMapImage = MapImageFactory.fromResource(context.getResources(), R.drawable.blue_square);
+        MapMarkerCluster mapMarkerCluster = new MapMarkerCluster(new MapMarkerCluster.ImageStyle(clusterMapImage));
+        mapView.getMapScene().addMapMarkerCluster(mapMarkerCluster);
+        mapMarkerClusterList.add(mapMarkerCluster);
+
+        for (int i = 0; i < 10; i++) {
+            mapMarkerCluster.addMapMarker(createRandomMapMarkerInViewport());
+        }
+    }
+    
+    private MapMarker createRandomMapMarkerInViewport() {
+        GeoCoordinates geoCoordinates = createRandomGeoCoordinatesAroundMapCenter();
+        MapImage mapImage = MapImageFactory.fromResource(context.getResources(), R.drawable.green_square);
+        MapMarker mapMarker = new MapMarker(geoCoordinates, mapImage);
+        Metadata metadata = new Metadata();
+        metadata.setString("key_cluster", "This is a marker that can be clustered.");
+        mapMarker.setMetadata(metadata);
+        return mapMarker;
     }
 
     public void showLocationIndicatorPedestrian() {
@@ -156,6 +179,11 @@ public class MapItemsExample {
             mapView.removeLifecycleListener(locationIndicator);
         }
         locationIndicatorList.clear();
+
+        for (MapMarkerCluster mapMarkerCluster : mapMarkerClusterList) {
+            mapView.getMapScene().removeMapMarkerCluster(mapMarkerCluster);
+        }
+        mapMarkerClusterList.clear();
     }
 
     private void addPOIMapMarker(GeoCoordinates geoCoordinates) {
@@ -299,7 +327,8 @@ public class MapItemsExample {
                 }
                 // Note that 3D map markers can't be picked yet. Only marker, polgon and polyline map items are pickable.
                 List<MapMarker> mapMarkerList = pickMapItemsResult.getMarkers();
-                if (mapMarkerList.size() == 0) {
+                int listSize = mapMarkerList.size();
+                if (listSize == 0) {
                     return;
                 }
                 MapMarker topmostMapMarker = mapMarkerList.get(0);
@@ -311,6 +340,17 @@ public class MapItemsExample {
                     if (string != null) {
                         message = string;
                     }
+
+                    // Check if this is a MapMarkerCluster.
+                    String clusterMessage = metadata.getString("key_cluster");
+                    if (clusterMessage != null) {
+                        message = clusterMessage;
+                        if (listSize > 1) {
+                            showDialog("Map Marker Cluster picked", "Number of contained markers: " + listSize);
+                            return;
+                        }
+                    }
+
                     showDialog("Map Marker picked", message);
                     return;
                 }
