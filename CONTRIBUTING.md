@@ -6,6 +6,10 @@ The team behind the [HERE SDK](https://github.com/heremaps/here-sdk-examples) gr
 
 # Signing each Commit
 
+- Java JDK must be installed (if not already done).
+- Minimum JDK version is Java 8.
+- Specify the JAVA_HOME in your env variables.
+
 As part of filing a pull request we ask you to sign off the
 [Developer Certificate of Origin](https://developercertificate.org/) (DCO) in each commit.
 Any Pull Request with commits that are not signed off will be rejected by the
