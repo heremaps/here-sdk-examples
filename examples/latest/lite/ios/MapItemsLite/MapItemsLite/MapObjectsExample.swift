@@ -21,34 +21,49 @@ import heresdk
 
 class MapObjectsExample {
 
-    private var mapScene: MapSceneLite
-
+    private let berlinGeoCoordinates = GeoCoordinates(latitude: 52.51760485151816, longitude: 13.380312380535472)
+    
+    private let mapScene: MapSceneLite
+    private let mapCamera: CameraLite
     private var mapPolyline: MapPolylineLite?
     private var mapPolygon: MapPolygonLite?
     private var mapCircle: MapCircleLite?
 
     init(mapView: MapViewLite) {
-        let camera = mapView.camera
-        camera.setTarget(GeoCoordinates(latitude: 52.530932, longitude: 13.384915))
-        camera.setZoomLevel(13)
+        // Configure the map.
+        mapCamera = mapView.camera
+        mapCamera.setTarget(GeoCoordinates(latitude: 52.51760485151816, longitude: 13.380312380535472))
+        mapCamera.setZoomLevel(13)
 
         mapScene = mapView.mapScene
     }
 
     func onMapPolylineClicked() {
         clearMap()
+        // Move map to expected location.
+        mapCamera.setTarget(berlinGeoCoordinates)
+        mapCamera.setZoomLevel(13.0)
+        
         mapPolyline = createMapPolyline()
         mapScene.addMapPolyline(mapPolyline!)
     }
 
     func onMapPolygonClicked() {
         clearMap()
+        // Move map to expected location.
+        mapCamera.setTarget(berlinGeoCoordinates)
+        mapCamera.setZoomLevel(13.0)
+        
         mapPolygon = createMapPolygon()
         mapScene.addMapPolygon(mapPolygon!)
     }
 
     func onMapCircleClicked() {
         clearMap()
+        // Move map to expected location.
+        mapCamera.setTarget(berlinGeoCoordinates)
+        mapCamera.setZoomLevel(13.0)
+        
         mapCircle = createMapCircle()
         mapScene.addMapCircle(mapCircle!)
     }
@@ -89,7 +104,7 @@ class MapObjectsExample {
     }
 
     private func createMapCircle() -> MapCircleLite {
-        let geoCircle = GeoCircle(center: GeoCoordinates(latitude: 52.530932, longitude: 13.384915),
+        let geoCircle = GeoCircle(center: GeoCoordinates(latitude: 52.51760485151816, longitude: 13.380312380535472),
                                   radiusInMeters: 300.0)
         let mapCircleStyle = MapCircleStyleLite()
         mapCircleStyle.setFillColor(0x00908AA0, encoding: .rgba8888)

@@ -44,8 +44,8 @@ import java.util.List;
 
 public class MapItemsExample {
 
-    private Context context;
-    private MapViewLite mapView;
+    private final Context context;
+    private final MapViewLite mapView;
     private final List<MapMarker> mapMarkerList = new ArrayList<>();
 
     public MapItemsExample(Context context, MapViewLite mapView) {

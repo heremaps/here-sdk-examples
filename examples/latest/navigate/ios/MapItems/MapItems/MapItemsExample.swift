@@ -88,13 +88,13 @@ class MapItemsExample: TapDelegate {
             mapMarkerCluster.addMapMarker(marker: createRandomMapMarkerInViewport())
         }
     }
-    
+
     func createRandomMapMarkerInViewport() -> MapMarker {
         let geoCoordinates = createRandomGeoCoordinatesAroundMapCenter()
         guard
             let image = UIImage(named: "green_square.png"),
             let imageData = image.pngData() else {
-                fatalError("Error: Image not found.")                
+                fatalError("Error: Image not found.")
         }
 
         let mapImage = MapImage(pixelData: imageData,
@@ -105,7 +105,7 @@ class MapItemsExample: TapDelegate {
         mapMarker.metadata = metadata
         return mapMarker
     }
-    
+
     func onLocationIndicatorPedestrianButtonClicked() {
         unTiltMap()
 
@@ -285,9 +285,7 @@ class MapItemsExample: TapDelegate {
     }
 
     private func clearMap() {
-        for mapMarker in mapMarkers {
-            mapView.mapScene.removeMapMarker(mapMarker)
-        }
+        mapView.mapScene.removeMapMarkers(mapMarkers)
         mapMarkers.removeAll()
 
         for mapMarker3D in mapMarkers3D {
@@ -299,7 +297,7 @@ class MapItemsExample: TapDelegate {
             mapView.removeLifecycleDelegate(locationIndicator)
         }
         locationIndicators.removeAll()
-        
+
         for mapMarkerCluster in mapMarkerClusters {
             mapView.mapScene.removeMapMarkerCluster(mapMarkerCluster)
         }
@@ -333,7 +331,7 @@ class MapItemsExample: TapDelegate {
             }
             showDialog(title: "Map Marker picked", message: clusterMessage)
         }
-        
+
         showDialog(title: "Map marker picked:", message: "Location: \(topmostMapMarker.coordinates)")
     }
 

@@ -112,7 +112,7 @@ public class MainActivity extends AppCompatActivity
                     mapOverlayExample = new MapOverlayExample(MainActivity.this, mapView);
 
                     Camera mapViewCamera = mapView.getCamera();
-                    mapViewCamera.setTarget(new GeoCoordinates(52.530932, 13.384915));
+                    mapViewCamera.setTarget(new GeoCoordinates(52.51760485151816, 13.380312380535472));
                     mapViewCamera.setZoomLevel(13);
                 } else {
                     Log.d(TAG, "onLoadScene failed: " + errorCode.toString());

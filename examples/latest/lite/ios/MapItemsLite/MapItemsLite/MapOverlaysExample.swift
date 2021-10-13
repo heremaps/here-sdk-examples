@@ -22,15 +22,17 @@ import UIKit
 
 class MapOverlaysExample {
 
-    private var mapView: MapViewLite
-    private let mapCenterGeoCoordinates = GeoCoordinates(latitude: 52.520798, longitude: 13.409408)
+    private let mapCenterGeoCoordinates = GeoCoordinates(latitude: 52.51760485151816, longitude: 13.380312380535472)
+    
+    private let mapCamera: CameraLite
+    private let mapView: MapViewLite
 
     init(mapView: MapViewLite) {
         self.mapView = mapView
-        let camera = mapView.camera
-        camera.setZoomLevel(12)
+        mapCamera = mapView.camera
+        mapCamera.setZoomLevel(12)
 
-        camera.setTarget(mapCenterGeoCoordinates)
+        mapCamera.setTarget(mapCenterGeoCoordinates)
         addCircle(geoCoordinates: mapCenterGeoCoordinates)
     }
 
@@ -47,6 +49,10 @@ class MapOverlaysExample {
     }
 
     private func showMapOverlay() {
+        // Move map to expected location.
+        mapCamera.setTarget(mapCenterGeoCoordinates)
+        mapCamera.setZoomLevel(13.0)
+        
         let textView = UITextView(frame: CGRect(x: 0, y: 0, width: 200, height: 40))
         textView.textAlignment = .center
         textView.isEditable = false
@@ -60,6 +66,10 @@ class MapOverlaysExample {
     }
 
     private func showAnchoredMapOverlay() {
+        // Move map to expected location.
+        mapCamera.setTarget(mapCenterGeoCoordinates)
+        mapCamera.setZoomLevel(13.0)
+        
         let textView = UITextView(frame: CGRect(x: 0, y: 0, width: 200, height: 40))
         textView.textAlignment = .center
         textView.isEditable = false
@@ -80,6 +90,10 @@ class MapOverlaysExample {
     }
 
     private func addCircle(geoCoordinates: GeoCoordinates) {
+        // Move map to expected location.
+        mapCamera.setTarget(mapCenterGeoCoordinates)
+        mapCamera.setZoomLevel(13.0)
+        
         let geoCircle = GeoCircle(center: geoCoordinates,
                                   radiusInMeters: 30.0)
         let mapCircleStyle = MapCircleStyleLite()

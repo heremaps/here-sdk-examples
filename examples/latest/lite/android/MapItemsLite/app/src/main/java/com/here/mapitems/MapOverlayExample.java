@@ -43,19 +43,26 @@ import java.util.List;
 
 public class MapOverlayExample {
 
-    private Context context;
-    private MapViewLite mapView;
-    private static final GeoCoordinates MAP_CENTER_GEO_COORDINATES = new GeoCoordinates(52.530932, 13.384915);
+    private static final GeoCoordinates MAP_CENTER_GEO_COORDINATES = new GeoCoordinates(52.51760485151816, 13.380312380535472);
+
+    private final Context context;
+    private final MapViewLite mapView;
+    private final Camera mapCamera;
 
     public MapOverlayExample(Context context, MapViewLite mapView) {
         this.context = context;
         this.mapView = mapView;
+        mapCamera = mapView.getCamera();
 
         // A circle to indicate the center location where the view pins are added upon in this example.
         addCircleMapMarker(MAP_CENTER_GEO_COORDINATES);
     }
 
     public void showMapOverlay() {
+        // Move map to expected location.
+        mapCamera.setTarget(MAP_CENTER_GEO_COORDINATES);
+        mapCamera.setZoomLevel(13.0);
+
         TextView textView = new TextView(context);
         textView.setTextColor(Color.parseColor("#FFFFFF"));
         textView.setText("Centered MapOverlay");
@@ -70,6 +77,10 @@ public class MapOverlayExample {
     }
 
     public void showAnchoredMapOverlay() {
+        // Move map to expected location.
+        mapCamera.setTarget(MAP_CENTER_GEO_COORDINATES);
+        mapCamera.setZoomLevel(13.0);
+
         TextView textView = new TextView(context);
         textView.setTextColor(Color.parseColor("#FFFFFF"));
         textView.setText("Anchored MapOverlay");
@@ -92,6 +103,10 @@ public class MapOverlayExample {
     }
 
     private void addCircleMapMarker(GeoCoordinates geoCoordinates) {
+        // Move map to expected location.
+        mapCamera.setTarget(MAP_CENTER_GEO_COORDINATES);
+        mapCamera.setZoomLevel(13.0);
+
         float radiusInMeters = 30;
         GeoCircle geoCircle = new GeoCircle(geoCoordinates, radiusInMeters);
         MapCircleStyle mapCircleStyle = new MapCircleStyle();
