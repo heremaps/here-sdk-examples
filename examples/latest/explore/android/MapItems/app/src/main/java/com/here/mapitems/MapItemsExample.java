@@ -110,7 +110,7 @@ public class MapItemsExample {
             mapMarkerCluster.addMapMarker(createRandomMapMarkerInViewport());
         }
     }
-    
+
     private MapMarker createRandomMapMarkerInViewport() {
         GeoCoordinates geoCoordinates = createRandomGeoCoordinatesAroundMapCenter();
         MapImage mapImage = MapImageFactory.fromResource(context.getResources(), R.drawable.green_square);
@@ -165,9 +165,7 @@ public class MapItemsExample {
     }
 
     public void clearMap() {
-        for (MapMarker mapMarker : mapMarkerList) {
-            mapView.getMapScene().removeMapMarker(mapMarker);
-        }
+        mapView.getMapScene().removeMapMarkers(mapMarkerList);
         mapMarkerList.clear();
 
         for (MapMarker3D mapMarker3D : mapMarker3DList) {

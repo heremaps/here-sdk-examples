@@ -155,9 +155,7 @@ class MapItemsExample {
   }
 
   void clearMap() {
-    for (var mapMarker in _mapMarkerList) {
-      _hereMapController.mapScene.removeMapMarker(mapMarker);
-    }
+    _hereMapController.mapScene.removeMapMarkers(_mapMarkerList);
     _mapMarkerList.clear();
 
     for (var mapMarker3D in _mapMarker3DList) {

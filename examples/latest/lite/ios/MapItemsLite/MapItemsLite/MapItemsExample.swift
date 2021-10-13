@@ -22,10 +22,11 @@ import UIKit
 
 class MapItemsExample: TapDelegate {
 
+    private let mapCenterGeoCoordinates = GeoCoordinates(latitude: 52.51760485151816, longitude: 13.380312380535472)
+    
     private var viewController: UIViewController
-    private var mapView: MapViewLite
+    private let mapView: MapViewLite
     private var mapMarkers = [MapMarkerLite]()
-    private let mapCenterGeoCoordinates = GeoCoordinates(latitude: 52.520798, longitude: 13.409408)
 
     init(viewController: UIViewController, mapView: MapViewLite) {
         self.viewController = viewController

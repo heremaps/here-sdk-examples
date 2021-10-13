@@ -250,12 +250,12 @@ class PositioningExample extends State<MyApp>
 
   void _addMyLocationToMap(Location myLocation) {
     if (_locationIndicator != null) {
-      return;
+      _hereMapController?.removeLifecycleListener(_locationIndicator!);
     }
     // Set-up location indicator.
     _locationIndicator = LocationIndicator();
-    _locationIndicator!.locationIndicatorStyle = LocationIndicatorIndicatorStyle.pedestrian;
-    _locationIndicator!.updateLocation(myLocation);
+    _locationIndicator?.locationIndicatorStyle = LocationIndicatorIndicatorStyle.pedestrian;
+    _locationIndicator?.updateLocation(myLocation);
     _hereMapController?.addLifecycleListener(_locationIndicator!);
     // Point camera at given location.
     _hereMapController?.camera.lookAtPointWithDistance(
@@ -274,9 +274,9 @@ class PositioningExample extends State<MyApp>
     }
 
     // Update location indicator's location.
-    _locationIndicator!.updateLocation(myLocation);
+    _locationIndicator?.updateLocation(myLocation);
     // Point camera at given location.
-    _hereMapController!.camera.lookAtPoint(myLocation.coordinates);
+    _hereMapController?.camera.lookAtPoint(myLocation.coordinates);
     // Update state's location.
     setState(() {
       _location = myLocation;
@@ -292,6 +292,10 @@ class PositioningExample extends State<MyApp>
 
   @override
   void onLocationUpdated(Location location) {
+    print("Location update: " +
+        location.coordinates.latitude.toString() +
+        ", " +
+        location.coordinates.longitude.toString());
     _updateMyLocationOnMap(location);
   }
 

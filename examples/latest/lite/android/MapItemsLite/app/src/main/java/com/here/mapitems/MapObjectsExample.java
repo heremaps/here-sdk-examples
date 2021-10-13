@@ -39,29 +39,45 @@ import java.util.ArrayList;
 
 public class MapObjectsExample {
 
-    private MapScene mapScene;
+    private static final GeoCoordinates BERLIN_GEO_COORDINATES = new GeoCoordinates(52.51760485151816, 13.380312380535472);
+    
+    private final MapScene mapScene;
+    private final Camera mapCamera;
     private MapPolyline mapPolyline;
     private MapPolygon mapPolygon;
     private MapCircle mapCircle;
 
     public MapObjectsExample(MapViewLite mapView) {
         mapScene = mapView.getMapScene();
+        mapCamera = mapView.getCamera();
     }
 
     public void showMapPolyline() {
         clearMap();
+        // Move map to expected location.
+        mapCamera.setTarget(BERLIN_GEO_COORDINATES);
+        mapCamera.setZoomLevel(13.0);
+
         mapPolyline = createPolyline();
         mapScene.addMapPolyline(mapPolyline);
     }
 
     public void showMapPolygon() {
         clearMap();
+        // Move map to expected location.
+        mapCamera.setTarget(BERLIN_GEO_COORDINATES);
+        mapCamera.setZoomLevel(13.0);
+
         mapPolygon = createPolygon();
         mapScene.addMapPolygon(mapPolygon);
     }
 
     public void showMapCircle() {
         clearMap();
+        // Move map to expected location.
+        mapCamera.setTarget(BERLIN_GEO_COORDINATES);
+        mapCamera.setZoomLevel(13.0);
+
         mapCircle = createMapCircle();
         mapScene.addMapCircle(mapCircle);
     }
@@ -127,7 +143,7 @@ public class MapObjectsExample {
 
     private MapCircle createMapCircle() {
         float radiusInMeters = 300;
-        GeoCircle geoCircle = new GeoCircle(new GeoCoordinates(52.530932, 13.384915), radiusInMeters);
+        GeoCircle geoCircle = new GeoCircle(new GeoCoordinates(52.51760485151816, 13.380312380535472), radiusInMeters);
         MapCircleStyle mapCircleStyle = new MapCircleStyle();
         mapCircleStyle.setFillColor(0x00908AA0, PixelFormat.RGBA_8888);
         MapCircle mapCircle = new MapCircle(geoCircle, mapCircleStyle);
