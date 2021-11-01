@@ -111,11 +111,11 @@
 		C8D0BB4A2167D6B6002FD93D /* MapItems */ = {
 			isa = PBXGroup;
 			children = (
-				C8D0BB4B2167D6B6002FD93D /* AppDelegate.swift */,
 				C8D0BB522167D6B7002FD93D /* Assets.xcassets */,
 				C8D0BB572167D6B7002FD93D /* Info.plist */,
 				C8D0BB542167D6B7002FD93D /* LaunchScreen.storyboard */,
 				C8D0BB4F2167D6B6002FD93D /* Main.storyboard */,
+				C8D0BB4B2167D6B6002FD93D /* AppDelegate.swift */,
 				C8D0BB602167D87D002FD93D /* MapItemsExample.swift */,
 				2A22B0F3269330C5006F0B16 /* MapObjectsExample.swift */,
 				2A92B862269D250B005F7A18 /* MapViewPinsExample.swift */,
