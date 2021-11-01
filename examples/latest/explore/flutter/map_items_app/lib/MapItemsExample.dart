@@ -105,9 +105,6 @@ class MapItemsExample {
     }
 
     MapMarker mapMarker = MapMarker(_createRandomGeoCoordinatesAroundMapCenter(), _greenSquareMapImage!);
-    Metadata metadata = Metadata();
-    metadata.setString("key_cluster", "This is a marker that can be clustered.");
-    mapMarker.metadata = metadata;
     return mapMarker;
   }
 
@@ -304,6 +301,10 @@ class MapItemsExample {
         // Pick operation failed.
         return;
       }
+
+      // Note that MapMarker items contained in a cluster are not part of pickMapItemsResult.markers.
+      _handlePickedMapMarkerClusters(pickMapItemsResult);
+
       // Note that 3D map markers can't be picked yet. Only marker, polgon and polyline map items are pickable.
       List<MapMarker> mapMarkerList = pickMapItemsResult.markers;
       int listLength = mapMarkerList.length;
@@ -317,22 +318,35 @@ class MapItemsExample {
       if (metadata != null) {
         String message = metadata.getString("key_poi") ?? "No message found.";
 
-        // Check if this is a MapMarkerCluster.
-        String? clusterMessage = metadata.getString("key_cluster");
-        if (clusterMessage != null) {
-          message = clusterMessage;
-          if (listLength > 1) {
-            _showDialog("Map Marker Cluster picked", "Number of contained markers: " + listLength.toString());
-            return;
-          }
-        }
-
         _showDialog("Map Marker picked", message);
         return;
       }
 
       _showDialog("Map Marker picked", "No metadata attached.");
     });
+  }
+
+  void _handlePickedMapMarkerClusters(PickMapItemsResult pickMapItemsResult) {
+    List<MapMarkerClusterGrouping> groupingList = pickMapItemsResult.clusteredMarkers;
+    if (groupingList.length == 0) {
+      return;
+    }
+
+    MapMarkerClusterGrouping topmostGrouping = groupingList.first;
+    int clusterSize = topmostGrouping.markers.length;
+    if (clusterSize == 0) {
+      // This cluster does not contain any MapMarker items.
+      return;
+    }
+    if (clusterSize == 1) {
+      _showDialog("Map marker picked", "This MapMarker belongs to a cluster.");
+    } else {
+      int totalSize = topmostGrouping.parent.markers.length;
+      _showDialog(
+          "Map marker cluster picked",
+          "Number of contained markers in this cluster: $clusterSize." +
+              "Total number of markers in this MapMarkerCluster: $totalSize.");
+    }
   }
 
   void _tiltMap() {

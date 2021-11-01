@@ -115,9 +115,6 @@ public class MapItemsExample {
         GeoCoordinates geoCoordinates = createRandomGeoCoordinatesAroundMapCenter();
         MapImage mapImage = MapImageFactory.fromResource(context.getResources(), R.drawable.green_square);
         MapMarker mapMarker = new MapMarker(geoCoordinates, mapImage);
-        Metadata metadata = new Metadata();
-        metadata.setString("key_cluster", "This is a marker that can be clustered.");
-        mapMarker.setMetadata(metadata);
         return mapMarker;
     }
 
@@ -323,7 +320,11 @@ public class MapItemsExample {
                     // An error occurred while performing the pick operation.
                     return;
                 }
-                // Note that 3D map markers can't be picked yet. Only marker, polgon and polyline map items are pickable.
+
+                // Note that MapMarker items contained in a cluster are not part of pickMapItemsResult.getMarkers().
+                handlePickedMapMarkerClusters(pickMapItemsResult);
+
+                // Note that 3D map markers can't be picked yet. Only marker, polygon and polyline map items are pickable.
                 List<MapMarker> mapMarkerList = pickMapItemsResult.getMarkers();
                 int listSize = mapMarkerList.size();
                 if (listSize == 0) {
@@ -339,17 +340,7 @@ public class MapItemsExample {
                         message = string;
                     }
 
-                    // Check if this is a MapMarkerCluster.
-                    String clusterMessage = metadata.getString("key_cluster");
-                    if (clusterMessage != null) {
-                        message = clusterMessage;
-                        if (listSize > 1) {
-                            showDialog("Map Marker Cluster picked", "Number of contained markers: " + listSize);
-                            return;
-                        }
-                    }
-
-                    showDialog("Map Marker picked", message);
+                    showDialog("Map marker picked", message);
                     return;
                 }
 
@@ -358,6 +349,28 @@ public class MapItemsExample {
                         topmostMapMarker.getCoordinates().longitude);
             }
         });
+    }
+
+    private void handlePickedMapMarkerClusters(PickMapItemsResult pickMapItemsResult) {
+        List<MapMarkerCluster.Grouping> groupingList = pickMapItemsResult.getClusteredMarkers();
+        if (groupingList.size() == 0) {
+            return;
+        }
+
+        MapMarkerCluster.Grouping topmostGrouping = groupingList.get(0);
+        int clusterSize = topmostGrouping.markers.size();
+        if (clusterSize == 0) {
+            // This cluster does not contain any MapMarker items.
+            return;
+        }
+        if (clusterSize == 1) {
+            showDialog("Map marker picked",
+                    "This MapMarker belongs to a cluster.");
+        } else {
+            showDialog("Map marker cluster picked",
+                    "Number of contained markers in this cluster: " + clusterSize + ". " +
+                            "Total number of markers in this MapMarkerCluster: " + topmostGrouping.parent.getMarkers().size());
+        }
     }
 
     private void tiltMap() {

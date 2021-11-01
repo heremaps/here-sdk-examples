@@ -100,9 +100,6 @@ class MapItemsExample: TapDelegate {
         let mapImage = MapImage(pixelData: imageData,
                                        imageFormat: ImageFormat.png)
         let mapMarker = MapMarker(at: geoCoordinates, image: mapImage)
-        let metadata = Metadata()
-        metadata.setString(key: "key_cluster", value: "This is a marker that can be clustered.")
-        mapMarker.metadata = metadata
         return mapMarker
     }
 
@@ -311,30 +308,42 @@ class MapItemsExample: TapDelegate {
 
     // Completion handler to receive picked map items.
     func onMapItemsPicked(pickedMapItems: PickMapItemsResult?) {
+        // Note that MapMarker items contained in a cluster are not part of pickedMapItems?.markers.
+        if let groupingList = pickedMapItems?.clusteredMarkers {
+            handlePickedMapMarkerClusters(groupingList)
+        }
+        
         // Note that 3D map markers can't be picked yet. Only marker, polgon and polyline map items are pickable.
         guard let topmostMapMarker = pickedMapItems?.markers.first else {
             return
         }
-
+        
         if let message = topmostMapMarker.metadata?.getString(key: "key_poi") {
             showDialog(title: "Map Marker picked", message: message)
             return
         }
 
-        // Check if this is a MapMarkerCluster.
-        if let clusterMessage = topmostMapMarker.metadata?.getString(key: "key_cluster") {
-            if let listSize = pickedMapItems?.markers.count {
-                if listSize > 1 {
-                    showDialog(title: "Map Marker Cluster picked", message: "Number of contained markers: \(listSize)")
-                    return
-                }
-            }
-            showDialog(title: "Map Marker picked", message: clusterMessage)
-        }
-
         showDialog(title: "Map marker picked:", message: "Location: \(topmostMapMarker.coordinates)")
     }
 
+    private func handlePickedMapMarkerClusters(_ groupingList: [MapMarkerCluster.Grouping]) {
+        guard let topmostGrouping = groupingList.first else {
+            return
+        }
+        
+        let clusterSize = topmostGrouping.markers.count
+        if (clusterSize == 0) {
+            // This cluster does not contain any MapMarker items.
+            return
+        }
+        if (clusterSize == 1) {
+            showDialog(title: "Map Marker picked", message: "This MapMarker belongs to a cluster.")
+        } else {
+            showDialog(title: "Map marker cluster picked",
+                       message: "Number of contained markers in this cluster: \(clusterSize). Total number of markers in this MapMarkerCluster: \(topmostGrouping.parent.markers.count)")
+        }
+    }
+    
     private func createRandomGeoCoordinatesAroundMapCenter() -> GeoCoordinates {
         let scaleFactor = UIScreen.main.scale
         let mapViewWidthInPixels = Double(mapView.bounds.width * scaleFactor)
