@@ -21,6 +21,7 @@ import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:here_sdk/consent.dart' show ConsentEngine, ConsentUserReply;
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/location.dart';
@@ -196,28 +197,47 @@ class PositioningExample extends State<MyApp>
     }
   }
 
-  void _requestPermissions() {
-    Permission.location.request().then((status) {
-      if (status != PermissionStatus.granted) {
-        print("Location permission is needed for this example.");
-        Navigator.pop(context);
-      } else if (Platform.isAndroid) {
-        Permission.activityRecognition.request().then((_) => _ensureUserConsentRequested());
-      } else {
-        // A user consent request is not required on iOS.
-        _updateConsentInfo();
-        _startLocating();
-      }
-    });
+  Future<bool> _requestPermissions() async {
+    if (!await Permission.location.serviceStatus.isEnabled) {
+      return false;
+    }
+
+    if (!await Permission.location.request().isGranted) {
+      return false;
+    }
+
+    if (Platform.isAndroid) {
+      // This permission is optionally needed on Android devices >= Q to improve the HERE services.
+      Permission.activityRecognition.request();
+    }
+
+    // All required permissions granted.
+    return true;
   }
 
   void _onMapCreated(HereMapController hereMapController) {
-    _requestPermissions();
     _hereMapController = hereMapController;
-    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
-      if (error != null) {
-        print("Map scene not loaded. MapError: " + error.toString());
-        Navigator.pop(context);
+    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) async {
+      if (error == null) {
+        // Before we start the app we want to ensure that the required permissions are handled.
+        if (!await _requestPermissions()) {
+          await _showDialog("Error", "Cannot start app: Location service and permissions are needed for this app.");
+          // Let the user set the permissions from the system settings as fallback.
+          openAppSettings();
+          SystemNavigator.pop();
+          return;
+        }
+
+        // Once permissions are granted, we request the user's consent decision which is required for HERE Positioning.
+        if (Platform.isAndroid) {
+          _ensureUserConsentRequested();
+        } else {
+          // A user consent request is not required on iOS.
+          _updateConsentInfo();
+          _startLocating();
+        }
+      } else {
+        print('Map scene not loaded. MapError: ' + error.toString());
       }
     });
   }
@@ -348,6 +368,34 @@ class PositioningExample extends State<MyApp>
         onPressed: () => callbackFunction(),
         child: Container(width: 250, child: Text(buttonLabel, style: TextStyle(fontSize: 15))),
       ),
+    );
+  }
+
+  // A helper method to show a dialog.
+  Future<void> _showDialog(String title, String message) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(message),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 

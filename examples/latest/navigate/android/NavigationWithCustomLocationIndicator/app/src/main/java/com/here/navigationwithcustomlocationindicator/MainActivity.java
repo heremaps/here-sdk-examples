@@ -160,6 +160,7 @@ public class MainActivity extends AppCompatActivity {
 
         LocationIndicator locationIndicator = new LocationIndicator();
         double scaleFactor = 3;
+
         // Note: For this example app, we use only simulated location data.
         // Therefore, we do not create a custom LocationIndicator for
         // MarkerType.PEDESTRIAN_INACTIVE and MarkerType.NAVIGATION_INACTIVE.
@@ -235,6 +236,11 @@ public class MainActivity extends AppCompatActivity {
             customLocationIndicator.enable(mapView);
             customLocationIndicator.setLocationIndicatorStyle(IndicatorStyle.NAVIGATION);
             visualNavigator.setCustomLocationIndicator(customLocationIndicator);
+
+            // Note that the type of the LocationIndicator is taken from the route's TransportMode.
+            // It cannot be overriden during guidance.
+            // During tracking mode (not shown in this app) you can specify the marker type via:
+            // visualNavigator.setTrackingTransportMode(TransportMode.PEDESTRIAN);
         }
 
         // Location is set by VisualNavigator for smooth interpolation.

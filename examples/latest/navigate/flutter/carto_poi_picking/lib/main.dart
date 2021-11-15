@@ -99,13 +99,13 @@ class _MyAppState extends State<MyApp> {
         return;
       }
 
-      List<PickMapFeaturesResultPickPoiResult> cartoPOIList = pickMapFeaturesResult.pois;
+      List<PickPoiResult> cartoPOIList = pickMapFeaturesResult.pois;
       int listSize = cartoPOIList.length;
       if (listSize == 0) {
         return;
       }
 
-      PickMapFeaturesResultPickPoiResult topmostCartoPOI = cartoPOIList.first;
+      PickPoiResult topmostCartoPOI = cartoPOIList.first;
       var name = topmostCartoPOI.name;
       var lat = topmostCartoPOI.coordinates.latitude;
       var lon = topmostCartoPOI.coordinates.longitude;
