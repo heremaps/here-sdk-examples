@@ -12,7 +12,7 @@
         <!--View Controller-->
         <scene sceneID="tne-QT-ifu">
             <objects>
-                <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="RoutingHybrid" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="NavigationCustom" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="d7N-t3-PMt">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -28,27 +28,27 @@
                                         <rect key="frame" x="0.0" y="0.0" width="114.5" height="30"/>
                                         <color key="backgroundColor" red="0.0" green="0.71372549019607845" blue="0.69803921568627447" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <state key="normal" title="Add Route"/>
+                                        <state key="normal" title="Start"/>
                                         <connections>
-                                            <action selector="onAddRouteButtonClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="dMJ-B7-5zw"/>
+                                            <action selector="startButtonClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="nt0-UC-RWU"/>
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="IDY-a8-cO4">
                                         <rect key="frame" x="122.5" y="0.0" width="114" height="30"/>
                                         <color key="backgroundColor" red="0.0" green="0.71372549019607845" blue="0.69803921568627447" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <state key="normal" title="Add Waypoints"/>
+                                        <state key="normal" title="Stop"/>
                                         <connections>
-                                            <action selector="onAddWaypointsButtonClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="TbN-U1-8lZ"/>
+                                            <action selector="stopButtonClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="hMi-se-rKM"/>
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="dqL-zX-9qE">
                                         <rect key="frame" x="244.5" y="0.0" width="114.5" height="30"/>
                                         <color key="backgroundColor" red="0.0" green="0.71372549019607845" blue="0.69803921568627447" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <state key="normal" title="Clear Map"/>
+                                        <state key="normal" title="Toggle"/>
                                         <connections>
-                                            <action selector="onClearMapButtonClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="m8K-cA-Kuy"/>
+                                            <action selector="toggleButtonClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="hZt-BP-E62"/>
                                         </connections>
                                     </button>
                                 </subviews>
@@ -56,42 +56,12 @@
                                     <constraint firstAttribute="height" constant="30" id="5v9-pL-qe6"/>
                                 </constraints>
                             </stackView>
-                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="GIe-xP-P1N">
-                                <rect key="frame" x="20" y="46" width="335" height="31"/>
-                                <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gzz-qi-JuZ">
-                                        <rect key="frame" x="0.0" y="0.0" width="163.5" height="31"/>
-                                        <color key="backgroundColor" red="0.0" green="0.71372549019607845" blue="0.69803921568627447" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <state key="normal" title="Button"/>
-                                        <buttonConfiguration key="configuration" style="plain" title="Route Online"/>
-                                        <connections>
-                                            <action selector="onSwitchOnlineClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="VVH-rp-MDn"/>
-                                        </connections>
-                                    </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="k1S-Oc-jP8">
-                                        <rect key="frame" x="171.5" y="0.0" width="163.5" height="31"/>
-                                        <color key="backgroundColor" red="0.0" green="0.71372549019999998" blue="0.69803921570000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <state key="normal" title="Button"/>
-                                        <buttonConfiguration key="configuration" style="plain" title="Route Offline" cornerStyle="medium">
-                                            <backgroundConfiguration key="background"/>
-                                        </buttonConfiguration>
-                                        <connections>
-                                            <action selector="onSwitchOfflineClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="NL3-8b-nkO"/>
-                                        </connections>
-                                    </button>
-                                </subviews>
-                            </stackView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="7yx-63-l25"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="eu1-QJ-vBV" firstAttribute="top" secondItem="7yx-63-l25" secondAttribute="top" constant="8" id="1NJ-EX-MTG"/>
                             <constraint firstItem="eu1-QJ-vBV" firstAttribute="leading" secondItem="7yx-63-l25" secondAttribute="leading" constant="8" id="D7j-lq-Rwv"/>
-                            <constraint firstItem="GIe-xP-P1N" firstAttribute="leading" secondItem="7yx-63-l25" secondAttribute="leading" constant="20" id="IEf-iO-D3u"/>
-                            <constraint firstItem="GIe-xP-P1N" firstAttribute="top" secondItem="eu1-QJ-vBV" secondAttribute="bottom" constant="8" id="ILe-PI-iNf"/>
-                            <constraint firstItem="7yx-63-l25" firstAttribute="trailing" secondItem="GIe-xP-P1N" secondAttribute="trailing" constant="20" id="IZa-an-CQi"/>
                             <constraint firstItem="jv9-0R-Tz9" firstAttribute="bottom" secondItem="7yx-63-l25" secondAttribute="bottom" id="QZw-vd-qP4"/>
                             <constraint firstAttribute="trailing" secondItem="jv9-0R-Tz9" secondAttribute="trailing" id="eJ4-sm-GpV"/>
                             <constraint firstItem="jv9-0R-Tz9" firstAttribute="top" secondItem="7yx-63-l25" secondAttribute="top" id="p05-LZ-W6d"/>

@@ -59,6 +59,18 @@ final class ViewController: UIViewController {
             routingExample.clearMap()
         }
     }
+    
+    @IBAction func onSwitchOnlineClicked(_ sender: Any) {
+        if isMapSceneLoaded {
+            routingExample.onSwitchOnlineButtonClicked()
+        }
+    }
+    
+    @IBAction func onSwitchOfflineClicked(_ sender: Any) {
+        if isMapSceneLoaded {
+            routingExample.onSwitchOfflineButtonClicked()
+        }
+    }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()

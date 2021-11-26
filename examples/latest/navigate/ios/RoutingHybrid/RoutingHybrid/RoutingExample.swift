@@ -63,8 +63,6 @@ class RoutingExample {
         // By default, use online routing engine.
         routingEngine = onlineRoutingEngine
 
-        // Detect whether we should search online or offline.
-        setNetworkUpdateHandler()
     }
 
     // Calculates a route with two waypoints (start / destination).
@@ -223,6 +221,16 @@ class RoutingExample {
         }
         mapPolylineList.removeAll()
     }
+    
+    func onSwitchOnlineButtonClicked() {
+        isDeviceConnected = true
+        showDialog(title: "Note", message: "The app uses now the RoutingEngine.")
+    }
+    
+    func onSwitchOfflineButtonClicked() {
+        isDeviceConnected = false
+        showDialog(title: "Note", message: "The app uses now the OfflineRoutingEngine.")
+    }
 
     private func createRandomGeoCoordinatesAroundMapCenter() -> GeoCoordinates {
         let scaleFactor = UIScreen.main.scale
@@ -265,23 +273,6 @@ class RoutingExample {
         } else {
             routingEngine = offlineRoutingEngine
         }
-    }
-
-    // Warning: This only observes state changes of the network adapters of a device
-    // and it may not detect subsequent losses of Internet access.
-    private func setNetworkUpdateHandler() {
-        // Register for changes in network connectivity.
-        networkPathMonitor.pathUpdateHandler = { path in
-            if path.status == .satisfied {
-                self.isDeviceConnected = true
-            } else {
-                self.isDeviceConnected = false
-            }
-        }
-
-        // Start watching for network changes.
-        let queue = DispatchQueue.global(qos: .background)
-        networkPathMonitor.start(queue: queue)
     }
 
     private func showDialog(title: String, message: String) {

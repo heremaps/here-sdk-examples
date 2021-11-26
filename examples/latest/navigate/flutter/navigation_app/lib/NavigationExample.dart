@@ -458,14 +458,21 @@ class NavigationExample {
       }
     });
 
-    // Notifies truck drivers on road restrictions ahead. This event notifies on truck restrictions in general,
-    // so it will also deliver events, when the transport type was to a non-truck transport type.
+    // Notifies truck drivers on road restrictions ahead.
+    // For example, there can be a bridge ahead not high enough to pass a big truck
+    // or there can be a road ahead where the weight of the truck is beyond it's permissible weight.
+    // This event notifies on truck restrictions in general,
+    // so it will also deliver events, when the transport type was set to a non-truck transport type.
     // The given restrictions are based on the HERE database of the road network ahead.
     _visualNavigator.truckRestrictionsWarningListener =
         TruckRestrictionsWarningListener((List<TruckRestrictionWarning> list) {
       // The list is guaranteed to be non-empty.
       for (TruckRestrictionWarning truckRestrictionWarning in list) {
-        print("TruckRestrictionWarning in ${truckRestrictionWarning.distanceInMeters} meters.");
+        if (truckRestrictionWarning.distanceType == DistanceType.ahead) {
+          print("TruckRestrictionWarning ahead in: ${truckRestrictionWarning.distanceInMeters} meters.");
+        } else if (truckRestrictionWarning.distanceType == DistanceType.passed) {
+          print("A restriction just passed.");
+        }
         // One of the following restrictions applies ahead, if more restrictions apply at the same time,
         // they are part of another TruckRestrictionWarning element contained in the list.
         if (truckRestrictionWarning.weightRestriction != null) {
