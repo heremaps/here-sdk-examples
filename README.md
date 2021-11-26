@@ -40,7 +40,7 @@ In this repository you can find the [latest example apps](examples/latest) that 
 - **SearchHybrid**: Shows how to search POIs and add them to the map. Shows geocoding and reverse geocoding. Also shows how to search offline, when no internet connection is available. Exclusively available for the _Navigate Edition_.
 - **NavigationQuickStart**: Shows how to get started with turn-by-turn navigation. Exclusively available for the _Navigate Edition_.
 - **Navigation**: Gives an overview of how to implement many of the available turn-by-turn navigation and tracking features. Exclusively available for the _Navigate Edition_.
-- **NavigationWithCustomLocationIndicator**: Shows how the guidance view can be customized. Exclusively available for the _Navigate Edition_.
+- **NavigationCustom**: Shows how the guidance view can be customized. Exclusively available for the _Navigate Edition_.
 - **Positioning**: Shows how to integrate HERE Positioning. Exclusively available for the _Navigate Edition_.
 - **Traffic**: Shows how to search for real-time traffic and how to visualize it on the map.
 - **StandAloneEngine**: Shows how to use an engine without a map view.
