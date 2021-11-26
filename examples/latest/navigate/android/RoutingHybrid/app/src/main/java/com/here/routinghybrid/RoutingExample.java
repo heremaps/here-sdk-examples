@@ -20,10 +20,10 @@
 package com.here.routinghybrid;
 
 import android.content.Context;
-import android.net.ConnectivityManager;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.here.sdk.core.Color;
 import com.here.sdk.core.GeoCoordinates;
@@ -67,6 +67,7 @@ public class RoutingExample {
     private final OfflineRoutingEngine offlineRoutingEngine;
     private GeoCoordinates startGeoCoordinates;
     private GeoCoordinates destinationGeoCoordinates;
+    private boolean isDeviceConnected = true;
 
     public RoutingExample(Context context, MapView mapView) {
         this.context = context;
@@ -294,12 +295,20 @@ public class RoutingExample {
         }
     }
 
-    // Note: This method checks if the device is offline or not, but it does not check if the device is
-    // able to initiate a connection to the internet.
+    public void onSwitchOnlineButtonClicked() {
+        isDeviceConnected = true;
+        Toast.makeText(context,"The app will now use the RoutingEngine.", Toast.LENGTH_LONG).show();
+    }
+
+    public void onSwitchOfflineButtonClicked() {
+        isDeviceConnected = false;
+        Toast.makeText(context,"The app will now use the OfflineRoutingEngine.", Toast.LENGTH_LONG).show();
+    }
+
     private boolean isDeviceConnected() {
-        ConnectivityManager connectivityManager
-                = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        return connectivityManager.getActiveNetworkInfo() != null;
+        // An application may define here a logic to determine whether a device is connected or not.
+        // For this example app, the flag is set from UI.
+        return isDeviceConnected;
     }
 
     private void showDialog(String title, String message) {

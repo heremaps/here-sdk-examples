@@ -97,6 +97,14 @@ public class MainActivity extends AppCompatActivity {
         routingExample.clearMap();
     }
 
+    public void switchOnlineButtonClicked(View view) {
+        routingExample.onSwitchOnlineButtonClicked();
+    }
+
+    public void switchOfflineButtonClicked(View view) {
+        routingExample.onSwitchOfflineButtonClicked();
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
