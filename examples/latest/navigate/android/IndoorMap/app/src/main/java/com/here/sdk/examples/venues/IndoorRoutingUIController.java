@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 HERE Global B.V. and its affiliate(s).
+ * Copyright (c) 2021-2022 HERE Global B.V. and its affiliate(s).
  * All rights reserved.
  *
  * This software and other materials contain proprietary information

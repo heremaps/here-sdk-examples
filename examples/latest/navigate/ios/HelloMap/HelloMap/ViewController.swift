@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2021 HERE Europe B.V.
+ * Copyright (C) 2019-2022 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,8 +44,10 @@ class ViewController: UIViewController {
 
         // Configure the map.
         let camera = mapView.camera
-        camera.lookAt(point: GeoCoordinates(latitude: 52.518043, longitude: 13.405991),
-                      distanceInMeters: 1000 * 10)
+        camera.lookAt(point: GeoCoordinates(latitude: 52.518043, longitude: 13.405991), distanceInMeters: 1000 * 10)
+        
+        // Optionally enable textured 3D landmarks.
+        mapView.mapScene.setLayerVisibility(layerName: MapScene.Layers.landmarks, visibility: VisibilityState.visible)
     }
 
     override func didReceiveMemoryWarning() {

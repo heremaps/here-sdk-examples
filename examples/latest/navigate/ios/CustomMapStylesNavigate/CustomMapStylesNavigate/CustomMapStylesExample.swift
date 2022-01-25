@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2021 HERE Europe B.V.
+ * Copyright (C) 2019-2022 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,6 @@
 import heresdk
 import UIKit
 
-// This example shows how to use the Camera class to rotate and tilt the map programmatically, to set
-// a new transform center that influences those operations, and to move to a new location.
-// For more features of the Camera class, please consult the API Reference and the Developer's Guide.
 class CustomMapStylesExample {
 
     private let viewController: UIViewController
@@ -44,7 +41,7 @@ class CustomMapStylesExample {
     func onUnloadButtonClicked() {
         mapView.mapScene.loadScene(mapScheme: .normalDay, completion: onLoadScene)
     }
-    
+
     private func loadCustomMapStyle() {
         let bundle = Bundle(for: ViewController.self)
         // Adjust file name and path as appropriate for your project.

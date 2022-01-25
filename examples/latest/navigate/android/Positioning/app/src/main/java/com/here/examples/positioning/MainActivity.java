@@ -21,10 +21,14 @@ package com.here.examples.positioning;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
+import android.provider.Settings;
 import android.util.Log;
 
 import android.os.Bundle;
@@ -96,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void permissionsDenied() {
-                Log.e(TAG, "Permissions denied by user.");
+                showDialog("Error", "Cannot start app: Location service and permissions are needed for this app.");
             }
         });
     }
@@ -141,5 +145,22 @@ public class MainActivity extends AppCompatActivity {
             positioningExample.stopLocating();
         }
         mapView.onDestroy();
+    }
+
+    private void showDialog(String title, String message) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(title);
+        builder.setMessage(message);
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                Uri uri = Uri.fromParts("package", getPackageName(), null);
+                intent.setData(uri);
+                startActivity(intent);
+                finish();
+            }
+        });
+        builder.show();
     }
 }

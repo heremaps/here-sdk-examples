@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2021 HERE Europe B.V.
+ * Copyright (C) 2019-2022 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,9 +77,44 @@ public class OfflineMapsExample {
         this.mapView = mapView;
 
         SDKNativeEngine sdkNativeEngine = SDKNativeEngine.getSharedInstance();
+
         if (sdkNativeEngine == null) {
             throw new RuntimeException("SDKNativeEngine not initialized.");
         }
+
+        // In case you want to set a custom path for cache and map data, you can replace the
+        // above initializtion of SDKNativeEngine with the code below using SDKOptions:
+
+        /*
+            try {
+                SDKOptions options = new SDKOptions(
+                    "<ACCESS-KEY-ID>",
+                    "<ACCESS-KEY-SECRET>",
+                    "<custom-cache-path>",
+                    <Size-in-bytes>,
+                    "<custon-map-path>"
+                );
+                SDKNativeEngine sdkNativeEngine = new SDKNativeEngine(options);
+            } catch (InstantiationErrorException e) {
+                e.printStackTrace();
+            } catch (Exception ex){
+                throw new RuntimeException("SDKNativeEngine not initialized.");
+            }
+            SDKNativeEngine.setSharedInstance(sdkNativeEngine);
+
+            // By default, <custom-cache-path> where the application stores cache data is located on
+            // the internal storage at:
+            //          /data/user/0/<APP-PACKAGE-NAME>/
+            // where App-Package-Name is as specificed in the manifest file, e.g. "com.here.offlinemaps".
+            // This path does not require additional permissions.
+            //
+            // Similarly, you can use a location on external SD card storage using a path as shown below:
+            //          /storage/<SD-CARD-NAME>/Android/data/<APP-PACKAGE-NAME>
+            // Here, <SD-CARD-NAME> is the name of the mounted SD card and it is unique for each
+            // Android device. It is up to the user to determine this path for the target device.
+            // You can use Android's API call to Context.getExternalFilesDir(), but that does not
+            // always provide the path to external storage.
+         */
 
         mapDownloader = MapDownloader.fromEngine(sdkNativeEngine);
         mapUpdater = MapUpdater.fromEngine(sdkNativeEngine);
@@ -259,8 +294,10 @@ public class OfflineMapsExample {
         }
 
         TextQuery textQuery = new TextQuery("restaurants", bbox);
-        int maxItems = 30;
-        SearchOptions searchOptions = new SearchOptions(LanguageCode.EN_US, maxItems);
+
+        SearchOptions searchOptions = new SearchOptions();
+        searchOptions.languageCode = LanguageCode.EN_US;
+        searchOptions.maxItems = 30;
 
         offlineSearchEngine.search(textQuery, searchOptions, new SearchCallback() {
             @Override

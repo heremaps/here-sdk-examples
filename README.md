@@ -21,13 +21,14 @@ For an overview of the existing features, please check the _Developer's Guide_ f
 
 > For now, the _Navigate Edition_ is only available upon request. Please contact your HERE representative to receive access including a set of evaluation credentials.
 
-## List of Available Example Apps (Version 4.9.4.0)
+## List of Available Example Apps (Version 4.10.1.0)
 In this repository you can find the [latest example apps](examples/latest) that show key features of the HERE SDK in ready-to-use applications:
 
 - **HelloMap**: Shows the classic 'Hello World'.
 - **HelloMapWithStoryboard**: Shows the classic 'Hello World' using a Storyboard (iOS only).
 - **Camera**: Shows how to change the target and the target anchor point and how to move to another location using custom map animations.
 - **CustomMapStyles**: Shows how to load custom map schemes made with the _HERE Style Editor_. Exclusively available for the _Explore Edition_ and the _Navigate Edition_).
+- **CustomRasterLayers**: Shows how to load custom raster layers. Exclusively available for the _Explore Edition_ and the _Navigate Edition_).
 - **Gestures**: Shows how to handle gestures.
 - **OfflineMaps**: Shows how the HERE SDK can work fully offline and how offline map data can be downloaded for continents and countries. Exclusively available for the _Navigate Edition_.
 - **MapItems**: Shows how to add circles, polygons and polylines, native views, 2D and 3D map markers to locate POIs (and more) on the map. 3D map markers are exclusively available for the _Explore and Navigate Editions_.
@@ -89,6 +90,6 @@ Above you can find the example app links for the _latest_ HERE SDK version. If y
 Thank you for using the HERE SDK.
 
 ## License
-Copyright (C) 2019-2021 HERE Europe B.V.
+Copyright (C) 2019-2022 HERE Europe B.V.
 
 See the [LICENSE](LICENSE) file in the root of this repository for license details.

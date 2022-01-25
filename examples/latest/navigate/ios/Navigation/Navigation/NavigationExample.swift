@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2021 HERE Europe B.V.
+ * Copyright (C) 2019-2022 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import UIKit
 // (Make sure to set language + region in device settings.)
 class NavigationExample : NavigableLocationDelegate,
                           DestinationReachedDelegate,
-                          MilestoneReachedDelegate,
+                          MilestoneStatusDelegate,
                           SpeedWarningDelegate,
                           SpeedLimitDelegate,
                           RouteProgressDelegate,
@@ -78,7 +78,7 @@ class NavigationExample : NavigableLocationDelegate,
         visualNavigator.routeProgressDelegate = self
         visualNavigator.maneuverNotificationDelegate = self
         visualNavigator.destinationReachedDelegate = self
-        visualNavigator.milestoneReachedDelegate = self
+        visualNavigator.milestoneStatusDelegate = self
         visualNavigator.speedWarningDelegate = self
         visualNavigator.speedLimitDelegate = self
         visualNavigator.maneuverViewLaneAssistanceDelegate = self
@@ -164,12 +164,11 @@ class NavigationExample : NavigableLocationDelegate,
     func getRoadName(maneuver: Maneuver) -> String {
         let currentRoadTexts = maneuver.roadTexts
         let nextRoadTexts = maneuver.nextRoadTexts
-
-        let locale = Locale(identifier: "en-US")
-        let currentRoadName = currentRoadTexts.names.preferredValue(for: [locale])
-        let currentRoadNumber = currentRoadTexts.numbers.preferredValue(for: [locale])
-        let nextRoadName = nextRoadTexts.names.preferredValue(for: [locale])
-        let nextRoadNumber = nextRoadTexts.numbers.preferredValue(for: [locale])
+        
+        let currentRoadName = currentRoadTexts.names.defaultValue()
+        let currentRoadNumber = currentRoadTexts.numbers.defaultValue()
+        let nextRoadName = nextRoadTexts.names.defaultValue()
+        let nextRoadNumber = nextRoadTexts.numbers.defaultValue()
 
         var roadName = nextRoadName == nil ? nextRoadNumber : nextRoadName
 
@@ -195,15 +194,21 @@ class NavigationExample : NavigableLocationDelegate,
         stopNavigation()
     }
 
-    // Conform to MilestoneReachedDelegate.
-    // Notifies when a waypoint on the route is reached.
-    func onMilestoneReached(_ milestone: Milestone) {
-        if let waypointIndex = milestone.waypointIndex {
-            print("A user-defined waypoint was reached, index of waypoint: \(waypointIndex)")
+    // Conform to MilestoneStatusDelegate.
+    // Notifies when a waypoint on the route is reached or missed.
+    func onMilestoneStatusUpdated(milestone: Milestone, status: MilestoneStatus) {
+        if milestone.waypointIndex != nil && status == MilestoneStatus.reached {
+            print("A user-defined waypoint was reached, index of waypoint: \(String(describing: milestone.waypointIndex))")
             print("Original coordinates: \(String(describing: milestone.originalCoordinates))")
-        } else {
-            // For example, when transport mode changes due to a ferry.
-            print("A system defined waypoint was reached at \(milestone.mapMatchedCoordinates)")
+        } else if milestone.waypointIndex != nil && status == MilestoneStatus.missed {
+            print("A user-defined waypoint was missed, index of waypoint: \(String(describing: milestone.waypointIndex))")
+            print("Original coordinates: \(String(describing: milestone.originalCoordinates))")
+        } else if milestone.waypointIndex == nil && status == MilestoneStatus.reached {
+            // For example, when transport mode changes due to a ferry a system-defined waypoint may have been added.
+            print("A system-defined waypoint was reached at: \(String(describing: milestone.mapMatchedCoordinates))")
+        } else if milestone.waypointIndex == nil && status == MilestoneStatus.missed {
+            // For example, when transport mode changes due to a ferry a system-defined waypoint may have been added.
+            print("A system-defined waypoint was missed at: \(String(describing: milestone.mapMatchedCoordinates))")
         }
     }
 

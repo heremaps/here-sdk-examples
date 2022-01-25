@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2020-2021 HERE Europe B.V.
+* Copyright (C) 2020-2022 HERE Europe B.V.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -74,8 +74,7 @@ class ViewController: UIViewController {
         let camera = mapView.camera
         camera.lookAt(point: GeoCoordinates(latitude: 52.553013, longitude: 13.292189, altitude: 500.0))
         // Hide the extruded building layer, so that it does not overlap with the venues.
-        mapView.mapScene.setLayerState(layerName: MapScene.Layers.extrudedBuildings,
-                                       newState: MapScene.LayerState.hidden)
+        mapView.mapScene.setLayerVisibility(layerName: MapScene.Layers.extrudedBuildings, visibility: VisibilityState.hidden)
 
         // Create a venue engine object. Once the initialization is done, a completion handler
         // will be called.

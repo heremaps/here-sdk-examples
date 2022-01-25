@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2021 HERE Europe B.V.
+ * Copyright (C) 2019-2022 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import 'package:here_sdk/navigation.dart';
 import 'package:here_sdk/routing.dart' as HERE;
 import 'package:here_sdk/routing.dart';
 import 'package:here_sdk/trafficawarenavigation.dart';
-import 'package:intl/locale.dart' as i18n;
 
 import 'HEREPositioningProvider.dart';
 import 'HEREPositioningSimulator.dart';
@@ -70,14 +69,11 @@ class NavigationExample {
   }
 
   void _createDynamicRoutingEngine() {
-    var pollIntervalInMinutes = 5;
-
+    var dynamicRoutingOptions = DynamicRoutingEngineOptions.withAllDefaults();
     // We want an update for each poll iteration, so we specify 0 difference.
-    var minTimeDifferenceInSeconds = 0;
-    var minTimeDifferencePercentage = 0.0;
-
-    var dynamicRoutingOptions =
-        DynamicRoutingEngineOptions(pollIntervalInMinutes, minTimeDifferenceInSeconds, minTimeDifferencePercentage);
+    dynamicRoutingOptions.minTimeDifferenceInSeconds = 0;
+    dynamicRoutingOptions.minTimeDifferencePercentage = 0.0;
+    dynamicRoutingOptions.pollIntervalInMinutes = 5;
 
     try {
       // With the dynamic routing engine you can poll the HERE backend services to search for routes with less traffic.
@@ -182,12 +178,10 @@ class NavigationExample {
     RoadTexts currentRoadTexts = maneuver.roadTexts;
     RoadTexts nextRoadTexts = maneuver.nextRoadTexts;
 
-    // Note: import 'package:intl/locale.dart' as i18n;
-    List<i18n.Locale> locales = [i18n.Locale.parse("en-US")];
-    String? currentRoadName = currentRoadTexts.names.getPreferredValueForLocales(locales);
-    String? currentRoadNumber = currentRoadTexts.numbers.getPreferredValueForLocales(locales);
-    String? nextRoadName = nextRoadTexts.names.getPreferredValueForLocales(locales);
-    String? nextRoadNumber = nextRoadTexts.numbers.getPreferredValueForLocales(locales);
+    String? currentRoadName = currentRoadTexts.names.getDefaultValue();
+    String? currentRoadNumber = currentRoadTexts.numbers.getDefaultValue();
+    String? nextRoadName = nextRoadTexts.names.getDefaultValue();
+    String? nextRoadNumber = nextRoadTexts.numbers.getDefaultValue();
 
     String? roadName = nextRoadName == null ? nextRoadNumber : nextRoadName;
 
@@ -285,15 +279,21 @@ class NavigationExample {
       stopNavigation();
     });
 
-    // Notifies when a waypoint on the route is reached.
-    _visualNavigator.milestoneReachedListener = MilestoneReachedListener((Milestone milestone) {
-      // Handle results from onMilestoneReached().
-      if (milestone.waypointIndex != null) {
+    // Notifies when a waypoint on the route is reached or missed
+    _visualNavigator.milestoneStatusListener = MilestoneStatusListener((Milestone milestone, MilestoneStatus milestoneStatus) {
+      // Handle results from onMilestoneStatusUpdated().
+      if (milestone.waypointIndex != null && milestoneStatus == MilestoneStatus.reached) {
         print('A user-defined waypoint was reached, index of waypoint: ' + milestone.waypointIndex.toString());
         print('Original coordinates: ' + milestone.originalCoordinates.toString());
-      } else {
-        // For example, when transport mode changes due to a ferry.
-        print('A system defined waypoint was reached at ' + milestone.mapMatchedCoordinates.toString());
+      } else if (milestone.waypointIndex != null && milestoneStatus == MilestoneStatus.missed) {
+        print('A user-defined waypoint was missed, index of waypoint: ' + milestone.waypointIndex.toString());
+        print('Original coordinates: ' + milestone.originalCoordinates.toString());
+      } else if (milestone.waypointIndex == null && milestoneStatus == MilestoneStatus.reached) {
+        // For example, when transport mode changes due to a ferry a system-defined waypoint may have been added.
+        print('A system-defined waypoint was reached at: ' + milestone.mapMatchedCoordinates.toString());
+      } else if (milestone.waypointIndex == null && milestoneStatus == MilestoneStatus.reached) {
+        // For example, when transport mode changes due to a ferry a system-defined waypoint may have been added.
+        print('A system-defined waypoint was missed at: ' + milestone.mapMatchedCoordinates.toString());
       }
     });
 

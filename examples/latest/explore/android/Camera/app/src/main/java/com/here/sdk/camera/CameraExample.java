@@ -1,5 +1,5 @@
  /*
-  * Copyright (C) 2019-2021 HERE Europe B.V.
+  * Copyright (C) 2019-2022 HERE Europe B.V.
   *
   * Licensed under the Apache License, Version 2.0 (the "License");
   * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@
  import com.here.sdk.core.Color;
  import com.here.sdk.core.GeoCircle;
  import com.here.sdk.core.GeoCoordinates;
+ import com.here.sdk.core.GeoOrientationUpdate;
  import com.here.sdk.core.GeoPolygon;
  import com.here.sdk.core.Point2D;
  import com.here.sdk.mapview.MapCamera;
@@ -89,22 +90,22 @@
 
      // Rotate the map by x degrees. Tip: Try to see what happens for negative values.
      private void rotateMap(int bearingStepInDegrees) {
-         double currentBearing = camera.getState().targetOrientation.bearing;
+         double currentBearing = camera.getState().orientationAtTarget.bearing;
          double newBearing = currentBearing + bearingStepInDegrees;
 
          //By default, bearing will be clamped to the range (0, 360].
-         MapCamera.OrientationUpdate orientationUpdate = new MapCamera.OrientationUpdate(newBearing, null);
-         camera.setTargetOrientation(orientationUpdate);
+         GeoOrientationUpdate orientationUpdate = new GeoOrientationUpdate(newBearing, null);
+         camera.setOrientationAtTarget(orientationUpdate);
      }
 
      // Tilt the map by x degrees.
      private void tiltMap(int tiltStepInDegrees) {
-         double currentTilt = camera.getState().targetOrientation.tilt;
+         double currentTilt = camera.getState().orientationAtTarget.tilt;
          double newTilt = currentTilt + tiltStepInDegrees;
 
          //By default, tilt will be clamped to the range [0, 70].
-         MapCamera.OrientationUpdate orientationUpdate = new MapCamera.OrientationUpdate(null, newTilt);
-         camera.setTargetOrientation(orientationUpdate);
+         GeoOrientationUpdate orientationUpdate = new GeoOrientationUpdate(null, newTilt);
+         camera.setOrientationAtTarget(orientationUpdate);
      }
 
      private void setTapGestureHandler(MapView mapView) {

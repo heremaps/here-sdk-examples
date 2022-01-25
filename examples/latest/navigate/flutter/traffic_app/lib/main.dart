@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2021 HERE Europe B.V.
+ * Copyright (C) 2019-2022 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,8 @@ import 'TrafficExample.dart';
 
 void main() {
   SdkContext.init(IsolateOrigin.main);
-  runApp(MyApp());
+  // Ensure that all widgets, including MyApp, have a MaterialLocalizations object available.
+  runApp(MaterialApp(home: MyApp()));
 }
 
 class MyApp extends StatefulWidget {
@@ -61,7 +62,7 @@ class _MyAppState extends State<MyApp> {
   void _onMapCreated(HereMapController hereMapController) {
     hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
       if (error == null) {
-        _trafficExample = TrafficExample(hereMapController);
+        _trafficExample = TrafficExample(_showDialog, hereMapController);
       } else {
         print("Map scene not loaded. MapError: " + error.toString());
       }
@@ -88,6 +89,34 @@ class _MyAppState extends State<MyApp> {
         onPressed: () => callbackFunction(),
         child: Text(buttonLabel, style: TextStyle(fontSize: 20)),
       ),
+    );
+  }
+
+  // A helper method to show a dialog.
+  Future<void> _showDialog(String title, String message) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(message),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

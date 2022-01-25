@@ -1,5 +1,5 @@
  /*
-  * Copyright (C) 2019-2021 HERE Europe B.V.
+  * Copyright (C) 2019-2022 HERE Europe B.V.
   *
   * Licensed under the Apache License, Version 2.0 (the "License");
   * you may not use this file except in compliance with the License.
@@ -33,11 +33,6 @@
 
  import java.io.IOException;
 
- /**
-  * This example shows how to use the Camera class to rotate and tilt the map programmatically, to set
-  * a new transform center that influences those operations, and to move to a new location.
-  * For more features of the Camera class, please consult the API Reference and the Developer's Guide.
-  */
  public class CustomMapStylesExample {
 
      private static final float DEFAULT_DISTANCE_TO_EARTH_IN_METERS = 200 * 1000;

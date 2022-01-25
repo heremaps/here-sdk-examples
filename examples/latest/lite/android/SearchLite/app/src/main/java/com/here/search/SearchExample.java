@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2021 HERE Europe B.V.
+ * Copyright (C) 2019-2022 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ public class SearchExample {
     private final MapViewLite mapView;
     private final Camera camera;
     private final List<MapMarker> mapMarkerList = new ArrayList<>();
-    private SearchEngine searchEngine;
+    private final SearchEngine searchEngine;
 
     public SearchExample(Context context, MapViewLite mapView) {
         this.context = context;
@@ -135,8 +135,9 @@ public class SearchExample {
     }
 
     private void getAddressForCoordinates(GeoCoordinates geoCoordinates) {
-        int maxItems = 1;
-        SearchOptions reverseGeocodingOptions = new SearchOptions(LanguageCode.EN_GB, maxItems);
+        SearchOptions reverseGeocodingOptions = new SearchOptions();
+        reverseGeocodingOptions.languageCode = LanguageCode.EN_GB;
+        reverseGeocodingOptions.maxItems = 1;
 
         searchEngine.search(geoCoordinates, reverseGeocodingOptions, new SearchCallback() {
             @Override
@@ -192,8 +193,9 @@ public class SearchExample {
         GeoBox viewportGeoBox = getMapViewGeoBox();
         TextQuery query = new TextQuery(queryString, viewportGeoBox);
 
-        int maxItems = 30;
-        SearchOptions searchOptions = new SearchOptions(LanguageCode.EN_US, maxItems);
+        SearchOptions searchOptions = new SearchOptions();
+        searchOptions.languageCode = LanguageCode.EN_US;
+        searchOptions.maxItems = 30;
 
         searchEngine.search(query, searchOptions, new SearchCallback() {
             @Override
@@ -257,8 +259,10 @@ public class SearchExample {
 
     private void autoSuggestExample() {
         GeoCoordinates centerGeoCoordinates = getMapViewCenter();
-        int maxItems = 5;
-        SearchOptions searchOptions = new SearchOptions(LanguageCode.EN_US, maxItems);
+
+        SearchOptions searchOptions = new SearchOptions();
+        searchOptions.languageCode = LanguageCode.EN_US;
+        searchOptions.maxItems = 5;
 
         // Simulate a user typing a search term.
         searchEngine.suggest(
@@ -285,10 +289,11 @@ public class SearchExample {
 
         AddressQuery query = new AddressQuery(queryString, geoCoordinates);
 
-        int maxItems = 30;
-        SearchOptions options = new SearchOptions(LanguageCode.DE_DE, maxItems);
+        SearchOptions searchOptions = new SearchOptions();
+        searchOptions.languageCode = LanguageCode.DE_DE;
+        searchOptions.maxItems = 30;
 
-        searchEngine.search(query, options, new SearchCallback() {
+        searchEngine.search(query, searchOptions, new SearchCallback() {
             @Override
             public void onSearchCompleted(SearchError searchError, List<Place> list) {
                 if (searchError != null) {

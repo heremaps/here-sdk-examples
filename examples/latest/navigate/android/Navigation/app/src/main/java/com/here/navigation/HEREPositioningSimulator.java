@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2021 HERE Europe B.V.
+ * Copyright (C) 2019-2022 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,10 +50,9 @@ public class HEREPositioningSimulator {
 
     // Provides fake GPS signals based on the route geometry.
     private LocationSimulator createLocationSimulator(LocationListener locationListener, Route route) {
-        double speedFactor = 2;
-        int notificationIntervalInMilliseconds = 500;
-        LocationSimulatorOptions locationSimulatorOptions =
-                new LocationSimulatorOptions(speedFactor, notificationIntervalInMilliseconds);
+        LocationSimulatorOptions locationSimulatorOptions = new LocationSimulatorOptions();
+        locationSimulatorOptions.speedFactor = 2;
+        locationSimulatorOptions.notificationIntervalInMilliseconds = 500;
 
         LocationSimulator locationSimulator;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2021 HERE Europe B.V.
+ * Copyright (C) 2019-2022 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -219,8 +219,9 @@ class EVRoutingExample {
     TextQuery textQuery = TextQuery.withCorridorAreaAndAreaCenter(
         "charging station", routeCorridor, _hereMapController.camera.state.targetCoordinates);
 
-    int maxItems = 30;
-    SearchOptions searchOptions = SearchOptions(LanguageCode.enUs, maxItems);
+    SearchOptions searchOptions = SearchOptions.withDefaults();
+    searchOptions.languageCode = LanguageCode.enUs;
+    searchOptions.maxItems = 30;
 
     _searchEngine.searchByText(textQuery, searchOptions, (SearchError? searchError, List<Place>? items) {
       if (searchError != null) {

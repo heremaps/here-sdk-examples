@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2021 HERE Europe B.V.
+ * Copyright (C) 2019-2022 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ import com.here.sdk.mapview.MapMarker3DModel;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
+import com.here.sdk.mapview.VisibilityState;
 import com.here.sdk.navigation.CameraSettings;
 import com.here.sdk.navigation.LocationSimulator;
 import com.here.sdk.navigation.LocationSimulatorOptions;
@@ -142,10 +143,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Enable a few map layers that might be useful to see for drivers.
-        mapView.getMapScene().setLayerState(MapScene.Layers.TRAFFIC_FLOW, MapScene.LayerState.VISIBLE);
-        mapView.getMapScene().setLayerState(MapScene.Layers.TRAFFIC_INCIDENTS, MapScene.LayerState.VISIBLE);
-        mapView.getMapScene().setLayerState(MapScene.Layers.SAFETY_CAMERAS, MapScene.LayerState.VISIBLE);
-        mapView.getMapScene().setLayerState(MapScene.Layers.VEHICLE_RESTRICTIONS, MapScene.LayerState.VISIBLE);
+        mapView.getMapScene().setLayerVisibility(MapScene.Layers.TRAFFIC_FLOW, VisibilityState.VISIBLE);
+        mapView.getMapScene().setLayerVisibility(MapScene.Layers.TRAFFIC_INCIDENTS, VisibilityState.VISIBLE);
+        mapView.getMapScene().setLayerVisibility(MapScene.Layers.SAFETY_CAMERAS, VisibilityState.VISIBLE);
+        mapView.getMapScene().setLayerVisibility(MapScene.Layers.VEHICLE_RESTRICTIONS, VisibilityState.VISIBLE);
 
         defaultLocationIndicator = new LocationIndicator();
         customLocationIndicator = createCustomLocationIndicator();
@@ -223,7 +224,6 @@ public class MainActivity extends AppCompatActivity {
             defaultLocationIndicator.disable();
             customLocationIndicator.enable(mapView);
             customLocationIndicator.setLocationIndicatorStyle(IndicatorStyle.PEDESTRIAN);
-            visualNavigator.setCustomLocationIndicator(null);
         }
 
         // Set last location from LocationSimulator.
@@ -340,16 +340,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void customizeGuidanceView() {
+        CameraSettings cameraSettings = new CameraSettings();
         // Set custom zoom level and tilt.
-        double cameraDistanceInMeters = 50; // Defaults to 150.
-        double cameraTiltInDegrees = 70; // Defaults to 50.
+        cameraSettings.cameraDistanceInMeters = 50; // Defaults to 150.
+        cameraSettings.cameraTiltInDegrees = 70; // Defaults to 50.
         // Disable North-Up mode by setting null. Enable North-up mode by setting Double.valueOf(0).
         // By default, North-Up mode is disabled.
-        Double cameraBearingInDegrees = null;
+        cameraSettings.cameraBearingInDegrees = null;
 
         // The CameraSettings can be updated during guidance at any time as often as desired.
-        visualNavigator.setCameraSettings(
-                new CameraSettings(cameraDistanceInMeters, cameraTiltInDegrees, cameraBearingInDegrees));
+        visualNavigator.setCameraSettings(cameraSettings);
     }
 
     private final LocationListener myLlocationListener = new LocationListener() {

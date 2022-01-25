@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2021 HERE Europe B.V.
+ * Copyright (C) 2019-2022 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,12 @@
 package com.here.search;
 
 import android.content.Context;
+import android.util.Log;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import android.util.Log;
-import android.widget.Toast;
 
 import com.here.sdk.core.Anchor2D;
 import com.here.sdk.core.CustomMetadataValue;
@@ -136,13 +137,14 @@ public class SearchExample {
     }
 
     private void getAddressForCoordinates(GeoCoordinates geoCoordinates) {
-        int maxItems = 1;
-        SearchOptions reverseGeocodingOptions = new SearchOptions(LanguageCode.EN_GB, maxItems);
+        SearchOptions reverseGeocodingOptions = new SearchOptions();
+        reverseGeocodingOptions.languageCode = LanguageCode.EN_GB;
+        reverseGeocodingOptions.maxItems = 1;
 
         searchEngine.search(geoCoordinates, reverseGeocodingOptions, addressSearchCallback);
     }
 
-    private SearchCallback addressSearchCallback = new SearchCallback() {
+    private final SearchCallback addressSearchCallback = new SearchCallback() {
         @Override
         public void onSearchCompleted(@Nullable SearchError searchError, @Nullable List<Place> list) {
             if (searchError != null) {
@@ -196,13 +198,14 @@ public class SearchExample {
         GeoBox viewportGeoBox = getMapViewGeoBox();
         TextQuery query = new TextQuery(queryString, viewportGeoBox);
 
-        int maxItems = 30;
-        SearchOptions searchOptions = new SearchOptions(LanguageCode.EN_US, maxItems);
+        SearchOptions searchOptions = new SearchOptions();
+        searchOptions.languageCode = LanguageCode.EN_US;
+        searchOptions.maxItems = 30;
 
         searchEngine.search(query, searchOptions, querySearchCallback);
     }
 
-    private SearchCallback querySearchCallback = new SearchCallback() {
+    private final SearchCallback querySearchCallback = new SearchCallback() {
         @Override
         public void onSearchCompleted(@Nullable SearchError searchError, @Nullable List<Place> list) {
             if (searchError != null) {
@@ -264,8 +267,10 @@ public class SearchExample {
 
     private void autoSuggestExample() {
         GeoCoordinates centerGeoCoordinates = getMapViewCenter();
-        int maxItems = 5;
-        SearchOptions searchOptions = new SearchOptions(LanguageCode.EN_US, maxItems);
+
+        SearchOptions searchOptions = new SearchOptions();
+        searchOptions.languageCode = LanguageCode.EN_US;
+        searchOptions.maxItems = 5;
 
         // Simulate a user typing a search term.
         searchEngine.suggest(
@@ -292,13 +297,14 @@ public class SearchExample {
 
         AddressQuery query = new AddressQuery(queryString, geoCoordinates);
 
-        int maxItems = 30;
-        SearchOptions options = new SearchOptions(LanguageCode.DE_DE, maxItems);
+        SearchOptions options = new SearchOptions();
+        options.languageCode = LanguageCode.DE_DE;
+        options.maxItems = 30;
 
         searchEngine.search(query, options, geocodeAddressSearchCallback);
     }
 
-    private SearchCallback geocodeAddressSearchCallback = new SearchCallback() {
+    private final SearchCallback geocodeAddressSearchCallback = new SearchCallback() {
         @Override
         public void onSearchCompleted(SearchError searchError, List<Place> list) {
             if (searchError != null) {
@@ -341,12 +347,7 @@ public class SearchExample {
     }
 
     private GeoCoordinates getMapViewCenter() {
-        GeoCoordinates centerGeoCoordinates = mapView.viewToGeoCoordinates(new Point2D(mapView.getWidth() / 2, mapView.getHeight() / 2));
-        if (centerGeoCoordinates == null) {
-            // Should never happen for center coordinates.
-            throw new RuntimeException("CenterGeoCoordinates are null");
-        }
-        return centerGeoCoordinates;
+        return mapView.getCamera().getState().targetCoordinates;
     }
 
     private GeoBox getMapViewGeoBox() {
