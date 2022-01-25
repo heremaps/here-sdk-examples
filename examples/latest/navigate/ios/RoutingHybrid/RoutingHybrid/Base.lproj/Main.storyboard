@@ -63,7 +63,7 @@
                                         <rect key="frame" x="0.0" y="0.0" width="163.5" height="31"/>
                                         <color key="backgroundColor" red="0.0" green="0.71372549019607845" blue="0.69803921568627447" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <state key="normal" title="Button"/>
+                                        <state key="normal" title="Route Online"/>
                                         <buttonConfiguration key="configuration" style="plain" title="Route Online"/>
                                         <connections>
                                             <action selector="onSwitchOnlineClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="VVH-rp-MDn"/>
@@ -73,7 +73,7 @@
                                         <rect key="frame" x="171.5" y="0.0" width="163.5" height="31"/>
                                         <color key="backgroundColor" red="0.0" green="0.71372549019999998" blue="0.69803921570000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <state key="normal" title="Button"/>
+                                        <state key="normal" title="Route Offline"/>
                                         <buttonConfiguration key="configuration" style="plain" title="Route Offline" cornerStyle="medium">
                                             <backgroundConfiguration key="background"/>
                                         </buttonConfiguration>

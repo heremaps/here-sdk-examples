@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2021 HERE Europe B.V.
+ * Copyright (C) 2019-2022 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,14 @@
 package com.here.sdk.examples.venues;
 
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.examples.venues.PermissionsRequestor.ResultListener;
@@ -34,6 +35,7 @@ import com.here.sdk.gestures.TapListener;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
+import com.here.sdk.mapview.VisibilityState;
 import com.here.sdk.venue.VenueEngine;
 import com.here.sdk.venue.control.Venue;
 import com.here.sdk.venue.control.VenueMap;
@@ -108,8 +110,8 @@ public class MainActivity extends AppCompatActivity {
                         new GeoCoordinates(52.530932, 13.384915), distanceInMeters);
 
                 // Hide the extruded building layer, so that it does not overlap with the venues.
-                mapView.getMapScene().setLayerState(MapScene.Layers.EXTRUDED_BUILDINGS,
-                        MapScene.LayerState.HIDDEN);
+                mapView.getMapScene().setLayerVisibility(MapScene.Layers.EXTRUDED_BUILDINGS,
+                        VisibilityState.HIDDEN);
 
                 // Create a venue engine object. Once the initialization is done, a callback
                 // will be called.

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2021 HERE Europe B.V.
+ * Copyright (C) 2019-2022 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,9 @@
 package com.here.evrouting;
 
 import android.content.Context;
-import androidx.appcompat.app.AlertDialog;
 import android.util.Log;
+
+import androidx.appcompat.app.AlertDialog;
 
 import com.here.sdk.core.Color;
 import com.here.sdk.core.GeoBox;
@@ -75,16 +76,16 @@ import java.util.List;
 // (isoline routing).
 public class EVRoutingExample {
 
-    private Context context;
-    private MapView mapView;
-    private List<MapMarker> mapMarkers = new ArrayList<>();
-    private List<MapPolyline> mapPolylines = new ArrayList<>();
-    private List<MapPolygon> mapPolygons = new ArrayList<>();
-    private RoutingEngine routingEngine;
-    private SearchEngine searchEngine;
+    private final Context context;
+    private final MapView mapView;
+    private final List<MapMarker> mapMarkers = new ArrayList<>();
+    private final List<MapPolyline> mapPolylines = new ArrayList<>();
+    private final List<MapPolygon> mapPolygons = new ArrayList<>();
+    private final RoutingEngine routingEngine;
+    private final SearchEngine searchEngine;
     private GeoCoordinates startGeoCoordinates;
     private GeoCoordinates destinationGeoCoordinates;
-    private List<String> chargingStationsIDs = new ArrayList<>();
+    private final List<String> chargingStationsIDs = new ArrayList<>();
 
     public EVRoutingExample(Context context, MapView mapView) {
         this.context = context;
@@ -157,7 +158,7 @@ public class EVRoutingExample {
         evCarOptions.routeOptions.optimizationMode = OptimizationMode.FASTEST;
         evCarOptions.routeOptions.alternatives = 0;
         evCarOptions.batterySpecifications.connectorTypes =
-                new ArrayList<ChargingConnectorType>(Arrays.asList(ChargingConnectorType.TESLA,
+                new ArrayList<>(Arrays.asList(ChargingConnectorType.TESLA,
                     ChargingConnectorType.IEC_62196_TYPE_1_COMBO, ChargingConnectorType.IEC_62196_TYPE_2_COMBO));
         evCarOptions.batterySpecifications.totalCapacityInKilowattHours = 80.0;
         evCarOptions.batterySpecifications.initialChargeInKilowattHours = 10.0;
@@ -189,6 +190,9 @@ public class EVRoutingExample {
         List<Section> sections = route.getSections();
         for (Section section : sections) {
             EVDetails evDetails = section.getEvDetails();
+            if (evDetails == null) {
+                return;
+            }
             Log.d("EVDetails", "Estimated net energy consumption in kWh for this section: " + evDetails.consumptionInKilowattHour);
             for (PostAction postAction : section.getPostActions()) {
                 switch (postAction.action) {
@@ -270,8 +274,10 @@ public class EVRoutingExample {
         TextQuery textQuery = new TextQuery("charging station", routeCorridor,
                 mapView.getCamera().getState().targetCoordinates);
 
-        int maxItems = 30;
-        SearchOptions searchOptions = new SearchOptions(LanguageCode.EN_US, maxItems);
+        SearchOptions searchOptions = new SearchOptions();
+        searchOptions.languageCode = LanguageCode.EN_US;
+        searchOptions.maxItems = 30;
+
         searchEngine.search(textQuery, searchOptions, new SearchCallback() {
             @Override
             public void onSearchCompleted(SearchError searchError, List<Place> items) {
@@ -314,10 +320,8 @@ public class EVRoutingExample {
         // Note: We have specified evCarOptions.routeOptions.optimizationMode = OptimizationMode.FASTEST for EV car options above.
         List<Integer> rangeValues = Collections.singletonList(400);
 
-        // With null we choose the default option for the resulting polygon shape.
-        Integer maxPoints = null;
         IsolineOptions.Calculation calculationOptions =
-                new IsolineOptions.Calculation(IsolineRangeType.CONSUMPTION_IN_WATT_HOURS, rangeValues, IsolineCalculationMode.BALANCED, maxPoints);
+                new IsolineOptions.Calculation(IsolineRangeType.CONSUMPTION_IN_WATT_HOURS, rangeValues, IsolineCalculationMode.BALANCED);
         IsolineOptions isolineOptions = new IsolineOptions(calculationOptions, getEVCarOptions());
 
         routingEngine.calculateIsoline(new Waypoint(startGeoCoordinates), isolineOptions, new CalculateIsolineCallback() {

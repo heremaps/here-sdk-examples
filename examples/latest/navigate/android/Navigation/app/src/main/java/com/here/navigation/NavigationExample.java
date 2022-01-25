@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2021 HERE Europe B.V.
+ * Copyright (C) 2019-2022 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,8 @@ import com.here.sdk.navigation.ManeuverViewLaneAssistance;
 import com.here.sdk.navigation.ManeuverViewLaneAssistanceListener;
 import com.here.sdk.navigation.MapMatchedLocation;
 import com.here.sdk.navigation.Milestone;
-import com.here.sdk.navigation.MilestoneReachedListener;
+import com.here.sdk.navigation.MilestoneStatus;
+import com.here.sdk.navigation.MilestoneStatusListener;
 import com.here.sdk.navigation.NavigableLocation;
 import com.here.sdk.navigation.NavigableLocationListener;
 import com.here.sdk.navigation.RoadAttributes;
@@ -82,7 +83,6 @@ import com.here.sdk.trafficawarenavigation.DynamicRoutingEngine;
 import com.here.sdk.trafficawarenavigation.DynamicRoutingEngineOptions;
 import com.here.sdk.trafficawarenavigation.DynamicRoutingListener;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -141,14 +141,11 @@ public class NavigationExample {
     }
 
     private void createDynamicRoutingEngine() {
-        int pollIntervalInMinutes = 5;
-
+        DynamicRoutingEngineOptions dynamicRoutingOptions = new DynamicRoutingEngineOptions();
         // We want an update for each poll iteration, so we specify 0 difference.
-        int minTimeDifferenceInSeconds = 0;
-        double minTimeDifferencePercentage = 0.0;
-
-        DynamicRoutingEngineOptions dynamicRoutingOptions =
-        new DynamicRoutingEngineOptions(pollIntervalInMinutes, minTimeDifferenceInSeconds, minTimeDifferencePercentage);
+        dynamicRoutingOptions.minTimeDifferenceInSeconds = 0;
+        dynamicRoutingOptions.minTimeDifferencePercentage = 0.0;
+        dynamicRoutingOptions.pollIntervalInMinutes = 5;
 
         try {
             // With the dynamic routing engine you can poll the HERE backend services to search for routes with less traffic.
@@ -219,16 +216,25 @@ public class NavigationExample {
             }
         });
 
-        // Notifies when a waypoint on the route is reached.
-        visualNavigator.setMilestoneReachedListener(new MilestoneReachedListener() {
+        // Notifies when a waypoint on the route is reached or missed.
+        visualNavigator.setMilestoneStatusListener(new MilestoneStatusListener() {
             @Override
-            public void onMilestoneReached(@NonNull Milestone milestone) {
-                if (milestone.waypointIndex != null) {
+            public void onMilestoneStatusUpdated(@NonNull Milestone milestone, @NonNull MilestoneStatus milestoneStatus) {
+                if (milestone.waypointIndex != null && milestoneStatus == MilestoneStatus.REACHED) {
                     Log.d(TAG, "A user-defined waypoint was reached, index of waypoint: " + milestone.waypointIndex);
                     Log.d(TAG,"Original coordinates: " + milestone.originalCoordinates);
-                } else {
-                    // For example, when transport mode changes due to a ferry.
-                    Log.d(TAG,"A system defined waypoint was reached at " + milestone.mapMatchedCoordinates);
+                }
+                else if (milestone.waypointIndex != null && milestoneStatus == MilestoneStatus.MISSED) {
+                    Log.d(TAG, "A user-defined waypoint was missed, index of waypoint: " + milestone.waypointIndex);
+                    Log.d(TAG,"Original coordinates: " + milestone.originalCoordinates);
+                }
+                else if (milestone.waypointIndex == null && milestoneStatus == MilestoneStatus.REACHED) {
+                    // For example, when transport mode changes due to a ferry a system-defined waypoint may have been added.
+                    Log.d(TAG, "A system-defined waypoint was reached at: " + milestone.mapMatchedCoordinates);
+                }
+                else if (milestone.waypointIndex == null && milestoneStatus == MilestoneStatus.MISSED) {
+                    // For example, when transport mode changes due to a ferry a system-defined waypoint may have been added.
+                    Log.d(TAG, "A system-defined waypoint was missed at: " + milestone.mapMatchedCoordinates);
                 }
             }
         });
@@ -340,7 +346,7 @@ public class NavigationExample {
             }
         });
 
-        // Notfies which lane(s) allow to follow the route.
+        // Notifies which lane(s) allow to follow the route.
         visualNavigator.setJunctionViewLaneAssistanceListener(new JunctionViewLaneAssistanceListener() {
             @Override
             public void onLaneAssistanceUpdated(@NonNull JunctionViewLaneAssistance junctionViewLaneAssistance) {
@@ -469,11 +475,10 @@ public class NavigationExample {
         RoadTexts currentRoadTexts = maneuver.getRoadTexts();
         RoadTexts nextRoadTexts = maneuver.getNextRoadTexts();
 
-        List<Locale> locales = Arrays.asList(new Locale("eng"));
-        String currentRoadName = currentRoadTexts.names.getPreferredValueForLocales(locales);
-        String currentRoadNumber = currentRoadTexts.numbers.getPreferredValueForLocales(locales);
-        String nextRoadName = nextRoadTexts.names.getPreferredValueForLocales(locales);
-        String nextRoadNumber = nextRoadTexts.numbers.getPreferredValueForLocales(locales);
+        String currentRoadName = currentRoadTexts.names.getDefaultValue();
+        String currentRoadNumber = currentRoadTexts.numbers.getDefaultValue();
+        String nextRoadName = nextRoadTexts.names.getDefaultValue();
+        String nextRoadNumber = nextRoadTexts.numbers.getDefaultValue();
 
         String roadName = nextRoadName == null ? nextRoadNumber : nextRoadName;
 

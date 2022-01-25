@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2021 HERE Europe B.V.
+ * Copyright (C) 2019-2022 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,10 +105,10 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
     }
 
     // Enable a few map layers that might be useful to see for drivers.
-    _hereMapController!.mapScene.setLayerState(MapSceneLayers.trafficFlow, MapSceneLayerState.visible);
-    _hereMapController!.mapScene.setLayerState(MapSceneLayers.trafficIncidents, MapSceneLayerState.visible);
-    _hereMapController!.mapScene.setLayerState(MapSceneLayers.safetyCameras, MapSceneLayerState.visible);
-    _hereMapController!.mapScene.setLayerState(MapSceneLayers.vehicleRestrictions, MapSceneLayerState.visible);
+    _hereMapController!.mapScene.setLayerVisibility(MapSceneLayers.trafficFlow, VisibilityState.visible);
+    _hereMapController!.mapScene.setLayerVisibility(MapSceneLayers.trafficIncidents, VisibilityState.visible);
+    _hereMapController!.mapScene.setLayerVisibility(MapSceneLayers.safetyCameras, VisibilityState.visible);
+    _hereMapController!.mapScene.setLayerVisibility(MapSceneLayers.vehicleRestrictions, VisibilityState.visible);
 
     _defaultLocationIndicator = LocationIndicator();
     _customLocationIndicator = _createCustomLocationIndicator();
@@ -189,7 +189,6 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
       _defaultLocationIndicator!.disable();
       _customLocationIndicator!.enable(_hereMapController!);
       _customLocationIndicator!.locationIndicatorStyle = LocationIndicatorIndicatorStyle.pedestrian;
-      _visualNavigator!.customLocationIndicator = null;
     }
 
     // Set last location from LocationSimulator.
@@ -302,16 +301,14 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
   }
 
   void _customizeGuidanceView() {
+    // The CameraSettings can be updated during guidance at any time as often as desired.
+    _visualNavigator?.cameraSettings = CameraSettings.withDefaults();
     // Set custom zoom level and tilt.
-    double cameraDistanceInMeters = 50; // Defaults to 150.
-    double cameraTiltInDegrees = 70; // Defaults to 50.
+    _visualNavigator?.cameraSettings.cameraDistanceInMeters = 50; // Defaults to 150.
+    _visualNavigator?.cameraSettings.cameraTiltInDegrees = 70; // Defaults to 50.
     // Disable North-Up mode by setting null. Enable North-up mode by setting 0.
     // By default, North-Up mode is disabled.
-    double? cameraBearingInDegrees;
-
-    // The CameraSettings can be updated during guidance at any time as often as desired.
-    _visualNavigator?.cameraSettings =
-        CameraSettings(cameraDistanceInMeters, cameraTiltInDegrees, cameraBearingInDegrees);
+    _visualNavigator?.cameraSettings.cameraBearingInDegrees = null;
   }
 
   // Implement HERE.LocationListener.
@@ -320,12 +317,6 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
     // Feed location data into the VisualNavigator.
     _visualNavigator?.onLocationUpdated(location);
     _lastKnownLocation = location;
-  }
-
-  // Implement HERE.LocationListener.
-  @override
-  void release() {
-    _locationSimulator?.stop();
   }
 
   void _startRouteSimulation(HERE.Route route) {

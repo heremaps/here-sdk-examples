@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2021 HERE Europe B.V.
+ * Copyright (C) 2019-2022 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -272,13 +272,7 @@ class SearchExample: TapDelegate,
     }
 
     private func getMapViewCenter() -> GeoCoordinates {
-        let scaleFactor = UIScreen.main.scale
-        let mapViewWidthInPixels = Double(mapView.bounds.width * scaleFactor)
-        let mapViewHeightInPixels = Double(mapView.bounds.height * scaleFactor)
-        let centerPoint2D = Point2D(x: mapViewWidthInPixels / 2,
-                                    y: mapViewHeightInPixels / 2)
-
-        return mapView.viewToGeoCoordinates(viewCoordinates: centerPoint2D)!
+        return mapView.camera.state.targetCoordinates
     }
 
     private func getMapViewGeoBox() -> GeoBox {

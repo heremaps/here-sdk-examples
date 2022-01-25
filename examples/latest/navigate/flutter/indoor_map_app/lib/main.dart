@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020-2021 HERE Europe B.V.
+ * Copyright (C) 2020-2022 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -159,7 +159,7 @@ class MainPage extends StatelessWidget {
 
       // Hide the extruded building layer, so that it does not overlap
       // with the venues.
-      hereMapController.mapScene.setLayerState(MapSceneLayers.extrudedBuildings, MapSceneLayerState.hidden);
+      hereMapController.mapScene.setLayerVisibility(MapSceneLayers.extrudedBuildings, VisibilityState.hidden);
       // Create a venue engine object. Once the initialization is done,
       // a callback will be called.
       var venueEngine = VenueEngine(_onVenueEngineCreated);

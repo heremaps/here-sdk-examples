@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2021 HERE Europe B.V.
+ * Copyright (C) 2019-2022 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import UIKit
 class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
 
     @IBOutlet var mapView: MapView!
-   
+
     private let routeStartGeoCoordinates = GeoCoordinates(latitude: 52.520798, longitude: 13.409408)
     private let distanceInMeters: Double = 1000
 
@@ -36,7 +36,7 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
     private var isVisualNavigatorRenderingStarted = false
     private var isDefaultLocationIndicator = true
     private var myRoute: Route?
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -54,10 +54,10 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
         let camera = mapView.camera
         camera.lookAt(point: routeStartGeoCoordinates,
                       distanceInMeters: distanceInMeters)
-        
+
         startAppLogic()
     }
-        
+
     private func startAppLogic() {
         do {
             try routingEngine = RoutingEngine()
@@ -73,26 +73,22 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
         }
 
         // Enable a few map layers that might be useful to see for drivers.
-        mapView.mapScene.setLayerState(layerName: MapScene.Layers.trafficFlow,
-                                       newState: MapScene.LayerState.visible)
-        mapView.mapScene.setLayerState(layerName: MapScene.Layers.trafficIncidents,
-                                       newState: MapScene.LayerState.visible)
-        mapView.mapScene.setLayerState(layerName: MapScene.Layers.safetyCameras,
-                                       newState: MapScene.LayerState.visible)
-        mapView.mapScene.setLayerState(layerName: MapScene.Layers.vehicleRestrictions,
-                                       newState: MapScene.LayerState.visible)
-        
+        mapView.mapScene.setLayerVisibility(layerName: MapScene.Layers.trafficFlow, visibility: VisibilityState.visible)
+        mapView.mapScene.setLayerVisibility(layerName: MapScene.Layers.trafficIncidents, visibility: VisibilityState.visible)
+        mapView.mapScene.setLayerVisibility(layerName: MapScene.Layers.safetyCameras, visibility: VisibilityState.visible)
+        mapView.mapScene.setLayerVisibility(layerName: MapScene.Layers.vehicleRestrictions, visibility: VisibilityState.visible)
+
         defaultLocationIndicator = LocationIndicator()
         customLocationIndicator = createCustomLocationIndicator()
 
         // Show indicator on map. We start with the built-in default LocationIndicator.
         isDefaultLocationIndicator = true
         switchToPedestrianLocationIndicator()
-        
+
         showDialog(title: "Custom Navigation",
                    message: "Start / stop simulated route guidance. Toggle between custom / default LocationIndicator.")
     }
-    
+
     private func createCustomLocationIndicator() -> LocationIndicator {
         // Create an "assets" directory and add the folder with content via drag & drop.
         // Adjust file name and path as appropriate for your project.
@@ -100,7 +96,7 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
         let pedTextureFile = getResourceStringFromBundle(name: "custom_location_indicator_pedestrian", type: "png")
         let pedestrianMapMarker3DModel = MapMarker3DModel(geometryFilePath: pedGeometryFile,
                                                           textureFilePath: pedTextureFile)
-        
+
         let navGeometryFile = getResourceStringFromBundle(name: "custom_location_indicator_navigation", type: "obj")
         let navTextureFile = getResourceStringFromBundle(name: "custom_location_indicator_navigation", type: "png")
         let navigationMapMarker3DModel = MapMarker3DModel(geometryFilePath: navGeometryFile,
@@ -108,7 +104,7 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
 
         let locationIndicator = LocationIndicator()
         let scaleFactor: Double = 3
-        
+
         // Note: For this example app, we use only simulated location data.
         // Therefore, we do not create a custom LocationIndicator for
         // MarkerType.PEDESTRIAN_INACTIVE and MarkerType.NAVIGATION_INACTIVE.
@@ -122,7 +118,7 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
                                            type: LocationIndicator.MarkerType.navigation)
         return locationIndicator
     }
-    
+
     private func getResourceStringFromBundle(name: String, type: String) -> String {
         let bundle = Bundle(for: ViewController.self)
         let resourceUrl = bundle.url(forResource: name,
@@ -133,7 +129,7 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
 
         return resourceString
     }
-    
+
     // Calculate a fixed route for testing and start guidance simulation along the route.
     @IBAction func startButtonClicked(_ sender: Any) {
         let startWaypoint = Waypoint(coordinates: routeStartGeoCoordinates)
@@ -151,12 +147,12 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
             self.animateToRouteStart()
         }
     }
-    
+
     // Stop guidance simulation and switch pedestrian LocationIndicator on.
     @IBAction func stopButtonClicked(_ sender: Any) {
         stopGuidance()
     }
-    
+
     // Toogle between the default LocationIndicator and custom LocationIndicator.
     // The default LocationIndicator uses a 3D asset that is part of the HERE SDK.
     // The custom LocationIndicator uses different 3D assets, see asset folder.
@@ -171,7 +167,7 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
             switchToPedestrianLocationIndicator()
         }
     }
-    
+
     private func switchToPedestrianLocationIndicator() {
         if isDefaultLocationIndicator {
             defaultLocationIndicator?.enable(for: mapView)
@@ -181,14 +177,13 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
             defaultLocationIndicator?.disable();
             customLocationIndicator?.enable(for: mapView);
             customLocationIndicator?.locationIndicatorStyle = LocationIndicator.IndicatorStyle.pedestrian
-            visualNavigator?.customLocationIndicator = nil
         }
 
         // Set last location from LocationSimulator.
         defaultLocationIndicator?.updateLocation(getLastKnownLocationLocation())
         customLocationIndicator?.updateLocation(getLastKnownLocationLocation())
     }
-    
+
     private func switchToNavigationLocationIndicator() {
         if isDefaultLocationIndicator {
             // By default, the VisualNavigator adds a LocationIndicator on its own.
@@ -209,7 +204,7 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
 
         // Location is set by VisualNavigator for smooth interpolation.
     }
-    
+
     private func getLastKnownLocationLocation() -> Location {
         if lastKnownLocation == nil {
             // A LocationIndicator is intended to mark the user's current location,
@@ -223,7 +218,7 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
         // This location is taken from the LocationSimulator that provides locations along the route.
         return lastKnownLocation!
     }
-    
+
     private func animateToRouteStart() {
         // Animate to custom guidance perspective, centered on start location of route.
         let bearingInDegrees: Double? = nil
@@ -234,7 +229,7 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
                              animationOptions: MapCamera.FlyToOptions(),
                              animationDelegate: self)
     }
-    
+
     // Conforming to AnimationDelegate.
     func onAnimationStateChanged(state: AnimationState) {
         if (state == AnimationState.completed
@@ -242,12 +237,12 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
             startGuidance(route: myRoute!);
         }
     }
-    
+
     private func animateToDefaultMapPerspective() {
         // By setting nil we keep the current bearing rotation of the map.
         let bearingInDegrees: Double? = nil
         let tiltInDegrees: Double = 0
-        
+
         mapView.camera.flyTo(target: mapView.camera.state.targetCoordinates,
                              orientation: GeoOrientationUpdate(bearing: bearingInDegrees, tilt: tiltInDegrees),
                              distanceInMeters: distanceInMeters,
@@ -289,7 +284,7 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
 
         animateToDefaultMapPerspective()
     }
-    
+
     private func customizeGuidanceView() {
         // Set custom zoom level and tilt.
         let cameraDistanceInMeters: Double = 50 // Defaults to 150.
@@ -303,7 +298,7 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
                                                          cameraTiltInDegrees: cameraTiltInDegrees,
                                                          cameraBearingInDegrees: cameraBearingInDegrees)
     }
-    
+
     private func startRouteSimulation(route: Route) {
         // Make sure to stop an existing LocationSimulator before starting a new one.
         locationSimulator?.stop();
@@ -315,23 +310,23 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
         } catch let instantiationError {
             fatalError("Failed to initialize LocationSimulator. Cause: \(instantiationError)")
         }
-        
+
         locationSimulator?.delegate = self
         locationSimulator?.start()
     }
-    
+
     // Conforming to LocationDelegate.
     func onLocationUpdated(_ location: Location) {
         // Feed location data into the VisualNavigator.
         visualNavigator?.onLocationUpdated(location)
         lastKnownLocation = location
     }
-    
+
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         mapView.handleLowMemory()
     }
-    
+
     private func showDialog(title: String, message: String) {
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))

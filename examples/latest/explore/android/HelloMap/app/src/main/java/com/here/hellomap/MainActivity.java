@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2021 HERE Europe B.V.
+ * Copyright (C) 2019-2022 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import com.here.sdk.mapview.MapError;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
+import com.here.sdk.mapview.VisibilityState;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -88,8 +89,10 @@ public class MainActivity extends AppCompatActivity {
             public void onLoadScene(@Nullable MapError mapError) {
                 if (mapError == null) {
                     double distanceInMeters = 1000 * 10;
-                    mapView.getCamera().lookAt(
-                            new GeoCoordinates(52.530932, 13.384915), distanceInMeters);
+                    mapView.getCamera().lookAt(new GeoCoordinates(52.530932, 13.384915), distanceInMeters);
+
+                    // Optionally enable textured 3D landmarks.
+                    mapView.getMapScene().setLayerVisibility(MapScene.Layers.LANDMARKS, VisibilityState.VISIBLE);
                 } else {
                     Log.d(TAG, "Loading map failed: mapError: " + mapError.name());
                 }

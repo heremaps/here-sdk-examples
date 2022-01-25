@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2021 HERE Europe B.V.
+ * Copyright (C) 2019-2022 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -212,9 +212,11 @@ class OfflineMapsExample {
   Future<void> onSearchPlaceClicked() async {
     String queryString = "restaurants";
     GeoBox viewportGeoBox = _getMapViewGeoBox();
-    int maxItems = 30;
-    SearchOptions searchOptions = SearchOptions(LanguageCode.enUs, maxItems);
     TextQuery query = TextQuery.withBoxArea(queryString, viewportGeoBox);
+
+    SearchOptions searchOptions = SearchOptions.withDefaults();
+    searchOptions.languageCode = LanguageCode.enUs;
+    searchOptions.maxItems = 30;
 
     _offlineSearchEngine.searchByText(query, searchOptions, (SearchError? searchError, List<Place>? list) async {
       if (searchError != null) {

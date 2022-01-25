@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2021 HERE Europe B.V.
+ * Copyright (C) 2019-2022 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -132,8 +132,9 @@ class SearchExample {
   }
 
   Future<void> _getAddressForCoordinates(GeoCoordinates geoCoordinates) async {
-    int maxItems = 1;
-    SearchOptions reverseGeocodingOptions = SearchOptions(LanguageCode.enGb, maxItems);
+    SearchOptions reverseGeocodingOptions = SearchOptions.withDefaults();
+    reverseGeocodingOptions.languageCode = LanguageCode.enGb;
+    reverseGeocodingOptions.maxItems = 1;
 
     if (useOnlineSearchEngine) {
       _onlineSearchEngine.searchByCoordinates(geoCoordinates, reverseGeocodingOptions,
@@ -197,8 +198,9 @@ class SearchExample {
     GeoBox viewportGeoBox = _getMapViewGeoBox();
     TextQuery query = TextQuery.withBoxArea(queryString, viewportGeoBox);
 
-    int maxItems = 30;
-    SearchOptions searchOptions = SearchOptions(LanguageCode.enUs, maxItems);
+    SearchOptions searchOptions = SearchOptions.withDefaults();
+    searchOptions.languageCode = LanguageCode.enUs;
+    searchOptions.maxItems = 30;
 
     if (useOnlineSearchEngine) {
       _onlineSearchEngine.searchByText(query, searchOptions, (SearchError? searchError, List<Place>? list) async {
@@ -233,8 +235,10 @@ class SearchExample {
 
   Future<void> _autoSuggestExample() async {
     GeoCoordinates centerGeoCoordinates = _getMapViewCenter();
-    int maxItems = 5;
-    SearchOptions searchOptions = SearchOptions(LanguageCode.enUs, maxItems);
+
+    SearchOptions searchOptions = SearchOptions.withDefaults();
+    searchOptions.languageCode = LanguageCode.enUs;
+    searchOptions.maxItems = 5;
 
     if (useOnlineSearchEngine) {
       // Simulate a user typing a search term.
@@ -315,8 +319,9 @@ class SearchExample {
 
     AddressQuery query = AddressQuery.withAreaCenter(queryString, geoCoordinates);
 
-    int maxItems = 30;
-    SearchOptions geocodingOptions = SearchOptions(LanguageCode.deDe, maxItems);
+    SearchOptions geocodingOptions = SearchOptions.withDefaults();
+    geocodingOptions.languageCode = LanguageCode.deDe;
+    geocodingOptions.maxItems = 30;
 
     if (useOnlineSearchEngine) {
       _onlineSearchEngine.searchByAddress(query, geocodingOptions, (SearchError? searchError, List<Place>? list) async {

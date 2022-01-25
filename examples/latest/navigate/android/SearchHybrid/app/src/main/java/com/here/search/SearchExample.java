@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2021 HERE Europe B.V.
+ * Copyright (C) 2019-2022 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -147,9 +147,10 @@ public class SearchExample {
     }
 
     private void getAddressForCoordinates(GeoCoordinates geoCoordinates) {
-        int maxItems = 1;
-        SearchOptions reverseGeocodingOptions = new SearchOptions(LanguageCode.EN_GB, maxItems);
-
+        SearchOptions reverseGeocodingOptions = new SearchOptions();
+        reverseGeocodingOptions.languageCode = LanguageCode.EN_GB;
+        reverseGeocodingOptions.maxItems = 1;
+        
         if (isDeviceConnected()) {
             searchEngine.search(geoCoordinates, reverseGeocodingOptions, addressSearchCallback);
         } else {
@@ -211,8 +212,9 @@ public class SearchExample {
         GeoBox viewportGeoBox = getMapViewGeoBox();
         TextQuery query = new TextQuery(queryString, viewportGeoBox);
 
-        int maxItems = 30;
-        SearchOptions searchOptions = new SearchOptions(LanguageCode.EN_US, maxItems);
+        SearchOptions searchOptions = new SearchOptions();
+        searchOptions.languageCode = LanguageCode.EN_US;
+        searchOptions.maxItems = 30;
 
         if (isDeviceConnected()) {
             searchEngine.search(query, searchOptions, querySearchCallback);
@@ -283,8 +285,9 @@ public class SearchExample {
 
     private void autoSuggestExample() {
         GeoCoordinates centerGeoCoordinates = getMapViewCenter();
-        int maxItems = 5;
-        SearchOptions searchOptions = new SearchOptions(LanguageCode.EN_US, maxItems);
+        SearchOptions searchOptions = new SearchOptions();
+        searchOptions.languageCode = LanguageCode.EN_US;
+        searchOptions.maxItems = 5;
 
         if (isDeviceConnected()) {
             // Simulate a user typing a search term.
@@ -332,8 +335,9 @@ public class SearchExample {
 
         AddressQuery query = new AddressQuery(queryString, geoCoordinates);
 
-        int maxItems = 30;
-        SearchOptions options = new SearchOptions(LanguageCode.DE_DE, maxItems);
+        SearchOptions options = new SearchOptions();
+        options.languageCode = LanguageCode.DE_DE;
+        options.maxItems = 30;
 
         if (isDeviceConnected()) {
             searchEngine.search(query, options, geocodeAddressSearchCallback);
@@ -385,12 +389,7 @@ public class SearchExample {
     }
 
     private GeoCoordinates getMapViewCenter() {
-        GeoCoordinates centerGeoCoordinates = mapView.viewToGeoCoordinates(new Point2D(mapView.getWidth() / 2, mapView.getHeight() / 2));
-        if (centerGeoCoordinates == null) {
-            // Should never happen for center coordinates.
-            throw new RuntimeException("CenterGeoCoordinates are null");
-        }
-        return centerGeoCoordinates;
+        return mapView.getCamera().getState().targetCoordinates;
     }
 
     private GeoBox getMapViewGeoBox() {
