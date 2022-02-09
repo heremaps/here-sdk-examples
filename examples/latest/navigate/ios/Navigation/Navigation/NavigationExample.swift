@@ -164,7 +164,7 @@ class NavigationExample : NavigableLocationDelegate,
     func getRoadName(maneuver: Maneuver) -> String {
         let currentRoadTexts = maneuver.roadTexts
         let nextRoadTexts = maneuver.nextRoadTexts
-        
+
         let currentRoadName = currentRoadTexts.names.defaultValue()
         let currentRoadNumber = currentRoadTexts.numbers.defaultValue()
         let nextRoadName = nextRoadTexts.names.defaultValue()
@@ -233,7 +233,7 @@ class NavigationExample : NavigableLocationDelegate,
         let speedLimit = getCurrentSpeedLimit(speedLimit)
 
         if speedLimit == nil {
-            print("Warning: Speed limits unkown, data could not be retrieved.")
+            print("Warning: Speed limits unknown, data could not be retrieved.")
         } else if speedLimit == 0 {
             print("No speed limits on this road! Drive as fast as you feel safe ...")
         } else {

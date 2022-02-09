@@ -164,7 +164,7 @@ class App : LongPressDelegate {
 
     private func showRouteOnMap(route: Route) {
         // Show route as polyline.
-        let routeGeoPolyline = try! GeoPolyline(vertices: route.polyline)
+        let routeGeoPolyline = route.geometry
         let routeMapPolyline = MapPolyline(geometry: routeGeoPolyline,
                                            widthInPixels: 20,
                                            color: UIColor(red: 0,

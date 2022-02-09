@@ -181,7 +181,7 @@ class RoutingExample {
 
     private func showRouteOnMap(route: Route) {
         // Show route as polyline.
-        let routeGeoPolyline = try! GeoPolyline(vertices: route.polyline)
+        let routeGeoPolyline = route.geometry
         let routeMapPolyline = MapPolyline(geometry: routeGeoPolyline,
                                            widthInPixels: 20,
                                            color: UIColor(red: 0,
@@ -200,7 +200,7 @@ class RoutingExample {
     private func searchAlongARoute(route: Route) {
         // We specify here that we only want to include results
         // within a max distance of xx meters from any point of the route.
-        let routeCorridor = GeoCorridor(polyline: route.polyline,
+        let routeCorridor = GeoCorridor(polyline: route.geometry.vertices,
                                         halfWidthInMeters: Int32(200))
         let textQuery = TextQuery("charging station",
                                   in: routeCorridor,

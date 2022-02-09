@@ -223,7 +223,7 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
         // Animate to custom guidance perspective, centered on start location of route.
         let bearingInDegrees: Double? = nil
         let tiltInDegrees: Double = 70
-        mapView.camera.flyTo(target: myRoute!.polyline.first!, // The first coordinate marks the start location of the route.
+        mapView.camera.flyTo(target: myRoute!.geometry.vertices.first!, // The first coordinate marks the start location of the route.
                              orientation: GeoOrientationUpdate(bearing: bearingInDegrees, tilt: tiltInDegrees),
                              distanceInMeters: 50,
                              animationOptions: MapCamera.FlyToOptions(),

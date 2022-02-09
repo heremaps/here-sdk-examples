@@ -275,7 +275,7 @@ public class MainActivity extends AppCompatActivity {
         double tiltInDegrees = 70;
         mapView.getCamera().flyTo(
                 // The first coordinate marks the start location of the route.
-                route.getPolyline().get(0),
+                route.getGeometry().vertices.get(0),
                 new GeoOrientationUpdate(bearingInDegrees, tiltInDegrees),
                 50,
                 new FlyToOptions(),

@@ -246,7 +246,7 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
     double tiltInDegrees = 70;
     _hereMapController!.camera.flyToWithOptionsAndGeoOrientationAndDistanceAndListener(
         // The first coordinate marks the start location of the route.
-        route.polyline.first,
+        route.geometry.vertices.first,
         GeoOrientationUpdate(bearingInDegrees, tiltInDegrees),
         50,
         MapCameraFlyToOptions.withDefaults(),

@@ -38,7 +38,7 @@ class SearchExample: TapDelegate,
         self.mapView = mapView
         let camera = mapView.camera
         camera.lookAt(point: GeoCoordinates(latitude: 52.520798, longitude: 13.409408),
-                      distanceInMeters: 1000 * 10)
+                      distanceInMeters: 5000)
 
         do {
             try searchEngine = SearchEngine()
@@ -108,6 +108,10 @@ class SearchExample: TapDelegate,
     // Completion handler to receive search results.
     func onSearchCompleted(error: SearchError?, items: [Place]?) {
         if let searchError = error {
+            // Note: When using the OfflineSearchEngine, the HERE SDK searches only on cached map data and
+            // search results may not be available for all zoom levels.
+            // Please also note that it may take time until the required map data is loaded.
+            // Subsequently, the cache is filled when a user pans and zooms the map.
             showDialog(title: "Search", message: "Error: \(searchError)")
             return
         }

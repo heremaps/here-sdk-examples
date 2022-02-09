@@ -21,12 +21,13 @@ package com.here.navigation;
 
 import android.content.Context;
 
+import androidx.appcompat.app.AlertDialog;
+
 import com.google.android.material.snackbar.Snackbar;
 import com.here.sdk.core.Color;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.GeoPolyline;
 import com.here.sdk.core.Location;
-import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.gestures.GestureState;
 import com.here.sdk.mapview.MapImage;
 import com.here.sdk.mapview.MapImageFactory;
@@ -39,8 +40,6 @@ import com.here.sdk.routing.Waypoint;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
-import androidx.appcompat.app.AlertDialog;
 
 // An app that allows to calculate a route and start navigation, using either platform positioning or
 // simulated locations.
@@ -174,14 +173,7 @@ public class App {
 
     private void showRouteOnMap(Route route) {
         // Show route as polyline.
-        GeoPolyline routeGeoPolyline;
-        try {
-            routeGeoPolyline = new GeoPolyline(route.getPolyline());
-        } catch (InstantiationErrorException e) {
-            // It should never happen that the route polyline contains less than two vertices.
-            return;
-        }
-
+        GeoPolyline routeGeoPolyline = route.getGeometry();
         float widthInPixels = 20;
         MapPolyline routeMapPolyline = new MapPolyline(routeGeoPolyline,
                 widthInPixels,

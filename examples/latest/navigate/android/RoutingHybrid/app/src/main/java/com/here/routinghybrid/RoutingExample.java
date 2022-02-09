@@ -20,10 +20,11 @@
 package com.here.routinghybrid;
 
 import android.content.Context;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import android.util.Log;
 import android.widget.Toast;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 
 import com.here.sdk.core.Color;
 import com.here.sdk.core.GeoCoordinates;
@@ -163,14 +164,7 @@ public class RoutingExample {
 
     private void showRouteOnMap(Route route) {
         // Show route as polyline.
-        GeoPolyline routeGeoPolyline;
-        try {
-            routeGeoPolyline = new GeoPolyline(route.getPolyline());
-        } catch (InstantiationErrorException e) {
-            // It should never happen that a route polyline contains less than two vertices.
-            return;
-        }
-
+        GeoPolyline routeGeoPolyline = route.getGeometry();
         float widthInPixels = 20;
         MapPolyline routeMapPolyline = new MapPolyline(routeGeoPolyline,
                 widthInPixels,

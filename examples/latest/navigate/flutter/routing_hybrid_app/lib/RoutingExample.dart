@@ -85,7 +85,7 @@ class RoutingExample {
         // When error is null, it is guaranteed that the list is not empty.
         here.Route route = routeList!.first;
         _showRouteDetails(route);
-        _showRouteOnMap(route, route.polyline.first, route.polyline.last);
+        _showRouteOnMap(route);
         _logRouteViolations(route);
       } else {
         var error = routingError.toString();
@@ -118,7 +118,7 @@ class RoutingExample {
         // When error is null, it is guaranteed that the list is not empty.
         here.Route route = routeList!.first;
         _showRouteDetails(route);
-        _showRouteOnMap(route, route.polyline.first, route.polyline.last);
+        _showRouteOnMap(route);
         _logRouteViolations(route);
       } else {
         var error = routingError.toString();
@@ -192,15 +192,16 @@ class RoutingExample {
     return '$kilometers.$remainingMeters km';
   }
 
-  _showRouteOnMap(here.Route route, GeoCoordinates startGeoCoordinates, GeoCoordinates destinationGeoCoordinates) {
+  _showRouteOnMap(here.Route route) {
     // Show route as polyline.
-    GeoPolyline routeGeoPolyline = GeoPolyline(route.polyline);
-
+    GeoPolyline routeGeoPolyline = route.geometry;
     double widthInPixels = 20;
     MapPolyline routeMapPolyline = MapPolyline(routeGeoPolyline, widthInPixels, Color.fromARGB(160, 0, 144, 138));
-
     _hereMapController.mapScene.addMapPolyline(routeMapPolyline);
     _mapPolylines.add(routeMapPolyline);
+
+    GeoCoordinates startGeoCoordinates = route.geometry.vertices.first;
+    GeoCoordinates destinationGeoCoordinates = route.geometry.vertices.last;
 
     // Draw a circle to indicate starting point and destination.
     _addCircleMapMarker(startGeoCoordinates, "assets/green_dot.png");

@@ -133,13 +133,7 @@ public class RoutingExample {
 
     private void showRouteOnMap(Route route) {
         // Show route as polyline.
-        GeoPolyline routeGeoPolyline;
-        try {
-            routeGeoPolyline = new GeoPolyline(route.getPolyline());
-        } catch (InstantiationErrorException e) {
-            // It should never happen that the route polyline contains less than two vertices.
-            return;
-        }
+        GeoPolyline routeGeoPolyline = route.getGeometry();
         MapPolylineStyle mapPolylineStyle = new MapPolylineStyle();
         mapPolylineStyle.setColor(0x00908AA0, PixelFormat.RGBA_8888);
         mapPolylineStyle.setWidthInPixels(10);
