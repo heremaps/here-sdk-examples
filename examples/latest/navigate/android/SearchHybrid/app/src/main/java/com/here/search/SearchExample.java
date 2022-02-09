@@ -74,7 +74,7 @@ public class SearchExample {
         this.context = context;
         this.mapView = mapView;
         camera = mapView.getCamera();
-        double distanceInMeters = 1000 * 10;
+        double distanceInMeters = 5000;
         camera.lookAt(new GeoCoordinates(52.520798, 13.409408), distanceInMeters);
 
         try {
@@ -227,6 +227,10 @@ public class SearchExample {
         @Override
         public void onSearchCompleted(@Nullable SearchError searchError, @Nullable List<Place> list) {
             if (searchError != null) {
+                // Note: When using the OfflineSearchEngine, the HERE SDK searches only on cached map data and
+                // search results may not be available for all zoom levels.
+                // Please also note that it may take time until the required map data is loaded.
+                // Subsequently, the cache is filled when a user pans and zooms the map.
                 showDialog("Search", "Error: " + searchError.toString());
                 return;
             }

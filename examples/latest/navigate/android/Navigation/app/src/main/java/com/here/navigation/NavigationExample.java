@@ -265,7 +265,7 @@ public class NavigationExample {
                 Double currentSpeedLimit = getCurrentSpeedLimit(speedLimit);
 
                 if (currentSpeedLimit == null) {
-                    Log.d(TAG, "Warning: Speed limits unkown, data could not be retrieved.");
+                    Log.d(TAG, "Warning: Speed limits unknown, data could not be retrieved.");
                 } else if (currentSpeedLimit == 0) {
                     Log.d(TAG, "No speed limits on this road! Drive as fast as you feel safe ...");
                 } else {

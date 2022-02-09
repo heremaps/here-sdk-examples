@@ -244,14 +244,7 @@ public class EVRoutingExample {
 
     private void showRouteOnMap(Route route) {
         // Show route as polyline.
-        GeoPolyline routeGeoPolyline;
-        try {
-            routeGeoPolyline = new GeoPolyline(route.getPolyline());
-        } catch (InstantiationErrorException e) {
-            // It should never happen that a route polyline contains less than two vertices.
-            return;
-        }
-
+        GeoPolyline routeGeoPolyline = route.getGeometry();
         float widthInPixels = 20;
         MapPolyline routeMapPolyline = new MapPolyline(routeGeoPolyline,
                 widthInPixels,
@@ -270,7 +263,7 @@ public class EVRoutingExample {
         // We specify here that we only want to include results
         // within a max distance of xx meters from any point of the route.
         int halfWidthInMeters = 200;
-        GeoCorridor routeCorridor = new GeoCorridor(route.getPolyline(), halfWidthInMeters);
+        GeoCorridor routeCorridor = new GeoCorridor(route.getGeometry().vertices, halfWidthInMeters);
         TextQuery textQuery = new TextQuery("charging station", routeCorridor,
                 mapView.getCamera().getState().targetCoordinates);
 

@@ -1,4 +1,4 @@
-This example app shows how to load custom raster layers. You can find how this is done in [CustomRasterLayersExample.java](app/src/main/java/com/here/customrasterlayers/CustomRasterLayersExample.java).
+This example app shows how to load custom raster layers. You can find how this is done in [CustomRasterLayersExample.java](app/src/main/java/com/here/sdk/customrasterlayers/CustomRasterLayersExample.java). 
 
 Build instructions:
 -------------------

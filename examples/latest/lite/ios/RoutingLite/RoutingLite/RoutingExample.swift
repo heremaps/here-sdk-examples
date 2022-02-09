@@ -94,7 +94,7 @@ class RoutingExample {
 
     private func showRouteOnMap(route: Route) {
         // Show route as polyline.
-        let routeGeoPolyline = try! GeoPolyline(vertices: route.polyline)
+        let routeGeoPolyline = route.geometry
         let mapPolylineStyle = MapPolylineStyleLite()
         mapPolylineStyle.setColor(0x00908AA0, encoding: .rgba8888)
         mapPolylineStyle.setWidthInPixels(inPixels: 10)

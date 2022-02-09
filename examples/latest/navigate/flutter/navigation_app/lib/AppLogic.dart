@@ -121,8 +121,7 @@ class AppLogic {
     }
 
     // Show route as polyline.
-    GeoPolyline routeGeoPolyline = GeoPolyline(route.polyline);
-
+    GeoPolyline routeGeoPolyline = route.geometry;
     double widthInPixels = 20;
     MapPolyline routeMapPolyline = MapPolyline(
       routeGeoPolyline,

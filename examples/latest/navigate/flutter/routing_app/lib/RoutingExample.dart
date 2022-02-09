@@ -114,11 +114,9 @@ class RoutingExample {
 
   _showRouteOnMap(here.Route route) {
     // Show route as polyline.
-    GeoPolyline routeGeoPolyline = GeoPolyline(route.polyline);
-
+    GeoPolyline routeGeoPolyline = route.geometry;
     double widthInPixels = 20;
     MapPolyline routeMapPolyline = MapPolyline(routeGeoPolyline, widthInPixels, Color.fromARGB(160, 0, 144, 138));
-
     _hereMapController.mapScene.addMapPolyline(routeMapPolyline);
     _mapPolylines.add(routeMapPolyline);
   }

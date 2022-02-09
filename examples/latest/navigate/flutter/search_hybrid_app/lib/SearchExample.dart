@@ -45,7 +45,7 @@ class SearchExample {
       : _showDialog = showDialogCallback,
         _hereMapController = hereMapController,
         _camera = hereMapController.camera {
-    double distanceToEarthInMeters = 4000;
+    double distanceToEarthInMeters = 5000;
     _camera.lookAtPointWithDistance(GeoCoordinates(52.520798, 13.409408), distanceToEarthInMeters);
 
     try {
@@ -216,6 +216,10 @@ class SearchExample {
   // Note that this can be called by the online or offline search engine.
   void _handleSearchResults(SearchError? searchError, List<Place>? list, String queryString) {
     if (searchError != null) {
+      // Note: When using the OfflineSearchEngine, the HERE SDK searches only on cached map data and
+      // search results may not be available for all zoom levels.
+      // Please also note that it may take time until the required map data is loaded.
+      // Subsequently, the cache is filled when a user pans and zooms the map.
       _showDialog("Search", "Error: " + searchError.toString());
       return;
     }

@@ -303,7 +303,7 @@ class NavigationExample {
       double? currentSpeedLimit = _getCurrentSpeedLimit(speedLimit);
 
       if (currentSpeedLimit == null) {
-        print("Warning: Speed limits unkown, data could not be retrieved.");
+        print("Warning: Speed limits unknown, data could not be retrieved.");
       } else if (currentSpeedLimit == 0) {
         print("No speed limits on this road! Drive as fast as you feel safe ...");
       } else {
