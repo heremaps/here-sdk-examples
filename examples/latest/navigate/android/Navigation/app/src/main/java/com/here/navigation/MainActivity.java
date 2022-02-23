@@ -22,12 +22,14 @@ package com.here.navigation;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import androidx.annotation.NonNull;
@@ -40,7 +42,6 @@ import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
 import com.here.sdk.mapview.VisibilityState;
-import com.here.sdk.mapview.WatermarkPlacement;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -49,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     private PermissionsRequestor permissionsRequestor;
     private MapView mapView;
     private App app;
+    private TextView messageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,11 +66,12 @@ public class MainActivity extends AppCompatActivity {
 
         // Get a MapView instance from layout.
         mapView = findViewById(R.id.map_view);
-        mapView.onCreate(savedInstanceState);
+        // Get a TextView instance from layout to show selected log messages.
+        messageView = findViewById(R.id.message_view);
+        // Making the textView scrollable.
+        messageView.setMovementMethod(new ScrollingMovementMethod());
 
-        // Reposition HERE logo, so it's not hidden by Android's Snackbar.
-        long bottomCenterMarginInPixels = (long) (getResources().getDisplayMetrics().density * 80);
-        mapView.setWatermarkPosition(WatermarkPlacement.BOTTOM_CENTER, bottomCenterMarginInPixels);
+        mapView.onCreate(savedInstanceState);
 
         handleAndroidPermissions();
 
@@ -136,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
             public void onLoadScene(@Nullable MapError mapError) {
                 if (mapError == null) {
                     // Start the app that contains the logic to calculate routes & start TBT guidance.
-                    app = new App(MainActivity.this, mapView);
+                    app = new App(MainActivity.this, mapView, messageView);
 
                     // Enable traffic flows by default.
                     mapView.getMapScene().setLayerVisibility(MapScene.Layers.TRAFFIC_FLOW, VisibilityState.VISIBLE);

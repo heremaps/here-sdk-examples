@@ -49,10 +49,12 @@ class NavigationExample : NavigableLocationDelegate,
     private let voiceAssistant: VoiceAssistant
     private var lastMapMatchedLocation: MapMatchedLocation?
     private var previousManeuverIndex: Int32 = -1
+    private var messageTextView: UITextView
 
-    init(viewController: UIViewController, mapView: MapView) {
+    init(viewController: UIViewController, mapView: MapView, messageTextView: UITextView) {
         self.viewController = viewController
         self.mapView = mapView
+        self.messageTextView = messageTextView
 
         do {
             // Without a route set, this starts tracking mode.
@@ -123,7 +125,7 @@ class NavigationExample : NavigableLocationDelegate,
         // [SectionProgress] is guaranteed to be non-empty.
         let distanceToDestination = routeProgress.sectionProgress.last!.remainingDistanceInMeters
         print("Distance to destination in meters: \(distanceToDestination)")
-        let trafficDelayAhead = routeProgress.sectionProgress.last!.trafficDelayInSeconds
+        let trafficDelayAhead = routeProgress.sectionProgress.last!.trafficDelay
         print("Traffic delay ahead in seconds: \(trafficDelayAhead)")
 
         // Contains the progress for the next maneuver ahead and the next-next maneuvers, if any.
@@ -358,7 +360,6 @@ class NavigationExample : NavigableLocationDelegate,
     private func logLaneRecommendations(_ lanes: [Lane]) {
         // The lane at index 0 is the leftmost lane adjacent to the middle of the road.
         // The lane at the last index is the rightmost lane.
-        // Note: Left-hand countries are not yet supported.
         var laneNumber = 0
         for lane in lanes {
             // This state is only possible if laneAssistance.lanesForNextNextManeuver is not empty.
@@ -514,10 +515,10 @@ class NavigationExample : NavigableLocationDelegate,
 
         if isSimulated {
             enableRoutePlayback(route: route)
-            showMessage("Starting simulated navgation.")
+            showMessage("Starting simulated navigation.")
         } else {
             enableDevicePositioning()
-            showMessage("Starting navgation.")
+            showMessage("Starting navigation.")
         }
 
         startDynamicSearchForBetterRoutes(route)
@@ -612,20 +613,12 @@ class NavigationExample : NavigableLocationDelegate,
     }
 
     // A permanent view to show log content.
-    private var messageTextView = UITextView()
     private func showMessage(_ message: String) {
         messageTextView.text = message
         messageTextView.textColor = .white
-        messageTextView.backgroundColor = UIColor(red: 0, green: 144 / 255, blue: 138 / 255, alpha: 1)
         messageTextView.layer.cornerRadius = 8
         messageTextView.isEditable = false
         messageTextView.textAlignment = NSTextAlignment.center
         messageTextView.font = .systemFont(ofSize: 14)
-        messageTextView.frame = CGRect(x: 0, y: 0, width: mapView.frame.width * 0.9, height: 50)
-        messageTextView.center = CGPoint(x: mapView.frame.width * 0.5, y: mapView.frame.height * 0.9)
-
-        UIView.transition(with: mapView, duration: 0.2, options: [.transitionCrossDissolve], animations: {
-            self.mapView.addSubview(self.messageTextView)
-        })
     }
 }

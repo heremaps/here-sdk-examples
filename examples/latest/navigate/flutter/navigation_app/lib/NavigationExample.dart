@@ -36,15 +36,18 @@ import 'LanguageCodeConverter.dart';
 
 // Shows how to start and stop turn-by-turn navigation along a route.
 class NavigationExample {
-  HereMapController _hereMapController;
+  final HereMapController _hereMapController;
   late VisualNavigator _visualNavigator;
   late HEREPositioningSimulator _locationSimulationProvider;
   late HEREPositioningProvider _herePositioningProvider;
   late DynamicRoutingEngine _dynamicRoutingEngine;
   MapMatchedLocation? _lastMapMatchedLocation;
   int _previousManeuverIndex = -1;
+  final ValueChanged<String> _updateMessageState;
 
-  NavigationExample(HereMapController hereMapController) : _hereMapController = hereMapController {
+  NavigationExample(HereMapController hereMapController, ValueChanged<String> updateMessageState)
+      : _hereMapController = hereMapController,
+        _updateMessageState = updateMessageState {
     try {
       _visualNavigator = VisualNavigator();
     } on InstantiationException {
@@ -71,7 +74,7 @@ class NavigationExample {
   void _createDynamicRoutingEngine() {
     var dynamicRoutingOptions = DynamicRoutingEngineOptions.withAllDefaults();
     // We want an update for each poll iteration, so we specify 0 difference.
-    dynamicRoutingOptions.minTimeDifferenceInSeconds = 0;
+    dynamicRoutingOptions.minTimeDifference = Duration.zero;
     dynamicRoutingOptions.minTimeDifferencePercentage = 0.0;
     dynamicRoutingOptions.pollIntervalInMinutes = 5;
 
@@ -120,15 +123,15 @@ class NavigationExample {
           route,
           // Notifies on traffic-optimized routes that are considered better than the current route.
           DynamicRoutingListener((Route newRoute, int etaDifferenceInSeconds, int distanceDifferenceInMeters) {
-            print('DynamicRoutingEngine: Calculated a new route.');
-            print('DynamicRoutingEngine: etaDifferenceInSeconds: $etaDifferenceInSeconds.');
-            print('DynamicRoutingEngine: distanceDifferenceInMeters: $distanceDifferenceInMeters.');
+            _updateMessageState("DynamicRoutingEngine: Calculated a new route");
+            print("DynamicRoutingEngine: etaDifferenceInSeconds: $etaDifferenceInSeconds.");
+            print("DynamicRoutingEngine: distanceDifferenceInMeters: $distanceDifferenceInMeters.");
 
             // An implementation can decide to switch to the new route:
             // _visualNavigator.route = newRoute;
           }, (RoutingError routingError) {
             final error = routingError.toString();
-            print('Error while dynamically searching for a better route: $error');
+            _updateMessageState("Error while dynamically searching for a better route: $error");
           }));
     } on DynamicRoutingEngineStartException {
       throw Exception("Start of DynamicRoutingEngine failed. Is the RouteHandle missing?");
@@ -156,6 +159,7 @@ class NavigationExample {
     _locationSimulationProvider.stop();
     _dynamicRoutingEngine.stop();
     startTracking();
+    _updateMessageState("Tracking device's location.");
   }
 
   void detach() {
@@ -211,7 +215,7 @@ class NavigationExample {
       // sectionProgressList is guaranteed to be non-empty.
       SectionProgress lastSectionProgress = sectionProgressList.elementAt(sectionProgressList.length - 1);
       print('Distance to destination in meters: ' + lastSectionProgress.remainingDistanceInMeters.toString());
-      print('Traffic delay ahead in seconds: ' + lastSectionProgress.trafficDelayInSeconds.toString());
+      print('Traffic delay ahead in seconds: ' + lastSectionProgress.trafficDelay.inSeconds.toString());
 
       // Contains the progress for the next maneuver ahead and the next-next maneuvers, if any.
       List<ManeuverProgress> nextManeuverList = routeProgress.maneuverProgress;
@@ -239,10 +243,10 @@ class NavigationExample {
           ' meters.';
 
       if (_previousManeuverIndex != nextManeuverIndex) {
-        print('New maneuver: $logMessage');
+        _updateMessageState('New maneuver: $logMessage');
       } else {
         // A maneuver update contains a different distance to reach the next maneuver.
-        print('Maneuver update: $logMessage');
+        _updateMessageState("Maneuver update: $logMessage");
       }
 
       _previousManeuverIndex = nextManeuverIndex;
@@ -261,7 +265,7 @@ class NavigationExample {
       // Handle results from onNavigableLocationUpdated():
       MapMatchedLocation? mapMatchedLocation = currentNavigableLocation.mapMatchedLocation;
       if (mapMatchedLocation == null) {
-        print('This new location could not be map-matched. Are you off-road?');
+        print("This new location could not be map-matched. Are you off-road?");
         return;
       }
 
@@ -275,7 +279,7 @@ class NavigationExample {
     // Notifies when the destination of the route is reached.
     _visualNavigator.destinationReachedListener = DestinationReachedListener(() {
       // Handle results from onDestinationReached().
-      print('Destination reached. Stopping turn-by-turn navigation.');
+      _updateMessageState("Destination reached. Stopping turn-by-turn navigation.");
       stopNavigation();
     });
 
@@ -283,17 +287,17 @@ class NavigationExample {
     _visualNavigator.milestoneStatusListener = MilestoneStatusListener((Milestone milestone, MilestoneStatus milestoneStatus) {
       // Handle results from onMilestoneStatusUpdated().
       if (milestone.waypointIndex != null && milestoneStatus == MilestoneStatus.reached) {
-        print('A user-defined waypoint was reached, index of waypoint: ' + milestone.waypointIndex.toString());
-        print('Original coordinates: ' + milestone.originalCoordinates.toString());
+        print("A user-defined waypoint was reached, index of waypoint: " + milestone.waypointIndex.toString());
+        print("Original coordinates: " + milestone.originalCoordinates.toString());
       } else if (milestone.waypointIndex != null && milestoneStatus == MilestoneStatus.missed) {
-        print('A user-defined waypoint was missed, index of waypoint: ' + milestone.waypointIndex.toString());
-        print('Original coordinates: ' + milestone.originalCoordinates.toString());
+        print("A user-defined waypoint was missed, index of waypoint: " + milestone.waypointIndex.toString());
+        print("Original coordinates: " + milestone.originalCoordinates.toString());
       } else if (milestone.waypointIndex == null && milestoneStatus == MilestoneStatus.reached) {
         // For example, when transport mode changes due to a ferry a system-defined waypoint may have been added.
-        print('A system-defined waypoint was reached at: ' + milestone.mapMatchedCoordinates.toString());
+        print("A system-defined waypoint was reached at: " + milestone.mapMatchedCoordinates.toString());
       } else if (milestone.waypointIndex == null && milestoneStatus == MilestoneStatus.reached) {
         // For example, when transport mode changes due to a ferry a system-defined waypoint may have been added.
-        print('A system-defined waypoint was missed at: ' + milestone.mapMatchedCoordinates.toString());
+        print("A system-defined waypoint was missed at: " + milestone.mapMatchedCoordinates.toString());
       }
     });
 
@@ -321,11 +325,11 @@ class NavigationExample {
         // alternatively use a 3rd party plugin to play an alert sound of your choice.
         // Note that this may not include temporary special speed limits, see SpeedLimitListener.
         SystemSound.play(SystemSoundType.click);
-        print('Speed limit exceeded.');
+        print("Speed limit exceeded.");
       }
 
       if (speedWarningStatus == SpeedWarningStatus.speedLimitRestored) {
-        print('Driver is again slower than current speed limit (plus an optional offset.)');
+        print("Driver is again slower than current speed limit (plus an optional offset.)");
       }
     });
 
@@ -353,12 +357,12 @@ class NavigationExample {
             ? routeDeviation.lastLocationOnRoute!.originalLocation.coordinates
             : lastMapMatchedLocationOnRoute.coordinates;
       } else {
-        print('User was never following the route. So, we take the start of the route instead.');
+        print("User was never following the route. So, we take the start of the route instead.");
         lastGeoCoordinatesOnRoute = route.sections.first.departurePlace.originalCoordinates!;
       }
 
       int distanceInMeters = currentGeoCoordinates.distanceTo(lastGeoCoordinatesOnRoute) as int;
-      print('RouteDeviation in meters is ' + distanceInMeters.toString());
+      print("RouteDeviation in meters is " + distanceInMeters.toString());
     });
 
     // Notifies on voice maneuver messages.
@@ -366,7 +370,7 @@ class NavigationExample {
       // Handle results lambda_onManeuverNotification().
       // Flutter itself does not provide a text-to-speech engine. Use one of the available TTS plugins to speak
       // the voiceText message.
-      print('Voice guidance text: $voiceText');
+      print("Voice guidance text: $voiceText");
     });
 
     // Notifies on the attributes of the current road including usage and physical characteristics.
@@ -375,36 +379,36 @@ class NavigationExample {
       // This is called whenever any road attribute has changed.
       // If all attributes are unchanged, no new event is fired.
       // Note that a road can have more than one attribute at the same time.
-      print('Received road attributes update.');
+      print("Received road attributes update.");
 
       if (roadAttributes.isBridge) {
         // Identifies a structure that allows a road, railway, or walkway to pass over another road, railway,
         // waterway, or valley serving map display and route guidance functionalities.
-        print('Road attributes: This is a bridge.');
+        print("Road attributes: This is a bridge.");
       }
       if (roadAttributes.isControlledAccess) {
         // Controlled access roads are roads with limited entrances and exits that allow uninterrupted
         // high-speed traffic flow.
-        print('Road attributes: This is a controlled access road.');
+        print("Road attributes: This is a controlled access road.");
       }
       if (roadAttributes.isDirtRoad) {
         // Indicates whether the navigable segment is paved.
-        print('Road attributes: This is a dirt road.');
+        print("Road attributes: This is a dirt road.");
       }
       if (roadAttributes.isDividedRoad) {
         // Indicates if there is a physical structure or painted road marking intended to legally prohibit
         // left turns in right-side driving countries, right turns in left-side driving countries,
         // and U-turns at divided intersections or in the middle of divided segments.
-        print('Road attributes: This is a divided road.');
+        print("Road attributes: This is a divided road.");
       }
       if (roadAttributes.isNoThrough) {
         // Identifies a no through road.
-        print('Road attributes: This is a no through road.');
+        print("Road attributes: This is a no through road.");
       }
       if (roadAttributes.isPrivate) {
         // Private identifies roads that are not maintained by an organization responsible for maintenance of
         // public roads.
-        print('Road attributes: This is a private road.');
+        print("Road attributes: This is a private road.");
       }
       if (roadAttributes.isRamp) {
         // Range is a ramp: connects roads that do not intersect at grade.
@@ -414,19 +418,19 @@ class NavigationExample {
         // Indicates if vehicles have to drive on the right-hand side of the road or the left-hand side.
         // For example, in New York it is always true and in London always false as the United Kingdom is
         // a left-hand driving country.
-        print('Road attributes: isRightDrivingSide = ' + roadAttributes.isRightDrivingSide.toString());
+        print("Road attributes: isRightDrivingSide = " + roadAttributes.isRightDrivingSide.toString());
       }
       if (roadAttributes.isRoundabout) {
         // Indicates the presence of a roundabout.
-        print('Road attributes: This is a roundabout.');
+        print("Road attributes: This is a roundabout.");
       }
       if (roadAttributes.isTollway) {
         // Identifies a road for which a fee must be paid to use the road.
-        print('Road attributes change: This is a road with toll costs.');
+        print("Road attributes change: This is a road with toll costs.");
       }
       if (roadAttributes.isTunnel) {
         // Identifies an enclosed (on all sides) passageway through or under an obstruction.
-        print('Road attributes: This is a tunnel.');
+        print("Road attributes: This is a tunnel.");
       }
     });
 
@@ -446,14 +450,14 @@ class NavigationExample {
       }
     });
 
-    // Notfies which lane(s) allow to follow the route.
+    // Notifies which lane(s) allow to follow the route.
     _visualNavigator.junctionViewLaneAssistanceListener =
         JunctionViewLaneAssistanceListener((JunctionViewLaneAssistance junctionViewLaneAssistance) {
       List<Lane> lanes = junctionViewLaneAssistance.lanesForNextJunction;
       if (lanes.isEmpty) {
-        print("You have passed the complex junction.");
+        _updateMessageState("You have passed the complex junction.");
       } else {
-        print("Attention, a complex junction is ahead.");
+        _updateMessageState("Attention, a complex junction is ahead.");
         logLaneRecommendations(lanes);
       }
     });
@@ -502,7 +506,6 @@ class NavigationExample {
   void logLaneRecommendations(List<Lane> lanes) {
     // The lane at index 0 is the leftmost lane adjacent to the middle of the road.
     // The lane at the last index is the rightmost lane.
-    // Note: Left-hand countries are not yet supported.
     int laneNumber = 0;
     for (Lane lane in lanes) {
       // This state is only possible if laneAssistance.lanesForNextNextManeuver is not empty.
@@ -528,14 +531,10 @@ class NavigationExample {
   }
 
   void setupSpeedWarnings() {
-    double lowSpeedOffsetInMetersPerSecond = 2;
-    double highSpeedOffsetInMetersPerSecond = 4;
-    double highSpeedBoundaryInMetersPerSecond = 25;
-    SpeedLimitOffset speedLimitOffset = SpeedLimitOffset(
-      lowSpeedOffsetInMetersPerSecond,
-      highSpeedOffsetInMetersPerSecond,
-      highSpeedBoundaryInMetersPerSecond,
-    );
+    SpeedLimitOffset speedLimitOffset = SpeedLimitOffset.withDefaults();
+    speedLimitOffset.lowSpeedOffsetInMetersPerSecond = 2;
+    speedLimitOffset.highSpeedOffsetInMetersPerSecond = 4;
+    speedLimitOffset.highSpeedBoundaryInMetersPerSecond = 25;
 
     _visualNavigator.speedWarningOptions = SpeedWarningOptions(speedLimitOffset);
   }

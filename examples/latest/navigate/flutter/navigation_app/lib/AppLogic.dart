@@ -27,21 +27,18 @@ import 'package:navigation_app/RouteCalculator.dart';
 
 import 'NavigationExample.dart';
 
-// A callback to notify the hosting widget.
-typedef ShowDialogFunction = void Function(String title, String message);
-
 // An app that allows to calculate a car route and start navigation using simulated or real locations.
 class AppLogic {
   MapPolyline? _calculatedRouteMapPolyline;
-  HereMapController _hereMapController;
-  NavigationExample _navigationExample;
-  ShowDialogFunction _showDialog;
-  RouteCalculator _routeCalculator;
+  final HereMapController _hereMapController;
+  final NavigationExample _navigationExample;
+  final RouteCalculator _routeCalculator;
+  final ValueChanged<String> _updateMessageState;
 
-  AppLogic(ShowDialogFunction showDialogCallback, HereMapController hereMapController)
-      : _showDialog = showDialogCallback,
-        _hereMapController = hereMapController,
-        _navigationExample = NavigationExample(hereMapController),
+  AppLogic(HereMapController hereMapController, ValueChanged<String> updateMessageState)
+      : _hereMapController = hereMapController,
+        _updateMessageState = updateMessageState,
+        _navigationExample = NavigationExample(hereMapController, updateMessageState),
         _routeCalculator = RouteCalculator();
 
   // Shows navigation simulation along a route.
@@ -73,7 +70,7 @@ class AppLogic {
   Future<void> _calculateRouteFromCurrentLocation(bool isSimulated) async {
     var currentLocation = _navigationExample.getLastKnownLocation();
     if (currentLocation == null) {
-      _showDialog('Error', 'No current location found.');
+      _updateMessageState("Error: No current location found.");
       return;
     }
 
@@ -99,7 +96,7 @@ class AppLogic {
         _startNavigationOnRoute(isSimulated, _calculatedRoute);
       } else {
         final error = routingError.toString();
-        _showDialog('Error', 'Error while calculating a route: $error');
+        _updateMessageState("Error while calculating a route: $error");
       }
     });
   }
@@ -107,9 +104,11 @@ class AppLogic {
   void _startNavigationOnRoute(bool isSimulated, HERE.Route route) {
     if (isSimulated) {
       // Starts simulated navigation from current location to a random destination.
+      _updateMessageState("Starting simulated navigation.");
       _navigationExample.startNavigationSimulation(route);
     } else {
       // Starts real navigation from current location to a random destination.
+      _updateMessageState("Starting navigation.");
       _navigationExample.startNavigation(route);
     }
   }

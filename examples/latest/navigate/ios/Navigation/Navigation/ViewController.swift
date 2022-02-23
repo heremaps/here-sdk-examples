@@ -24,6 +24,7 @@ final class ViewController: UIViewController {
 
     @IBOutlet private var mapView: MapView!
     @IBOutlet private var toggleTrackingButton: UIButton!
+    @IBOutlet private var messageTextView: UITextView!
 
     private var app: App!
     private var isMapSceneLoaded = false
@@ -41,7 +42,7 @@ final class ViewController: UIViewController {
         }
 
         // Start the app that contains the logic to calculate routes & start TBT guidance.
-        self.app = App(viewController: self, mapView: self.mapView!)
+        self.app = App(viewController: self, mapView: self.mapView!, messageTextView: self.messageTextView!)
         self.isMapSceneLoaded = true
 
         // Enable traffic flows by default.
