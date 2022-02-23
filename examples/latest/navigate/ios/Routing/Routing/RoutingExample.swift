@@ -80,21 +80,20 @@ class RoutingExample {
     }
 
     private func showRouteDetails(route: Route) {
-        let estimatedTravelTimeInSeconds = route.durationInSeconds
+        let estimatedTravelTimeInSeconds = route.duration
         let lengthInMeters = route.lengthInMeters
 
-        let routeDetails =
-            "Travel Time: " + formatTime(sec: estimatedTravelTimeInSeconds)
-                + ", Length: " + formatLength(meters: lengthInMeters)
+        let routeDetails = "Travel Time: " + formatTime(sec: estimatedTravelTimeInSeconds)
+                         + ", Length: " + formatLength(meters: lengthInMeters)
 
         showDialog(title: "Route Details", message: routeDetails)
     }
 
-    private func formatTime(sec: Int32) -> String {
-        let hours: Int32 = sec / 3600
-        let minutes: Int32 = (sec % 3600) / 60
+    private func formatTime(sec: Double) -> String {
+        let hours: Double = sec / 3600
+        let minutes: Double = (sec.truncatingRemainder(dividingBy: 3600)) / 60
 
-        return "\(hours):\(minutes)"
+        return "\(Int32(hours)):\(Int32(minutes))"
     }
 
     private func formatLength(meters: Int32) -> String {

@@ -169,7 +169,7 @@ class RoutingExample {
   }
 
   void _showRouteDetails(here.Route route) {
-    int estimatedTravelTimeInSeconds = route.durationInSeconds;
+    int estimatedTravelTimeInSeconds = route.duration.inSeconds;
     int lengthInMeters = route.lengthInMeters;
 
     String routeDetails =

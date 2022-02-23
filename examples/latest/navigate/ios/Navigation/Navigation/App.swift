@@ -38,10 +38,12 @@ class App : LongPressDelegate {
     private var startingWaypoint: Waypoint?
     private var destinationWaypoint: Waypoint?
     private var isLongpressDestination = false
+    private var messageTextView: UITextView
 
-    init(viewController: UIViewController, mapView: MapView) {
+    init(viewController: UIViewController, mapView: MapView, messageTextView: UITextView) {
         self.viewController = viewController
         self.mapView = mapView
+        self.messageTextView = messageTextView
 
         mapView.camera.lookAt(point: ConstantsEnum.DEFAULT_MAP_CENTER,
                               distanceInMeters: ConstantsEnum.DEFAULT_DISTANCE_IN_METERS)
@@ -49,7 +51,8 @@ class App : LongPressDelegate {
         routeCalculator = RouteCalculator()
 
         navigationExample = NavigationExample(viewController: viewController,
-                                              mapView: mapView)
+                                              mapView: mapView,
+                                              messageTextView: messageTextView)
         navigationExample.startLocationProvider()
 
         setLongPressGestureHandler()
@@ -135,12 +138,11 @@ class App : LongPressDelegate {
     }
 
     private func showRouteDetails(route: Route, isSimulated: Bool) {
-        let estimatedTravelTimeInSeconds = route.durationInSeconds
+        let estimatedTravelTimeInSeconds = route.duration
         let lengthInMeters = route.lengthInMeters
-
-        let routeDetails =
-            "Travel Time: " + formatTime(sec: estimatedTravelTimeInSeconds)
-                + ", Length: " + formatLength(meters: lengthInMeters)
+        
+        let routeDetails = "Travel Time: " + formatTime(sec: estimatedTravelTimeInSeconds)
+                         + ", Length: " + formatLength(meters: lengthInMeters)
 
         showStartNavigationDialog(title: "Route Details",
                                   message: routeDetails,
@@ -148,11 +150,11 @@ class App : LongPressDelegate {
                                   isSimulated: isSimulated)
     }
 
-    private func formatTime(sec: Int32) -> String {
-        let hours: Int32 = sec / 3600
-        let minutes: Int32 = (sec % 3600) / 60
+    private func formatTime(sec: Double) -> String {
+        let hours: Double = sec / 3600
+        let minutes: Double = sec.truncatingRemainder(dividingBy: 3600) / 60
 
-        return "\(hours):\(minutes)"
+        return "\(Int32(hours)):\(Int32(minutes))"
     }
 
     private func formatLength(meters: Int32) -> String {
@@ -269,28 +271,13 @@ class App : LongPressDelegate {
         viewController.present(alertController, animated: true)
     }
 
-    private var messageTextView = UITextView()
+    // A permanent view to show log content.
     private func showMessage(_ message: String) {
         messageTextView.text = message
         messageTextView.textColor = .white
-        messageTextView.backgroundColor = UIColor(red: 0, green: 144 / 255, blue: 138 / 255, alpha: 1)
         messageTextView.layer.cornerRadius = 8
         messageTextView.isEditable = false
         messageTextView.textAlignment = NSTextAlignment.center
         messageTextView.font = .systemFont(ofSize: 14)
-        messageTextView.frame = CGRect(x: 0, y: 0, width: mapView.frame.width * 0.9, height: 50)
-        messageTextView.center = CGPoint(x: mapView.frame.width * 0.5, y: mapView.frame.height * 0.9)
-
-        UIView.transition(with: mapView, duration: 0.2, options: [.transitionCrossDissolve], animations: {
-            self.mapView.addSubview(self.messageTextView)
-        })
-
-        // Hide message after 5 seconds.
-        let messageDurationInSeconds: Double = 5
-        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + messageDurationInSeconds) {
-            UIView.transition(with: self.mapView, duration: 0.2, options: [.transitionCrossDissolve], animations: {
-                self.messageTextView.removeFromSuperview()
-            })
-        }
     }
 }

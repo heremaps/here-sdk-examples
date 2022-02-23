@@ -148,17 +148,17 @@ class EVRoutingExample {
         switch (postAction.action) {
           case PostActionType.chargingSetup:
             print("EVDetails: At the end of this section you need to setup charging for " +
-                postAction.durationInSeconds.toString() +
+                postAction.duration.inSeconds.toString() +
                 " s.");
             break;
           case PostActionType.charging:
             print("EVDetails: At the end of this section you need to charge for " +
-                postAction.durationInSeconds.toString() +
+                postAction.duration.inSeconds.toString() +
                 " s.");
             break;
           case PostActionType.wait:
             print("EVDetails: At the end of this section you need to wait for " +
-                postAction.durationInSeconds.toString() +
+                postAction.duration.inSeconds.toString() +
                 " s.");
             break;
           default:

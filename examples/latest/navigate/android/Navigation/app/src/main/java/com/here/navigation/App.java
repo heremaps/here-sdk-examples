@@ -20,10 +20,9 @@
 package com.here.navigation;
 
 import android.content.Context;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
-
-import com.google.android.material.snackbar.Snackbar;
 import com.here.sdk.core.Color;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.GeoPolyline;
@@ -57,19 +56,22 @@ public class App {
     private boolean isLongpressDestination;
     private final RouteCalculator routeCalculator;
     private final NavigationExample navigationExample;
+    private final TextView messageView;
 
-    public App(Context context, MapView mapView) {
+    public App(Context context, MapView mapView, TextView messageView) {
         this.context = context;
         this.mapView = mapView;
+        this.messageView = messageView;
         this.mapView.getCamera().lookAt(DEFAULT_MAP_CENTER, DEFAULT_DISTANCE_IN_METERS);
 
         routeCalculator = new RouteCalculator();
 
-        navigationExample = new NavigationExample(context, mapView);
+        navigationExample = new NavigationExample(context, mapView, messageView);
         navigationExample.startLocationProvider();
 
         setLongPressGestureHandler();
-        Snackbar.make(mapView, "Long press to set a destination or use a random one.", Snackbar.LENGTH_LONG).show();
+
+        messageView.setText("Long press to set a destination or use a random one.");
     }
 
     // Calculate a route and start navigation using a location simulator.
@@ -147,7 +149,7 @@ public class App {
     }
 
     private void showRouteDetails(Route route, boolean isSimulated) {
-        long estimatedTravelTimeInSeconds = route.getDurationInSeconds();
+        long estimatedTravelTimeInSeconds = route.getDuration().getSeconds();
         int lengthInMeters = route.getLengthInMeters();
 
         String routeDetails =
@@ -215,7 +217,7 @@ public class App {
                 destinationWaypoint = new Waypoint(geoCoordinates);
                 addCircleMapMarker(geoCoordinates, R.drawable.green_dot);
                 isLongpressDestination = true;
-                Snackbar.make(mapView, "New long press destination set.", Snackbar.LENGTH_SHORT).show();
+                messageView.setText("New long press destination set.");
             }
         });
     }

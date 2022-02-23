@@ -134,13 +134,13 @@ class RoutingExample {
             for postAction in section.postActions {
                 switch postAction.action {
                     case .chargingSetup:
-                        print("At the end of this section you need to setup charging for \(postAction.durationInSeconds) s.")
+                    print("At the end of this section you need to setup charging for \(postAction.duration) s.")
                     break
                     case .charging:
-                        print("At the end of this section you need to charge for \(postAction.durationInSeconds) s.")
+                        print("At the end of this section you need to charge for \(postAction.duration) s.")
                     break
                     case .wait:
-                        print("At the end of this section you need to wait for \(postAction.durationInSeconds) s.")
+                        print("At the end of this section you need to wait for \(postAction.duration) s.")
                     break
                     default: fatalError("Unknown post action type.")
                 }

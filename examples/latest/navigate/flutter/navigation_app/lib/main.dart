@@ -47,22 +47,23 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   late AppLogic _appLogic;
-  static const String _trackingOn = 'Tracking: ON';
-  static const String _trackingOff = 'Tracking: OFF';
-  String _trackingState = 'Pending ...';
+  static const String _trackingOn = "Tracking: ON";
+  static const String _trackingOff = "Tracking: OFF";
+  String _trackingState = "Pending ...";
   bool _isTracking = true;
 
   // When using HERE Positioning in your app, it is required to request and to show the user's consent decision.
   // In addition, users must be able to change their consent decision at any time.
   // Note that this is only needed when running on Android devices.
   final ConsentEngine _consentEngine = ConsentEngine();
-  String _consentState = 'Pending ...';
+  String _consentState = "Pending ...";
+  String _messageState = "";
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('HERE SDK - Navigation Example'),
+        title: Text("HERE SDK - Navigation Example"),
       ),
       body: Stack(
         children: [
@@ -73,15 +74,15 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  button('Start Simulation', _startNavigationSimulationButtonClicked),
-                  button('Start with HERE Positioning', _startNavigationButtonClicked),
+                  button("Start Simulation", _startNavigationSimulationButtonClicked),
+                  button(_trackingState, toggleTrackingButtonClicked),
+                  button("Stop", _stopNavigationButtonClicked),
                 ],
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  button(_trackingState, toggleTrackingButtonClicked),
-                  button('Stop', _stopNavigationButtonClicked),
+                  button("Start with HERE Positioning", _startNavigationButtonClicked),
                 ],
               ),
               Row(
@@ -90,6 +91,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                   multiLineButton(_consentState, _requestConsent),
                 ],
               ),
+              messageStateWidget(_messageState),
             ],
           ),
         ],
@@ -99,6 +101,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   void _onMapCreated(HereMapController hereMapController) {
     hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) async {
+      _updateMessageState("Loading MapView ...");
       if (error == null) {
         // 1. Before we start the app we want to ensure that the required permissions are handled.
         if (!await _requestPermissions()) {
@@ -117,10 +120,11 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         }
 
         // 3. User has granted required permissions and made a consent decision.
-        _appLogic = AppLogic(_showDialog, hereMapController);
+        _updateMessageState("MapView loaded");
+        _appLogic = AppLogic(hereMapController, _updateMessageState);
         _updateTrackingState();
       } else {
-        print('Map scene not loaded. MapError: ' + error.toString());
+        print("Map scene not loaded. MapError: " + error.toString());
       }
     });
   }
@@ -159,11 +163,11 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void _updateConsentState() {
     String stateMessage;
     if (Platform.isIOS) {
-      stateMessage = 'Info: On iOS no consent is required as on iOS no data is collected.';
+      stateMessage = "Info: On iOS no consent is required as on iOS no data is collected.";
     } else if (_consentEngine.userConsentState == ConsentUserReply.granted) {
-      stateMessage = 'Positioning consent: You have granted consent to the data collection.';
+      stateMessage = "Positioning consent: You have granted consent to the data collection.";
     } else {
-      stateMessage = 'Positioning consent: You have denied consent to the data collection.';
+      stateMessage = "Positioning consent: You have denied consent to the data collection.";
     }
 
     setState(() {
@@ -178,6 +182,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     });
 
     _appLogic.setTracking(_isTracking);
+  }
+
+  // Update the message text state and show selected log messages.
+  void _updateMessageState(String messageState) {
+    setState(() {
+      _messageState = messageState;
+      print(messageState);
+    });
   }
 
   void _startNavigationSimulationButtonClicked() {
@@ -241,8 +253,31 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           onPrimary: Colors.white,
         ),
         onPressed: callbackFunction,
-        child: Container(width: 250, child: Text(buttonLabel, style: TextStyle(fontSize: 15))),
+        child: Container(
+            width: MediaQuery.of(context).size.width  * 0.8,
+            padding: EdgeInsets.all(2.0),
+            child: Text(
+              buttonLabel,
+              style: TextStyle(fontSize: 15),
+              textAlign: TextAlign.center,
+            ),
+        ),
       ),
+    );
+  }
+
+  // A helper method to add a message widget on the top of the HERE map.
+  Widget messageStateWidget(String messageState) {
+    return Card(
+      child: Padding(
+        padding: EdgeInsets.all(8.0),
+        child: Text(
+          messageState,
+          style: TextStyle(fontSize: 15, color: Colors.white,),
+        ),
+      ),
+      color: Colors.blue,
+      margin: EdgeInsets.only(left: 12.0, right: 12.0, top: 8.0),
     );
   }
 
@@ -263,7 +298,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('OK'),
+              child: Text("OK"),
               onPressed: () {
                 Navigator.of(context).pop();
               },

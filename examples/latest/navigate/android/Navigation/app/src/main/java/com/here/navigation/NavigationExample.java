@@ -24,11 +24,11 @@ import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.util.Log;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.android.material.snackbar.Snackbar;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.LanguageCode;
 import com.here.sdk.core.Location;
@@ -82,6 +82,7 @@ import com.here.sdk.routing.RoutingError;
 import com.here.sdk.trafficawarenavigation.DynamicRoutingEngine;
 import com.here.sdk.trafficawarenavigation.DynamicRoutingEngineOptions;
 import com.here.sdk.trafficawarenavigation.DynamicRoutingListener;
+import com.here.time.Duration;
 
 import java.util.List;
 import java.util.Locale;
@@ -103,10 +104,11 @@ public class NavigationExample {
     private int previousManeuverIndex = -1;
     private MapMatchedLocation lastMapMatchedLocation;
 
-    private final Snackbar snackbar;
+    private final TextView messageView;
 
-    public NavigationExample(Context context, MapView mapView) {
+    public NavigationExample(Context context, MapView mapView, TextView messageView) {
         this.context = context;
+        this.messageView = messageView;
 
         // A class to receive real location events.
         herePositioningProvider = new HEREPositioningProvider();
@@ -130,8 +132,7 @@ public class NavigationExample {
 
         setupListeners();
 
-        snackbar = Snackbar.make(mapView, "Initialization completed.", Snackbar.LENGTH_INDEFINITE);
-        snackbar.show();
+        messageView.setText("Initialization completed.");
     }
 
     public void startLocationProvider() {
@@ -143,7 +144,7 @@ public class NavigationExample {
     private void createDynamicRoutingEngine() {
         DynamicRoutingEngineOptions dynamicRoutingOptions = new DynamicRoutingEngineOptions();
         // We want an update for each poll iteration, so we specify 0 difference.
-        dynamicRoutingOptions.minTimeDifferenceInSeconds = 0;
+        dynamicRoutingOptions.minTimeDifference = Duration.ofSeconds(0);
         dynamicRoutingOptions.minTimeDifferencePercentage = 0.0;
         dynamicRoutingOptions.pollIntervalInMinutes = 5;
 
@@ -166,7 +167,7 @@ public class NavigationExample {
                 // sectionProgressList is guaranteed to be non-empty.
                 SectionProgress lastSectionProgress = sectionProgressList.get(sectionProgressList.size() - 1);
                 Log.d(TAG, "Distance to destination in meters: " + lastSectionProgress.remainingDistanceInMeters);
-                Log.d(TAG, "Traffic delay ahead in seconds: " + lastSectionProgress.trafficDelayInSeconds);
+                Log.d(TAG, "Traffic delay ahead in seconds: " + lastSectionProgress.trafficDelay.getSeconds());
 
                 // Contains the progress for the next maneuver ahead and the next-next maneuvers, if any.
                 List<ManeuverProgress> nextManeuverList = routeProgress.maneuverProgress;
@@ -190,10 +191,10 @@ public class NavigationExample {
                         " in " + nextManeuverProgress.remainingDistanceInMeters + " meters.";
 
                 if (previousManeuverIndex != nextManeuverIndex) {
-                    snackbar.setText("New maneuver: " + logMessage).show();
+                    messageView.setText("New maneuver: " + logMessage);
                 } else {
                     // A maneuver update contains a different distance to reach the next maneuver.
-                    snackbar.setText("Maneuver update: " + logMessage).show();
+                    messageView.setText("Maneuver update: " + logMessage);
                 }
 
                 previousManeuverIndex = nextManeuverIndex;
@@ -211,7 +212,7 @@ public class NavigationExample {
             @Override
             public void onDestinationReached() {
                 String message = "Destination reached. Stopping turn-by-turn navigation.";
-                snackbar.setText(message).show();
+                messageView.setText(message);
                 stopNavigation();
             }
         });
@@ -504,7 +505,6 @@ public class NavigationExample {
     private void logLaneRecommendations(List<Lane> lanes) {
         // The lane at index 0 is the leftmost lane adjacent to the middle of the road.
         // The lane at the last index is the rightmost lane.
-        // Note: Left-hand countries are not yet supported.
         int laneNumber = 0;
         for (Lane lane : lanes) {
             // This state is only possible if maneuverViewLaneAssistance.lanesForNextNextManeuver is not empty.
@@ -570,10 +570,10 @@ public class NavigationExample {
 
         if (isSimulated) {
             enableRoutePlayback(route);
-            snackbar.setText("Starting simulated navgation.").show();
+            messageView.setText("Starting simulated navgation.");
         } else {
             enableDevicePositioning();
-            snackbar.setText("Starting navgation.").show();
+            messageView.setText("Starting navgation.");
         }
 
         startDynamicSearchForBetterRoutes(route);
@@ -591,7 +591,7 @@ public class NavigationExample {
 
                     String logMessage = "Calculated a new route. etaDifferenceInSeconds: " + etaDifferenceInSeconds +
                             " distanceDifferenceInMeters: " + distanceDifferenceInMeters;
-                    snackbar.setText("DynamicRoutingEngine update: " + logMessage).show();
+                    messageView.setText("DynamicRoutingEngine update: " + logMessage);
 
                     // An implementation can decide to switch to the new route:
                     // visualNavigator.setRoute(newRoute);
@@ -613,7 +613,7 @@ public class NavigationExample {
         // including info such as speed and current street name.
         visualNavigator.setRoute(null);
         enableDevicePositioning();
-        snackbar.setText("Tracking device's location.").show();
+        messageView.setText("Tracking device's location.");
 
         dynamicRoutingEngine.stop();
     }
@@ -644,11 +644,10 @@ public class NavigationExample {
     }
 
     private void setupSpeedWarnings() {
-        double lowSpeedOffsetInMetersPerSecond = 2;
-        double highSpeedOffsetInMetersPerSecond = 4;
-        double highSpeedBoundaryInMetersPerSecond = 25;
-        SpeedLimitOffset speedLimitOffset = new SpeedLimitOffset(
-                lowSpeedOffsetInMetersPerSecond, highSpeedOffsetInMetersPerSecond, highSpeedBoundaryInMetersPerSecond);
+        SpeedLimitOffset speedLimitOffset = new SpeedLimitOffset();
+        speedLimitOffset.lowSpeedOffsetInMetersPerSecond = 2;
+        speedLimitOffset.highSpeedOffsetInMetersPerSecond = 4;
+        speedLimitOffset.highSpeedBoundaryInMetersPerSecond = 25;
 
         visualNavigator.setSpeedWarningOptions(new SpeedWarningOptions(speedLimitOffset));
     }
@@ -667,7 +666,7 @@ public class NavigationExample {
         }
     }
 
-    // Get the language preferrably used on this device.
+    // Get the language preferably used on this device.
     private LanguageCode getLanguageCodeForDevice(List<LanguageCode> supportedVoiceSkins) {
 
         // 1. Determine if preferred device language is supported by our TextToSpeech engine.

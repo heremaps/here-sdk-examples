@@ -115,7 +115,7 @@ public class PublicTransportRoutingExample {
     }
 
     private void showRouteDetails(Route route) {
-        long estimatedTravelTimeInSeconds = route.getDurationInSeconds();
+        long estimatedTravelTimeInSeconds = route.getDuration().getSeconds();
         int lengthInMeters = route.getLengthInMeters();
 
         String routeDetails =

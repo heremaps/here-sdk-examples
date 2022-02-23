@@ -197,13 +197,13 @@ public class EVRoutingExample {
             for (PostAction postAction : section.getPostActions()) {
                 switch (postAction.action) {
                     case CHARGING_SETUP:
-                    Log.d("EVDetails", "At the end of this section you need to setup charging for " + postAction.durationInSeconds + " s.");
+                    Log.d("EVDetails", "At the end of this section you need to setup charging for " + postAction.duration.getSeconds() + " s.");
                         break;
                     case CHARGING:
-                    Log.d("EVDetails", "At the end of this section you need to charge for " + postAction.durationInSeconds + " s.");
+                    Log.d("EVDetails", "At the end of this section you need to charge for " + postAction.duration.getSeconds() + " s.");
                         break;
                     case WAIT:
-                    Log.d("EVDetails", "At the end of this section you need to wait for " + postAction.durationInSeconds + " s.");
+                    Log.d("EVDetails", "At the end of this section you need to wait for " + postAction.duration.getSeconds() + " s.");
                         break;
                     default: throw new RuntimeException("Unknown post action type.");
                 }

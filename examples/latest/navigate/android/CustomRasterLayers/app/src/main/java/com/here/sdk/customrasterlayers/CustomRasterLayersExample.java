@@ -30,7 +30,6 @@
  import com.here.sdk.mapview.MapView;
  import com.here.sdk.mapview.datasource.RasterDataSource;
  import com.here.sdk.mapview.datasource.RasterDataSourceConfiguration;
- import com.here.sdk.mapview.datasource.RasterDataSourceFactory;
  import com.here.sdk.mapview.datasource.TilingScheme;
 
  import java.util.Arrays;
@@ -86,8 +85,7 @@
          RasterDataSourceConfiguration.Cache cacheConfig = new RasterDataSourceConfiguration.Cache(path, maxDiskSizeInBytes);
 
          // Note that this will make the raster source already known to the passed map view.
-         return RasterDataSourceFactory.create(
-                 mapView.getMapContext(),
+         return new RasterDataSource(mapView.getMapContext(),
                  new RasterDataSourceConfiguration(dataSourceName, rasterProviderConfig, cacheConfig));
      }
 
