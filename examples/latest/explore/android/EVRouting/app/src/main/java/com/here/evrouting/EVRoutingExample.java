@@ -110,7 +110,6 @@ public class EVRoutingExample {
 
     // Calculates an EV car route based on random start / destination coordinates near viewport center.
     public void addEVRouteButtonClicked() {
-        clearMap();
         chargingStationsIDs.clear();
 
         startGeoCoordinates = createRandomGeoCoordinatesInViewport();
@@ -243,6 +242,8 @@ public class EVRoutingExample {
     }
 
     private void showRouteOnMap(Route route) {
+        clearMap();
+
         // Show route as polyline.
         GeoPolyline routeGeoPolyline = route.getGeometry();
         float widthInPixels = 20;
@@ -253,9 +254,14 @@ public class EVRoutingExample {
         mapView.getMapScene().addMapPolyline(routeMapPolyline);
         mapPolylines.add(routeMapPolyline);
 
+        GeoCoordinates startPoint =
+                route.getSections().get(0).getDeparturePlace().mapMatchedCoordinates;
+        GeoCoordinates destination =
+                route.getSections().get(route.getSections().size() - 1).getArrivalPlace().mapMatchedCoordinates;
+
         // Draw a circle to indicate starting point and destination.
-        addCircleMapMarker(startGeoCoordinates, R.drawable.green_dot);
-        addCircleMapMarker(destinationGeoCoordinates, R.drawable.green_dot);
+        addCircleMapMarker(startPoint, R.drawable.green_dot);
+        addCircleMapMarker(destination, R.drawable.green_dot);
     }
 
     // Perform a search for charging stations along the found route.

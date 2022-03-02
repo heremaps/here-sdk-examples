@@ -47,6 +47,8 @@ import com.here.sdk.routing.Section;
 import com.here.sdk.routing.SectionNotice;
 import com.here.sdk.routing.Waypoint;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -79,8 +81,6 @@ public class RoutingExample {
     }
 
     public void addRoute() {
-        clearMap();
-
         startGeoCoordinates = createRandomGeoCoordinatesAroundMapCenter();
         destinationGeoCoordinates = createRandomGeoCoordinatesAroundMapCenter();
         Waypoint startWaypoint = new Waypoint(startGeoCoordinates);
@@ -99,6 +99,7 @@ public class RoutingExample {
                             Route route = routes.get(0);
                             showRouteDetails(route);
                             showRouteOnMap(route);
+                            logRouteSectionDetails(route);
                             logRouteViolations(route);
                         } else {
                             showDialog("Error while calculating a route:", routingError.toString());
@@ -117,13 +118,26 @@ public class RoutingExample {
         }
     }
 
+    private void logRouteSectionDetails(Route route) {
+        DateFormat dateFormat = new SimpleDateFormat("HH:mm");
+
+        for (int i = 0; i< route.getSections().size(); i++) {
+            Section section = route.getSections().get(i);
+
+            Log.d(TAG, "Route Section : " + (i+1));
+            Log.d(TAG, "Route Section Departure Time : " + dateFormat.format(section.getDepartureTime()));
+            Log.d(TAG, "Route Section Arrival Time : " + dateFormat.format(section.getArrivalTime()));
+            Log.d(TAG, "Route Section length : " +  section.getLengthInMeters() + " m");
+            Log.d(TAG, "Route Section duration : " + section.getDuration().getSeconds() + " s");
+        }
+    }
+
     private void showRouteDetails(Route route) {
         long estimatedTravelTimeInSeconds = route.getDuration().getSeconds();
         int lengthInMeters = route.getLengthInMeters();
 
-        String routeDetails =
-                "Travel Time: " + formatTime(estimatedTravelTimeInSeconds)
-                        + ", Length: " + formatLength(lengthInMeters);
+        String routeDetails = "Travel Time: " + formatTime(estimatedTravelTimeInSeconds)
+                            + ", Length: " + formatLength(lengthInMeters);
 
         showDialog("Route Details", routeDetails);
     }
@@ -143,6 +157,9 @@ public class RoutingExample {
     }
 
     private void showRouteOnMap(Route route) {
+        // Optionally, clear any previous route.
+        clearMap();
+
         // Show route as polyline.
         GeoPolyline routeGeoPolyline = route.getGeometry();
         float widthInPixels = 20;
@@ -153,9 +170,14 @@ public class RoutingExample {
         mapView.getMapScene().addMapPolyline(routeMapPolyline);
         mapPolylines.add(routeMapPolyline);
 
+        GeoCoordinates startPoint =
+                route.getSections().get(0).getDeparturePlace().mapMatchedCoordinates;
+        GeoCoordinates destination =
+                route.getSections().get(route.getSections().size() - 1).getArrivalPlace().mapMatchedCoordinates;
+
         // Draw a circle to indicate starting point and destination.
-        addCircleMapMarker(startGeoCoordinates, R.drawable.green_dot);
-        addCircleMapMarker(destinationGeoCoordinates, R.drawable.green_dot);
+        addCircleMapMarker(startPoint, R.drawable.green_dot);
+        addCircleMapMarker(destination, R.drawable.green_dot);
 
         // Log maneuver instructions per route section.
         List<Section> sections = route.getSections();
@@ -183,9 +205,6 @@ public class RoutingExample {
             return;
         }
 
-        clearWaypointMapMarker();
-        clearRoute();
-
         Waypoint waypoint1 = new Waypoint(createRandomGeoCoordinatesAroundMapCenter());
         Waypoint waypoint2 = new Waypoint(createRandomGeoCoordinatesAroundMapCenter());
         List<Waypoint> waypoints = new ArrayList<>(Arrays.asList(new Waypoint(startGeoCoordinates),
@@ -201,6 +220,7 @@ public class RoutingExample {
                             Route route = routes.get(0);
                             showRouteDetails(route);
                             showRouteOnMap(route);
+                            logRouteSectionDetails(route);
                             logRouteViolations(route);
 
                             // Draw a circle to indicate the location of the waypoints.

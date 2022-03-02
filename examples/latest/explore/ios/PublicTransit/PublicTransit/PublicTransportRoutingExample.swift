@@ -45,8 +45,6 @@ class PublicTranportRoutingExample {
     }
 
     func addTransitRoute() {
-        clearMap()
-
         startGeoCoordinates = createRandomGeoCoordinatesAroundMapCenter()
         destinationGeoCoordinates = createRandomGeoCoordinatesAroundMapCenter()
 
@@ -108,6 +106,8 @@ class PublicTranportRoutingExample {
     }
 
     private func showRouteOnMap(route: Route) {
+        clearMap()
+        
         // Show route as polyline.
         let routeGeoPolyline = route.geometry
         let routeMapPolyline = MapPolyline(geometry: routeGeoPolyline,
@@ -119,9 +119,12 @@ class PublicTranportRoutingExample {
         mapView.mapScene.addMapPolyline(routeMapPolyline)
         mapPolylineList.append(routeMapPolyline)
 
+        let startPoint = route.sections.first!.departurePlace.mapMatchedCoordinates
+        let destination = route.sections.last!.arrivalPlace.mapMatchedCoordinates
+        
         // Draw a circle to indicate starting point and destination.
-        addCircleMapMarker(geoCoordinates: startGeoCoordinates!, imageName: "green_dot.png")
-        addCircleMapMarker(geoCoordinates: destinationGeoCoordinates!, imageName: "green_dot.png")
+        addCircleMapMarker(geoCoordinates: startPoint, imageName: "green_dot.png")
+        addCircleMapMarker(geoCoordinates: destination, imageName: "green_dot.png")
 
         // Log maneuver instructions per route leg / sections.
         let sections = route.sections
