@@ -78,8 +78,6 @@ public class PublicTransportRoutingExample {
     }
 
     public void addTransitRoute() {
-        clearMap();
-
         startGeoCoordinates = createRandomGeoCoordinatesAroundMapCenter();
         destinationGeoCoordinates = createRandomGeoCoordinatesAroundMapCenter();
         TransitWaypoint startWaypoint = new TransitWaypoint(startGeoCoordinates);
@@ -140,6 +138,8 @@ public class PublicTransportRoutingExample {
     }
 
     private void showRouteOnMap(Route route) {
+        clearMap();
+
         // Show route as polyline.
         GeoPolyline routeGeoPolyline = route.getGeometry();
         float widthInPixels = 20;
@@ -150,9 +150,14 @@ public class PublicTransportRoutingExample {
         mapView.getMapScene().addMapPolyline(routeMapPolyline);
         mapPolylines.add(routeMapPolyline);
 
+        GeoCoordinates startPoint =
+                route.getSections().get(0).getDeparturePlace().mapMatchedCoordinates;
+        GeoCoordinates destination =
+                route.getSections().get(route.getSections().size() - 1).getArrivalPlace().mapMatchedCoordinates;
+
         // Draw a circle to indicate starting point and destination.
-        addCircleMapMarker(startGeoCoordinates, R.drawable.green_dot);
-        addCircleMapMarker(destinationGeoCoordinates, R.drawable.green_dot);
+        addCircleMapMarker(startPoint, R.drawable.green_dot);
+        addCircleMapMarker(destination, R.drawable.green_dot);
 
         // Log maneuver instructions per route section.
         List<Section> sections = route.getSections();

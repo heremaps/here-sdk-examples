@@ -18,7 +18,7 @@
  */
 
 import 'dart:math';
-
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/core.errors.dart';
@@ -63,6 +63,7 @@ class RoutingExample {
         here.Route route = routeList!.first;
         _showRouteDetails(route);
         _showRouteOnMap(route);
+        _logRouteSectionDetails(route);
         _logRouteViolations(route);
       } else {
         var error = routingError.toString();
@@ -88,12 +89,26 @@ class RoutingExample {
     _mapPolylines.clear();
   }
 
+  void _logRouteSectionDetails(here.Route route) {
+    DateFormat dateFormat = DateFormat().add_Hm();
+
+    for (int i = 0; i < route.sections.length; i++) {
+      Section section = route.sections.elementAt(i);
+
+      print("Route Section : " + (i+1).toString());
+      print("Route Section Departure Time : " + dateFormat.format(section.departureTime!));
+      print("Route Section Arrival Time : " + dateFormat.format(section.arrivalTime!));
+      print("Route Section length : " + section.lengthInMeters.toString() + " m");
+      print("Route Section duration : " + section.duration.inSeconds.toString() + " s");
+    }
+  }
+
   void _showRouteDetails(here.Route route) {
     int estimatedTravelTimeInSeconds = route.duration.inSeconds;
     int lengthInMeters = route.lengthInMeters;
 
-    String routeDetails =
-        'Travel Time: ' + _formatTime(estimatedTravelTimeInSeconds) + ', Length: ' + _formatLength(lengthInMeters);
+    String routeDetails = 'Travel Time: ' + _formatTime(estimatedTravelTimeInSeconds)
+                        + ', Length: ' + _formatLength(lengthInMeters);
 
     _showDialog('Route Details', '$routeDetails');
   }

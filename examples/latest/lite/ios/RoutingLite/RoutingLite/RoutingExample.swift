@@ -45,8 +45,6 @@ class RoutingExample {
     }
 
     func addRoute() {
-        clearMap()
-
         startGeoCoordinates = createRandomGeoCoordinatesInViewport()
         destinationGeoCoordinates = createRandomGeoCoordinatesInViewport()
 
@@ -68,9 +66,8 @@ class RoutingExample {
     }
 
     private func showRouteDetails(route: Route) {
-        let estimatedTravelTimeInSeconds = route.durationInSeconds
+        let estimatedTravelTimeInSeconds = route.duration
         let lengthInMeters = route.lengthInMeters
-
         let routeDetails =
             "Travel Time: " + formatTime(sec: estimatedTravelTimeInSeconds)
                 + ", Length: " + formatLength(meters: lengthInMeters)
@@ -78,11 +75,11 @@ class RoutingExample {
         showDialog(title: "Route Details", message: routeDetails)
     }
 
-    private func formatTime(sec: Int32) -> String {
-        let hours: Int32 = sec / 3600
-        let minutes: Int32 = (sec % 3600) / 60
+    private func formatTime(sec: Double) -> String {
+        let hours: Double = sec / 3600
+        let minutes: Double = sec.truncatingRemainder(dividingBy: 3600) / 60
 
-        return "\(hours):\(minutes)"
+        return "\(Int32(hours)):\(Int32(minutes))"
     }
 
     private func formatLength(meters: Int32) -> String {
@@ -93,6 +90,9 @@ class RoutingExample {
     }
 
     private func showRouteOnMap(route: Route) {
+        // Optionally, remove any previous route.
+        clearMap()
+        
         // Show route as polyline.
         let routeGeoPolyline = route.geometry
         let mapPolylineStyle = MapPolylineStyleLite()
@@ -101,10 +101,13 @@ class RoutingExample {
         let routeMapPolyline = MapPolylineLite(geometry: routeGeoPolyline, style: mapPolylineStyle)
         mapView.mapScene.addMapPolyline(routeMapPolyline)
         mapPolylineList.append(routeMapPolyline)
-
+        
+        let startPoint = route.sections.first!.departurePlace.mapMatchedCoordinates
+        let destination = route.sections.last!.arrivalPlace.mapMatchedCoordinates
+        
         // Draw a circle to indicate starting point and destination.
-        addCircleMapMarker(geoCoordinates: startGeoCoordinates!, imageName: "green_dot.png")
-        addCircleMapMarker(geoCoordinates: destinationGeoCoordinates!, imageName: "green_dot.png")
+        addCircleMapMarker(geoCoordinates: startPoint, imageName: "green_dot.png")
+        addCircleMapMarker(geoCoordinates: destination, imageName: "green_dot.png")
 
         // Log maneuver instructions per route section.
         let sections = route.sections
@@ -132,8 +135,6 @@ class RoutingExample {
             showDialog(title: "Error", message: "Please add a route first.")
             return
         }
-
-        clearMap()
 
         let waypoint1GeoCoordinates = createRandomGeoCoordinatesInViewport()
         let waypoint2GeoCoordinates = createRandomGeoCoordinatesInViewport()

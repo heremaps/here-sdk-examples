@@ -60,7 +60,6 @@ class RoutingExample {
 
     // Calculates an EV car route based on random start / destination coordinates near viewport center.
     func addRoute() {
-        clearMap()
         chargingStationsIDs.removeAll()
 
         startGeoCoordinates = createRandomGeoCoordinatesInViewport()
@@ -180,6 +179,8 @@ class RoutingExample {
     }
 
     private func showRouteOnMap(route: Route) {
+        clearMap()
+        
         // Show route as polyline.
         let routeGeoPolyline = route.geometry
         let routeMapPolyline = MapPolyline(geometry: routeGeoPolyline,
@@ -191,9 +192,12 @@ class RoutingExample {
         mapView.mapScene.addMapPolyline(routeMapPolyline)
         mapPolylineList.append(routeMapPolyline)
 
+        let startPoint = route.sections.first!.departurePlace.mapMatchedCoordinates
+        let destination = route.sections.last!.arrivalPlace.mapMatchedCoordinates
+        
         // Draw a circle to indicate starting point and destination.
-        addCircleMapMarker(geoCoordinates: startGeoCoordinates!, imageName: "green_dot.png")
-        addCircleMapMarker(geoCoordinates: destinationGeoCoordinates!, imageName: "green_dot.png")
+        addCircleMapMarker(geoCoordinates: startPoint, imageName: "green_dot.png")
+        addCircleMapMarker(geoCoordinates: destination, imageName: "green_dot.png")
     }
 
     // Perform a search for charging stations along the found route.

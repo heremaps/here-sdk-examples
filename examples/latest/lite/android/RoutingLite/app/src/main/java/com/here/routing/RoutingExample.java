@@ -79,8 +79,6 @@ public class RoutingExample {
     }
 
     public void addRoute() {
-        clearMap();
-
         startGeoCoordinates = createRandomGeoCoordinatesInViewport();
         destinationGeoCoordinates = createRandomGeoCoordinatesInViewport();
         Waypoint startWaypoint = new Waypoint(startGeoCoordinates);
@@ -107,7 +105,7 @@ public class RoutingExample {
     }
 
     private void showRouteDetails(Route route) {
-        long estimatedTravelTimeInSeconds = route.getDurationInSeconds();
+        long estimatedTravelTimeInSeconds = route.getDuration().getSeconds();
         int lengthInMeters = route.getLengthInMeters();
 
         String routeDetails =
@@ -132,6 +130,9 @@ public class RoutingExample {
     }
 
     private void showRouteOnMap(Route route) {
+        // Optionally, remove any previous route.
+        clearMap();
+
         // Show route as polyline.
         GeoPolyline routeGeoPolyline = route.getGeometry();
         MapPolylineStyle mapPolylineStyle = new MapPolylineStyle();
@@ -141,9 +142,14 @@ public class RoutingExample {
         mapView.getMapScene().addMapPolyline(routeMapPolyline);
         mapPolylines.add(routeMapPolyline);
 
+        GeoCoordinates startPoint =
+                route.getSections().get(0).getDeparturePlace().mapMatchedCoordinates;
+        GeoCoordinates destination =
+                route.getSections().get(route.getSections().size() - 1).getArrivalPlace().mapMatchedCoordinates;
+
         // Draw a circle to indicate starting point and destination.
-        addCircleMapMarker(startGeoCoordinates, R.drawable.green_dot);
-        addCircleMapMarker(destinationGeoCoordinates, R.drawable.green_dot);
+        addCircleMapMarker(startPoint, R.drawable.green_dot);
+        addCircleMapMarker(destination, R.drawable.green_dot);
 
         // Log maneuver instructions per route section.
         List<Section> sections = route.getSections();
@@ -171,9 +177,7 @@ public class RoutingExample {
             return;
         }
 
-        clearWaypointMapMarker();
-        clearRoute();
-
+        // Inserting stopover waypoints.
         Waypoint waypoint1 = new Waypoint(createRandomGeoCoordinatesInViewport());
         Waypoint waypoint2 = new Waypoint(createRandomGeoCoordinatesInViewport());
         List<Waypoint> waypoints = new ArrayList<>(Arrays.asList(new Waypoint(startGeoCoordinates),
@@ -190,7 +194,7 @@ public class RoutingExample {
                             showRouteDetails(route);
                             showRouteOnMap(route);
 
-                            // Draw a circle to indicate the location of the waypoints.
+                            // Draw a circle to indicate the location of the stopover waypoints.
                             addCircleMapMarker(waypoint1.coordinates, R.drawable.red_dot);
                             addCircleMapMarker(waypoint2.coordinates, R.drawable.red_dot);
                         } else {

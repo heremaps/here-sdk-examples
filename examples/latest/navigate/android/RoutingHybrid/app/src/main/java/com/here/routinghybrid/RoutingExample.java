@@ -99,7 +99,6 @@ public class RoutingExample {
     // Calculates a route with two waypoints (start / destination).
     public void addRoute() {
         setRoutingEngine();
-        clearMap();
 
         startGeoCoordinates = createRandomGeoCoordinatesAroundMapCenter();
         destinationGeoCoordinates = createRandomGeoCoordinatesAroundMapCenter();
@@ -163,6 +162,8 @@ public class RoutingExample {
     }
 
     private void showRouteOnMap(Route route) {
+        clearMap();
+
         // Show route as polyline.
         GeoPolyline routeGeoPolyline = route.getGeometry();
         float widthInPixels = 20;
@@ -173,9 +174,14 @@ public class RoutingExample {
         mapView.getMapScene().addMapPolyline(routeMapPolyline);
         mapPolylines.add(routeMapPolyline);
 
+        GeoCoordinates startPoint =
+                route.getSections().get(0).getDeparturePlace().mapMatchedCoordinates;
+        GeoCoordinates destination =
+                route.getSections().get(route.getSections().size() - 1).getArrivalPlace().mapMatchedCoordinates;
+
         // Draw a circle to indicate starting point and destination.
-        addCircleMapMarker(startGeoCoordinates, R.drawable.green_dot);
-        addCircleMapMarker(destinationGeoCoordinates, R.drawable.green_dot);
+        addCircleMapMarker(startPoint, R.drawable.green_dot);
+        addCircleMapMarker(destination, R.drawable.green_dot);
 
         // Log maneuver instructions per route section.
         List<Section> sections = route.getSections();
@@ -205,9 +211,6 @@ public class RoutingExample {
             showDialog("Error", "Please add a route first.");
             return;
         }
-
-        clearWaypointMapMarker();
-        clearRoute();
 
         Waypoint waypoint1 = new Waypoint(createRandomGeoCoordinatesAroundMapCenter());
         Waypoint waypoint2 = new Waypoint(createRandomGeoCoordinatesAroundMapCenter());
