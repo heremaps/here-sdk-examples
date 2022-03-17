@@ -21,6 +21,8 @@
 
  import android.app.Activity;
  import android.content.Context;
+
+ import androidx.annotation.NonNull;
  import androidx.appcompat.app.AlertDialog.Builder;
  import android.util.Log;
  import android.widget.ImageView;
@@ -33,7 +35,7 @@
  import com.here.sdk.core.GeoPolygon;
  import com.here.sdk.core.Point2D;
  import com.here.sdk.mapview.MapCamera;
- import com.here.sdk.mapview.MapCameraObserver;
+ import com.here.sdk.mapview.MapCameraListener;
  import com.here.sdk.mapview.MapPolygon;
  import com.here.sdk.mapview.MapView;
 
@@ -150,17 +152,17 @@
          return mapPolygon;
      }
 
-     private final MapCameraObserver cameraObserver = new MapCameraObserver() {
+     private final MapCameraListener cameraListener = new MapCameraListener() {
          @Override
-         public void onCameraUpdated(MapCamera.State state) {
+         public void onMapCameraUpdated(@NonNull MapCamera.State state) {
              GeoCoordinates camTarget = state.targetCoordinates;
-             Log.d("CameraObserver", "New camera target: " +
+             Log.d("CameraListener", "New camera target: " +
                      camTarget.latitude + ", " + camTarget.longitude);
          }
      };
 
      private void addCameraObserver() {
-         mapView.getCamera().addObserver(cameraObserver);
+         mapView.getCamera().addListener(cameraListener);
      }
 
      private GeoCoordinates getRandomGeoCoordinates() {

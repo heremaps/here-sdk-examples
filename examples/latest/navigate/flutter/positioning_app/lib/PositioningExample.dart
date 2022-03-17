@@ -65,6 +65,10 @@ class PositioningExample extends State<MyApp>
   @override
   void dispose() {
     WidgetsBinding.instance!.removeObserver(this);
+
+    // Free HERE SDK resources before the application shuts down.
+    SdkContext.release();
+
     super.dispose();
   }
 

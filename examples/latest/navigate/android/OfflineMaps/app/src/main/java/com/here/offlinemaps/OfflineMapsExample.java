@@ -35,10 +35,12 @@ import com.here.sdk.maploader.DownloadableRegionsCallback;
 import com.here.sdk.maploader.MapDownloader;
 import com.here.sdk.maploader.MapDownloaderTask;
 import com.here.sdk.maploader.MapLoaderError;
+import com.here.sdk.maploader.MapLoaderException;
 import com.here.sdk.maploader.MapUpdateAvailability;
 import com.here.sdk.maploader.MapUpdateProgressListener;
 import com.here.sdk.maploader.MapUpdateTask;
 import com.here.sdk.maploader.MapUpdater;
+import com.here.sdk.maploader.MapVersionHandle;
 import com.here.sdk.maploader.PersistentMapRepairError;
 import com.here.sdk.maploader.PersistentMapStatus;
 import com.here.sdk.maploader.Region;
@@ -60,12 +62,12 @@ import java.util.List;
 public class OfflineMapsExample {
 
     private final MapView mapView;
-    private MapDownloader mapDownloader;
-    private MapUpdater mapUpdater;
-    private OfflineSearchEngine offlineSearchEngine;
+    private final MapDownloader mapDownloader;
+    private final MapUpdater mapUpdater;
+    private final OfflineSearchEngine offlineSearchEngine;
     private List<Region> downloadableRegions = new ArrayList<>();
     private final List<MapDownloaderTask> mapDownloaderTasks = new ArrayList<>();
-    private Snackbar snackbar;
+    private final Snackbar snackbar;
 
     public OfflineMapsExample(MapView mapView) {
 
@@ -134,6 +136,8 @@ public class OfflineMapsExample {
         String info = "This example allows to download the region Switzerland.";
         snackbar = Snackbar.make(mapView, info, Snackbar.LENGTH_INDEFINITE);
         snackbar.show();
+
+        logCurrentMapVersion();
 
         // Checks if map updates are available for any of the already downloaded maps.
         // If a new map download is started via MapDownloader during an update process,
@@ -331,6 +335,7 @@ public class OfflineMapsExample {
 
                 if (mapUpdateAvailability == MapUpdateAvailability.AVAILABLE) {
                     Log.d("MapUpdateCheck", "One or more map updates are available.");
+                    logCurrentMapVersion();
                     performMapUpdate();
                     return;
                 }
@@ -378,6 +383,7 @@ public class OfflineMapsExample {
 
                 String message = "One or more map update has been successfully installed.";
                 Log.d("MapUpdate", message);
+                logCurrentMapVersion();
             }
         });
     }
@@ -402,6 +408,16 @@ public class OfflineMapsExample {
                     Log.d("RepairPersistentMap", "Repair operation failed: " + persistentMapRepairError.name());
                 }
             });
+        }
+    }
+
+    private void logCurrentMapVersion() {
+        try {
+            MapVersionHandle mapVersionHandle = mapUpdater.getCurrentMapVersion();
+            Log.e("Installed map version: ", mapVersionHandle.stringRepresentation(","));
+        } catch (MapLoaderException e) {
+            MapLoaderError mapLoaderError = e.error;
+            Log.d("MapLoaderError", "Fetching current map version failed: " + mapLoaderError.toString());
         }
     }
 }

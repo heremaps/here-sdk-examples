@@ -23,7 +23,7 @@ import UIKit
 // This example shows how to use the Camera class to rotate and tilt the map programmatically, to set
 // a new transform center that influences those operations, and to move to a new location.
 // For more features of the Camera class, please consult the API Reference and the Developer's Guide.
-class CameraExample: TapDelegate, MapCameraObserver {
+class CameraExample: TapDelegate, MapCameraDelegate {
 
     private let defaultDistanceToEarthInMeters: Double = 8000
     private let viewController: UIViewController
@@ -53,7 +53,7 @@ class CameraExample: TapDelegate, MapCameraObserver {
         updatePoiCircle(getRandomGeoCoordinates())
 
         mapView.gestures.tapDelegate = self
-        mapView.camera.addObserver(self)
+        mapView.camera.addDelegate(self)
 
         showDialog(title: "Note", message: "Tap the map to set a new transform center.")
     }
@@ -99,8 +99,8 @@ class CameraExample: TapDelegate, MapCameraObserver {
         setTransformCenter(mapViewTouchPointInPixels: origin)
     }
 
-    // Conform to the MapCameraObserver protocol.
-    func onCameraUpdated(_ cameraState: heresdk.MapCamera.State) {
+    // Conform to the MapCameraDelegate protocol.
+    func onMapCameraUpdated(_ cameraState: heresdk.MapCamera.State) {
         print("New camera target \(cameraState.targetCoordinates.latitude), \(cameraState.targetCoordinates.longitude)")
     }
 

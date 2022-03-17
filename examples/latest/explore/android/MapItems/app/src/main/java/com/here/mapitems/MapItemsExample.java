@@ -30,14 +30,12 @@ import androidx.appcompat.app.AlertDialog;
 
 import com.here.sdk.core.Anchor2D;
 import com.here.sdk.core.GeoCoordinates;
-import com.here.sdk.core.GeoOrientation;
 import com.here.sdk.core.GeoOrientationUpdate;
 import com.here.sdk.core.Location;
 import com.here.sdk.core.Metadata;
 import com.here.sdk.core.Point2D;
 import com.here.sdk.gestures.TapListener;
 import com.here.sdk.mapview.LocationIndicator;
-import com.here.sdk.mapview.MapCamera;
 import com.here.sdk.mapview.MapImage;
 import com.here.sdk.mapview.MapImageFactory;
 import com.here.sdk.mapview.MapMarker;
@@ -114,8 +112,7 @@ public class MapItemsExample {
     private MapMarker createRandomMapMarkerInViewport() {
         GeoCoordinates geoCoordinates = createRandomGeoCoordinatesAroundMapCenter();
         MapImage mapImage = MapImageFactory.fromResource(context.getResources(), R.drawable.green_square);
-        MapMarker mapMarker = new MapMarker(geoCoordinates, mapImage);
-        return mapMarker;
+        return new MapMarker(geoCoordinates, mapImage);
     }
 
     public void showLocationIndicatorPedestrian() {
@@ -220,11 +217,9 @@ public class MapItemsExample {
 
         // A LocationIndicator is intended to mark the user's current location,
         // including a bearing direction.
-        Location location = new Location.Builder()
-            .setCoordinates(geoCoordinates)
-            .setTimestamp(new Date())
-            .setBearingInDegrees(getRandom(0, 360))
-            .build();
+        Location location = new Location(geoCoordinates);
+        location.time = new Date();
+        location.bearingInDegrees = getRandom(0, 360);
 
         locationIndicator.updateLocation(location);
 
@@ -276,6 +271,7 @@ public class MapItemsExample {
         MapMarker3DModel mapMarker3DModel = new MapMarker3DModel(geometryFile, textureFile);
         MapMarker3D mapMarker3D = new MapMarker3D(geoCoordinates, mapMarker3DModel);
         mapMarker3D.setScale(6);
+        mapMarker3D.setDepthCheckEnabled(true);
 
         mapView.getMapScene().addMapMarker3d(mapMarker3D);
         mapMarker3DList.add(mapMarker3D);

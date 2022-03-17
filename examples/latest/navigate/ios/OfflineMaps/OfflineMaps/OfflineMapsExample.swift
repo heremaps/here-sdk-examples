@@ -56,6 +56,8 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
         let storagePath = sdkNativeEngine.options.cachePath
         showMessage("This example allows to download the region Switzerland. StoragePath: \(storagePath).")
         
+        logCurrentMapVersion()
+        
         // Checks if map updates are available for any of the already downloaded maps.
         // If a new map download is started via MapDownloader during an update process,
         // an NotReady error is indicated.
@@ -183,6 +185,15 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
         }
         showMessage("Cancelled \(mapDownloaderTasks.count) download tasks in list.")
         mapDownloaderTasks.removeAll()
+    }
+        
+    private func logCurrentMapVersion() {
+        do {
+            let mapVersionHandle = try mapUpdater.getCurrentMapVersion()
+            print("Installed map version: \(String(describing: mapVersionHandle.stringRepresentation(separator: ",")))")
+        } catch let mapLoaderException {
+            fatalError("Get current map version failed: \(mapLoaderException.localizedDescription)")
+        }
     }
     
     private func checkForMapUpdates() {

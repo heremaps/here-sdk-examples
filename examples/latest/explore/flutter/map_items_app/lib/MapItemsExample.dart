@@ -277,6 +277,7 @@ class MapItemsExample {
     MapMarker3DModel mapMarker3DModel = MapMarker3DModel.withTextureFilePath(geometryFilePath, textureFilePath);
     MapMarker3D mapMarker3D = MapMarker3D(geoCoordinates, mapMarker3DModel);
     mapMarker3D.scale = 6;
+    mapMarker3D.isDepthCheckEnabled = true;
 
     _hereMapController.mapScene.addMapMarker3d(mapMarker3D);
     _mapMarker3DList.add(mapMarker3D);
