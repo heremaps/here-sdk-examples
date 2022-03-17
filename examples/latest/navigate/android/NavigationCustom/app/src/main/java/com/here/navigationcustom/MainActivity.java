@@ -258,11 +258,10 @@ public class MainActivity extends AppCompatActivity {
             // including a bearing direction.
             // For testing purposes, we create below a Location object. Usually, you want to get this from
             // a GPS sensor instead. Check the Positioning example app for this.
-            return new Location.Builder()
-                    .setCoordinates(ROUTE_START_GEO_COORDINATES)
-                    .setTimestamp(new Date())
-                    .setBearingInDegrees(0.0)
-                    .build();
+            Location location = new Location(ROUTE_START_GEO_COORDINATES);
+            location.time = new Date();
+            location.bearingInDegrees = 0.0;
+            return location;
         }
 
         // This location is taken from the LocationSimulator that provides locations along the route.

@@ -54,6 +54,13 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  @override
+  void dispose() {
+    // Free HERE SDK resources before the application shuts down.
+    SdkContext.release();
+    super.dispose();
+  }
+
   // A helper method to show a dialog.
   Future<void> _showDialog(String title, String message) async {
     return showDialog<void>(

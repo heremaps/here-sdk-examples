@@ -40,7 +40,7 @@ class RoutingExample {
         self.mapView = mapView
         let camera = mapView.camera
         camera.lookAt(point: GeoCoordinates(latitude: 52.520798, longitude: 13.409408),
-                      distanceInMeters: 1000 * 10)
+                      distanceInMeters: 5000)
 
         do {
             try onlineRoutingEngine = RoutingEngine()

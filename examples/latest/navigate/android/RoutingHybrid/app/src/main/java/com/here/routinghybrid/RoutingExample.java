@@ -74,7 +74,7 @@ public class RoutingExample {
         this.context = context;
         this.mapView = mapView;
         MapCamera camera = mapView.getCamera();
-        double distanceInMeters = 1000 * 10;
+        double distanceInMeters = 5000;
         camera.lookAt(new GeoCoordinates(52.520798, 13.409408), distanceInMeters);
 
         try {

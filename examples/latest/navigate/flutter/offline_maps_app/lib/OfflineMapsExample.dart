@@ -62,6 +62,8 @@ class OfflineMapsExample {
     String storagePath = sdkNativeEngine.options.cachePath;
     _showDialog("This example allows to download the region Switzerland.", "Storage path: $storagePath");
 
+    _logCurrentMapVersion();
+
     // Checks if map updates are available for any of the already downloaded maps.
     // If a new map download is started via MapDownloader during an update process,
     // an NotReady error is indicated.
@@ -254,6 +256,7 @@ class OfflineMapsExample {
 
       if (mapUpdateAvailability == MapUpdateAvailability.available) {
         print("MapUpdateCheck: One or more map updates are available.");
+        _logCurrentMapVersion();
         _performMapUpdate();
         return;
       }
@@ -285,6 +288,7 @@ class OfflineMapsExample {
         return;
       }
       print("MapUpdate: One or more map update has been successfully installed.");
+      _logCurrentMapVersion();
     }, () {
       // Handle events from onResume():
       print("MapUpdate: A previously paused map update has been resumed.");
@@ -308,6 +312,16 @@ class OfflineMapsExample {
 
         print("RepairPersistentMap: Repair operation failed: " + persistentMapRepairError.toString());
       });
+    }
+  }
+
+  _logCurrentMapVersion() {
+    try {
+      MapVersionHandle mapVersionHandle = _mapUpdater.getCurrentMapVersion();
+      print("Installed map version: " + mapVersionHandle.stringRepresentation(","));
+    } on MapLoaderExceptionException catch (e) {
+      MapLoaderError mapLoaderError = e.error;
+      print("MapLoaderError" + "Fetching current map version failed: " + mapLoaderError.toString());
     }
   }
 }

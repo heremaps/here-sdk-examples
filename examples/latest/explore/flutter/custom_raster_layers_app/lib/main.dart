@@ -76,6 +76,14 @@ class _MyAppState extends State<MyApp> {
     _customRasterLayersExample?.disableButtonClicked();
   }
 
+  @override
+  void dispose() {
+    // Free HERE SDK resources before the application shuts down.
+    _customRasterLayersExample?.onDestroy();
+    SdkContext.release();
+    super.dispose();
+  }
+
   // A helper method to add a button on top of the HERE map.
   Align button(String buttonLabel, Function callbackFunction) {
     return Align(
@@ -89,10 +97,5 @@ class _MyAppState extends State<MyApp> {
         child: Text(buttonLabel, style: TextStyle(fontSize: 20)),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _customRasterLayersExample?.onDestroy();
   }
 }

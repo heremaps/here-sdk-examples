@@ -265,6 +265,7 @@ class MapItemsExample: TapDelegate {
         let mapMarker3DModel = MapMarker3DModel(geometryFilePath: geometryFile, textureFilePath: textureFile)
         let mapMarker3D = MapMarker3D(at: geoCoordinates, model: mapMarker3DModel)
         mapMarker3D.scale = 6
+        mapMarker3D.isDepthCheckEnabled = true
 
         mapView.mapScene.addMapMarker3d(mapMarker3D)
         mapMarkers3D.append(mapMarker3D)

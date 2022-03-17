@@ -334,6 +334,13 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
     _locationSimulator!.start();
   }
 
+  @override
+  void dispose() {
+    // Free HERE SDK resources before the application shuts down.
+    SdkContext.release();
+    super.dispose();
+  }
+
   // A helper method to add a button on top of the HERE map.
   Align button(String buttonLabel, Function callbackFunction) {
     return Align(

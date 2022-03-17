@@ -139,6 +139,13 @@ class _MyAppState extends State<MyApp> {
     _locationSimulator!.start();
   }
 
+  @override
+  void dispose() {
+    // Free HERE SDK resources before the application shuts down.
+    HERE.SdkContext.release();
+    super.dispose();
+  }
+
   // A helper method to show a dialog.
   Future<void> _showDialog(String title, String message) async {
     return showDialog<void>(

@@ -1,4 +1,4 @@
-The Navigation example app shows how to calculate a route from A to B and how to start turn-by-turn navigation with voice commands. You can find how this is done in [NavigationExample.java](app/src/main/java/com/here/tracking/NavigationExample.java). It also shows how to set a tracking view when navigation is stopped.
+The Navigation example app shows how to calculate a route from A to B and how to start turn-by-turn navigation with voice commands. You can find how this is done in [NavigationExample.java](app/src/main/java/com/here/navigation/NavigationExample.java). It also shows how to set a tracking view when navigation is stopped.
 
 Build instructions:
 -------------------

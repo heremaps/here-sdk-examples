@@ -43,7 +43,7 @@ class RoutingExample {
   RoutingExample(ShowDialogFunction showDialogCallback, HereMapController hereMapController)
       : _showDialog = showDialogCallback,
         _hereMapController = hereMapController {
-    double distanceToEarthInMeters = 10000;
+    double distanceToEarthInMeters = 5000;
     _hereMapController.camera.lookAtPointWithDistance(GeoCoordinates(52.520798, 13.409408), distanceToEarthInMeters);
 
     try {
