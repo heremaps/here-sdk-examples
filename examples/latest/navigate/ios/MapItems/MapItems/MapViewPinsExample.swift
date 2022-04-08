@@ -34,7 +34,7 @@ class MapViewPinsExample {
         mapCamera.lookAt(point: mapCenterGeoCoordinates, distanceInMeters: 7000)
 
         // Add circle to indicate map center.
-        addCirclePolygon(mapCenterGeoCoordinates);
+        addCircle(mapCenterGeoCoordinates);
     }
 
     func onDefaultButtonClicked() {
@@ -51,7 +51,7 @@ class MapViewPinsExample {
 
     private func showMapViewPins() {
         // Move map to expected location.
-        mapCamera.flyTo(target: mapCenterGeoCoordinates, distanceInMeters: distanceInMeters, animationOptions: MapCamera.FlyToOptions())
+        flyTo(geoCoordinates: mapCenterGeoCoordinates)
         
         let textView = UITextView(frame: CGRect(x: 0, y: 0, width: 200, height: 40))
         textView.textAlignment = .center
@@ -66,7 +66,7 @@ class MapViewPinsExample {
 
     private func showAnchoredMapViewPins() {
         // Move map to expected location.
-        mapCamera.flyTo(target: mapCenterGeoCoordinates, distanceInMeters: distanceInMeters, animationOptions: MapCamera.FlyToOptions())
+        flyTo(geoCoordinates: mapCenterGeoCoordinates)
         
         let textView = UITextView(frame: CGRect(x: 0, y: 0, width: 200, height: 40))
         textView.textAlignment = .center
@@ -86,17 +86,26 @@ class MapViewPinsExample {
         }
     }
 
-    private func addCirclePolygon(_ geoCoordinates: GeoCoordinates) {
-        // Move map to expected location.
-        mapCamera.flyTo(target: mapCenterGeoCoordinates, distanceInMeters: distanceInMeters, animationOptions: MapCamera.FlyToOptions())
-        
-        let geoCircle = GeoCircle(center: geoCoordinates,
-                                  radiusInMeters: 50.0)
+    private func addCircle(_ geoCoordinates: GeoCoordinates) {
+        guard
+            let image = UIImage(named: "circle.png"),
+            let imageData = image.pngData() else {
+                print("Error: Image not found.")
+                return
+        }
 
-        let geoPolygon = GeoPolygon(geoCircle: geoCircle)
-        let fillColor = UIColor(red: 0, green: 0.56, blue: 0.54, alpha: 0.63)
-        let mapPolygon = MapPolygon(geometry: geoPolygon, color: fillColor)
-
-        mapView.mapScene.addMapPolygon(mapPolygon)
+        let mapMarker = MapMarker(at: geoCoordinates,
+                                  image: MapImage(pixelData: imageData,
+                                                  imageFormat: ImageFormat.png))
+        mapView.mapScene.addMapMarker(mapMarker)
+    }
+    
+    private func flyTo(geoCoordinates: GeoCoordinates) {
+        let geoCoordinatesUpdate = GeoCoordinatesUpdate(geoCoordinates)
+        let durationInSeconds: TimeInterval = 3
+        let animation = MapCameraAnimationFactory.flyTo(target: geoCoordinatesUpdate,
+                                                        bowFactor: 1,
+                                                        duration: durationInSeconds)
+        mapCamera.startAnimation(animation)
     }
 }

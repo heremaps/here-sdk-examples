@@ -43,7 +43,7 @@ class HEREPositioningSimulator {
   HERE.LocationSimulator _createLocationSimulator(HERE.Route route, HERE.LocationListener locationListener) {
     HERE.LocationSimulatorOptions locationSimulatorOptions = HERE.LocationSimulatorOptions.withDefaults();
     locationSimulatorOptions.speedFactor = 2;
-    locationSimulatorOptions.notificationIntervalInMilliseconds = 500;
+    locationSimulatorOptions.notificationInterval = Duration(milliseconds: 500);
 
     HERE.LocationSimulator locationSimulator;
 

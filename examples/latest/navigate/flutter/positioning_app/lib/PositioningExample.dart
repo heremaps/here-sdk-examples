@@ -330,11 +330,6 @@ class PositioningExample extends State<MyApp>
     });
   }
 
-  @override
-  void release() {
-    // Nothing to do here.
-  }
-
   Widget _buildLabelValue(String text, String value) {
     return Row(
       children: <Widget>[
@@ -437,6 +432,6 @@ class PositioningExample extends State<MyApp>
   }
 
   String _getTimestampSinceBootString() {
-    return '${_location?.timestampSinceBootInMilliseconds?.toStringAsFixed(1) ?? _notAvailable}' + ' ms';
+    return '${_location?.timestampSinceBoot?.toString() ?? _notAvailable}' + ' ms';
   }
 }

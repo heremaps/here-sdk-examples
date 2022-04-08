@@ -22,22 +22,25 @@ package com.here.mapitems;
 import com.here.sdk.core.Color;
 import com.here.sdk.core.GeoCircle;
 import com.here.sdk.core.GeoCoordinates;
+import com.here.sdk.core.GeoCoordinatesUpdate;
 import com.here.sdk.core.GeoPolygon;
 import com.here.sdk.core.GeoPolyline;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.mapview.MapArrow;
 import com.here.sdk.mapview.MapCamera;
+import com.here.sdk.mapview.MapCameraAnimation;
+import com.here.sdk.mapview.MapCameraAnimationFactory;
+import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapPolygon;
 import com.here.sdk.mapview.MapPolyline;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapView;
-import com.here.sdk.mapview.MapCamera.FlyToOptions;
+import com.here.time.Duration;
 
 import java.util.ArrayList;
 
 public class MapObjectsExample {
 
-    private static final double DISTANCE_IN_METERS = 1000 * 10;
     private static final  GeoCoordinates BERLIN_GEO_COORDINATES = new GeoCoordinates(52.51760485151816, 13.380312380535472);
 
     private final MapScene mapScene;
@@ -55,7 +58,7 @@ public class MapObjectsExample {
     public void showMapPolyline() {
         clearMap();
         // Move map to expected location.
-        mapCamera.flyTo(BERLIN_GEO_COORDINATES, DISTANCE_IN_METERS, new FlyToOptions());
+        flyTo(BERLIN_GEO_COORDINATES);
 
         mapPolyline = createPolyline();
         mapScene.addMapPolyline(mapPolyline);
@@ -64,7 +67,7 @@ public class MapObjectsExample {
     public void showMapArrow() {
         clearMap();
         // Move map to expected location.
-        mapCamera.flyTo(BERLIN_GEO_COORDINATES, DISTANCE_IN_METERS, new FlyToOptions());
+        flyTo(BERLIN_GEO_COORDINATES);
 
         mapArrow = createMapArrow();
         mapScene.addMapArrow(mapArrow);
@@ -73,7 +76,7 @@ public class MapObjectsExample {
     public void showMapPolygon() {
         clearMap();
         // Move map to expected location.
-        mapCamera.flyTo(BERLIN_GEO_COORDINATES, DISTANCE_IN_METERS, new FlyToOptions());
+        flyTo(BERLIN_GEO_COORDINATES);
 
         mapPolygon = createPolygon();
         mapScene.addMapPolygon(mapPolygon);
@@ -82,7 +85,7 @@ public class MapObjectsExample {
     public void showMapCircle() {
         clearMap();
         // Move map to expected location.
-        mapCamera.flyTo(BERLIN_GEO_COORDINATES, DISTANCE_IN_METERS, new FlyToOptions());
+        flyTo(BERLIN_GEO_COORDINATES);
 
         mapCircle = createMapCircle();
         mapScene.addMapPolygon(mapCircle);
@@ -185,5 +188,15 @@ public class MapObjectsExample {
         if (mapCircle != null) {
             mapScene.removeMapPolygon(mapCircle);
         }
+    }
+
+    private void flyTo(GeoCoordinates geoCoordinates) {
+        GeoCoordinatesUpdate geoCoordinatesUpdate = new GeoCoordinatesUpdate(geoCoordinates);
+        double distanceInMeters = 1000 * 8;
+        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
+        double bowFactor = 1;
+        MapCameraAnimation animation = MapCameraAnimationFactory.flyTo(
+                geoCoordinatesUpdate, mapMeasureZoom, bowFactor, Duration.ofSeconds(3));
+        mapCamera.startAnimation(animation);
     }
 }

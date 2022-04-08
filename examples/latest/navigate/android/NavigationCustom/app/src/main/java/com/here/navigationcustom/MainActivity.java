@@ -35,13 +35,17 @@ import com.here.navigationcustom.PermissionsRequestor.ResultListener;
 import com.here.sdk.animation.AnimationListener;
 import com.here.sdk.animation.AnimationState;
 import com.here.sdk.core.GeoCoordinates;
+import com.here.sdk.core.GeoCoordinatesUpdate;
 import com.here.sdk.core.GeoOrientationUpdate;
 import com.here.sdk.core.Location;
 import com.here.sdk.core.LocationListener;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.mapview.LocationIndicator;
+import com.here.sdk.mapview.MapCameraAnimation;
+import com.here.sdk.mapview.MapCameraAnimationFactory;
 import com.here.sdk.mapview.MapError;
 import com.here.sdk.mapview.MapMarker3DModel;
+import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
@@ -54,10 +58,12 @@ import com.here.sdk.routing.CarOptions;
 import com.here.sdk.routing.Route;
 import com.here.sdk.routing.RoutingEngine;
 import com.here.sdk.routing.Waypoint;
+import com.here.time.Duration;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -268,36 +274,47 @@ public class MainActivity extends AppCompatActivity {
         return lastKnownLocation;
     }
 
+    // Animate to custom guidance perspective, centered on start location of route.
     private void animateToRouteStart(Route route) {
-        // Animate to custom guidance perspective, centered on start location of route.
+        // The first coordinate marks the start location of the route.
+        GeoCoordinates startOfRoute = route.getGeometry().vertices.get(0);
+        GeoCoordinatesUpdate geoCoordinatesUpdate = new GeoCoordinatesUpdate(startOfRoute);
+
         Double bearingInDegrees = null;
         double tiltInDegrees = 70;
-        mapView.getCamera().flyTo(
-                // The first coordinate marks the start location of the route.
-                route.getGeometry().vertices.get(0),
-                new GeoOrientationUpdate(bearingInDegrees, tiltInDegrees),
-                50,
-                new FlyToOptions(),
-                new AnimationListener() {
-                    @Override
-                    public void onAnimationStateChanged(@NonNull AnimationState animationState) {
-                        if (animationState == AnimationState.COMPLETED
-                            || animationState == AnimationState.CANCELLED) {
-                                startGuidance(route);
-                        }
-                    }
-                });
+        GeoOrientationUpdate orientationUpdate = new GeoOrientationUpdate(bearingInDegrees, tiltInDegrees);
+
+        double distanceInMeters = 50;
+        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
+
+        double bowFactor = 1;
+        MapCameraAnimation animation = MapCameraAnimationFactory.flyTo(
+                geoCoordinatesUpdate, orientationUpdate, mapMeasureZoom, bowFactor, Duration.ofSeconds(3));
+        mapView.getCamera().startAnimation(animation, new AnimationListener() {
+            @Override
+            public void onAnimationStateChanged(@NonNull AnimationState animationState) {
+                if (animationState == AnimationState.COMPLETED
+                        || animationState == AnimationState.CANCELLED) {
+                    startGuidance(route);
+                }
+            }
+        });
     }
 
     private void animateToDefaultMapPerspective() {
+        GeoCoordinates targetLocation = mapView.getCamera().getState().targetCoordinates;
+        GeoCoordinatesUpdate geoCoordinatesUpdate = new GeoCoordinatesUpdate(targetLocation);
+
         // By setting null we keep the current bearing rotation of the map.
         Double bearingInDegrees = null;
         double tiltInDegrees = 0;
-        mapView.getCamera().flyTo(
-                mapView.getCamera().getState().targetCoordinates,
-                new GeoOrientationUpdate(bearingInDegrees, tiltInDegrees),
-                DISTANCE_IN_METERS,
-                new FlyToOptions());
+        GeoOrientationUpdate orientationUpdate = new GeoOrientationUpdate(bearingInDegrees, tiltInDegrees);
+
+        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, DISTANCE_IN_METERS);
+        double bowFactor = 1;
+        MapCameraAnimation animation = MapCameraAnimationFactory.flyTo(
+                geoCoordinatesUpdate, orientationUpdate, mapMeasureZoom, bowFactor, Duration.ofSeconds(3));
+        mapView.getCamera().startAnimation(animation);
     }
 
     private void startGuidance(Route route) {

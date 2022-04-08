@@ -17,12 +17,14 @@
  * License-Filename: LICENSE
  */
 
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/mapview.dart';
 
 class MapViewPinsExample {
-  final double distanceInMeters = 1000 * 10;
   final GeoCoordinates mapCenterGeoCoordinates = GeoCoordinates(52.51760485151816, 13.380312380535472);
 
   final HereMapController _hereMapController;
@@ -35,13 +37,12 @@ class MapViewPinsExample {
     _mapCamera.lookAtPointWithDistance(mapCenterGeoCoordinates, distanceToEarthInMeters);
 
     // Add circle to indicate map center.
-    _addCirclePolygon(mapCenterGeoCoordinates);
+    _addCircle(mapCenterGeoCoordinates);
   }
 
   void showDefaultMapViewPin() {
     // Move map to expected location.
-    _mapCamera.flyToWithOptionsAndDistance(
-        mapCenterGeoCoordinates, distanceInMeters, new MapCameraFlyToOptions.withDefaults());
+    _flyTo(mapCenterGeoCoordinates);
 
     _hereMapController.pinWidget(
         _createWidget("Centered ViewPin", Color.fromARGB(150, 0, 194, 138)), mapCenterGeoCoordinates);
@@ -49,8 +50,7 @@ class MapViewPinsExample {
 
   void showAnchoredMapViewPin() {
     // Move map to expected location.
-    _mapCamera.flyToWithOptionsAndDistance(
-        mapCenterGeoCoordinates, distanceInMeters, new MapCameraFlyToOptions.withDefaults());
+    _flyTo(mapCenterGeoCoordinates);
 
     var widgetPin = _hereMapController.pinWidget(
         _createWidget("Anchored MapViewPin", Color.fromARGB(200, 0, 144, 138)), mapCenterGeoCoordinates);
@@ -79,18 +79,24 @@ class MapViewPinsExample {
     );
   }
 
-  void _addCirclePolygon(GeoCoordinates geoCoordinates) {
-    // Move map to expected location.
-    _mapCamera.flyToWithOptionsAndDistance(
-        mapCenterGeoCoordinates, distanceInMeters, new MapCameraFlyToOptions.withDefaults());
+  Future<void> _addCircle(GeoCoordinates geoCoordinates) async {
+    Uint8List imagePixelData = await _loadFileAsUint8List('assets/circle.png');
+    MapImage circleMapImage = MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
+    MapMarker mapMarker = MapMarker(geoCoordinates, circleMapImage);
+    _hereMapController.mapScene.addMapMarker(mapMarker);
+  }
 
-    double radiusInMeters = 120;
-    GeoCircle geoCircle = GeoCircle(mapCenterGeoCoordinates, radiusInMeters);
+  Future<Uint8List> _loadFileAsUint8List(String assetPathToFile) async {
+    // The path refers to the assets directory as specified in pubspec.yaml.
+    ByteData fileData = await rootBundle.load(assetPathToFile);
+    return Uint8List.view(fileData.buffer);
+  }
 
-    GeoPolygon geoPolygon = GeoPolygon.withGeoCircle(geoCircle);
-    Color fillColor = Color.fromARGB(160, 255, 165, 0);
-    MapPolygon mapPolygon = MapPolygon(geoPolygon, fillColor);
-
-    _hereMapController.mapScene.addMapPolygon(mapPolygon);
+  void _flyTo(GeoCoordinates geoCoordinates) {
+    GeoCoordinatesUpdate geoCoordinatesUpdate = GeoCoordinatesUpdate.fromGeoCoordinates(geoCoordinates);
+    double bowFactor = 1;
+    MapCameraAnimation animation =
+    MapCameraAnimationFactory.flyTo(geoCoordinatesUpdate, bowFactor, Duration(seconds: 3));
+    _mapCamera.startAnimation(animation);
   }
 }

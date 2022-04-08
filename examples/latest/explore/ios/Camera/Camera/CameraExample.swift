@@ -69,9 +69,18 @@ class CameraExample: TapDelegate, MapCameraDelegate {
     func onMoveToXYButtonClicked() {
         let geoCoordinates = getRandomGeoCoordinates()
         updatePoiCircle(geoCoordinates)
-        camera.flyTo(target: geoCoordinates)
+        flyTo(target: geoCoordinates)
     }
 
+    private func flyTo(target: GeoCoordinates) {
+        let geoCoordinatesUpdate = GeoCoordinatesUpdate(target)
+        let durationInSeconds: TimeInterval = 3
+        let animation = MapCameraAnimationFactory.flyTo(target: geoCoordinatesUpdate,
+                                                        bowFactor: 1,
+                                                        duration: durationInSeconds)
+        mapView.camera.startAnimation(animation)
+    }
+    
     // Rotate the map by x degrees. Tip: Try to see what happens for negative values.
     private func rotateMap(bearingStepInDegrees: Double) {
         let currentBearing = camera.state.orientationAtTarget.bearing

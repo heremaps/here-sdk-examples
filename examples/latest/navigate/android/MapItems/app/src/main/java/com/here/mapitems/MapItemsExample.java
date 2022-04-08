@@ -45,6 +45,7 @@ import com.here.sdk.mapview.MapMarkerCluster;
 import com.here.sdk.mapview.MapView;
 import com.here.sdk.mapview.MapViewBase;
 import com.here.sdk.mapview.PickMapItemsResult;
+import com.here.time.Duration;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -206,6 +207,9 @@ public class MapItemsExample {
         MapImage mapImage = MapImageFactory.fromResource(context.getResources(), R.drawable.circle);
         MapMarker mapMarker = new MapMarker(geoCoordinates, mapImage);
 
+        // Optionally, enable a fade in-out animation.
+        mapMarker.setFadeDuration(Duration.ofSeconds(3));
+
         mapView.getMapScene().addMapMarker(mapMarker);
         mapMarkerList.add(mapMarker);
     }
@@ -268,8 +272,18 @@ public class MapItemsExample {
         checkIfFileExistsInAssetsFolder(geometryFile);
         checkIfFileExistsInAssetsFolder(textureFile);
 
+        // Without depth check, 3D models are rendered on top of everything. With depth check enabled,
+        // it may be hidden by buildings. In addition:
+        // If a 3D object has its center at the origin of its internal coordinate system, 
+        // then parts of it may be rendered below the ground surface (altitude < 0).
+        // Note that the HERE SDK map surface is flat, following a Mercator or Globe projection. 
+        // Therefore, a 3D object becomes visible when the altitude of its location is 0 or higher.
+        // By default, without setting a scale factor, 1 unit in 3D coordinate space equals 1 meter.
+        double altitude = 18.0;
+        GeoCoordinates geoCoordinatesWithAltitude = new GeoCoordinates(geoCoordinates.latitude, geoCoordinates.longitude, altitude);
+
         MapMarker3DModel mapMarker3DModel = new MapMarker3DModel(geometryFile, textureFile);
-        MapMarker3D mapMarker3D = new MapMarker3D(geoCoordinates, mapMarker3DModel);
+        MapMarker3D mapMarker3D = new MapMarker3D(geoCoordinatesWithAltitude, mapMarker3DModel);
         mapMarker3D.setScale(6);
         mapMarker3D.setDepthCheckEnabled(true);
 

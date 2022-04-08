@@ -44,7 +44,7 @@ class MapObjectsExample {
     func onMapPolylineClicked() {
         clearMap()
         // Move map to expected location.
-        mapCamera.flyTo(target: berlinGeoCoordinates, distanceInMeters: distanceInMeters, animationOptions: MapCamera.FlyToOptions())
+        flyTo(geoCoordinates: berlinGeoCoordinates)
         
         mapPolyline = createMapPolyline()
         mapScene.addMapPolyline(mapPolyline!)
@@ -53,7 +53,7 @@ class MapObjectsExample {
     func onMapPolygonClicked() {
         clearMap()
         // Move map to expected location.
-        mapCamera.flyTo(target: berlinGeoCoordinates, distanceInMeters: distanceInMeters, animationOptions: MapCamera.FlyToOptions())
+        flyTo(geoCoordinates: berlinGeoCoordinates)
         
         mapPolygon = createMapPolygon()
         mapScene.addMapPolygon(mapPolygon!)
@@ -62,7 +62,7 @@ class MapObjectsExample {
     func onMapCircleClicked() {
         clearMap()
         // Move map to expected location.
-        mapCamera.flyTo(target: berlinGeoCoordinates, distanceInMeters: distanceInMeters, animationOptions: MapCamera.FlyToOptions())
+        flyTo(geoCoordinates: berlinGeoCoordinates)
         
         mapCircle = createMapCircle()
         mapScene.addMapPolygon(mapCircle!)
@@ -71,7 +71,7 @@ class MapObjectsExample {
     func onMapArrowClicked() {
         clearMap()
         // Move map to expected location.
-        mapCamera.flyTo(target: berlinGeoCoordinates, distanceInMeters: distanceInMeters, animationOptions: MapCamera.FlyToOptions())
+        flyTo(geoCoordinates: berlinGeoCoordinates)
         
         mapArrow = createMapArrow()
         mapScene.addMapArrow(mapArrow!)
@@ -153,5 +153,17 @@ class MapObjectsExample {
         if let arrow = mapArrow {
             mapScene.removeMapArrow(arrow)
         }
+    }
+    
+    private func flyTo(geoCoordinates: GeoCoordinates) {
+        let geoCoordinatesUpdate = GeoCoordinatesUpdate(geoCoordinates)
+        let distanceInMeters: Double = 1000 * 8
+        let mapMeasure = MapMeasure(kind: .distance, value: distanceInMeters)
+        let durationInSeconds: TimeInterval = 3
+        let animation = MapCameraAnimationFactory.flyTo(target: geoCoordinatesUpdate,
+                                                        zoom: mapMeasure,
+                                                        bowFactor: 1,
+                                                        duration: durationInSeconds)
+        mapCamera.startAnimation(animation)
     }
 }

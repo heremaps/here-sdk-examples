@@ -76,7 +76,7 @@ class NavigationExample {
     // We want an update for each poll iteration, so we specify 0 difference.
     dynamicRoutingOptions.minTimeDifference = Duration.zero;
     dynamicRoutingOptions.minTimeDifferencePercentage = 0.0;
-    dynamicRoutingOptions.pollIntervalInMinutes = 5;
+    dynamicRoutingOptions.pollInterval = Duration(minutes: 5);
 
     try {
       // With the dynamic routing engine you can poll the HERE backend services to search for routes with less traffic.
