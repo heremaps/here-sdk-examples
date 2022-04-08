@@ -217,6 +217,9 @@ class MapItemsExample {
     MapMarker mapMarker = MapMarker(geoCoordinates, _circleMapImage!);
     mapMarker.drawOrder = drawOrder;
 
+    // Optionally, enable a fade in-out animation.
+    mapMarker.fadeDuration = Duration(seconds: 3);
+
     _hereMapController.mapScene.addMapMarker(mapMarker);
     _mapMarkerList.add(mapMarker);
   }
@@ -273,9 +276,19 @@ class MapItemsExample {
     String geometryFilePath = "assets/models/obstacle.obj";
     String textureFilePath = "assets/models/obstacle_texture.png";
 
+    // Without depth check, 3D models are rendered on top of everything. With depth check enabled,
+    // it may be hidden by buildings. In addition:
+    // If a 3D object has its center at the origin of its internal coordinate system, 
+    // then parts of it may be rendered below the ground surface (altitude < 0).
+    // Note that the HERE SDK map surface is flat, following a Mercator or Globe projection. 
+    // Therefore, a 3D object becomes visible when the altitude of its location is 0 or higher.
+    // By default, without setting a scale factor, 1 unit in 3D coordinate space equals 1 meter.
+    var altitude = 18.0;
+    GeoCoordinates geoCoordinatesWithAltitude = GeoCoordinates.withAltitude(geoCoordinates.latitude, geoCoordinates.longitude, altitude);
+
     // Optionally, consider to store the model for reuse (like we showed for MapImages above).
     MapMarker3DModel mapMarker3DModel = MapMarker3DModel.withTextureFilePath(geometryFilePath, textureFilePath);
-    MapMarker3D mapMarker3D = MapMarker3D(geoCoordinates, mapMarker3DModel);
+    MapMarker3D mapMarker3D = MapMarker3D(geoCoordinatesWithAltitude, mapMarker3DModel);
     mapMarker3D.scale = 6;
     mapMarker3D.isDepthCheckEnabled = true;
 

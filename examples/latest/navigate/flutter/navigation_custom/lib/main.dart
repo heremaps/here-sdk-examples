@@ -240,28 +240,40 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
     }
   }
 
+  // Animate to custom guidance perspective, centered on start location of route.
   void _animateToRouteStart(HERE.Route route) {
-    // Animate to custom guidance perspective, centered on start location of route.
+    // The first coordinate marks the start location of the route.
+    var routeStart = route.geometry.vertices.first;
+    var geoCoordinatesUpdate = GeoCoordinatesUpdate.fromGeoCoordinates(routeStart);
+
     double? bearingInDegrees;
     double tiltInDegrees = 70;
-    _hereMapController!.camera.flyToWithOptionsAndGeoOrientationAndDistanceAndListener(
-        // The first coordinate marks the start location of the route.
-        route.geometry.vertices.first,
-        GeoOrientationUpdate(bearingInDegrees, tiltInDegrees),
-        50,
-        MapCameraFlyToOptions.withDefaults(),
-        this);
+    var orientationUpdate = GeoOrientationUpdate(bearingInDegrees, tiltInDegrees);
+
+    double distanceToEarthInMeters = 50;
+    var mapMeasure = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+
+    double bowFactor = 1;
+    MapCameraAnimation animation = MapCameraAnimationFactory.flyToWithOrientationAndZoom(
+        geoCoordinatesUpdate, orientationUpdate, mapMeasure, bowFactor, Duration(seconds: 3));
+    _hereMapController!.camera.startAnimationWithListener(animation, this);
   }
 
   void _animateToDefaultMapPerspective() {
+    var targetCoordinates = _hereMapController!.camera.state.targetCoordinates;
+    var geoCoordinatesUpdate = GeoCoordinatesUpdate.fromGeoCoordinates(targetCoordinates);
+
     // By setting null we keep the current bearing rotation of the map.
     double? bearingInDegrees;
     double tiltInDegrees = 0;
-    _hereMapController!.camera.flyToWithOptionsAndGeoOrientationAndDistance(
-        _hereMapController!.camera.state.targetCoordinates,
-        GeoOrientationUpdate(bearingInDegrees, tiltInDegrees),
-        _distanceInMeters,
-        MapCameraFlyToOptions.withDefaults());
+    var orientationUpdate = GeoOrientationUpdate(bearingInDegrees, tiltInDegrees);
+
+    var mapMeasure = MapMeasure(MapMeasureKind.distance, _distanceInMeters);
+
+    double bowFactor = 1;
+    MapCameraAnimation animation = MapCameraAnimationFactory.flyToWithOrientationAndZoom(
+        geoCoordinatesUpdate, orientationUpdate, mapMeasure, bowFactor, Duration(seconds: 3));
+    _hereMapController!.camera.startAnimation(animation);
   }
 
   _startGuidance(HERE.Route route) {

@@ -211,23 +211,35 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
             // including a bearing direction.
             // For testing purposes, we create below a Location object. Usually, you want to get this from
             // a GPS sensor instead. Check the Positioning example app for this.
-            return Location(coordinates: routeStartGeoCoordinates,
-                            timestamp: Date())
+            var location = Location(coordinates: routeStartGeoCoordinates)
+            location.time = Date()
+            return location
         }
 
         // This location is taken from the LocationSimulator that provides locations along the route.
         return lastKnownLocation!
     }
 
+    // Animate to custom guidance perspective, centered on start location of route.
     private func animateToRouteStart() {
-        // Animate to custom guidance perspective, centered on start location of route.
+        // The first coordinate marks the start location of the route.
+        let routeStart = myRoute!.geometry.vertices.first!
+        let geoCoordinatesUpdate = GeoCoordinatesUpdate(routeStart)
+        
         let bearingInDegrees: Double? = nil
         let tiltInDegrees: Double = 70
-        mapView.camera.flyTo(target: myRoute!.geometry.vertices.first!, // The first coordinate marks the start location of the route.
-                             orientation: GeoOrientationUpdate(bearing: bearingInDegrees, tilt: tiltInDegrees),
-                             distanceInMeters: 50,
-                             animationOptions: MapCamera.FlyToOptions(),
-                             animationDelegate: self)
+        let orientationUpdate = GeoOrientationUpdate(bearing: bearingInDegrees, tilt: tiltInDegrees)
+        
+        let distanceInMeters: Double = 50
+        let mapMeasure = MapMeasure(kind: .distance, value: distanceInMeters)
+
+        let durationInSeconds: TimeInterval = 3
+        let animation = MapCameraAnimationFactory.flyTo(target: geoCoordinatesUpdate,
+                                                        orientation: orientationUpdate,
+                                                        zoom: mapMeasure,
+                                                        bowFactor: 1,
+                                                        duration: durationInSeconds)
+        mapView.camera.startAnimation(animation, animationDelegate: self)
     }
 
     // Conforming to AnimationDelegate.
@@ -239,14 +251,23 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
     }
 
     private func animateToDefaultMapPerspective() {
+        let target = mapView.camera.state.targetCoordinates
+        let geoCoordinatesUpdate = GeoCoordinatesUpdate(target)
+        
         // By setting nil we keep the current bearing rotation of the map.
         let bearingInDegrees: Double? = nil
         let tiltInDegrees: Double = 0
+        let orientationUpdate = GeoOrientationUpdate(bearing: bearingInDegrees, tilt: tiltInDegrees)
+        
+        let mapMeasure = MapMeasure(kind: .distance, value: distanceInMeters)
 
-        mapView.camera.flyTo(target: mapView.camera.state.targetCoordinates,
-                             orientation: GeoOrientationUpdate(bearing: bearingInDegrees, tilt: tiltInDegrees),
-                             distanceInMeters: distanceInMeters,
-                             animationOptions: MapCamera.FlyToOptions())
+        let durationInSeconds: TimeInterval = 3
+        let animation = MapCameraAnimationFactory.flyTo(target: geoCoordinatesUpdate,
+                                                        orientation: orientationUpdate,
+                                                        zoom: mapMeasure,
+                                                        bowFactor: 1,
+                                                        duration: durationInSeconds)
+        mapView.camera.startAnimation(animation)        
     }
 
     private func startGuidance(route: Route) {

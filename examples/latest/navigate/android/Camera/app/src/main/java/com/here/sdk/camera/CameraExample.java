@@ -21,23 +21,27 @@
 
  import android.app.Activity;
  import android.content.Context;
-
- import androidx.annotation.NonNull;
- import androidx.appcompat.app.AlertDialog.Builder;
  import android.util.Log;
  import android.widget.ImageView;
  import android.widget.Toast;
 
+ import androidx.annotation.NonNull;
+ import androidx.appcompat.app.AlertDialog.Builder;
+
  import com.here.sdk.core.Color;
  import com.here.sdk.core.GeoCircle;
  import com.here.sdk.core.GeoCoordinates;
+ import com.here.sdk.core.GeoCoordinatesUpdate;
  import com.here.sdk.core.GeoOrientationUpdate;
  import com.here.sdk.core.GeoPolygon;
  import com.here.sdk.core.Point2D;
  import com.here.sdk.mapview.MapCamera;
+ import com.here.sdk.mapview.MapCameraAnimation;
+ import com.here.sdk.mapview.MapCameraAnimationFactory;
  import com.here.sdk.mapview.MapCameraListener;
  import com.here.sdk.mapview.MapPolygon;
  import com.here.sdk.mapview.MapView;
+ import com.here.time.Duration;
 
  /**
   * This example shows how to use the Camera class to rotate and tilt the map programmatically, to set
@@ -87,7 +91,15 @@
      public void moveToXYButtonClicked() {
          GeoCoordinates geoCoordinates = getRandomGeoCoordinates();
          updatePoiCircle(geoCoordinates);
-         camera.flyTo(geoCoordinates);
+         flyTo(geoCoordinates);
+     }
+
+     private void flyTo(GeoCoordinates geoCoordinates) {
+         GeoCoordinatesUpdate geoCoordinatesUpdate = new GeoCoordinatesUpdate(geoCoordinates);
+         double bowFactor = 1;
+         MapCameraAnimation animation =
+                 MapCameraAnimationFactory.flyTo(geoCoordinatesUpdate, bowFactor, Duration.ofSeconds(3));
+         camera.startAnimation(animation);
      }
 
      // Rotate the map by x degrees. Tip: Try to see what happens for negative values.

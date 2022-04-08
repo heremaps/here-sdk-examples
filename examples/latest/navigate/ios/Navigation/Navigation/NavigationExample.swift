@@ -98,16 +98,15 @@ class NavigationExample : NavigableLocationDelegate,
     }
 
     func createDynamicRoutingEngine() -> DynamicRoutingEngine {
-        let pollIntervalInMinutes: Int32 = 5
-
         // We want an update for each poll iteration, so we specify 0 difference.
-        let minTimeDifferenceInSeconds: Int32 = 0
         let minTimeDifferencePercentage = 0.0
-
+        let minTimeDifferenceInSeconds: TimeInterval = 0
+        let pollIntervalInSeconds: TimeInterval = 5 * 60
+        
         let dynamicRoutingOptions =
-            DynamicRoutingEngineOptions(pollIntervalInMinutes: pollIntervalInMinutes,
-                                        minTimeDifferenceInSeconds: minTimeDifferenceInSeconds,
-                                        minTimeDifferencePercentage: minTimeDifferencePercentage)
+            DynamicRoutingEngineOptions(minTimeDifferencePercentage: minTimeDifferencePercentage,
+                                        minTimeDifference: minTimeDifferenceInSeconds,
+                                        pollInterval: pollIntervalInSeconds)
 
         do {
             // With the dynamic routing engine you can poll the HERE backend services to search for routes with less traffic.

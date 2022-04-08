@@ -42,14 +42,6 @@ class OfflineMapsExample {
     double distanceToEarthInMeters = 7000;
     _hereMapController.camera.lookAtPointWithDistance(GeoCoordinates(52.530932, 13.384915), distanceToEarthInMeters);
 
-    SDKNativeEngine? sdkNativeEngine = SDKNativeEngine.sharedInstance;
-    if (sdkNativeEngine == null) {
-      throw ("SDKNativeEngine not initialized.");
-    }
-
-    _mapDownloader = MapDownloader.fromSdkEngine(sdkNativeEngine);
-    _mapUpdater = MapUpdater.fromSdkEngine(sdkNativeEngine);
-
     try {
       // Allows to search on already downloaded or cached map data (added for testing a downloaded region).
       // Note that the engine cannot be used while a map update is in progress and an error will be indicated.
@@ -58,10 +50,32 @@ class OfflineMapsExample {
       throw ("Initialization of OfflineSearchEngine failed.");
     }
 
+    SDKNativeEngine? sdkNativeEngine = SDKNativeEngine.sharedInstance;
+    if (sdkNativeEngine == null) {
+      throw ("SDKNativeEngine not initialized.");
+    }
+
+    MapDownloader.fromSdkEngineAsync(sdkNativeEngine, (mapDownloader) {
+      _mapDownloader = mapDownloader;
+
+      // Checks the status of already downloaded map data and eventually repairs it.
+      // Important: For production-ready apps, it is recommended to not do such operations silently in
+      // the background and instead inform the user.
+      _checkInstallationStatus();
+    });
+
+    MapUpdater.fromSdkEngineAsync(sdkNativeEngine, (mapUpdater) {
+      _mapUpdater = mapUpdater;
+
+      _performUpdateChecks();
+    });
+
     // Note that the default storage path can be adapted when creating a new SDKNativeEngine.
     String storagePath = sdkNativeEngine.options.cachePath;
     _showDialog("This example allows to download the region Switzerland.", "Storage path: $storagePath");
+  }
 
+  void _performUpdateChecks() {
     _logCurrentMapVersion();
 
     // Checks if map updates are available for any of the already downloaded maps.
@@ -74,14 +88,14 @@ class OfflineMapsExample {
     // - By default, the update process should not be done while an app runs in background as then the
     // download can be interrupted by the OS.
     _checkForMapUpdates();
-
-    // Checks the status of already downloaded map data and eventually repairs it.
-    // Important: For production-ready apps, it is recommended to not do such operations silently in
-    // the background and instead inform the user.
-    _checkInstallationStatus();
   }
 
   Future<void> onDownloadListClicked() async {
+    if (_mapDownloader == null) {
+      _showDialog("Note", "MapDownloader instance not ready. Try again.");
+      return;
+    }
+
     print("Downloading the list of available regions.");
 
     _mapDownloader.getDownloadableRegionsWithLanguageCode(LanguageCode.deDe,
@@ -121,6 +135,11 @@ class OfflineMapsExample {
   }
 
   Future<void> onDownloadMapClicked() async {
+    if (_mapDownloader == null) {
+      _showDialog("Note", "MapDownloader instance not ready. Try again.");
+      return;
+    }
+
     _showDialog("Downloading one region", "See log for progress.");
 
     // Find region for Switzerland using the German name as identifier.
@@ -248,6 +267,11 @@ class OfflineMapsExample {
   }
 
   void _checkForMapUpdates() {
+    if (_mapUpdater == null) {
+      _showDialog("Note", "MapUpdater instance not ready. Try again.");
+      return;
+    }
+
     _mapUpdater.checkMapUpdate((MapLoaderError? mapLoaderError, MapUpdateAvailability? mapUpdateAvailability) {
       if (mapLoaderError != null) {
         print("MapUpdateCheck Error: " + mapLoaderError.toString());
@@ -268,6 +292,11 @@ class OfflineMapsExample {
   // Downloads and installs map updates for any of the already downloaded regions.
   // Note that this example only shows how to download one region.
   void _performMapUpdate() {
+    if (_mapUpdater == null) {
+      _showDialog("Note", "MapUpdater instance not ready. Try again.");
+      return;
+    }
+
     // This method conveniently updates all installed regions if an update is available.
     // Optionally, you can use the MapUpdateTask to pause / resume or cancel the update.
     MapUpdateTask mapUpdateTask =
@@ -296,6 +325,11 @@ class OfflineMapsExample {
   }
 
   _checkInstallationStatus() {
+    if (_mapDownloader == null) {
+      _showDialog("Note", "MapDownloader instance not ready. Try again.");
+      return;
+    }
+
     // Note that this value will not change during the lifetime of an app.
     PersistentMapStatus persistentMapStatus = _mapDownloader.getInitialPersistentMapStatus();
     if (persistentMapStatus != PersistentMapStatus.ok) {
@@ -316,6 +350,11 @@ class OfflineMapsExample {
   }
 
   _logCurrentMapVersion() {
+    if (_mapUpdater == null) {
+      _showDialog("Note", "MapUpdater instance not ready. Try again.");
+      return;
+    }
+
     try {
       MapVersionHandle mapVersionHandle = _mapUpdater.getCurrentMapVersion();
       print("Installed map version: " + mapVersionHandle.stringRepresentation(","));

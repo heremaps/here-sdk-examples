@@ -207,6 +207,11 @@ class MapItemsExample: TapDelegate {
         let mapMarker = MapMarker(at: geoCoordinates,
                                   image: MapImage(pixelData: imageData,
                                                   imageFormat: ImageFormat.png))
+        
+        // Optionally, enable a fade in-out animation.
+        let durationInSeconds: TimeInterval = 3
+        mapMarker.fadeDuration = durationInSeconds
+        
         mapView.mapScene.addMapMarker(mapMarker)
         mapMarkers.append(mapMarker)
     }
@@ -218,7 +223,8 @@ class MapItemsExample: TapDelegate {
 
         // A LocationIndicator is intended to mark the user's current location,
         // including a bearing direction.
-        var location = Location(coordinates: geoCoordinates, timestamp: Date())
+        var location = Location(coordinates: geoCoordinates)
+        location.time = Date()
         location.bearingInDegrees = getRandom(min: 0, max: 360)
 
         locationIndicator.updateLocation(location)
@@ -262,8 +268,18 @@ class MapItemsExample: TapDelegate {
         let geometryFile = getResourceStringFromBundle(name: "obstacle", type: "obj")
         let textureFile = getResourceStringFromBundle(name: "obstacle_texture", type: "png")
 
+        // Without depth check, 3D models are rendered on top of everything. With depth check enabled,
+        // it may be hidden by buildings. In addition:
+        // If a 3D object has its center at the origin of its internal coordinate system, 
+        // then parts of it may be rendered below the ground surface (altitude < 0).
+        // Note that the HERE SDK map surface is flat, following a Mercator or Globe projection. 
+        // Therefore, a 3D object becomes visible when the altitude of its location is 0 or higher.
+        // By default, without setting a scale factor, 1 unit in 3D coordinate space equals 1 meter.
+        let geoCoordinatesWithAltitude = GeoCoordinates(latitude: geoCoordinates.latitude, 
+                                                        longitude: geoCoordinates.longitude, 
+                                                        altitude: 18.0)        
         let mapMarker3DModel = MapMarker3DModel(geometryFilePath: geometryFile, textureFilePath: textureFile)
-        let mapMarker3D = MapMarker3D(at: geoCoordinates, model: mapMarker3DModel)
+        let mapMarker3D = MapMarker3D(at: geoCoordinatesWithAltitude, model: mapMarker3DModel)     
         mapMarker3D.scale = 6
         mapMarker3D.isDepthCheckEnabled = true
 

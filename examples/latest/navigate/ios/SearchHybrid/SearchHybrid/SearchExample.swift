@@ -198,12 +198,12 @@ class SearchExample: TapDelegate,
     public func geocodeAnAddress() {
         // Set map to expected location.
         let geoCoordinates = GeoCoordinates(latitude: 52.53086, longitude: 13.38469)
-        mapView.camera.flyTo(target: geoCoordinates)
+        mapView.camera.lookAt(point: geoCoordinates, distanceInMeters: 1000 * 5)
 
         let streetName = "Invalidenstraße 116, Berlin"
         geocodeAddressAtLocation(queryString: streetName, geoCoordinates: geoCoordinates)
     }
-
+    
     private func geocodeAddressAtLocation(queryString: String, geoCoordinates: GeoCoordinates) {
         clearMap()
 

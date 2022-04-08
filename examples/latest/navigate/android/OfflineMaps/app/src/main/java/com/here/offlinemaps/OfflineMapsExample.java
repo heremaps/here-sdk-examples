@@ -33,6 +33,7 @@ import com.here.sdk.maploader.CheckMapUpdateCallback;
 import com.here.sdk.maploader.DownloadRegionsStatusListener;
 import com.here.sdk.maploader.DownloadableRegionsCallback;
 import com.here.sdk.maploader.MapDownloader;
+import com.here.sdk.maploader.MapDownloaderConstructionCallback;
 import com.here.sdk.maploader.MapDownloaderTask;
 import com.here.sdk.maploader.MapLoaderError;
 import com.here.sdk.maploader.MapLoaderException;
@@ -40,6 +41,7 @@ import com.here.sdk.maploader.MapUpdateAvailability;
 import com.here.sdk.maploader.MapUpdateProgressListener;
 import com.here.sdk.maploader.MapUpdateTask;
 import com.here.sdk.maploader.MapUpdater;
+import com.here.sdk.maploader.MapUpdaterConstructionCallback;
 import com.here.sdk.maploader.MapVersionHandle;
 import com.here.sdk.maploader.PersistentMapRepairError;
 import com.here.sdk.maploader.PersistentMapStatus;
@@ -62,8 +64,10 @@ import java.util.List;
 public class OfflineMapsExample {
 
     private final MapView mapView;
-    private final MapDownloader mapDownloader;
-    private final MapUpdater mapUpdater;
+    @Nullable
+    private MapDownloader mapDownloader;
+    @Nullable
+    private MapUpdater mapUpdater;
     private final OfflineSearchEngine offlineSearchEngine;
     private List<Region> downloadableRegions = new ArrayList<>();
     private final List<MapDownloaderTask> mapDownloaderTasks = new ArrayList<>();
@@ -78,11 +82,22 @@ public class OfflineMapsExample {
 
         this.mapView = mapView;
 
-        SDKNativeEngine sdkNativeEngine = SDKNativeEngine.getSharedInstance();
+        try {
+            // Adding offline search engine to show that we can search on downloaded regions.
+            // Note that the engine cannot be used while a map update is in progress and an error will be indicated.
+            offlineSearchEngine = new OfflineSearchEngine();
+        } catch (InstantiationErrorException e) {
+            throw new RuntimeException("Initialization of OfflineSearchEngine failed: " + e.error.name());
+        }
 
+        SDKNativeEngine sdkNativeEngine = SDKNativeEngine.getSharedInstance();
         if (sdkNativeEngine == null) {
             throw new RuntimeException("SDKNativeEngine not initialized.");
         }
+
+        // Note that the default storage path can be adapted when creating a new SDKNativeEngine.
+        String storagePath = sdkNativeEngine.getOptions().cachePath;
+        Log.d("",  "StoragePath: " + storagePath);
 
         // In case you want to set a custom path for cache and map data, you can replace the
         // above initializtion of SDKNativeEngine with the code below using SDKOptions:
@@ -118,25 +133,33 @@ public class OfflineMapsExample {
             // always provide the path to external storage.
          */
 
-        mapDownloader = MapDownloader.fromEngine(sdkNativeEngine);
-        mapUpdater = MapUpdater.fromEngine(sdkNativeEngine);
+        MapDownloader.fromEngineAsync(sdkNativeEngine, new MapDownloaderConstructionCallback() {
+            @Override
+            public void onMapDownloaderConstructedCompleted(@NonNull MapDownloader mapDownloader) {
+                OfflineMapsExample.this.mapDownloader = mapDownloader;
 
-        try {
-            // Adding offline search engine to show that we can search on downloaded regions.
-            // Note that the engine cannot be used while a map update is in progress and an error will be indicated.
-            offlineSearchEngine = new OfflineSearchEngine();
-        } catch (InstantiationErrorException e) {
-            throw new RuntimeException("Initialization of OfflineSearchEngine failed: " + e.error.name());
-        }
+                // Checks the status of already downloaded map data and eventually repairs it.
+                // Important: For production-ready apps, it is recommended to not do such operations silently in
+                // the background and instead inform the user.
+                checkInstallationStatus();
+            }
+        });
 
-        // Note that the default storage path can be adapted when creating a new SDKNativeEngine.
-        String storagePath = sdkNativeEngine.getOptions().cachePath;
-        Log.d("",  "StoragePath: " + storagePath);
+        MapUpdater.fromEngineAsync(sdkNativeEngine, new MapUpdaterConstructionCallback() {
+            @Override
+            public void onMapUpdaterConstructe(@NonNull MapUpdater mapUpdater) {
+                OfflineMapsExample.this.mapUpdater = mapUpdater;
+
+                performUpdateChecks();
+            }
+        });
 
         String info = "This example allows to download the region Switzerland.";
         snackbar = Snackbar.make(mapView, info, Snackbar.LENGTH_INDEFINITE);
         snackbar.show();
+    }
 
+    private void performUpdateChecks() {
         logCurrentMapVersion();
 
         // Checks if map updates are available for any of the already downloaded maps.
@@ -149,14 +172,15 @@ public class OfflineMapsExample {
         // - By default, the update process should not be done while an app runs in background as then the
         // download can be interrupted by the OS.
         checkForMapUpdates();
-
-        // Checks the status of already downloaded map data and eventually repairs it.
-        // Important: For production-ready apps, it is recommended to not do such operations silently in
-        // the background and instead inform the user.
-        checkInstallationStatus();
     }
 
     public void onDownloadListClicked() {
+        if (mapDownloader == null) {
+            String message = "MapDownloader instance not ready. Try again.";
+            snackbar.setText(message).show();
+            return;
+        }
+
         // Download a list of Region items that will tell us what map regions are available for later download.
         mapDownloader.getDownloadableRegions(LanguageCode.DE_DE, new DownloadableRegionsCallback() {
             @Override
@@ -195,6 +219,12 @@ public class OfflineMapsExample {
     }
 
     public void onDownloadMapClicked() {
+        if (mapDownloader == null) {
+            String message = "MapDownloader instance not ready. Try again.";
+            snackbar.setText(message).show();
+            return;
+        }
+
         // Find region for Switzerland using the German name as identifier.
         // Note that we requested the list of regions in German above.
         String swizNameInGerman = "Schweiz";
@@ -325,6 +355,12 @@ public class OfflineMapsExample {
     }
 
     private void checkForMapUpdates() {
+        if (mapUpdater == null) {
+            String message = "MapUpdater instance not ready. Try again.";
+            snackbar.setText(message).show();
+            return;
+        }
+
         mapUpdater.checkMapUpdate(new CheckMapUpdateCallback() {
             @Override
             public void onCompleted(@Nullable MapLoaderError mapLoaderError, @Nullable MapUpdateAvailability mapUpdateAvailability) {
@@ -348,6 +384,12 @@ public class OfflineMapsExample {
     // Downloads and installs map updates for any of the already downloaded regions.
     // Note that this example only shows how to download one region.
     private void performMapUpdate() {
+        if (mapUpdater == null) {
+            String message = "MapUpdater instance not ready. Try again.";
+            snackbar.setText(message).show();
+            return;
+        }
+
         // This method conveniently updates all installed regions if an update is available.
         // Optionally, you can use the MapUpdateTask to pause / resume or cancel the update.
         MapUpdateTask mapUpdateTask = mapUpdater.performMapUpdate(new MapUpdateProgressListener() {
@@ -389,6 +431,12 @@ public class OfflineMapsExample {
     }
 
     private void checkInstallationStatus() {
+        if (mapDownloader == null) {
+            String message = "MapDownloader instance not ready. Try again.";
+            snackbar.setText(message).show();
+            return;
+        }
+
         // Note that this value will not change during the lifetime of an app.
         PersistentMapStatus persistentMapStatus = mapDownloader.getInitialPersistentMapStatus();
         if (persistentMapStatus != PersistentMapStatus.OK) {
@@ -412,6 +460,12 @@ public class OfflineMapsExample {
     }
 
     private void logCurrentMapVersion() {
+        if (mapUpdater == null) {
+            String message = "MapUpdater instance not ready. Try again.";
+            snackbar.setText(message).show();
+            return;
+        }
+
         try {
             MapVersionHandle mapVersionHandle = mapUpdater.getCurrentMapVersion();
             Log.e("Installed map version: ", mapVersionHandle.stringRepresentation(","));

@@ -42,7 +42,15 @@ class CameraExample {
     // Indicate the new map center with a circle.
     _setNewMapCircle(newTarget);
 
-    _hereMapController.camera.flyToWithOptions(newTarget, MapCameraFlyToOptions.withDefaults());
+    _flyTo(newTarget);
+  }
+
+  void _flyTo(GeoCoordinates geoCoordinates) {
+    GeoCoordinatesUpdate geoCoordinatesUpdate = GeoCoordinatesUpdate.fromGeoCoordinates(geoCoordinates);
+    double bowFactor = 1;
+    MapCameraAnimation animation =
+        MapCameraAnimationFactory.flyTo(geoCoordinatesUpdate, bowFactor, Duration(seconds: 3));
+    _hereMapController.camera.startAnimation(animation);
   }
 
   void _setNewMapCircle(GeoCoordinates geoCoordinates) {
