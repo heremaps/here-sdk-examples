@@ -47,8 +47,8 @@ class PositioningExample: LocationDelegate, LocationStatusDelegate, LocationAuth
         if let lastLocation = locationEngine.lastKnownLocation {
             addMyLocationToMap(myLocation: lastLocation)
         } else {
-            let defaultLocation = Location(coordinates: PositioningExample.defaultGeoCoordinates,
-                                           timestamp: Date())
+            var defaultLocation = Location(coordinates: PositioningExample.defaultGeoCoordinates)
+            defaultLocation.time = Date()
             addMyLocationToMap(myLocation: defaultLocation)
         }
         locationAuthorization.authorizationChangeDelegate = self
