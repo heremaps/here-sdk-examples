@@ -27,6 +27,7 @@ In this repository you can find the [latest example apps](examples/latest) that 
 - **HelloMap**: Shows the classic 'Hello World'.
 - **HelloMapWithStoryboard**: Shows the classic 'Hello World' using a Storyboard (iOS only).
 - **Camera**: Shows how to change the target and the target anchor point and how to move to another location using custom map animations.
+- **CameraKeyframeTracks**: Shows how to do custom camera animations with keyframe tracks.
 - **CustomMapStyles**: Shows how to load custom map schemes made with the _HERE Style Editor_. Exclusively available for the _Explore Edition_ and the _Navigate Edition_).
 - **CustomRasterLayers**: Shows how to load custom raster layers. Exclusively available for the _Explore Edition_ and the _Navigate Edition_).
 - **Gestures**: Shows how to handle gestures.
