@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item android:id="@+id/createRoute"
+        android:title="Create route"
+        app:showAsAction="never">
+        <menu>
+            <item android:id="@+id/calculateRoute"
+                android:title="Add a route"/>
+            <item android:id="@+id/clearMap"
+                android:title="Clear Map"/>
+        </menu>
+    </item>
+
+    <item android:id="@+id/animateRoute"
+        android:title="Animate along route"
+        app:showAsAction="never">
+        <menu>
+            <item android:id="@+id/startRouteAnimation"
+                android:title="Start Route Animation"/>
+            <item android:id="@+id/stopRouteAnimation"
+                android:title="Stop Route Animation"/>
+        </menu>
+    </item>
+
+    <item android:id="@+id/animateToRoute"
+        android:title="Animate to route"
+        app:showAsAction="never">
+        <menu>
+            <item android:id="@+id/startToRouteAnimation"
+                android:title="Start Route Animation"/>
+            <item android:id="@+id/stopToRouteAnimation"
+                android:title="Stop Route Animation"/>
+        </menu>
+    </item>
+
+    <item android:id="@+id/nyc"
+        android:title="Trip to NYC"
+        app:showAsAction="never">
+        <menu>
+            <item android:id="@+id/startNYCAnimation"
+                android:title="Start NYC Animation"/>
+            <item android:id="@+id/stopNYCAnimation"
+                android:title="Stop NYC Animation"/>
+        </menu>
+    </item>
+
+</menu>

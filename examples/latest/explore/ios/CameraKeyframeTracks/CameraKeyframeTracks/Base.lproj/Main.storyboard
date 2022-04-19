@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="v4v-xD-JXM">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="tne-QT-ifu">
+            <objects>
+                <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="CameraKeyframeTracks" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="d7N-t3-PMt">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="jv9-0R-Tz9" customClass="MapView" customModule="heresdk">
+                                <rect key="frame" x="0.0" y="44" width="375" height="623"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </view>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="7yx-63-l25"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="jv9-0R-Tz9" firstAttribute="bottom" secondItem="7yx-63-l25" secondAttribute="bottom" id="QZw-vd-qP4"/>
+                            <constraint firstAttribute="trailing" secondItem="jv9-0R-Tz9" secondAttribute="trailing" id="eJ4-sm-GpV"/>
+                            <constraint firstItem="jv9-0R-Tz9" firstAttribute="top" secondItem="7yx-63-l25" secondAttribute="top" id="p05-LZ-W6d"/>
+                            <constraint firstItem="jv9-0R-Tz9" firstAttribute="leading" secondItem="d7N-t3-PMt" secondAttribute="leading" id="qOE-QK-qnt"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" id="cZn-Ym-r7w">
+                        <barButtonItem key="leftBarButtonItem" image="menu" id="2Ng-kq-l9E">
+                            <connections>
+                                <action selector="onMenuButtonClicked:" destination="BYZ-38-t0r" id="ehv-bP-gQr"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="mapView" destination="jv9-0R-Tz9" id="2AS-Uk-Z0n"/>
+                        <segue destination="CcK-xI-3wi" kind="presentation" identifier="showMenu" id="9zN-H6-9S7"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="988" y="28.335832083958024"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="KFi-M6-gYB">
+            <objects>
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="v4v-xD-JXM" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="plY-0Z-FHG">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="BYZ-38-t0r" kind="relationship" relationship="rootViewController" id="vx3-Or-vcF"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="GTq-RJ-DOA" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="48.799999999999997" y="28.335832083958024"/>
+        </scene>
+        <!--Menu-->
+        <scene sceneID="tQD-fZ-LXP">
+            <objects>
+                <viewControllerPlaceholder storyboardName="Menu" id="CcK-xI-3wi" sceneMemberID="viewController"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="77b-fF-iJT" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1716" y="28"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="menu" width="25" height="25"/>
+    </resources>
+</document>
+
