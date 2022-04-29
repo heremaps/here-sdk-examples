@@ -2,17 +2,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:id="@+id/createRoute"
-        android:title="Create route"
-        app:showAsAction="never">
-        <menu>
-            <item android:id="@+id/calculateRoute"
-                android:title="Add a route"/>
-            <item android:id="@+id/clearMap"
-                android:title="Clear Map"/>
-        </menu>
-    </item>
-
     <item android:id="@+id/animateRoute"
         android:title="Animate along route"
         app:showAsAction="never">

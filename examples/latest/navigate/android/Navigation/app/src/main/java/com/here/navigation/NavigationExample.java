@@ -689,4 +689,10 @@ public class NavigationExample {
     public void stopLocating() {
         herePositioningProvider.stopLocating();
     }
+
+    public void stopRendering() {
+      // It is recommended to stop rendering before leaving an activity.
+      // This also removes the current location marker.
+      visualNavigator.stopRendering();
+    }
 }

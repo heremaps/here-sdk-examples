@@ -19,10 +19,6 @@
 
 package com.here.camerakeyframetracks;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
@@ -30,15 +26,18 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
-import com.here.camerakeyframetracks.animations.CameraKeyframeTracksExample;
-import com.here.camerakeyframetracks.animations.RouteAnimationExample;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.here.camerakeyframetracks.helper.PermissionsRequestor;
+import com.here.camerakeyframetracks.helper.RouteCalculator;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.mapview.MapError;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
 import com.here.sdk.mapview.VisibilityState;
-import com.here.sdk.routing.Route;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -88,17 +87,53 @@ public class MainActivity extends AppCompatActivity {
             public void onLoadScene(@Nullable MapError mapError) {
                 if (mapError == null) {
                     mapView.getMapScene().setLayerVisibility(MapScene.Layers.LANDMARKS, VisibilityState.VISIBLE);
-
-                    double distanceInMeters = 5000;
-                    mapView.getCamera().lookAt(new GeoCoordinates(40.7116777285189, -74.01248494562448), distanceInMeters);
-
+                    mapView.getCamera().lookAt(new GeoCoordinates(40.7133, -74.0112));
                     cameraKeyframeTracksExample = new CameraKeyframeTracksExample(mapView);
-                    routeAnimationExample = new RouteAnimationExample(mapView, MainActivity.this);
+                    routeAnimationExample = new RouteAnimationExample(mapView);
                 } else {
                     Log.d(TAG, "onLoadScene failed: " + mapError.toString());
                 }
             }
         });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater=getMenuInflater();
+        inflater.inflate(R.menu.map_option_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (RouteCalculator.testRoute == null) {
+            Log.e("MainActivity", "Error: No route for testing ...");
+            return false;
+        }
+
+        switch (item.getItemId()) {
+            case R.id.startRouteAnimation:
+                // An animation that moves the camera along a route.
+                routeAnimationExample.animateRoute(RouteCalculator.testRoute);
+                return true;
+            case R.id.stopRouteAnimation:
+            case R.id.stopToRouteAnimation:
+                routeAnimationExample.stopRouteAnimation();
+                return true;
+            case R.id.startToRouteAnimation:
+                // An animation that moves the camera to the route without keyframe tracks.
+                routeAnimationExample.animateToRoute(RouteCalculator.testRoute);
+                return true;
+            case R.id.startNYCAnimation:
+                // A camera animation through New York.
+                cameraKeyframeTracksExample.startTripToNYC();
+                return true;
+            case R.id.stopNYCAnimation:
+                cameraKeyframeTracksExample.stopTripToNYCAnimation();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override
@@ -117,55 +152,5 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         mapView.onDestroy();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater=getMenuInflater();
-        inflater.inflate(R.menu.map_option_menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            // An animation that moves the camera along a route.
-            case R.id.calculateRoute:
-                routeAnimationExample.calculateRoute();
-                return true;
-            case R.id.startRouteAnimation:
-                Route route = routeAnimationExample.calculateRoute();
-                if (route != null) {
-                    routeAnimationExample.animateRoute(route);
-                } else {
-                    routeAnimationExample.showDialog("Route Empty: ", "Please create a route.");
-                }
-                return true;
-            case R.id.stopRouteAnimation:
-            case R.id.stopToRouteAnimation:
-                routeAnimationExample.stopRouteAnimation();
-                return true;
-            case R.id.clearMap:
-                routeAnimationExample.clearRoute();
-                return true;
-            case R.id.startToRouteAnimation:
-                // An animation that moves the camera to the route without keyframe tracks.
-                route = routeAnimationExample.calculateRoute();
-                if (route != null) {
-                    routeAnimationExample.animateToRoute(route);
-                } else {
-                    routeAnimationExample.showDialog("Route Empty: ", "Please create a route.");
-                }
-                return true;
-            case R.id.startNYCAnimation:
-                // A camera animation through New York.
-                cameraKeyframeTracksExample.startTripToNYC();
-                return true;
-            case R.id.stopNYCAnimation:
-                cameraKeyframeTracksExample.stopTripToNYCAnimation();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
     }
 }

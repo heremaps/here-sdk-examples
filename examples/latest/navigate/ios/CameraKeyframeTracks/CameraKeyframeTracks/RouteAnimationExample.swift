@@ -34,46 +34,8 @@ public class RouteAnimationExample {
         self.viewController = viewController
         self.mapView = mapView
         
-        routeCalculator = RouteCalculator(viewController: viewController)
-        calculateRoute()
-    }
-    
-    // Provide hard-coded route for testing.
-    public func calculateRoute() {
-        routeCalculator.calculateRoute() { (routingError, routes) in
-            if let error = routingError {
-                self.showDialog(title: "Error while calculating a route:", message: "\(error)")
-                return
-            }
-            
-            // When routingError is nil, routes is guaranteed to contain at least one route.
-            self.route = routes?.first
-            self.showRouteOnMap(route: self.route!)
-        }
-    }
-    
-    public func getRoute() -> Route? {
-        return route
-    }
-    
-    private func showRouteOnMap(route: Route) {
-        // Show route as polyline.
-        let routeGeoPolyline = route.geometry
-        let routeMapPolyline = MapPolyline(geometry: routeGeoPolyline,
-                                           widthInPixels: 20,
-                                           color: UIColor(red: 0,
-                                                          green: 0.56,
-                                                          blue: 0.54,
-                                                          alpha: 0.63))
-        mapView.mapScene.addMapPolyline(routeMapPolyline)
-        mapPolylines.append(routeMapPolyline)
-    }
-    
-    func clearRoute() {
-        mapPolylines.forEach { mapPolyline in
-            mapView.mapScene.removeMapPolyline(mapPolyline)
-        }
-        mapPolylines.removeAll()
+        routeCalculator = RouteCalculator(mapView: mapView)
+        routeCalculator.createRoute()
     }
     
     func createLocationsForRouteAnimation(route: Route) -> [LocationKeyframeModel] {
@@ -166,14 +128,17 @@ public class RouteAnimationExample {
     }
     
     func animateToRoute(route: Route) {
-        let update: MapCameraUpdate = MapCameraUpdateFactory.lookAt(area: route.boundingBox)
+        // Untilt and unrotate the map.
+        let bearing: Double = 0
+        let tilt: Double = 0
+        // We want to show the route fitting in the map view without any additional padding.
+        let origin:Point2D = Point2D(x: 0.0, y: 0.0)
+        let sizeInPixels:Size2D = Size2D(width: mapView.viewportSize.width, height: mapView.viewportSize.height)
+        let mapViewport:Rectangle2D = Rectangle2D(origin: origin, size: sizeInPixels)
+
+        // Animate to route.
+        let update:MapCameraUpdate = MapCameraUpdateFactory.lookAt(area: route.boundingBox, orientation: GeoOrientationUpdate(GeoOrientation(bearing: bearing, tilt: tilt)), viewRectangle: mapViewport)
         let animation: MapCameraAnimation = MapCameraAnimationFactory.createAnimation(from: update, duration: TimeInterval(3), easingFunction: EasingFunction.inCubic)
         mapView.camera.startAnimation(animation)
-    }
-    
-    private func showDialog(title: String, message: String) {
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-        viewController.present(alertController, animated: true, completion: nil)
     }
 }

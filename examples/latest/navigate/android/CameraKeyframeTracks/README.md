@@ -1,4 +1,4 @@
-The CameraKeyframeTracks example app shows how to use multiple keyframe tracks for map camera animations and how to animate to a route. You can find how this is done in [CameraKeyframeTracksExample.java](app/src/main/java/com/here/camerakeyframetracks/animations/CameraKeyframeTracksExample.java).
+The CameraKeyframeTracks example app shows how to use multiple keyframe tracks for map camera animations and how to animate to a route. You can find how this is done in [CameraKeyframeTracksExample.java](app/src/main/java/com/here/camerakeyframetracks/CameraKeyframeTracksExample.java).
 
 Build instructions:
 -------------------

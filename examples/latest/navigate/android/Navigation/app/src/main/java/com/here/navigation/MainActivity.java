@@ -184,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         if (app != null) {
-            app.stopLocating();
+            app.detach();
         }
         mapView.onDestroy();
     }
