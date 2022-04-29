@@ -1,9 +1,14 @@
 # HERE SDK 4.x (Lite, Explore & Navigate Edition) - Examples for Android, iOS and Flutter
+
 ![License](https://img.shields.io/badge/license-Apache%202-blue)
 ![Platform](https://img.shields.io/badge/platform-Android-green.svg)
 ![Language](https://img.shields.io/badge/language-Java%208-orange.svg)
 ![Platform](https://img.shields.io/badge/platform-iOS-green.svg)
 ![Language](https://img.shields.io/badge/language-Swift%205.1.2-orange.svg)
+
+In this repository you can find the [latest example apps](examples/latest) that show key features of the HERE SDK in ready-to-use applications. 
+
+## About the HERE SDK
 
 The [HERE SDK](https://developer.here.com/products/here-sdk) enables you to build powerful location-aware applications. Explore maps that are fast and smooth to interact with, pan/zoom across map views of varying resolutions, and enable the display of various elements such as routes and POIs on highly customizable map views.
 
@@ -22,10 +27,10 @@ For an overview of the existing features, please check the _Developer's Guide_ f
 > For now, the _Navigate Edition_ is only available upon request. Please contact your HERE representative to receive access including a set of evaluation credentials.
 
 ## List of Available Example Apps (Version 4.11.2.0)
-In this repository you can find the [latest example apps](examples/latest) that show key features of the HERE SDK in ready-to-use applications:
 
 - **HelloMap**: Shows the classic 'Hello World'.
 - **HelloMapWithStoryboard**: Shows the classic 'Hello World' using a Storyboard (iOS only).
+- **HelloMapAndroidAuto**: Shows how to integrate Android Auto into the _HelloMap_ app to show a map on an in-car head unit display. (Android only).
 - **Camera**: Shows how to change the target and the target anchor point and how to move to another location using custom map animations.
 - **CameraKeyframeTracks**: Shows how to do custom camera animations with keyframe tracks.
 - **CustomMapStyles**: Shows how to load custom map schemes made with the _HERE Style Editor_. Exclusively available for the _Explore Edition_ and the _Navigate Edition_).
