@@ -23,9 +23,13 @@ import UIKit
 // A class that creates car Routes with the HERE SDK.
 public class RouteCalculator {
     
+    private let mapView: MapView
     private let routingEngine: RoutingEngine
+    public static var testRoute: Route?
     
-    init(viewController: UIViewController) {
+    init(mapView: MapView) {
+        self.mapView = mapView
+        
         do {
             try routingEngine = RoutingEngine()
         } catch let engineInstantiationError {
@@ -33,13 +37,33 @@ public class RouteCalculator {
         }
     }
     
-    func calculateRoute(calculateRouteCompletionHandler: @escaping CalculateRouteCompletionHandler) {
+    public func createRoute() {
         
-        let start: Waypoint = Waypoint(coordinates: GeoCoordinates(latitude: 40.71335297425111, longitude: -74.01128262379694))
-        let destination: Waypoint = Waypoint(coordinates: GeoCoordinates(latitude: 40.72039108039512, longitude: -74.01226967669756))
+        let start: Waypoint = Waypoint(coordinates: GeoCoordinates(latitude: 40.7133, longitude: -74.0112))
+        let destination: Waypoint = Waypoint(coordinates: GeoCoordinates(latitude: 40.7203, longitude: -74.3122))
         
-        routingEngine.calculateRoute(with: [start, destination],
+        routingEngine.calculateRoute(with:  [start, destination],
                                      carOptions: CarOptions(),
-                                     completion: calculateRouteCompletionHandler)
+                                     completion: { (routingError, routes) in
+            if let error = routingError {
+                print("Error while calculating a route: \(error)")
+            }
+            
+            // When routingError is nil, routes is guaranteed to contain at least one route.
+            RouteCalculator.testRoute = routes?.first
+            self.showRouteOnMap(route: RouteCalculator.testRoute!)
+        })
+    }
+    
+    private func showRouteOnMap(route: Route) {
+        // Show route as polyline.
+        let routeGeoPolyline = route.geometry
+        let routeMapPolyline = MapPolyline(geometry: routeGeoPolyline,
+                                           widthInPixels: 20,
+                                           color: UIColor(red: 0,
+                                                          green: 0.56,
+                                                          blue: 0.54,
+                                                          alpha: 0.63))
+        mapView.mapScene.addMapPolyline(routeMapPolyline)
     }
 }

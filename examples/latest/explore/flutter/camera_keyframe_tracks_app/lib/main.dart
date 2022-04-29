@@ -17,9 +17,10 @@
  * License-Filename: LICENSE
  */
 
-import 'package:camera_keyframe_tracks_app/MenuSectionExpansionTile.dart';
-import 'package:camera_keyframe_tracks_app/animations/CameraKeyframeTracksExample.dart';
-import 'package:camera_keyframe_tracks_app/animations/RouteAnimationExample.dart';
+import 'package:camera_keyframe_tracks_app/helper/MenuSectionExpansionTile.dart';
+import 'package:camera_keyframe_tracks_app/CameraKeyframeTracksExample.dart';
+import 'package:camera_keyframe_tracks_app/RouteAnimationExample.dart';
+import 'package:camera_keyframe_tracks_app/helper/RouteCalculator.dart';
 import 'package:flutter/material.dart';
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/mapview.dart';
@@ -59,7 +60,6 @@ class CameraKeyframeTracksApp extends StatefulWidget {
 class _CameraKeyframeTracksAppState extends State<CameraKeyframeTracksApp> {
   late CameraKeyframeTracksExample _cameraKeyframeTracksExample;
   late RouteAnimationExample _routeAnimationExample;
-  late routes.Route? route;
 
   @override
   void dispose() {
@@ -92,33 +92,20 @@ class _CameraKeyframeTracksAppState extends State<CameraKeyframeTracksApp> {
     hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
       if (error == null) {
         hereMapController.mapScene.setLayerVisibility(MapSceneLayers.landmarks, VisibilityState.visible);
-
-        double distanceInMeters = 5000;
-        hereMapController.camera
-            .lookAtPointWithDistance(GeoCoordinates(40.7116777285189, -74.01248494562448), distanceInMeters);
-
+        hereMapController.camera.lookAtPoint(GeoCoordinates(40.7133, -74.0112));
         _cameraKeyframeTracksExample = CameraKeyframeTracksExample(hereMapController);
-        _routeAnimationExample = RouteAnimationExample(_showDialog, hereMapController);
+        _routeAnimationExample = RouteAnimationExample(hereMapController);
       } else {
         print("Map scene not loaded. MapError: " + error.toString());
       }
     });
   }
 
-  void _addRouteButtonClicked() {
-    route = _routeAnimationExample.calculateRoute();
-  }
-
-  void _clearMapButtonClicked() {
-    _routeAnimationExample.clearRoute();
-  }
-
   void _startAnimationAlongRouteButtonClicked() {
-    route = _routeAnimationExample.calculateRoute();
-    if (route != null) {
-      _routeAnimationExample.animateRoute(route);
+    if (RouteCalculator.testRoute != null) {
+      _routeAnimationExample.animateRoute(RouteCalculator.testRoute!);
     } else {
-      _showDialog("Route Empty: ", "First find a route to animate.");
+      print("Route Empty: No route for testing ...");
     }
   }
 
@@ -127,11 +114,10 @@ class _CameraKeyframeTracksAppState extends State<CameraKeyframeTracksApp> {
   }
 
   void _startAnimationToRouteButtonClicked() {
-    route = _routeAnimationExample.calculateRoute();
-    if (route != null) {
-      _routeAnimationExample.animateToRoute(route);
+    if (RouteCalculator.testRoute != null) {
+      _routeAnimationExample.animateToRoute(RouteCalculator.testRoute!);
     } else {
-      _showDialog("Route Empty: ", "First find a route to animate.");
+      print("Route Empty: No route for testing ...");
     }
   }
 
@@ -169,10 +155,6 @@ class _CameraKeyframeTracksAppState extends State<CameraKeyframeTracksApp> {
     );
     children.add(header);
 
-    // Add create route section.
-    var createRouteTile = _buildCreateRouteExpansionTile(context);
-    children.add(createRouteTile);
-
     // Add animate along section.
     var animationAlongRouteTile = _buildAnimateAlongRouteExpansionTile(context);
     children.add(animationAlongRouteTile);
@@ -186,16 +168,6 @@ class _CameraKeyframeTracksAppState extends State<CameraKeyframeTracksApp> {
     children.add(tripToNYCTile);
 
     return children;
-  }
-
-  // Build the menu entries for the create route section.
-  Widget _buildCreateRouteExpansionTile(BuildContext context) {
-    final List<MenuSectionItem> menuItems = [
-      MenuSectionItem("Add a route", _addRouteButtonClicked),
-      MenuSectionItem("Clear Map", _clearMapButtonClicked),
-    ];
-
-    return MenuSectionExpansionTile("Create route", menuItems);
   }
 
   // Build the menu entries for the animate along route section.
@@ -226,33 +198,5 @@ class _CameraKeyframeTracksAppState extends State<CameraKeyframeTracksApp> {
     ];
 
     return MenuSectionExpansionTile("Trip to NYC", menuItems);
-  }
-
-  // A helper method to show a dialog.
-  Future<void> _showDialog(String title, String message) async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(title),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(message),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 }

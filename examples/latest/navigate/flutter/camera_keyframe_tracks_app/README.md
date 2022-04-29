@@ -1,4 +1,4 @@
-The CameraKeyframeTracks example app shows how to use multiple keyframe tracks for map camera animations and how to animate to a route. You can find how this is done in [CameraKeyframeTracksExample.dart](lib/animations/CameraKeyframeTracksExample.dart).
+The CameraKeyframeTracks example app shows how to use multiple keyframe tracks for map camera animations and how to animate to a route. You can find how this is done in [CameraKeyframeTracksExample.dart](lib/CameraKeyframeTracksExample.dart).
 
 Build instructions:
 -------------------

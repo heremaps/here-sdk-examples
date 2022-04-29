@@ -265,7 +265,12 @@ public class App {
                .show();
     }
 
-    public void stopLocating() {
+    public void detach() {
+        // Disables TBT guidance (if running) and enters tracking mode.
+        navigationExample.stopNavigation();
+        // Disables positioning.
         navigationExample.stopLocating();
+        // Disables rendering.
+        navigationExample.stopRendering();
     }
 }

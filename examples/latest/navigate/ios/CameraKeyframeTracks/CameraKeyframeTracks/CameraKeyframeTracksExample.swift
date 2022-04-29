@@ -64,16 +64,7 @@ public class CameraKeyframeTracksExample {
             LocationKeyframeModel(geoCoordinates: GeoCoordinates(latitude: 40.78270548734745, longitude: -73.92189566092568), duration: TimeInterval(3)), // Hell gate Bridge
             LocationKeyframeModel(geoCoordinates: GeoCoordinates(latitude: 40.78406704306872, longitude: -73.91746017917936), duration: TimeInterval(2)), // Ralph Park
             LocationKeyframeModel(geoCoordinates: GeoCoordinates(latitude: 40.768075472169045, longitude: -73.97446921306035), duration: TimeInterval(2)), // Wollman Rink
-            LocationKeyframeModel(geoCoordinates: GeoCoordinates(latitude: 40.78255966255712, longitude: -73.9586425508515), duration: TimeInterval(3)), // Solomon Museum
-            LocationKeyframeModel(geoCoordinates: GeoCoordinates(latitude: 40.80253970834194, longitude: -73.93156255568137), duration: TimeInterval(3)), // Vintage Autobody
-            LocationKeyframeModel(geoCoordinates: GeoCoordinates(latitude: 40.79780371121212, longitude: -73.92238900253808), duration: TimeInterval(4)), // Robert Kennedy Bridge
-            LocationKeyframeModel(geoCoordinates: GeoCoordinates(latitude: 40.80771345637072, longitude: -73.93250541322794), duration: TimeInterval(3)), // Third Avenue Bridge
-            LocationKeyframeModel(geoCoordinates: GeoCoordinates(latitude: 40.820213148574766, longitude: -73.94930111845413), duration: TimeInterval(3)), // City College NYC
-            LocationKeyframeModel(geoCoordinates: GeoCoordinates(latitude: 40.84692287418771, longitude: -73.92803657908391), duration: TimeInterval(1)), // Washington Bridge
-            LocationKeyframeModel(geoCoordinates: GeoCoordinates(latitude: 40.85851487236918, longitude: -73.91388539084845), duration: TimeInterval(2)), // Hall of Fame for Americans
-            LocationKeyframeModel(geoCoordinates: GeoCoordinates(latitude: 40.87784894879347, longitude: -73.92238697760786), duration: TimeInterval(2)), // Henry Hudson Bridge
-            LocationKeyframeModel(geoCoordinates: GeoCoordinates(latitude: 40.881034859141806, longitude: -73.920040015101), duration: TimeInterval(1.5)), // Henry Hudson Park
-            LocationKeyframeModel(geoCoordinates: GeoCoordinates(latitude: 41.067415618493946, longitude: -73.86134115274218), duration: TimeInterval(1)) // Transfiguration Church
+            LocationKeyframeModel(geoCoordinates: GeoCoordinates(latitude: 40.78255966255712, longitude: -73.9586425508515), duration: TimeInterval(3)) // Solomon Museum
         ])
         
         return locationList
@@ -101,8 +92,10 @@ public class CameraKeyframeTracksExample {
         var scalarList: [ScalarKeyframeModel] = []
         
         scalarList.append(ScalarKeyframeModel(scalar: 80000000.0, duration: TimeInterval(0)))
-        scalarList.append(ScalarKeyframeModel(scalar: 8000000.0, duration: TimeInterval(4)))
-        scalarList.append(ScalarKeyframeModel(scalar: 500.0, duration: TimeInterval(5)))
+        scalarList.append(ScalarKeyframeModel(scalar: 8000000.0, duration: TimeInterval(2)))
+        scalarList.append(ScalarKeyframeModel(scalar: 8000.0, duration: TimeInterval(2)))
+        scalarList.append(ScalarKeyframeModel(scalar: 1000.0, duration: TimeInterval(2)))
+        scalarList.append(ScalarKeyframeModel(scalar: 500.0, duration: TimeInterval(3)))
         
         return scalarList
     }

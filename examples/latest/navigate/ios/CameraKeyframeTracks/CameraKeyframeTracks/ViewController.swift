@@ -67,25 +67,14 @@ final class ViewController: UIViewController {
         performSegue(withIdentifier: "showMenu", sender: nil)
     }
     
-    private func onAddRouteButtonClicked(_ sender: Any) {
-        if isMapSceneLoaded {
-            routeAnimationExample.calculateRoute()
-        }
-    }
-    
-    private func onClearMapButtonClicked(_ sender: Any) {
-        if isMapSceneLoaded {
-            routeAnimationExample.clearRoute()
-        }
-    }
-    
     private func onStartAnimationAlongRouteButtonClicked(_ sender: Any) {
         if isMapSceneLoaded {
-            if let route = routeAnimationExample.getRoute() {
-                routeAnimationExample.animateRoute(route: route)
-            } else {
-                print("Error: Route calculation not done yet.")
+            guard let route = RouteCalculator.testRoute else {
+                print("Error: Error: No route for testing ...")
+                return
             }
+            
+            routeAnimationExample.animateRoute(route: route)
         }
     }
     
@@ -97,11 +86,12 @@ final class ViewController: UIViewController {
     
     private func onStartAnimationToRouteButtonClicked(_ sender: Any) {
         if isMapSceneLoaded {
-            if let route = routeAnimationExample.getRoute() {
-                routeAnimationExample.animateToRoute(route: route)
-            } else {
-                print("Error: Route calculation not done yet.")
+            guard let route = RouteCalculator.testRoute else {
+                print("Error: Error: No route for testing ...")
+                return
             }
+            
+            routeAnimationExample.animateToRoute(route: route)
         }
     }
     
@@ -126,18 +116,10 @@ final class ViewController: UIViewController {
     // A helper method to build drawer menu items.
     private func buildMenuSections() -> [MenuSection] {
         return [
-            buildCreateRouteMenuSection(),
             buildAnimateAlongRouteMenuSection(),
             buildAnimateToRouteMenuSection(),
             buildTripToNYCMenuSection(),
         ]
-    }
-    
-    private func buildCreateRouteMenuSection() -> MenuSection {
-        return MenuSection(title: "Create route", items: [
-            MenuItem(title: "Add a route", onSelect: onAddRouteButtonClicked),
-            MenuItem(title: "Clear Map", onSelect: onClearMapButtonClicked),
-        ])
     }
     
     private func buildAnimateAlongRouteMenuSection() -> MenuSection {
