@@ -4,7 +4,7 @@
 ![Platform](https://img.shields.io/badge/platform-Android-green.svg)
 ![Language](https://img.shields.io/badge/language-Java%208-orange.svg)
 ![Platform](https://img.shields.io/badge/platform-iOS-green.svg)
-![Language](https://img.shields.io/badge/language-Swift%205.1.2-orange.svg)
+![Language](https://img.shields.io/badge/language-Swift%205.3.2-orange.svg)
 
 In this repository you can find the [latest example apps](examples/latest) that show key features of the HERE SDK in ready-to-use applications. 
 
