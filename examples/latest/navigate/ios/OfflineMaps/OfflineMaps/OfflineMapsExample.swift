@@ -21,7 +21,7 @@ import heresdk
 import UIKit
 
 class OfflineMapsExample : DownloadRegionsStatusListener {
-   
+
     private let mapView: MapView
     private var mapDownloader: MapDownloader?
     private var mapUpdater: MapUpdater?
@@ -52,28 +52,28 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
         // Note that the default storage path can be adapted when creating a new SDKNativeEngine.
         let storagePath = sdkNativeEngine.options.cachePath
         showMessage("This example allows to download the region Switzerland. StoragePath: \(storagePath).")
-        
+
         // Create MapDownloader in background to not block the UI thread.
         MapDownloader.fromEngineAsync(sdkNativeEngine, { mapDownloader in
             self.mapDownloader = mapDownloader
-            
+
             // Checks the status of already downloaded map data and eventually repairs it.
             // Important: For production-ready apps, it is recommended to not do such operations silently in
             // the background and instead inform the user.
             self.checkInstallationStatus()
         })
-        
+
         // Create MapUpdater in background to not block the UI thread.
         MapUpdater.fromEngineAsync(sdkNativeEngine, { mapUpdater in
             self.mapUpdater = mapUpdater
-            
+
             self.performUpdateChecks()
         })
     }
 
     private func performUpdateChecks() {
         logCurrentMapVersion()
-        
+
         // Checks if map updates are available for any of the already downloaded maps.
         // If a new map download is started via MapDownloader during an update process,
         // an NotReady error is indicated.
@@ -85,13 +85,13 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
         // download can be interrupted by the OS.
         checkForMapUpdates()
     }
-    
+
     func onDownloadListClicked() {
         guard let mapDownloader = mapDownloader else {
             showMessage("MapDownloader instance not ready. Try again.")
             return
         }
-        
+
         // Download a list of Region items that will tell us what map regions are available for later download.
         _ = mapDownloader.getDownloadableRegions(languageCode: LanguageCode.deDe,
                                                  completion: onDownloadableRegionsCompleted)
@@ -128,7 +128,7 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
             showMessage("MapDownloader instance not ready. Try again.")
             return
         }
-        
+
         // Find region for Switzerland using the German name as identifier.
         // Note that we requested the list of regions in German above.
         let swizNameInGerman = "Schweiz"
@@ -207,13 +207,13 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
         showMessage("Cancelled \(mapDownloaderTasks.count) download tasks in list.")
         mapDownloaderTasks.removeAll()
     }
-        
+
     private func logCurrentMapVersion() {
         guard let mapUpdater = mapUpdater else {
             showMessage("MapUpdater instance not ready. Try again.")
             return
         }
-        
+
         do {
             let mapVersionHandle = try mapUpdater.getCurrentMapVersion()
             print("Installed map version: \(String(describing: mapVersionHandle.stringRepresentation(separator: ",")))")
@@ -221,13 +221,13 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
             fatalError("Get current map version failed: \(mapLoaderException.localizedDescription)")
         }
     }
-    
+
     private func checkForMapUpdates() {
         guard let mapUpdater = mapUpdater else {
             showMessage("MapUpdater instance not ready. Try again.")
             return
         }
-        
+
         _ = mapUpdater.checkMapUpdate(completion: onMapUpdateCompled)
     }
 
@@ -246,7 +246,7 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
 
         print("MapUpdateCheck: No map update available. Latest versions are already installed.");
     }
-    
+
     // Downloads and installs map updates for any of the already downloaded regions.
     // Note that this example only shows how to download one region.
     private func performMapUpdate() {
@@ -254,14 +254,14 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
             showMessage("MapUpdater instance not ready. Try again.")
             return
         }
-        
+
         // This method conveniently updates all installed regions if an update is available.
         // Optionally, you can use the returned MapUpdateTask to pause / resume or cancel the update.
         _ = mapUpdater.performMapUpdate(completion: mapUpdateListenerImpl)
     }
-    
+
     private let mapUpdateListenerImpl = MapUpdateListenerImpl()
-    
+
     private class MapUpdateListenerImpl : MapUpdateProgressListener {
         // Conform to the MapUpdateProgressListener protocol.
         func onPause(error: heresdk.MapLoaderError?) {
@@ -276,7 +276,7 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
         func onProgress(region: RegionId, percentage: Int32) {
             print("MapUpdate: Downloading and installing a map update. Progress for \(region.id): \(percentage)%.")
         }
-        
+
         // Conform to the MapUpdateProgressListener protocol.
         func onComplete(error: MapLoaderError?) {
             if let mapLoaderError = error {
@@ -284,8 +284,13 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
                 return
             }
             print("MapUpdate: One or more map update has been successfully installed.")
+
+            // It is recommend to call now also `getDownloadableRegions()` to update
+            // the internal catalog data that is needed to download, update or delete
+            // existing `Region` data. It is required to do this at least once
+            // before doing a new download, update or delete operation.
         }
-        
+
         // Conform to the MapUpdateProgressListener protocol.
         func onResume() {
             print("MapUpdate: A previously paused map update has been resumed.")
@@ -328,7 +333,7 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
             showMessage("MapDownloader instance not ready. Try again.")
             return
         }
-        
+
         // Note that this value will not change during the lifetime of an app.
         let persistentMapStatus = mapDownloader.getInitialPersistentMapStatus()
         if persistentMapStatus != PersistentMapStatus.ok {
@@ -340,7 +345,7 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
             mapDownloader.repairPersistentMap(completion: onMapRepairCompleted)
         }
     }
-    
+
     // Completion handler to get notified whether map reparation was successful or not.
     private func onMapRepairCompleted(persistentMapRepairError: PersistentMapRepairError?) {
         if persistentMapRepairError == nil {
@@ -349,7 +354,7 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
         }
         print("RepairPersistentMap: Repair operation failed: \(String(describing: persistentMapRepairError))")
     }
-    
+
     // A permanent view to show scrollablelog content.
     private var messageTextView = UITextView()
     private func showMessage(_ message: String) {

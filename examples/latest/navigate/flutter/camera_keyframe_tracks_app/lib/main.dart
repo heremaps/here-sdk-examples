@@ -24,7 +24,6 @@ import 'package:camera_keyframe_tracks_app/helper/RouteCalculator.dart';
 import 'package:flutter/material.dart';
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/mapview.dart';
-import 'package:here_sdk/routing.dart' as routes;
 
 void main() {
   SdkContext.init(IsolateOrigin.main);
@@ -101,18 +100,6 @@ class _CameraKeyframeTracksAppState extends State<CameraKeyframeTracksApp> {
     });
   }
 
-  void _startAnimationAlongRouteButtonClicked() {
-    if (RouteCalculator.testRoute != null) {
-      _routeAnimationExample.animateRoute(RouteCalculator.testRoute!);
-    } else {
-      print("Route Empty: No route for testing ...");
-    }
-  }
-
-  void _stopAnimationAlongRouteButtonClicked() {
-    _routeAnimationExample.stopRouteAnimation();
-  }
-
   void _startAnimationToRouteButtonClicked() {
     if (RouteCalculator.testRoute != null) {
       _routeAnimationExample.animateToRoute(RouteCalculator.testRoute!);
@@ -155,10 +142,6 @@ class _CameraKeyframeTracksAppState extends State<CameraKeyframeTracksApp> {
     );
     children.add(header);
 
-    // Add animate along section.
-    var animationAlongRouteTile = _buildAnimateAlongRouteExpansionTile(context);
-    children.add(animationAlongRouteTile);
-
     // Add animate to route section.
     var animateToRouteTile = _buildAnimateToRouteExpansionTile(context);
     children.add(animateToRouteTile);
@@ -168,16 +151,6 @@ class _CameraKeyframeTracksAppState extends State<CameraKeyframeTracksApp> {
     children.add(tripToNYCTile);
 
     return children;
-  }
-
-  // Build the menu entries for the animate along route section.
-  Widget _buildAnimateAlongRouteExpansionTile(BuildContext context) {
-    final List<MenuSectionItem> menuItems = [
-      MenuSectionItem("Start Animation", _startAnimationAlongRouteButtonClicked),
-      MenuSectionItem("Stop Animation", _stopAnimationAlongRouteButtonClicked),
-    ];
-
-    return MenuSectionExpansionTile("Animate along route", menuItems);
   }
 
   // Build the menu entries for the animate to route section.

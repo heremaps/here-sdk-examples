@@ -20,6 +20,14 @@
 package com.here;
 
 import com.here.sdk.core.Angle;
+import com.here.sdk.core.GeoCoordinates;
+import com.here.sdk.core.GeoCoordinatesUpdate;
+import com.here.sdk.core.GeoOrientation;
+import com.here.sdk.mapview.MapCamera;
+import com.here.sdk.mapview.MapCameraAnimation;
+import com.here.sdk.mapview.MapCameraAnimationFactory;
+import com.here.sdk.mapview.MapView;
+import com.here.time.Duration;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,11 +35,13 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestBasicTypes {
@@ -62,5 +72,51 @@ public class TestBasicTypes {
         verify(angleMock, times(1)).getDegrees();
         verifyNoMoreInteractions(Angle.StaticMockHelperInstance);
         verifyNoMoreInteractions(angleMock);
+    }
+
+    @Test
+    public void testMethodsAndVariables() {
+        GeoCoordinates targetCoordinates = mock(GeoCoordinates.class);
+        GeoOrientation orientationAtTarget = mock(GeoOrientation.class);
+        double distanceInMeters = 5000.0;
+        double zoomLevel = 1000.0;
+
+        double bowFactor = 1;
+        Duration duration = mock(Duration.class);
+        GeoCoordinatesUpdate geoCoordinatesUpdate = mock(GeoCoordinatesUpdate.class);
+
+        MapView mapView = mock(MapView.class);
+        // When mock is declared as lenient none of its stubbings will be checked for 'unnecessary stubbing' for
+        // stubs such as doThrow or doNothing as we need it testing void method.
+        MapCamera mapCamera = mock(MapCamera.class, withSettings().lenient());
+        MapCamera.State state = new MapCamera.State(targetCoordinates, orientationAtTarget, distanceInMeters, zoomLevel);
+
+        MapCameraAnimation mapCameraAnimation = mock(MapCameraAnimation.class);
+        MapCameraAnimationFactory.StaticMockHelperInstance = mock(MapCameraAnimationFactory.StaticMockHelper.class);
+
+        when(mapView.getWidth()).thenReturn(100);
+        when(mapView.getHeight()).thenReturn(100);
+        when(mapCamera.getState()).thenReturn(state);
+        when(MapCameraAnimationFactory.StaticMockHelperInstance.flyTo(geoCoordinatesUpdate, bowFactor, duration)).thenReturn(mapCameraAnimation);
+
+        // This verifies that the HERE SDK's MapView can be mocked as expected.
+        assertEquals(100, mapView.getWidth());
+        assertEquals(100, mapView.getHeight());
+
+        // This verifies that the HERE SDK's MapCamera can be mocked as expected.
+        assertEquals(state, mapCamera.getState());
+        assertEquals(mapCameraAnimation, MapCameraAnimationFactory.StaticMockHelperInstance.flyTo(geoCoordinatesUpdate, bowFactor, duration));
+
+        doThrow(IllegalArgumentException.class).when(mapCamera).startAnimation(mapCameraAnimation);
+
+        verify(mapView, times(1)).getWidth();
+        verify(mapView, times(1)).getHeight();
+        verify(mapCamera, times(1)).getState();
+        verify(MapCameraAnimationFactory.StaticMockHelperInstance, times(1)).flyTo(geoCoordinatesUpdate, bowFactor, duration);
+
+        verifyNoMoreInteractions(mapView);
+        verifyNoMoreInteractions(mapCamera);
+        verifyNoMoreInteractions(mapCameraAnimation);
+        verifyNoMoreInteractions(MapCameraAnimationFactory.StaticMockHelperInstance);
     }
 }

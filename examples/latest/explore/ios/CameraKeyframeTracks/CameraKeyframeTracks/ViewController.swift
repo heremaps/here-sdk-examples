@@ -67,23 +67,6 @@ final class ViewController: UIViewController {
         performSegue(withIdentifier: "showMenu", sender: nil)
     }
     
-    private func onStartAnimationAlongRouteButtonClicked(_ sender: Any) {
-        if isMapSceneLoaded {
-            guard let route = RouteCalculator.testRoute else {
-                print("Error: Error: No route for testing ...")
-                return
-            }
-            
-            routeAnimationExample.animateRoute(route: route)
-        }
-    }
-    
-    private func onStopAnimationAlongRouteButtonClicked(_ sender: Any) {
-        if isMapSceneLoaded {
-            routeAnimationExample.stopRouteAnimation()
-        }
-    }
-    
     private func onStartAnimationToRouteButtonClicked(_ sender: Any) {
         if isMapSceneLoaded {
             guard let route = RouteCalculator.testRoute else {
@@ -116,17 +99,9 @@ final class ViewController: UIViewController {
     // A helper method to build drawer menu items.
     private func buildMenuSections() -> [MenuSection] {
         return [
-            buildAnimateAlongRouteMenuSection(),
             buildAnimateToRouteMenuSection(),
             buildTripToNYCMenuSection(),
         ]
-    }
-    
-    private func buildAnimateAlongRouteMenuSection() -> MenuSection {
-        return MenuSection(title: "Animate along route", items: [
-            MenuItem(title: "Start Animation", onSelect: onStartAnimationAlongRouteButtonClicked),
-            MenuItem(title: "Stop Animation", onSelect: onStopAnimationAlongRouteButtonClicked),
-        ])
     }
     
     private func buildAnimateToRouteMenuSection() -> MenuSection {

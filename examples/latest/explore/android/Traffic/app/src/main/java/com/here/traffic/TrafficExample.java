@@ -29,14 +29,21 @@ import com.here.sdk.core.Color;
 import com.here.sdk.core.GeoCircle;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.GeoPolyline;
+import com.here.sdk.core.Point2D;
+import com.here.sdk.core.Rectangle2D;
+import com.here.sdk.core.Size2D;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.mapview.MapCamera;
 import com.here.sdk.mapview.MapPolyline;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapView;
+import com.here.sdk.mapview.MapViewBase;
+import com.here.sdk.mapview.PickMapContentResult;
 import com.here.sdk.mapview.VisibilityState;
 import com.here.sdk.traffic.TrafficEngine;
 import com.here.sdk.traffic.TrafficIncident;
+import com.here.sdk.traffic.TrafficIncidentLookupCallback;
+import com.here.sdk.traffic.TrafficIncidentLookupOptions;
 import com.here.sdk.traffic.TrafficIncidentsQueryCallback;
 import com.here.sdk.traffic.TrafficIncidentsQueryOptions;
 import com.here.sdk.traffic.TrafficQueryError;
@@ -67,11 +74,11 @@ public class TrafficExample {
             throw new RuntimeException("Initialization of TrafficEngine failed: " + e.error.name());
         }
 
-        // Setting a tap handler to search for traffic incidents around the tapped area.
+        // Setting a tap handler to pick and search for traffic incidents around the tapped area.
         setTapGestureHandler();
 
         showDialog("Note",
-                "Tap on the map to search for traffic incidents.");
+                "Tap on the map to pick a traffic incident.");
     }
 
     public void enableAll() {
@@ -101,10 +108,79 @@ public class TrafficExample {
     private void setTapGestureHandler() {
         mapView.getGestures().setTapListener(touchPoint -> {
             GeoCoordinates touchGeoCoords = mapView.viewToGeoCoordinates(touchPoint);
+            // Can be null when the map was tilted and the sky was tapped.
             if (touchGeoCoords != null) {
-                 queryForIncidents(touchGeoCoords);
+                // Pick incidents that are shown in MapScene.Layers.TRAFFIC_INCIDENTS.
+                pickTrafficIncident(touchPoint);
+
+                // Query for incidents independent of MapScene.Layers.TRAFFIC_INCIDENTS.
+                queryForIncidents(touchGeoCoords);
             }
         });
+    }
+
+    // Traffic incidents can only be picked, when MapScene.Layers.TRAFFIC_INCIDENTS is visible.
+    private void pickTrafficIncident(Point2D touchPointInPixels) {
+        // Center the rectangle on the touch location.
+        Point2D originInPixels = new Point2D(touchPointInPixels.x - 50/2, touchPointInPixels.y - 50/2);
+        Size2D sizeInPixels = new Size2D(50, 50);
+        Rectangle2D rectangle = new Rectangle2D(originInPixels, sizeInPixels);
+
+        mapView.pickMapContent(rectangle, new MapViewBase.PickMapContentCallback() {
+            @Override
+            public void onPickMapContent(@Nullable PickMapContentResult pickMapContentResult) {
+                if (pickMapContentResult == null) {
+                    // An error occurred while performing the pick operation.
+                    return;
+                }
+
+                List<PickMapContentResult.TrafficIncidentResult> trafficIncidents =
+                        pickMapContentResult.getTrafficIncidents();
+                if (trafficIncidents.size() == 0) {
+                    Log.d(TAG, "No traffic incident found at picked location");
+                } else {
+                    Log.d(TAG, "Picked at least one incident.");
+                    PickMapContentResult.TrafficIncidentResult firstIncident = trafficIncidents.get(0);
+                    showDialog("Traffic incident picked:", "Type: " +
+                            firstIncident.getType().name());
+
+                    // Find more details by looking up the ID via TrafficEngine.
+                    findIncidentByID(firstIncident.getOriginalId());
+                }
+
+                // Optionally, look for more map content like embedded POIs.
+            }
+        });
+    }
+
+    private void findIncidentByID(long originalId) {
+        TrafficIncidentLookupOptions trafficIncidentsQueryOptions = new TrafficIncidentLookupOptions();
+        // Optionally, specify a language:
+        // the language of the country where the incident occurs is used.
+        // trafficIncidentsQueryOptions.languageCode = LanguageCode.EN_US;
+        trafficEngine.lookupIncident(String.valueOf(originalId), trafficIncidentsQueryOptions, new TrafficIncidentLookupCallback() {
+            @Override
+            public void onTrafficIncidentFetched(@Nullable TrafficQueryError trafficQueryError, @Nullable TrafficIncident trafficIncident) {
+                if (trafficQueryError == null) {
+                    Log.d(TAG, "Fetched TrafficIncident from lookup request." +
+                            " Description: " + trafficIncident.getDescription().text);
+                    addTrafficIncidentsMapPolyline(trafficIncident.getLocation().polyline);
+                } else {
+                    showDialog("TrafficLookupError:", trafficQueryError.toString());
+                }
+            }
+        });
+    }
+
+    private void addTrafficIncidentsMapPolyline(GeoPolyline geoPolyline) {
+        // Show traffic incident as polyline.
+        float widthInPixels = 20;
+        MapPolyline routeMapPolyline = new MapPolyline(geoPolyline,
+                widthInPixels,
+                Color.valueOf(0, 0, 0, 0.5f)); // RGBA
+
+        mapView.getMapScene().addMapPolyline(routeMapPolyline);
+        mapPolylines.add(routeMapPolyline);
     }
 
     private void queryForIncidents(GeoCoordinates centerCoords) {
@@ -120,20 +196,18 @@ public class TrafficExample {
                                                   @Nullable List<TrafficIncident> trafficIncidentsList) {
                 if (trafficQueryError == null) {
                     // If error is null, it is guaranteed that the list will not be null.
-                    String trafficMessage = "Found " + trafficIncidentsList.size() + " result(s). See log for details.";
+                    String trafficMessage = "Found " + trafficIncidentsList.size() + " result(s).";
                     TrafficIncident nearestIncident =
                             getNearestTrafficIncident(centerCoords, trafficIncidentsList);
                     if (nearestIncident != null) {
                         trafficMessage += " Nearest incident: " + nearestIncident.getDescription().text;
                     }
-                    showDialog("Nearby traffic incidents", trafficMessage);
-
+                    Log.d(TAG, "Nearby traffic incidents: " + trafficMessage);
                     for (TrafficIncident trafficIncident : trafficIncidentsList) {
                         Log.d(TAG, "" + trafficIncident.getDescription().text);
-                        addTrafficIncidentsMapPolyline(trafficIncident.getLocation().polyline);
                     }
                 } else {
-                    showDialog("TrafficQueryError:", trafficQueryError.toString());
+                    Log.d(TAG, "TrafficQueryError: " + trafficQueryError.toString());
                 }
             }
         });
@@ -162,17 +236,6 @@ public class TrafficExample {
         }
 
         return nearestTrafficIncident;
-    }
-
-    private void addTrafficIncidentsMapPolyline(GeoPolyline geoPolyline) {
-        // Show traffic incident as polyline.
-        float widthInPixels = 20;
-        MapPolyline routeMapPolyline = new MapPolyline(geoPolyline,
-                widthInPixels,
-                Color.valueOf(0, 0, 0, 0.5f)); // RGBA
-
-        mapView.getMapScene().addMapPolyline(routeMapPolyline);
-        mapPolylines.add(routeMapPolyline);
     }
 
     private void clearTrafficIncidentsMapPolylines() {
