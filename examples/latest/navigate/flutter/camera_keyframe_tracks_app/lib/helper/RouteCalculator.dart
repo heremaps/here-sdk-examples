@@ -54,7 +54,7 @@ class RouteCalculator {
 
   void _showRouteOnMap(routes.Route route) {
     // Show route as polyline.
-    GeoPolyline routeGeoPolyline = route!.geometry;
+    GeoPolyline routeGeoPolyline = route.geometry;
     double widthInPixels = 20;
     MapPolyline routeMapPolyline =
     MapPolyline(routeGeoPolyline, widthInPixels, const Color.fromARGB(160, 0, 144, 138)); // RGBA

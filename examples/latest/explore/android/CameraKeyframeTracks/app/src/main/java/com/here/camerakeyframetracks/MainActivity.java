@@ -112,11 +112,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         switch (item.getItemId()) {
-            case R.id.startRouteAnimation:
-                // An animation that moves the camera along a route.
-                routeAnimationExample.animateRoute(RouteCalculator.testRoute);
-                return true;
-            case R.id.stopRouteAnimation:
             case R.id.stopToRouteAnimation:
                 routeAnimationExample.stopRouteAnimation();
                 return true;

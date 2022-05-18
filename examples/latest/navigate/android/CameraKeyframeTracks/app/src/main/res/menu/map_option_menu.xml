@@ -2,17 +2,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:id="@+id/animateRoute"
-        android:title="Animate along route"
-        app:showAsAction="never">
-        <menu>
-            <item android:id="@+id/startRouteAnimation"
-                android:title="Start Route Animation"/>
-            <item android:id="@+id/stopRouteAnimation"
-                android:title="Stop Route Animation"/>
-        </menu>
-    </item>
-
     <item android:id="@+id/animateToRoute"
         android:title="Animate to route"
         app:showAsAction="never">

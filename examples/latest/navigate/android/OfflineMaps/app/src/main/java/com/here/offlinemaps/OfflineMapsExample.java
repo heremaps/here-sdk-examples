@@ -426,6 +426,11 @@ public class OfflineMapsExample {
                 String message = "One or more map update has been successfully installed.";
                 Log.d("MapUpdate", message);
                 logCurrentMapVersion();
+
+                // It is recommend to call now also `getDownloadableRegions()` to update
+                // the internal catalog data that is needed to download, update or delete
+                // existing `Region` data. It is required to do this at least once
+                // before doing a new download, update or delete operation.
             }
         });
     }
