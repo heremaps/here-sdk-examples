@@ -33,8 +33,9 @@ class TrafficExample: TapDelegate {
         self.viewController = viewController
         self.mapView = mapView
         let camera = mapView.camera
+        let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 10)
         camera.lookAt(point: GeoCoordinates(latitude: 52.520798, longitude: 13.409408),
-                      distanceInMeters: 1000 * 10)
+                      zoom: distanceInMeters)
 
         do {
             try trafficEngine = TrafficEngine()
@@ -42,11 +43,11 @@ class TrafficExample: TapDelegate {
             fatalError("Failed to initialize TrafficEngine. Cause: \(engineInstantiationError)")
         }
 
-        // Setting a tap handler to search for traffic incidents around the tapped area.
+        // Setting a tap handler to pick and search for traffic incidents around the tapped area.
         mapView.gestures.tapDelegate = self
 
         showDialog(title: "Note",
-                   message: "Tap on the map to search for traffic incidents.")
+                   message: "Tap on the map to pick a traffic incident.")
     }
 
     func onEnableAllButtonClicked() {
@@ -75,10 +76,81 @@ class TrafficExample: TapDelegate {
 
     // Conforming to TapDelegate protocol.
     func onTap(origin: Point2D) {
+        // Can be nil when the map was tilted and the sky was tapped.
         if let touchGeoCoords = mapView.viewToGeoCoordinates(viewCoordinates: origin) {
             tappedGeoCoordinates = touchGeoCoords
+
+            // Pick incidents that are shown in MapScene.Layers.trafficIncidents.
+            pickTrafficIncident(touchPointInPixels: origin)
+
+            // Query for incidents independent of MapScene.Layers.trafficIncidents.
             queryForIncidents(centerCoords: tappedGeoCoordinates)
         }
+    }
+
+    // Traffic incidents can only be picked, when MapScene.Layers.trafficIncidents is visible.
+    func pickTrafficIncident(touchPointInPixels: Point2D) {
+        // Center the rectangle on the touch location.
+        let originInPixels = Point2D(x: touchPointInPixels.x - 50/2, y: touchPointInPixels.y - 50/2)
+        let sizeInPixels = Size2D(width: 50, height: 50)
+        let rectangle = Rectangle2D(origin: originInPixels, size: sizeInPixels)
+        
+        mapView.pickMapContent(inside: rectangle, completion: onPickMapContent)
+    }
+
+    // MapViewBase.PickMapContentHandler to receive picked map content.
+    func onPickMapContent(mapContentResult: PickMapContentResult?) {
+        if mapContentResult == nil {
+            // An error occurred while performing the pick operation.
+            return
+        }
+
+        let trafficIncidents = mapContentResult!.trafficIncidents
+        if trafficIncidents.count == 0 {
+            print("No traffic incident found at picked location")
+        } else {
+            print("Picked at least one incident.")
+            let firstIncident = trafficIncidents.first!
+            showDialog(title: "Traffic incident picked:", message: "Type: \(firstIncident.type.rawValue)")
+
+            // Find more details by looking up the ID via TrafficEngine.
+            findIncidentByID(firstIncident.originalId)
+        }
+
+        // Optionally, look for more map content like embedded POIs.
+    }
+    
+    func findIncidentByID(_ originalId: Int64) {
+        let trafficIncidentsLookupOptions = TrafficIncidentLookupOptions()
+        // Optionally, specify a language:
+        // the language of the country where the incident occurs is used.
+        // trafficIncidentsLookupOptions.languageCode = LanguageCode.EN_US
+        trafficEngine.lookupIncident(with: String(originalId),
+                                     lookupOptions: trafficIncidentsLookupOptions,
+                                     completion: onTrafficIncidentCompletion)
+    }
+
+    // TrafficIncidentCompletionHandler to receive traffic incidents from ID.
+    func onTrafficIncidentCompletion(trafficQueryError: TrafficQueryError?, trafficIncident: TrafficIncident?) {
+        if trafficQueryError == nil {
+            print("Fetched TrafficIncident from lookup request." +
+                    " Description: " + trafficIncident!.description.text)
+            addTrafficIncidentsMapPolyline(geoPolyline: trafficIncident!.location.polyline)
+        } else {
+            showDialog(title: "TrafficLookupError:", message: trafficQueryError.debugDescription)
+        }
+    }
+    
+    private func addTrafficIncidentsMapPolyline(geoPolyline: GeoPolyline) {
+        // Show traffic incident as polyline.
+        let mapPolyline = MapPolyline(geometry: geoPolyline,
+                                      widthInPixels: 20,
+                                      color: UIColor(red: 0,
+                                                     green: 0,
+                                                     blue: 0,
+                                                     alpha: 0.5))
+        mapView.mapScene.addMapPolyline(mapPolyline)
+        mapPolylineList.append(mapPolyline)
     }
 
     private func queryForIncidents(centerCoords: GeoCoordinates) {
@@ -90,7 +162,7 @@ class TrafficExample: TapDelegate {
         // trafficIncidentsQueryOptions.languageCode = LanguageCode.enUs
         trafficEngine.queryForIncidents(inside: geoCircle,
                                         queryOptions: trafficIncidentsQueryOptions,
-                                        completion: onTrafficIncidentsFound);
+                                        completion: onTrafficIncidentsFound)
     }
 
     // TrafficIncidentQueryCompletionHandler to receive traffic items.
@@ -102,12 +174,11 @@ class TrafficExample: TapDelegate {
         }
 
         // If error is nil, it is guaranteed that the list will not be nil.
-        var trafficMessage = "Found \(trafficIncidentsList!.count) result(s). See log for details."
+        var trafficMessage = "Found \(trafficIncidentsList!.count) result(s)."
         let nearestIncident = getNearestTrafficIncident(currentGeoCoords: tappedGeoCoordinates,
                                                         trafficIncidentsList: trafficIncidentsList!)
         trafficMessage.append(contentsOf: " Nearest incident: \(nearestIncident?.description.text ?? "nil")")
-        showDialog(title: "Nearby traffic incidents",
-                   message: trafficMessage)
+        print("Nearby traffic incidents: \(trafficMessage)")
 
         for trafficIncident in trafficIncidentsList! {
             print(trafficIncident.description.text)
@@ -137,18 +208,6 @@ class TrafficExample: TapDelegate {
         }
 
         return nearestTrafficIncident
-    }
-
-    private func addTrafficIncidentsMapPolyline(geoPolyline: GeoPolyline) {
-        // Show traffic incident as polyline.
-        let mapPolyline = MapPolyline(geometry: geoPolyline,
-                                      widthInPixels: 20,
-                                      color: UIColor(red: 0,
-                                                     green: 0,
-                                                     blue: 0,
-                                                     alpha: 0.5))
-        mapView.mapScene.addMapPolyline(mapPolyline)
-        mapPolylineList.append(mapPolyline)
     }
 
     private func clearTrafficIncidentsMapPolylines() {
