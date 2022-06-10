@@ -33,6 +33,7 @@ import com.here.sdk.mapview.MapCameraAnimationFactory;
 import com.here.sdk.mapview.MapImage;
 import com.here.sdk.mapview.MapImageFactory;
 import com.here.sdk.mapview.MapMarker;
+import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapView;
 import com.here.time.Duration;
 
@@ -52,7 +53,8 @@ public class MapViewPinExample {
         this.mapView = mapView;
         mapCamera = mapView.getCamera();
         double distanceToEarthInMeters = 7000;
-        mapCamera.lookAt(MAP_CENTER_GEO_COORDINATES, distanceToEarthInMeters);
+        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceToEarthInMeters);
+        mapCamera.lookAt(MAP_CENTER_GEO_COORDINATES, mapMeasureZoom);
 
         // Add circle to indicate map center.
         addCircle(MAP_CENTER_GEO_COORDINATES);

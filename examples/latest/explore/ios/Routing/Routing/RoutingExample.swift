@@ -34,8 +34,9 @@ class RoutingExample {
         self.viewController = viewController
         self.mapView = mapView
         let camera = mapView.camera
+        let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 10)
         camera.lookAt(point: GeoCoordinates(latitude: 52.520798, longitude: 13.409408),
-                      distanceInMeters: 1000 * 10)
+                      zoom: distanceInMeters)
 
         do {
             try routingEngine = RoutingEngine()
@@ -84,8 +85,8 @@ class RoutingExample {
         
         for (i, sections) in route.sections.enumerated() {
             print("Route Section : " + String(i));
-            print("Route Section Departure Time : " + dateFormatter.string(from: sections.departureTime!));
-            print("Route Section Arrival Time : " + dateFormatter.string(from: sections.arrivalTime!));
+            print("Route Section Departure Time : " + dateFormatter.string(from: sections.departureLocationTime!.localTime));
+            print("Route Section Arrival Time : " + dateFormatter.string(from: sections.arrivalLocationTime!.localTime));
             print("Route Section length : " + "\(sections.lengthInMeters)" + " m");
             print("Route Section duration : " + "\(sections.duration)" + " s");
         }

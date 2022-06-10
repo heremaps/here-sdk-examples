@@ -23,6 +23,7 @@ import 'package:camera_keyframe_tracks_app/RouteAnimationExample.dart';
 import 'package:camera_keyframe_tracks_app/helper/RouteCalculator.dart';
 import 'package:flutter/material.dart';
 import 'package:here_sdk/core.dart';
+import 'package:here_sdk/core.engine.dart';
 import 'package:here_sdk/mapview.dart';
 
 void main() {
@@ -63,6 +64,7 @@ class _CameraKeyframeTracksAppState extends State<CameraKeyframeTracksApp> {
   @override
   void dispose() {
     // Free HERE SDK resources before the application shuts down.
+    SDKNativeEngine.sharedInstance?.dispose();
     SdkContext.release();
     super.dispose();
   }

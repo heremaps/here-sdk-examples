@@ -37,8 +37,9 @@ class CameraExample: TapDelegate, MapCameraDelegate {
         self.mapView = mapView
 
         camera = mapView.camera
+        let distanceInMeters = MapMeasure(kind: .distance, value: defaultDistanceToEarthInMeters)
         camera.lookAt(point: GeoCoordinates(latitude: 52.750731,longitude: 13.007375),
-                      distanceInMeters: defaultDistanceToEarthInMeters)
+                      zoom: distanceInMeters)
 
         // The red circle dot indicates the camera's current target location.
         // By default, the dot is centered on the map view.

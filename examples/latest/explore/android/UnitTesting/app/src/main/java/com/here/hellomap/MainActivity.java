@@ -27,6 +27,7 @@ import android.util.Log;
 
 import com.here.hellomap.PermissionsRequestor.ResultListener;
 import com.here.sdk.core.GeoCoordinates;
+import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.mapview.MapError;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
@@ -87,9 +88,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onLoadScene(@Nullable MapError mapError) {
                 if (mapError == null) {
-                    double distanceInMeters = 1000 * 10;
-                    mapView.getCamera().lookAt(
-                            new GeoCoordinates(52.530932, 13.384915), distanceInMeters);
+                    mapView.getCamera().lookAt(new GeoCoordinates(52.530932, 13.384915));
                 } else {
                     Log.d(TAG, "Loading map failed: mapError: " + mapError.name());
                 }
@@ -113,5 +112,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         mapView.onDestroy();
+
+        // Free HERE SDK resources before the application shuts down.
+        SDKNativeEngine hereSDKEngine = SDKNativeEngine.getSharedInstance();
+        if (hereSDKEngine != null) {
+            hereSDKEngine.dispose();
+        }
     }
 }

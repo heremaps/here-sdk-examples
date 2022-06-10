@@ -31,6 +31,7 @@ import com.here.sdk.gestures.GestureState;
 import com.here.sdk.mapview.MapImage;
 import com.here.sdk.mapview.MapImageFactory;
 import com.here.sdk.mapview.MapMarker;
+import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapPolyline;
 import com.here.sdk.mapview.MapView;
 import com.here.sdk.routing.Route;
@@ -62,7 +63,8 @@ public class App {
         this.context = context;
         this.mapView = mapView;
         this.messageView = messageView;
-        this.mapView.getCamera().lookAt(DEFAULT_MAP_CENTER, DEFAULT_DISTANCE_IN_METERS);
+        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, DEFAULT_DISTANCE_IN_METERS);
+        this.mapView.getCamera().lookAt(DEFAULT_MAP_CENTER, mapMeasureZoom);
 
         routeCalculator = new RouteCalculator();
 

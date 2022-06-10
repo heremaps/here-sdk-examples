@@ -19,7 +19,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:indoor_map_app/geometry_info.dart';
-import 'package:indoor_map_app/indoor_routing_widget.dart';
 import 'package:indoor_map_app/settings_page.dart';
 import 'package:indoor_map_app/venue_engine_widget.dart';
 import 'package:here_sdk/core.dart';
@@ -47,7 +46,6 @@ class MyApp extends StatelessWidget {
 
 class MainPage extends StatelessWidget {
   final VenueEngineState _venueEngineState = VenueEngineState();
-  final IndoorRoutingState _indoorRoutingState = IndoorRoutingState();
   final GeometryInfoState _geometryInfoState = GeometryInfoState();
 
   @override
@@ -98,39 +96,12 @@ class MainPage extends StatelessWidget {
               child: FlatButton(
                 color: Colors.white,
                 padding: EdgeInsets.zero,
-                child: Icon(Icons.directions, color: Colors.black, size: kMinInteractiveDimension),
-                onPressed: () {
-                  _indoorRoutingState.isEnabled = !_indoorRoutingState.isEnabled;
-                },
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.all(4),
-              width: kMinInteractiveDimension,
-              child: FlatButton(
-                color: Colors.white,
-                padding: EdgeInsets.zero,
-                child: Icon(Icons.edit, color: Colors.black, size: kMinInteractiveDimension),
-                onPressed: () {
-                  _venueEngineState.getVenueSearchState().setOpen(false);
-                  final venuesState = _venueEngineState.getVenuesControllerState();
-                  venuesState.setOpen(!venuesState.isOpen());
-                },
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.all(4),
-              width: kMinInteractiveDimension,
-              child: FlatButton(
-                color: Colors.white,
-                padding: EdgeInsets.zero,
                 child: Icon(Icons.settings, color: Colors.black, size: kMinInteractiveDimension),
                 onPressed: () => Navigator.pushNamed(context, '/settings'),
               ),
             )
           ],
         ),
-        IndoorRoutingWidget(state: _indoorRoutingState),
         Expanded(
           child: Stack(children: <Widget>[
             // Add a HERE map.
@@ -155,7 +126,8 @@ class MainPage extends StatelessWidget {
       }
 
       const double distanceToEarthInMeters = 500;
-      hereMapController.camera.lookAtPointWithDistance(GeoCoordinates(52.530932, 13.384915), distanceToEarthInMeters);
+      MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+      hereMapController.camera.lookAtPointWithMeasure(GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
 
       // Hide the extruded building layer, so that it does not overlap
       // with the venues.
@@ -163,7 +135,7 @@ class MainPage extends StatelessWidget {
       // Create a venue engine object. Once the initialization is done,
       // a callback will be called.
       var venueEngine = VenueEngine(_onVenueEngineCreated);
-      _venueEngineState.set(hereMapController, venueEngine, _indoorRoutingState, _geometryInfoState);
+      _venueEngineState.set(hereMapController, venueEngine, _geometryInfoState);
     });
   }
 

@@ -27,6 +27,7 @@
  import com.here.sdk.mapview.MapLayerPriority;
  import com.here.sdk.mapview.MapLayerPriorityBuilder;
  import com.here.sdk.mapview.MapLayerVisibilityRange;
+ import com.here.sdk.mapview.MapMeasure;
  import com.here.sdk.mapview.MapView;
  import com.here.sdk.mapview.datasource.RasterDataSource;
  import com.here.sdk.mapview.datasource.RasterDataSourceConfiguration;
@@ -47,7 +48,8 @@
          this.mapView = mapView;
 
          MapCamera camera = mapView.getCamera();
-         camera.lookAt(new GeoCoordinates(52.530932, 13.384915), DEFAULT_DISTANCE_TO_EARTH_IN_METERS);
+         MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, DEFAULT_DISTANCE_TO_EARTH_IN_METERS);
+         camera.lookAt(new GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
 
          String dataSourceName = "myRasterDataSourceTonerStyle";
          rasterDataSourceTonerStyle = createRasterDataSource(dataSourceName);

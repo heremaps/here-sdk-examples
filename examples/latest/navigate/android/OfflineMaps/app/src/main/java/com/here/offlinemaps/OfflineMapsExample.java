@@ -19,11 +19,12 @@
 
 package com.here.offlinemaps;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import com.google.android.material.snackbar.Snackbar;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.google.android.material.snackbar.Snackbar;
 import com.here.sdk.core.GeoBox;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.LanguageCode;
@@ -49,6 +50,7 @@ import com.here.sdk.maploader.Region;
 import com.here.sdk.maploader.RegionId;
 import com.here.sdk.maploader.RepairPersistentMapCallback;
 import com.here.sdk.mapview.MapCamera;
+import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapView;
 import com.here.sdk.search.OfflineSearchEngine;
 import com.here.sdk.search.Place;
@@ -78,7 +80,8 @@ public class OfflineMapsExample {
         // Configure the map.
         MapCamera camera = mapView.getCamera();
         double distanceInMeters = 1000 * 7;
-        camera.lookAt(new GeoCoordinates(52.530932, 13.384915), distanceInMeters);
+        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
+        camera.lookAt(new GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
 
         this.mapView = mapView;
 
@@ -327,7 +330,8 @@ public class OfflineMapsExample {
             return;
         }
 
-        TextQuery textQuery = new TextQuery("restaurants", bbox);
+        TextQuery.Area queryArea = new TextQuery.Area(bbox);
+        TextQuery textQuery = new TextQuery("restaurants", queryArea);
 
         SearchOptions searchOptions = new SearchOptions();
         searchOptions.languageCode = LanguageCode.EN_US;

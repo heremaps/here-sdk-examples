@@ -43,7 +43,8 @@ class MyApp extends StatelessWidget {
       }
 
       const double distanceToEarthInMeters = 8000;
-      hereMapController.camera.lookAtPointWithDistance(GeoCoordinates(52.530932, 13.384915), distanceToEarthInMeters);
+      MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+      hereMapController.camera.lookAtPointWithMeasure(GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
 
       // Optionally enable textured 3D landmarks.
       hereMapController.mapScene.setLayerVisibility(MapSceneLayers.landmarks, VisibilityState.visible);

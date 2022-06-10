@@ -1,1 +1,1 @@
-Put the latest AAR file of the HERE SDK for Android to this folder.
+Put the latest AAR file of the HERE SDK for Android and the "heresdk-xxx.jar" mock JAR file to this folder.

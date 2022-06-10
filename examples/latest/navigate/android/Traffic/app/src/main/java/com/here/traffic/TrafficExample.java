@@ -34,6 +34,7 @@ import com.here.sdk.core.Rectangle2D;
 import com.here.sdk.core.Size2D;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.mapview.MapCamera;
+import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapPolyline;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapView;
@@ -66,7 +67,8 @@ public class TrafficExample {
         this.mapView = mapView;
         MapCamera camera = mapView.getCamera();
         double distanceInMeters = 1000 * 10;
-        camera.lookAt(new GeoCoordinates(52.520798, 13.409408), distanceInMeters);
+        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
+        camera.lookAt(new GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
 
         try {
             trafficEngine = new TrafficEngine();
@@ -121,9 +123,8 @@ public class TrafficExample {
 
     // Traffic incidents can only be picked, when MapScene.Layers.TRAFFIC_INCIDENTS is visible.
     private void pickTrafficIncident(Point2D touchPointInPixels) {
-        // Center the rectangle on the touch location.
-        Point2D originInPixels = new Point2D(touchPointInPixels.x - 50/2, touchPointInPixels.y - 50/2);
-        Size2D sizeInPixels = new Size2D(50, 50);
+        Point2D originInPixels = new Point2D(touchPointInPixels.x, touchPointInPixels.y);
+        Size2D sizeInPixels = new Size2D(1, 1);
         Rectangle2D rectangle = new Rectangle2D(originInPixels, sizeInPixels);
 
         mapView.pickMapContent(rectangle, new MapViewBase.PickMapContentCallback() {
@@ -153,12 +154,12 @@ public class TrafficExample {
         });
     }
 
-    private void findIncidentByID(long originalId) {
+    private void findIncidentByID(String originalId) {
         TrafficIncidentLookupOptions trafficIncidentsQueryOptions = new TrafficIncidentLookupOptions();
         // Optionally, specify a language:
         // the language of the country where the incident occurs is used.
         // trafficIncidentsQueryOptions.languageCode = LanguageCode.EN_US;
-        trafficEngine.lookupIncident(String.valueOf(originalId), trafficIncidentsQueryOptions, new TrafficIncidentLookupCallback() {
+        trafficEngine.lookupIncident(originalId, trafficIncidentsQueryOptions, new TrafficIncidentLookupCallback() {
             @Override
             public void onTrafficIncidentFetched(@Nullable TrafficQueryError trafficQueryError, @Nullable TrafficIncident trafficIncident) {
                 if (trafficQueryError == null) {

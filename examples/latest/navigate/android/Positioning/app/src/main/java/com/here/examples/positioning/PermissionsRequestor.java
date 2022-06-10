@@ -77,8 +77,7 @@ public class PermissionsRequestor {
                             continue;
                         }
                         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q &&
-                                (permission.equals(Manifest.permission.ACTIVITY_RECOGNITION) ||
-                                        permission.equals(Manifest.permission.ACCESS_BACKGROUND_LOCATION))) {
+                            permission.equals(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
                             continue;
                         }
                         permissionList.add(permission);

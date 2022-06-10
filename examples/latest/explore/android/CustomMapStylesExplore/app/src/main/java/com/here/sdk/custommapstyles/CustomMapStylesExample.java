@@ -27,6 +27,7 @@
  import com.here.sdk.core.GeoCoordinates;
  import com.here.sdk.mapview.MapCamera;
  import com.here.sdk.mapview.MapError;
+ import com.here.sdk.mapview.MapMeasure;
  import com.here.sdk.mapview.MapScene;
  import com.here.sdk.mapview.MapScheme;
  import com.here.sdk.mapview.MapView;
@@ -44,7 +45,8 @@
          this.mapView = mapView;
 
          MapCamera camera = mapView.getCamera();
-         camera.lookAt(new GeoCoordinates(52.530932, 13.384915), DEFAULT_DISTANCE_TO_EARTH_IN_METERS);
+         MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, DEFAULT_DISTANCE_TO_EARTH_IN_METERS);
+         camera.lookAt(new GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
      }
 
      public void loadButtonClicked() {

@@ -29,7 +29,6 @@ class ViewController: UIViewController {
     @IBOutlet private weak var geometryNameLabel: UILabel!
     @IBOutlet private weak var venueSearch: VenueSearch!
     @IBOutlet private weak var venuesManager: VenuesManager!
-    @IBOutlet private weak var indoorRoutingUI: IndoorRoutingUI!
     @IBOutlet private weak var indoorRoutingUIConstraint: NSLayoutConstraint!
 
     var mapView: MapView = MapView()
@@ -37,6 +36,9 @@ class ViewController: UIViewController {
     var venueEngine: VenueEngine!
     var moveToVenue: Bool = false
     var venueTapHandler: VenueTapHandler?
+
+    // Replace "CATALOG_HRN" with your platform catalog HRN value.
+    let hrn: String = "CATALOG_HRN"
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -100,9 +102,7 @@ class ViewController: UIViewController {
                                          mapView: mapView,
                                          geometryLabel: geometryNameLabel)
         venueSearch.setup(venueMap, tapHandler: venueTapHandler)
-        indoorRoutingUI.setup(venueEngine, mapView: mapView, heightConstraint: indoorRoutingUIConstraint)
         mapView.gestures.tapDelegate = self
-        mapView.gestures.longPressDelegate = indoorRoutingUI
         venuesManager.setup(venueMap, mapView: mapView)
 
         // Start VenueEngine. Once authentication is done, the authentication completion handler
@@ -113,6 +113,9 @@ class ViewController: UIViewController {
                 print("Failed to authenticate, reason: " + error.localizedDescription)
             }
         })
+
+        // Set platform catalog HRN
+        venueService.setHrn(hrn: hrn)
     }
 
     // Touch handler for the button which selects venues by id.
@@ -140,9 +143,6 @@ class ViewController: UIViewController {
     @IBAction private func onSearchTap(_ sender: Any) {
         venueSearch.isHidden = !venueSearch.isHidden
     }
-    @IBAction private func onRoutingUIEnabler(_ sender: Any) {
-        indoorRoutingUI.isHidden = !indoorRoutingUI.isHidden
-    }
 
     @IBAction private func onEditTap(_ sender: Any) {
         venuesManager.isHidden = !venuesManager.isHidden
@@ -157,13 +157,8 @@ class ViewController: UIViewController {
 // Tap delegate for MapView
 extension ViewController: TapDelegate {
     public func onTap(origin: Point2D) {
-        if !indoorRoutingUI.isHidden {
-            // In case if the indoor routing UI is visible, redirect the event to it.
-            indoorRoutingUI.onTap(origin: origin)
-        } else {
             // Otherwise, redirect the event to the venue tap handler.
             venueTapHandler?.onTap(origin: origin)
-        }
     }
 }
 

@@ -90,11 +90,10 @@ class TrafficExample: TapDelegate {
 
     // Traffic incidents can only be picked, when MapScene.Layers.trafficIncidents is visible.
     func pickTrafficIncident(touchPointInPixels: Point2D) {
-        // Center the rectangle on the touch location.
-        let originInPixels = Point2D(x: touchPointInPixels.x - 50/2, y: touchPointInPixels.y - 50/2)
-        let sizeInPixels = Size2D(width: 50, height: 50)
+        let originInPixels = Point2D(x: touchPointInPixels.x, y: touchPointInPixels.y)
+        let sizeInPixels = Size2D(width: 1, height: 1)
         let rectangle = Rectangle2D(origin: originInPixels, size: sizeInPixels)
-        
+
         mapView.pickMapContent(inside: rectangle, completion: onPickMapContent)
     }
 
@@ -119,13 +118,13 @@ class TrafficExample: TapDelegate {
 
         // Optionally, look for more map content like embedded POIs.
     }
-    
-    func findIncidentByID(_ originalId: Int64) {
+
+    func findIncidentByID(_ originalId: String) {
         let trafficIncidentsLookupOptions = TrafficIncidentLookupOptions()
         // Optionally, specify a language:
         // the language of the country where the incident occurs is used.
         // trafficIncidentsLookupOptions.languageCode = LanguageCode.EN_US
-        trafficEngine.lookupIncident(with: String(originalId),
+        trafficEngine.lookupIncident(with: originalId,
                                      lookupOptions: trafficIncidentsLookupOptions,
                                      completion: onTrafficIncidentCompletion)
     }
@@ -140,7 +139,7 @@ class TrafficExample: TapDelegate {
             showDialog(title: "TrafficLookupError:", message: trafficQueryError.debugDescription)
         }
     }
-    
+
     private func addTrafficIncidentsMapPolyline(geoPolyline: GeoPolyline) {
         // Show traffic incident as polyline.
         let mapPolyline = MapPolyline(geometry: geoPolyline,

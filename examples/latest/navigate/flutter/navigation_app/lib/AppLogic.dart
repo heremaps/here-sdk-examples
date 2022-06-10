@@ -75,9 +75,10 @@ class AppLogic {
     }
 
     double distanceToEarthInMeters = 10000;
-    _hereMapController.camera.lookAtPointWithDistance(
+    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+    _hereMapController.camera.lookAtPointWithMeasure(
       currentLocation.coordinates,
-      distanceToEarthInMeters,
+      mapMeasureZoom,
     );
 
     var startWaypoint = HERE.Waypoint.withDefaults(currentLocation.coordinates);

@@ -33,6 +33,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.here.camerakeyframetracks.helper.PermissionsRequestor;
 import com.here.camerakeyframetracks.helper.RouteCalculator;
 import com.here.sdk.core.GeoCoordinates;
+import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.mapview.MapError;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
@@ -147,5 +148,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         mapView.onDestroy();
+
+        // Free HERE SDK resources before the application shuts down.
+        SDKNativeEngine hereSDKEngine = SDKNativeEngine.getSharedInstance();
+        if (hereSDKEngine != null) {
+            hereSDKEngine.dispose();
+        }
     }
 }

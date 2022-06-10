@@ -21,6 +21,7 @@ import 'package:flutter/material.dart';
 import 'package:here_sdk/animation.dart';
 import 'package:here_sdk/core.dart' as HERE;
 import 'package:here_sdk/core.dart';
+import 'package:here_sdk/core.engine.dart';
 import 'package:here_sdk/core.errors.dart';
 import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/navigation.dart';
@@ -83,7 +84,8 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
         print('Map scene not loaded. MapError: ${error.toString()}');
         return;
       }
-      _hereMapController!.camera.lookAtPointWithDistance(_routeStartGeoCoordinates, _distanceInMeters);
+      MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, _distanceInMeters);
+      _hereMapController!.camera.lookAtPointWithMeasure(_routeStartGeoCoordinates, mapMeasureZoom);
       _startAppLogic();
     });
   }
@@ -349,6 +351,7 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
   @override
   void dispose() {
     // Free HERE SDK resources before the application shuts down.
+    SDKNativeEngine.sharedInstance?.dispose();
     SdkContext.release();
     super.dispose();
   }
