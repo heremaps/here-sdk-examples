@@ -50,7 +50,8 @@ class EVRoutingExample {
       : _showDialog = showDialogCallback,
         _hereMapController = hereMapController {
     double distanceToEarthInMeters = 10000;
-    _hereMapController.camera.lookAtPointWithDistance(GeoCoordinates(52.520798, 13.409408), distanceToEarthInMeters);
+    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+    _hereMapController.camera.lookAtPointWithMeasure(GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
 
     try {
       _routingEngine = RoutingEngine();
@@ -168,11 +169,11 @@ class EVRoutingExample {
 
       print("EVDetails: Section " +
           sectionIndex.toString() +
-          ": Estimated departure battery charge in kWh: " +
+          ": Estimated battery charge in kWh when leaving the departure place: " +
           section.departurePlace.chargeInKilowattHours.toString());
       print("EVDetails: Section " +
           sectionIndex.toString() +
-          ": Estimated arrival battery charge in kWh: " +
+          ": Estimated battery charge in kWh when leaving the arrival place: " +
           section.arrivalPlace.chargeInKilowattHours.toString());
 
       // Only charging stations that are needed to reach the destination are listed below.
@@ -216,8 +217,9 @@ class EVRoutingExample {
     // within a max distance of xx meters from any point of the route.
     int halfWidthInMeters = 200;
     GeoCorridor routeCorridor = GeoCorridor(route.geometry.vertices, halfWidthInMeters);
-    TextQuery textQuery = TextQuery.withCorridorAreaAndAreaCenter(
-        "charging station", routeCorridor, _hereMapController.camera.state.targetCoordinates);
+    TextQueryArea queryArea =
+        TextQueryArea.withCorridor(routeCorridor, _hereMapController.camera.state.targetCoordinates);
+    TextQuery textQuery = TextQuery.withArea("charging station", queryArea);
 
     SearchOptions searchOptions = SearchOptions.withDefaults();
     searchOptions.languageCode = LanguageCode.enUs;

@@ -39,7 +39,8 @@ class RoutingExample {
       : _showDialog = showDialogCallback,
         _hereMapController = hereMapController {
     double distanceToEarthInMeters = 10000;
-    _hereMapController.camera.lookAtPointWithDistance(GeoCoordinates(52.520798, 13.409408), distanceToEarthInMeters);
+    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+    _hereMapController.camera.lookAtPointWithMeasure(GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
 
     try {
       _routingEngine = RoutingEngine();
@@ -96,8 +97,8 @@ class RoutingExample {
       Section section = route.sections.elementAt(i);
 
       print("Route Section : " + (i+1).toString());
-      print("Route Section Departure Time : " + dateFormat.format(section.departureTime!));
-      print("Route Section Arrival Time : " + dateFormat.format(section.arrivalTime!));
+      print("Route Section Departure Time : " + dateFormat.format(section.departureLocationTime!.localTime));
+      print("Route Section Arrival Time : " + dateFormat.format(section.arrivalLocationTime!.localTime));
       print("Route Section length : " + section.lengthInMeters.toString() + " m");
       print("Route Section duration : " + section.duration.inSeconds.toString() + " s");
     }

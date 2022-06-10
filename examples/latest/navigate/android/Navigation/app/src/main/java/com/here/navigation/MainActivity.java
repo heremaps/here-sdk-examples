@@ -37,6 +37,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.mapview.MapError;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
@@ -187,5 +188,11 @@ public class MainActivity extends AppCompatActivity {
             app.detach();
         }
         mapView.onDestroy();
+
+        // Free HERE SDK resources before the application shuts down.
+        SDKNativeEngine hereSDKEngine = SDKNativeEngine.getSharedInstance();
+        if (hereSDKEngine != null) {
+            hereSDKEngine.dispose();
+        }
     }
 }

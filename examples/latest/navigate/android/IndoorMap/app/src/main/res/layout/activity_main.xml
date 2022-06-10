@@ -49,37 +49,7 @@
                 android:src="@drawable/baseline_search_black_36"
                 android:tint="@android:color/white"
                 android:contentDescription="@string/venue_search_button" />
-            <ImageView
-                android:id="@+id/indoorRoutingButton"
-                android:layout_width="40dp"
-                android:layout_height="match_parent"
-                android:layout_alignParentTop="true"
-                android:layout_gravity="start"
-                android:layout_marginStart="5dp"
-                android:layout_marginTop="5dp"
-                android:layout_marginBottom="5dp"
-                android:layout_toEndOf="@+id/searchButton"
-                android:background="@color/colorPrimary"
-                android:scaleType="fitCenter"
-                android:src="@drawable/directions"
-                android:tint="@android:color/white"
-                android:contentDescription="@string/venue_search_button" />
-            <ImageView
-                android:id="@+id/editVenuesButton"
-                android:layout_width="40dp"
-                android:layout_height="match_parent"
-                android:layout_alignParentTop="true"
-                android:layout_gravity="start"
-                android:layout_marginStart="5dp"
-                android:layout_marginTop="5dp"
-                android:layout_marginBottom="5dp"
-                android:layout_toEndOf="@+id/indoorRoutingButton"
-                android:background="@color/colorPrimary"
-                android:scaleType="fitCenter"
-                android:src="@drawable/baseline_edit_white_36"
-                android:contentDescription="@string/venues_manager"/>
         </RelativeLayout>
-        <include layout="@layout/indoor_routing_layout" />
         <LinearLayout android:layout_width="match_parent"
             android:id="@+id/venueSearchLayout"
             android:layout_height="match_parent"

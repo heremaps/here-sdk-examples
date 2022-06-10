@@ -35,8 +35,9 @@ class GesturesExample: TapDelegate,
         self.mapView = mapView
 
         let camera = mapView.camera
+        let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 10)
         camera.lookAt(point: GeoCoordinates(latitude: 52.520798, longitude: 13.409408),
-                      distanceInMeters: 1000 * 10)
+                      zoom: distanceInMeters)
 
         mapView.gestures.tapDelegate = self
         mapView.gestures.doubleTapDelegate = self

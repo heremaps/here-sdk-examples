@@ -19,6 +19,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:here_sdk/core.dart' as HERE;
+import 'package:here_sdk/core.engine.dart';
 import 'package:here_sdk/core.errors.dart';
 import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/navigation.dart' as HERE;
@@ -65,8 +66,9 @@ class _MyAppState extends State<MyApp> {
       }
 
       const double distanceToEarthInMeters = 8000;
-      _hereMapController!.camera
-          .lookAtPointWithDistance(HERE.GeoCoordinates(52.520798, 13.409408), distanceToEarthInMeters);
+      MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+      _hereMapController!.camera.lookAtPointWithMeasure(HERE.GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
+
       _startGuidanceExample();
     });
   }
@@ -142,6 +144,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void dispose() {
     // Free HERE SDK resources before the application shuts down.
+    SDKNativeEngine.sharedInstance?.dispose();
     HERE.SdkContext.release();
     super.dispose();
   }

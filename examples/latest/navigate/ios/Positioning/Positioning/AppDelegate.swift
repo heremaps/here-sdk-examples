@@ -42,5 +42,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Deinitializes map renderer and releases all of its resources.
         // All existing MapView instances will become invalid after this call.
         MapView.deinitialize()
+
+        // Free HERE SDK resources before the application shuts down.
+        SDKNativeEngine.sharedInstance = nil
     }
 }

@@ -25,6 +25,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 
+import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.custommapstyles.PermissionsRequestor.ResultListener;
 import com.here.sdk.mapview.MapError;
 import com.here.sdk.mapview.MapScene;
@@ -105,5 +106,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         mapView.onDestroy();
+
+        // Free HERE SDK resources before the application shuts down.
+        SDKNativeEngine hereSDKEngine = SDKNativeEngine.getSharedInstance();
+        if (hereSDKEngine != null) {
+            hereSDKEngine.dispose();
+        }
     }
 }

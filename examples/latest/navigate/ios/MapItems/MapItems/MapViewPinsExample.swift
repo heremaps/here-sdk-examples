@@ -31,7 +31,8 @@ class MapViewPinsExample {
     init(mapView: MapView) {
         self.mapView = mapView
         mapCamera = mapView.camera
-        mapCamera.lookAt(point: mapCenterGeoCoordinates, distanceInMeters: 7000)
+        let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 7)
+        mapCamera.lookAt(point: mapCenterGeoCoordinates, zoom: distanceInMeters)
 
         // Add circle to indicate map center.
         addCircle(mapCenterGeoCoordinates);

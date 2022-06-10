@@ -41,8 +41,9 @@ class ViewController: UIViewController, TapDelegate {
 
         // Configure the map.
         let camera = mapView.camera
+        let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 10)
         camera.lookAt(point: GeoCoordinates(latitude: 52.518043, longitude: 13.405991),
-                      distanceInMeters: 1000 * 10)
+                      zoom: distanceInMeters)
         
         startExample()
     }
@@ -67,17 +68,17 @@ class ViewController: UIViewController, TapDelegate {
         // You can also use a larger area to include multiple carto POIs.
         let rectangle2D = Rectangle2D(origin: origin,
                                       size: Size2D(width: 1, height: 1))
-        mapView.pickMapFeatures(in: rectangle2D, completion: onMapItemsPicked)
+        mapView.pickMapContent(inside: rectangle2D, completion: onMapItemsPicked)
     }
 
     // Completion handler to receive picked map items.
-    func onMapItemsPicked(pickedMapFeatures: PickMapFeaturesResult?) {
-        guard let pickedMapFeatures = pickedMapFeatures else {
+    func onMapItemsPicked(pickedMapContent: PickMapContentResult?) {
+        guard let pickedMapContent = pickedMapContent else {
             // Pick operation failed.
             return
         }
 
-        let cartoPOIList = pickedMapFeatures.pois
+        let cartoPOIList = pickedMapContent.pois
         if cartoPOIList.count == 0 {
             // No results found at pick location.
             return

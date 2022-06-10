@@ -33,14 +33,16 @@ import com.here.sdk.core.LanguageCode;
 import com.here.sdk.core.Point2D;
 import com.here.sdk.core.Rectangle2D;
 import com.here.sdk.core.Size2D;
+import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.gestures.TapListener;
 import com.here.sdk.mapview.MapError;
+import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
 import com.here.sdk.mapview.MapViewBase;
-import com.here.sdk.mapview.PickMapFeaturesResult;
+import com.here.sdk.mapview.PickMapContentResult;
 import com.here.sdk.search.OfflineSearchEngine;
 import com.here.sdk.search.Place;
 import com.here.sdk.search.PlaceIdQuery;
@@ -99,8 +101,9 @@ public class MainActivity extends AppCompatActivity {
             public void onLoadScene(@Nullable MapError mapError) {
                 if (mapError == null) {
                     double distanceInMeters = 1000 * 10;
+                    MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
                     mapView.getCamera().lookAt(
-                            new GeoCoordinates(52.520798, 13.409408), distanceInMeters);
+                            new GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
                     startExample();
                 } else {
                     Log.d(TAG, "Loading map failed: mapError: " + mapError.name());
@@ -136,21 +139,21 @@ public class MainActivity extends AppCompatActivity {
     private void pickMapMarker(final Point2D touchPoint) {
         // You can also use a larger area to include multiple carto POIs.
         Rectangle2D rectangle2D = new Rectangle2D(touchPoint, new Size2D(1, 1));
-        mapView.pickMapFeatures(rectangle2D, new MapViewBase.PickMapFeaturesCallback() {
+        mapView.pickMapContent(rectangle2D, new MapViewBase.PickMapContentCallback() {
             @Override
-            public void onPickMapFeature(@Nullable PickMapFeaturesResult pickMapFeaturesResult) {
-                if (pickMapFeaturesResult == null) {
+            public void onPickMapContent(@Nullable PickMapContentResult pickMapContentResult) {
+                if (pickMapContentResult == null) {
                     // An error occurred while performing the pick operation.
                     return;
                 }
 
-                List<PickMapFeaturesResult.PoiResult> cartoPOIList = pickMapFeaturesResult.getPois();
+                List<PickMapContentResult.PoiResult> cartoPOIList = pickMapContentResult.getPois();
                 int listSize = cartoPOIList.size();
                 if (listSize == 0) {
                     return;
                 }
 
-                PickMapFeaturesResult.PoiResult topmostCartoPOI = cartoPOIList.get(0);
+                PickMapContentResult.PoiResult topmostCartoPOI = cartoPOIList.get(0);
                 showDialog("Carto POI picked:", topmostCartoPOI.name + ", Location: " +
                         topmostCartoPOI.coordinates.latitude + ", " +
                         topmostCartoPOI.coordinates.longitude + ". " +
@@ -196,6 +199,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         mapView.onDestroy();
+
+        // Free HERE SDK resources before the application shuts down.
+        SDKNativeEngine hereSDKEngine = SDKNativeEngine.getSharedInstance();
+        if (hereSDKEngine != null) {
+            hereSDKEngine.dispose();
+        }
     }
 
     private void showDialog(String title, String message) {

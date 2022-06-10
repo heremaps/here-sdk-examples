@@ -36,6 +36,7 @@ import com.here.sdk.mapview.MapCamera;
 import com.here.sdk.mapview.MapImage;
 import com.here.sdk.mapview.MapImageFactory;
 import com.here.sdk.mapview.MapMarker;
+import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapPolygon;
 import com.here.sdk.mapview.MapPolyline;
 import com.here.sdk.mapview.MapView;
@@ -92,7 +93,8 @@ public class EVRoutingExample {
         this.mapView = mapView;
         MapCamera camera = mapView.getCamera();
         double distanceInMeters = 1000 * 10;
-        camera.lookAt(new GeoCoordinates(52.520798, 13.409408), distanceInMeters);
+        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
+        camera.lookAt(new GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
 
         try {
             routingEngine = new RoutingEngine();
@@ -208,8 +210,8 @@ public class EVRoutingExample {
                 }
             }
 
-            Log.d("EVDetails", "Section " + sectionIndex + ": Estimated departure battery charge in kWh: " + section.getDeparturePlace().chargeInKilowattHours);
-            Log.d("EVDetails", "Section " + sectionIndex + ": Estimated arrival battery charge in kWh: " + section.getArrivalPlace().chargeInKilowattHours);
+            Log.d("EVDetails", "Section " + sectionIndex + ": Estimated battery charge in kWh when leaving the departure place: " + section.getDeparturePlace().chargeInKilowattHours);
+            Log.d("EVDetails", "Section " + sectionIndex + ": Estimated battery charge in kWh when leaving the arrival place: " + section.getArrivalPlace().chargeInKilowattHours);
 
             // Only charging stations that are needed to reach the destination are listed below.
             ChargingStation depStation = section.getDeparturePlace().chargingStation;
@@ -270,8 +272,8 @@ public class EVRoutingExample {
         // within a max distance of xx meters from any point of the route.
         int halfWidthInMeters = 200;
         GeoCorridor routeCorridor = new GeoCorridor(route.getGeometry().vertices, halfWidthInMeters);
-        TextQuery textQuery = new TextQuery("charging station", routeCorridor,
-                mapView.getCamera().getState().targetCoordinates);
+        TextQuery.Area queryArea = new TextQuery.Area(routeCorridor, mapView.getCamera().getState().targetCoordinates);
+        TextQuery textQuery = new TextQuery("charging station", queryArea);
 
         SearchOptions searchOptions = new SearchOptions();
         searchOptions.languageCode = LanguageCode.EN_US;

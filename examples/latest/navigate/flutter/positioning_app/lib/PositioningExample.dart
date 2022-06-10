@@ -24,6 +24,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:here_sdk/consent.dart' show ConsentEngine, ConsentUserReply;
 import 'package:here_sdk/core.dart';
+import 'package:here_sdk/core.engine.dart';
 import 'package:here_sdk/location.dart';
 import 'package:here_sdk/mapview.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -67,6 +68,7 @@ class PositioningExample extends State<MyApp>
     WidgetsBinding.instance!.removeObserver(this);
 
     // Free HERE SDK resources before the application shuts down.
+    SDKNativeEngine.sharedInstance?.dispose();
     SdkContext.release();
 
     super.dispose();
@@ -260,7 +262,7 @@ class PositioningExample extends State<MyApp>
     }
 
     _addMyLocationToMap(location);
-
+    
     _locationEngine.addLocationListener(this);
     _locationEngine.addLocationStatusListener(this);
     _locationEngine.startWithLocationAccuracy(LocationAccuracy.bestAvailable);
@@ -282,9 +284,10 @@ class PositioningExample extends State<MyApp>
     _locationIndicator?.updateLocation(myLocation);
     _hereMapController?.addLifecycleListener(_locationIndicator!);
     // Point camera at given location.
-    _hereMapController?.camera.lookAtPointWithDistance(
+    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, _cameraDistanceInMeters);
+    _hereMapController?.camera.lookAtPointWithMeasure(
       myLocation.coordinates,
-      _cameraDistanceInMeters,
+      mapMeasureZoom,
     );
     // Update state's location.
     setState(() {

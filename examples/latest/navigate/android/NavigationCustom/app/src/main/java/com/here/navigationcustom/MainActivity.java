@@ -39,6 +39,7 @@ import com.here.sdk.core.GeoCoordinatesUpdate;
 import com.here.sdk.core.GeoOrientationUpdate;
 import com.here.sdk.core.Location;
 import com.here.sdk.core.LocationListener;
+import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.mapview.LocationIndicator;
 import com.here.sdk.mapview.MapCameraAnimation;
@@ -125,8 +126,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onLoadScene(@Nullable MapError mapError) {
                 if (mapError == null) {
+                    MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, DISTANCE_IN_METERS);
                     mapView.getCamera().lookAt(
-                            ROUTE_START_GEO_COORDINATES, DISTANCE_IN_METERS);
+                            ROUTE_START_GEO_COORDINATES, mapMeasureZoom);
                     startAppLogic();
                 } else {
                     Log.d(TAG, "Loading map failed: mapError: " + mapError.name());
@@ -412,6 +414,12 @@ public class MainActivity extends AppCompatActivity {
         visualNavigator.stopRendering();
         locationSimulator.stop();
         mapView.onDestroy();
+
+        // Free HERE SDK resources before the application shuts down.
+        SDKNativeEngine hereSDKEngine = SDKNativeEngine.getSharedInstance();
+        if (hereSDKEngine != null) {
+            hereSDKEngine.dispose();
+        }
     }
 
     private void showDialog(String title, String message) {

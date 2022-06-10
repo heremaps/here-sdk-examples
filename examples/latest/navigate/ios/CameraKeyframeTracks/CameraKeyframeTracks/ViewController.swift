@@ -46,8 +46,8 @@ final class ViewController: UIViewController {
         
         mapView.mapScene.setLayerVisibility(layerName: MapScene.Layers.landmarks, visibility: VisibilityState.visible)
         
-        let distanceInMeters = 5000.0
-        mapView.camera.lookAt(point: geoCoordinates, distanceInMeters: distanceInMeters)
+        let distanceInMeters = MapMeasure(kind: .distance, value: 5000)
+        mapView.camera.lookAt(point: geoCoordinates, zoom: distanceInMeters)
         
         // Start the examples.
         isMapSceneLoaded = true

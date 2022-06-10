@@ -45,8 +45,9 @@ class App : LongPressDelegate {
         self.mapView = mapView
         self.messageTextView = messageTextView
 
+        let distanceInMeters = MapMeasure(kind: .distance, value: ConstantsEnum.DEFAULT_DISTANCE_IN_METERS)
         mapView.camera.lookAt(point: ConstantsEnum.DEFAULT_MAP_CENTER,
-                              distanceInMeters: ConstantsEnum.DEFAULT_DISTANCE_IN_METERS)
+                              zoom: distanceInMeters)
 
         routeCalculator = RouteCalculator()
 
