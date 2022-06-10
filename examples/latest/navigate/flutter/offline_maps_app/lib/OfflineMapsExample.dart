@@ -40,7 +40,8 @@ class OfflineMapsExample {
       : _showDialog = showDialogCallback,
         _hereMapController = hereMapController {
     double distanceToEarthInMeters = 7000;
-    _hereMapController.camera.lookAtPointWithDistance(GeoCoordinates(52.530932, 13.384915), distanceToEarthInMeters);
+    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+    _hereMapController.camera.lookAtPointWithMeasure(GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
 
     try {
       // Allows to search on already downloaded or cached map data (added for testing a downloaded region).
@@ -233,7 +234,8 @@ class OfflineMapsExample {
   Future<void> onSearchPlaceClicked() async {
     String queryString = "restaurants";
     GeoBox viewportGeoBox = _getMapViewGeoBox();
-    TextQuery query = TextQuery.withBoxArea(queryString, viewportGeoBox);
+    TextQueryArea queryArea = TextQueryArea.withBox(viewportGeoBox);
+    TextQuery query = TextQuery.withArea(queryString, queryArea);
 
     SearchOptions searchOptions = SearchOptions.withDefaults();
     searchOptions.languageCode = LanguageCode.enUs;

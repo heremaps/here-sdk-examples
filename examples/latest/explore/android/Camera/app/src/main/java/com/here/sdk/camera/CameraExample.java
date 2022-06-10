@@ -39,6 +39,7 @@
  import com.here.sdk.mapview.MapCameraAnimation;
  import com.here.sdk.mapview.MapCameraAnimationFactory;
  import com.here.sdk.mapview.MapCameraListener;
+ import com.here.sdk.mapview.MapMeasure;
  import com.here.sdk.mapview.MapPolygon;
  import com.here.sdk.mapview.MapView;
  import com.here.time.Duration;
@@ -63,7 +64,9 @@
          this.mapView = mapView;
 
          camera = mapView.getCamera();
-         camera.lookAt(new GeoCoordinates(52.750731,13.007375), DEFAULT_DISTANCE_TO_EARTH_IN_METERS);
+
+         MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, DEFAULT_DISTANCE_TO_EARTH_IN_METERS);
+         camera.lookAt(new GeoCoordinates(52.750731,13.007375), mapMeasureZoom);
 
          // The red circle dot indicates the camera's current target location.
          // By default, the dot is centered on the full screen map view.

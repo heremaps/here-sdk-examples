@@ -40,6 +40,7 @@ import com.here.sdk.mapview.MapCamera;
 import com.here.sdk.mapview.MapImage;
 import com.here.sdk.mapview.MapImageFactory;
 import com.here.sdk.mapview.MapMarker;
+import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapView;
 import com.here.sdk.mapview.MapViewBase;
 import com.here.sdk.mapview.PickMapItemsResult;
@@ -72,7 +73,8 @@ public class SearchExample {
         this.mapView = mapView;
         camera = mapView.getCamera();
         double distanceInMeters = 1000 * 10;
-        camera.lookAt(new GeoCoordinates(52.520798, 13.409408), distanceInMeters);
+        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
+        camera.lookAt(new GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
 
         try {
             searchEngine = new SearchEngine();
@@ -109,7 +111,9 @@ public class SearchExample {
     private void geocodeAnAddress() {
         // Set map to expected location.
         GeoCoordinates geoCoordinates = new GeoCoordinates(52.53086, 13.38469);
-        camera.lookAt(geoCoordinates, 1000 * 7);
+        double distanceInMeters = 1000 * 7;
+        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
+        camera.lookAt(geoCoordinates, mapMeasureZoom);
 
         String queryString = "Invalidenstraße 116, Berlin";
 
@@ -196,7 +200,8 @@ public class SearchExample {
         clearMap();
 
         GeoBox viewportGeoBox = getMapViewGeoBox();
-        TextQuery query = new TextQuery(queryString, viewportGeoBox);
+        TextQuery.Area queryArea = new TextQuery.Area(viewportGeoBox);
+        TextQuery query = new TextQuery(queryString, queryArea);
 
         SearchOptions searchOptions = new SearchOptions();
         searchOptions.languageCode = LanguageCode.EN_US;
@@ -272,22 +277,24 @@ public class SearchExample {
         searchOptions.languageCode = LanguageCode.EN_US;
         searchOptions.maxItems = 5;
 
+        TextQuery.Area queryArea = new TextQuery.Area(centerGeoCoordinates);
+
         // Simulate a user typing a search term.
         searchEngine.suggest(
                 new TextQuery("p", // User typed "p".
-                        centerGeoCoordinates),
+                        queryArea),
                 searchOptions,
                 autosuggestCallback);
 
         searchEngine.suggest(
                 new TextQuery("pi", // User typed "pi".
-                        centerGeoCoordinates),
+                        queryArea),
                 searchOptions,
                 autosuggestCallback);
 
         searchEngine.suggest(
                 new TextQuery("piz", // User typed "piz".
-                        centerGeoCoordinates),
+                        queryArea),
                 searchOptions,
                 autosuggestCallback);
     }

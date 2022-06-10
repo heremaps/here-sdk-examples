@@ -52,8 +52,9 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
 
         // Configure the map.
         let camera = mapView.camera
+        let distanceToEarthInMeters: Double = 1000
         camera.lookAt(point: routeStartGeoCoordinates,
-                      distanceInMeters: distanceInMeters)
+                      zoom: MapMeasure(kind: .distance, value: distanceToEarthInMeters))
 
         startAppLogic()
     }
@@ -302,7 +303,7 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
 
         // Note: By default, when VisualNavigator stops rendering, no LocationIndicator is visible.
         switchToPedestrianLocationIndicator()
-
+        
         animateToDefaultMapPerspective()
     }
 

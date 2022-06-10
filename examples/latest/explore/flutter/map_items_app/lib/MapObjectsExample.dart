@@ -36,8 +36,9 @@ class MapObjectsExample {
       : _mapScene = hereMapController.mapScene,
         _mapCamera = hereMapController.camera {
     double distanceToEarthInMeters = 5000;
+    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
     hereMapController.camera
-        .lookAtPointWithDistance(GeoCoordinates(52.51760485151816, 13.380312380535472), distanceToEarthInMeters);
+        .lookAtPointWithMeasure(GeoCoordinates(52.51760485151816, 13.380312380535472), mapMeasureZoom);
   }
 
   void showMapPolyline() {

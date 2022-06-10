@@ -191,7 +191,8 @@ public class SearchExample {
         clearMap();
 
         GeoBox viewportGeoBox = getMapViewGeoBox();
-        TextQuery query = new TextQuery(queryString, viewportGeoBox);
+        TextQuery.Area queryArea = new TextQuery.Area(viewportGeoBox);
+        TextQuery query = new TextQuery(queryString, queryArea);
 
         SearchOptions searchOptions = new SearchOptions();
         searchOptions.languageCode = LanguageCode.EN_US;
@@ -264,22 +265,24 @@ public class SearchExample {
         searchOptions.languageCode = LanguageCode.EN_US;
         searchOptions.maxItems = 5;
 
+        TextQuery.Area queryArea = new TextQuery.Area(centerGeoCoordinates);
+
         // Simulate a user typing a search term.
         searchEngine.suggest(
                 new TextQuery("p", // User typed "p".
-                        centerGeoCoordinates),
+                        queryArea),
                 searchOptions,
                 autosuggestCallback);
 
         searchEngine.suggest(
                 new TextQuery("pi", // User typed "pi".
-                        centerGeoCoordinates),
+                        queryArea),
                 searchOptions,
                 autosuggestCallback);
 
         searchEngine.suggest(
                 new TextQuery("piz", // User typed "piz".
-                        centerGeoCoordinates),
+                        queryArea),
                 searchOptions,
                 autosuggestCallback);
     }

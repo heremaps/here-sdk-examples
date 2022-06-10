@@ -39,6 +39,7 @@ import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.Point2D;
 import com.here.sdk.core.Size2D;
 import com.here.sdk.mapview.MapError;
+import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapSurface;
@@ -110,7 +111,8 @@ public class HelloMapScreen extends Screen implements SurfaceCallback {
             public void onLoadScene(@Nullable MapError mapError) {
                 if (mapError == null) {
                     double distanceInMeters = 1000 * 10;
-                    mapSurface.getCamera().lookAt(new GeoCoordinates(52.530932, 13.384915), distanceInMeters);
+                    MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
+                    mapSurface.getCamera().lookAt(new GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
                 } else {
                     Log.d("HelloMapScreen", "Loading map failed: mapError: " + mapError.name());
                 }

@@ -95,9 +95,8 @@ class TrafficExample {
 
   // Traffic incidents can only be picked, when MapScene.Layers.TRAFFIC_INCIDENTS is visible.
   _pickTrafficIncident(Point2D touchPointInPixels) {
-    // Center the rectangle on the touch location.
-    Point2D originInPixels = new Point2D(touchPointInPixels.x - 50 / 2, touchPointInPixels.y - 50 / 2);
-    Size2D sizeInPixels = new Size2D(50, 50);
+    Point2D originInPixels = new Point2D(touchPointInPixels.x, touchPointInPixels.y);
+    Size2D sizeInPixels = new Size2D(1, 1);
     Rectangle2D rectangle = new Rectangle2D(originInPixels, sizeInPixels);
 
     _hereMapController.pickMapContent(rectangle, (pickMapContentResult) {
@@ -122,12 +121,12 @@ class TrafficExample {
     });
   }
 
-  _findIncidentByID(int originalId) {
+  _findIncidentByID(String originalId) {
     TrafficIncidentLookupOptions trafficIncidentsLookupOptions = new TrafficIncidentLookupOptions();
     // Optionally, specify a language:
     // the language of the country where the incident occurs is used.
     // trafficIncidentsLookupOptions.languageCode = LanguageCode.EN_US;
-    _trafficEngine.lookupIncident(originalId.toString(), trafficIncidentsLookupOptions,
+    _trafficEngine.lookupIncident(originalId, trafficIncidentsLookupOptions,
         (trafficQueryError, trafficIncident) {
       if (trafficQueryError == null) {
         print("Fetched TrafficIncident from lookup request." + " Description: " + trafficIncident!.description.text);

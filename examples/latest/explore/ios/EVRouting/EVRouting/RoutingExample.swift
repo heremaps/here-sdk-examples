@@ -41,8 +41,9 @@ class RoutingExample {
         self.viewController = viewController
         self.mapView = mapView
         let camera = mapView.camera
+        let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 10)
         camera.lookAt(point: GeoCoordinates(latitude: 52.520798, longitude: 13.409408),
-                      distanceInMeters: 1000 * 10)
+                      zoom: distanceInMeters)
 
         do {
             try routingEngine = RoutingEngine()
@@ -145,8 +146,8 @@ class RoutingExample {
                 }
             }
 
-            print("Section \(sectionIndex): Estimated departure battery charge in kWh: \(String(describing: section.departurePlace.chargeInKilowattHours))")
-            print("Section \(sectionIndex): Estimated arrival battery charge in kWh: \(String(describing: section.arrivalPlace.chargeInKilowattHours))")
+            print("Section \(sectionIndex): Estimated battery charge in kWh when leaving the departure place: \(String(describing: section.departurePlace.chargeInKilowattHours))")
+            print("Section \(sectionIndex): Estimated battery charge in kWh when leaving the arrival place: \(String(describing: section.arrivalPlace.chargeInKilowattHours))")
 
             // Only charging stations that are needed to reach the destination are listed below.
             let depStation = section.departurePlace.chargingStation
@@ -180,7 +181,7 @@ class RoutingExample {
 
     private func showRouteOnMap(route: Route) {
         clearMap()
-        
+
         // Show route as polyline.
         let routeGeoPolyline = route.geometry
         let routeMapPolyline = MapPolyline(geometry: routeGeoPolyline,
@@ -194,7 +195,7 @@ class RoutingExample {
 
         let startPoint = route.sections.first!.departurePlace.mapMatchedCoordinates
         let destination = route.sections.last!.arrivalPlace.mapMatchedCoordinates
-        
+
         // Draw a circle to indicate starting point and destination.
         addCircleMapMarker(geoCoordinates: startPoint, imageName: "green_dot.png")
         addCircleMapMarker(geoCoordinates: destination, imageName: "green_dot.png")
@@ -206,9 +207,8 @@ class RoutingExample {
         // within a max distance of xx meters from any point of the route.
         let routeCorridor = GeoCorridor(polyline: route.geometry.vertices,
                                         halfWidthInMeters: Int32(200))
-        let textQuery = TextQuery("charging station",
-                                  in: routeCorridor,
-                                  near: mapView.camera.state.targetCoordinates)
+        let queryArea = TextQuery.Area(inCorridor: routeCorridor, near: mapView.camera.state.targetCoordinates)
+        let textQuery = TextQuery("charging station", area: queryArea)
 
         let searchOptions = SearchOptions(languageCode: LanguageCode.enUs,
                                           maxItems: 30)

@@ -36,4 +36,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         return true
     }
+
+    func applicationWillTerminate(_ application: UIApplication) {
+        // Free HERE SDK resources before the application shuts down.
+        SDKNativeEngine.sharedInstance = nil
+    }
 }

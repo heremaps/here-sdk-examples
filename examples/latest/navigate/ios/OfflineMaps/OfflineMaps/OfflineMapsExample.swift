@@ -34,8 +34,9 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
 
         // Configure the map.
         let camera = mapView.camera
+        let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 7)
         camera.lookAt(point: GeoCoordinates(latitude: 52.530932, longitude: 13.384915),
-                      distanceInMeters: 1000 * 7)
+                      zoom: distanceInMeters)
 
         do {
             // Adding offline search engine to show that we can search on downloaded regions.
@@ -308,7 +309,8 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
             return
         }
 
-        let textQuery = TextQuery("restaurants", in: bbox)
+        let queryArea = TextQuery.Area(inBox: bbox)
+        let textQuery = TextQuery("restaurants", area: queryArea)
         let searchOptions = SearchOptions(languageCode: LanguageCode.enUs,
                                           maxItems: 30)
         offlineSearchEngine.search(textQuery: textQuery,

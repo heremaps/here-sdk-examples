@@ -26,7 +26,7 @@ For an overview of the existing features, please check the _Developer's Guide_ f
 
 > For now, the _Navigate Edition_ is only available upon request. Please contact your HERE representative to receive access including a set of evaluation credentials.
 
-## List of Available Example Apps (Version 4.11.3.0)
+## List of Available Example Apps (Version 4.11.4.0)
 
 - **HelloMap**: Shows the classic 'Hello World'.
 - **HelloMapWithStoryboard**: Shows the classic 'Hello World' using a Storyboard (iOS only).

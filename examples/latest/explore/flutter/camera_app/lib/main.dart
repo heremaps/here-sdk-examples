@@ -19,6 +19,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:here_sdk/core.dart';
+import 'package:here_sdk/core.engine.dart';
 import 'package:here_sdk/mapview.dart';
 
 import 'CameraExample.dart';
@@ -74,6 +75,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   @override
   void dispose() {
     // Free HERE SDK resources before the application shuts down.
+    SDKNativeEngine.sharedInstance?.dispose();
     SdkContext.release();
     super.dispose();
   }

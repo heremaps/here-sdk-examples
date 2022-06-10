@@ -19,6 +19,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:here_sdk/core.dart';
+import 'package:here_sdk/core.engine.dart';
 import 'package:here_sdk/mapview.dart';
 
 import 'CustomRasterLayersExample.dart';
@@ -80,6 +81,7 @@ class _MyAppState extends State<MyApp> {
   void dispose() {
     // Free HERE SDK resources before the application shuts down.
     _customRasterLayersExample?.onDestroy();
+    SDKNativeEngine.sharedInstance?.dispose();
     SdkContext.release();
     super.dispose();
   }

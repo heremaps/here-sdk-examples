@@ -36,6 +36,7 @@ import com.here.sdk.location.LocationEngineStatus;
 import com.here.sdk.location.LocationFeature;
 import com.here.sdk.location.LocationStatusListener;
 import com.here.sdk.mapview.LocationIndicator;
+import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapView;
 
 import java.util.Date;
@@ -120,7 +121,8 @@ public class PositioningExample {
         locationIndicator.updateLocation(myLocation);
         mapView.addLifecycleListener(locationIndicator);
         //Update the map viewport to be centered on the location.
-        mapView.getCamera().lookAt(myLocation.coordinates, CAMERA_DISTANCE_IN_METERS);
+        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, CAMERA_DISTANCE_IN_METERS);
+        mapView.getCamera().lookAt(myLocation.coordinates, mapMeasureZoom);
     }
 
     private void updateMyLocationOnMap(@NonNull Location myLocation) {

@@ -30,8 +30,10 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.here.sdk.core.GeoCoordinates;
+import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.examples.venues.PermissionsRequestor.ResultListener;
 import com.here.sdk.gestures.TapListener;
+import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
@@ -57,8 +59,9 @@ public class MainActivity extends AppCompatActivity {
     private LevelSwitcher levelSwitcher;
     private VenueTapController venueTapController;
     private VenueSearchController venueSearchController;
-    private IndoorRoutingUIController indoorRoutingController;
-    private VenuesController venuesController;
+
+    // Replace "CATALOG_HRN" with your platform catalog HRN value.
+    private final String HRN = "CATALOG_HRN";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,9 +108,10 @@ public class MainActivity extends AppCompatActivity {
         // Load a scene from the HERE SDK to render the map with a map scheme.
         mapView.getMapScene().loadScene(MapScheme.NORMAL_DAY, mapError -> {
             if (mapError == null) {
-                final double distanceInMeters = 1000 * 10;
+                double distanceInMeters = 1000 * 10;
+                MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
                 mapView.getCamera().lookAt(
-                        new GeoCoordinates(52.530932, 13.384915), distanceInMeters);
+                        new GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
 
                 // Hide the extruded building layer, so that it does not overlap with the venues.
                 mapView.getMapScene().setLayerVisibility(MapScene.Layers.EXTRUDED_BUILDINGS,
@@ -139,18 +143,8 @@ public class MainActivity extends AppCompatActivity {
         venueSearchController = new VenueSearchController(venueMap, venueTapController,
                 findViewById(R.id.venueSearchLayout), findViewById(R.id.searchButton));
 
-        // Create a indoor routing controller
-        indoorRoutingController = new IndoorRoutingUIController(
-                venueEngine,
-                mapView,
-                findViewById(R.id.indoorRoutingLayout),
-                findViewById(R.id.indoorRoutingButton));
-
         // Set a tap listener.
         mapView.getGestures().setTapListener(tapListener);
-
-        venuesController = new VenuesController(venueMap, findViewById(R.id.venuesLayout),
-                findViewById(R.id.editVenuesButton));
 
         // Connect VenueMap to switchers, to control selected drawing and level in the UI.
         drawingSwitcher.setVenueMap(venueMap);
@@ -164,6 +158,9 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(TAG, "Failed to authenticate, reason: " + authenticationError.value);
             }
         });
+
+        // Set platform catalog HRN
+        service.setHrn(HRN);
     }
 
     // Listener for the VenueService event.
@@ -197,10 +194,11 @@ public class MainActivity extends AppCompatActivity {
                 if (selectedVenue != null) {
                     // Move camera to the selected venue.
                     GeoCoordinates venueCenter = selectedVenue.getVenueModel().getCenter();
-                    final double distanceInMeters = 500;
+                    double distanceInMeters = 500;
+                    MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
                     mapView.getCamera().lookAt(
                             new GeoCoordinates(venueCenter.latitude, venueCenter.longitude),
-                            distanceInMeters);
+                            mapMeasureZoom);
 
                     // Venue selection is done, enable back the button for the venue selection
                     // to be able to select another venue.
@@ -256,13 +254,8 @@ public class MainActivity extends AppCompatActivity {
 
     // Tap listener for MapView
     private final TapListener tapListener = origin -> {
-        if (indoorRoutingController.isVisible()) {
-            // In case if the indoor routing controller is visible, redirect the event to it.
-            indoorRoutingController.onTap(origin);
-        } else {
-            // Otherwise, redirect the event to the venue tap controller.
+            // Redirect the event to the venue tap controller.
             venueTapController.onTap(origin);
-        }
     };
 
     @Override
@@ -286,5 +279,11 @@ public class MainActivity extends AppCompatActivity {
         }
         venueEngine.destroy();
         mapView.onDestroy();
+
+        // Free HERE SDK resources before the application shuts down.
+        SDKNativeEngine hereSDKEngine = SDKNativeEngine.getSharedInstance();
+        if (hereSDKEngine != null) {
+            hereSDKEngine.dispose();
+        }
     }
 }

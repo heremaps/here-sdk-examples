@@ -37,6 +37,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import com.here.examples.positioning.PermissionsRequestor.ResultListener;
+import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.mapview.MapError;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
@@ -145,6 +146,12 @@ public class MainActivity extends AppCompatActivity {
             positioningExample.stopLocating();
         }
         mapView.onDestroy();
+
+        // Free HERE SDK resources before the application shuts down.
+        SDKNativeEngine hereSDKEngine = SDKNativeEngine.getSharedInstance();
+        if (hereSDKEngine != null) {
+            hereSDKEngine.dispose();
+        }
     }
 
     private void showDialog(String title, String message) {

@@ -33,8 +33,9 @@ class MapItemsExample: TapDelegate {
     init(viewController: UIViewController, mapView: MapView) {
         self.viewController = viewController
         self.mapView = mapView
+        let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 10)
         mapView.camera.lookAt(point: mapCenterGeoCoordinates,
-                      distanceInMeters: 1000 * 10)
+                              zoom: distanceInMeters)
 
         // Setting a tap delegate to pick markers from map.
         mapView.gestures.tapDelegate = self

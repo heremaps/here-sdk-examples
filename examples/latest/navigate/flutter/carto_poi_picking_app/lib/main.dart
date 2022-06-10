@@ -20,6 +20,7 @@
 import 'package:flutter/material.dart';
 import 'package:here_sdk/core.dart' as HERE;
 import 'package:here_sdk/core.dart';
+import 'package:here_sdk/core.engine.dart';
 import 'package:here_sdk/core.errors.dart';
 import 'package:here_sdk/gestures.dart';
 import 'package:here_sdk/mapview.dart';
@@ -63,8 +64,8 @@ class _MyAppState extends State<MyApp> {
       }
 
       const double distanceToEarthInMeters = 8000;
-      _hereMapController!.camera
-          .lookAtPointWithDistance(HERE.GeoCoordinates(52.520798, 13.409408), distanceToEarthInMeters);
+      MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+      _hereMapController!.camera.lookAtPointWithMeasure(HERE.GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
       _startExample();
     });
   }
@@ -93,13 +94,13 @@ class _MyAppState extends State<MyApp> {
   void _pickMapMarker(Point2D touchPoint) {
     // You can also use a larger area to include multiple carto POIs.
     Rectangle2D rectangle2D = new Rectangle2D(touchPoint, new Size2D(1, 1));
-    _hereMapController!.pickMapFeatures(rectangle2D, (pickMapFeaturesResult) {
-      if (pickMapFeaturesResult == null) {
+    _hereMapController!.pickMapContent(rectangle2D, (pickMapContentResult) {
+      if (pickMapContentResult == null) {
         // Pick operation failed.
         return;
       }
 
-      List<PickPoiResult> cartoPOIList = pickMapFeaturesResult.pois;
+      List<PickPoiResult> cartoPOIList = pickMapContentResult.pois;
       int listSize = cartoPOIList.length;
       if (listSize == 0) {
         return;
@@ -141,6 +142,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void dispose() {
     // Free HERE SDK resources before the application shuts down.
+    SDKNativeEngine.sharedInstance?.dispose();
     SdkContext.release();
     super.dispose();
   }

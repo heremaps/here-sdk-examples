@@ -39,8 +39,9 @@ class ViewController: UIViewController {
 
         // Configure the map.
         let camera = mapView.camera
+        let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 10)
         camera.lookAt(point: GeoCoordinates(latitude: 52.518043, longitude: 13.405991),
-                      distanceInMeters: 1000 * 10)
+                      zoom: distanceInMeters)
     }
 
     override func didReceiveMemoryWarning() {

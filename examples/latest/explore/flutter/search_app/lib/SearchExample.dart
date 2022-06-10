@@ -44,7 +44,8 @@ class SearchExample {
         _hereMapController = hereMapController,
         _camera = hereMapController.camera {
     double distanceToEarthInMeters = 10000;
-    _camera.lookAtPointWithDistance(GeoCoordinates(52.520798, 13.409408), distanceToEarthInMeters);
+    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+    _camera.lookAtPointWithMeasure(GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
 
     try {
       _searchEngine = SearchEngine();
@@ -81,7 +82,8 @@ class SearchExample {
     // Move map to expected location.
     GeoCoordinates geoCoordinates = GeoCoordinates(52.53086, 13.38469);
     double distanceToEarthInMeters = 1000 * 5;
-    _camera.lookAtPointWithDistance(geoCoordinates, distanceToEarthInMeters);
+    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+    _camera.lookAtPointWithMeasure(geoCoordinates, mapMeasureZoom);
 
     String queryString = "Invalidenstraße 116, Berlin";
 
@@ -162,7 +164,8 @@ class SearchExample {
     _clearMap();
 
     GeoBox viewportGeoBox = _getMapViewGeoBox();
-    TextQuery query = TextQuery.withBoxArea(queryString, viewportGeoBox);
+    TextQueryArea queryArea = TextQueryArea.withBox(viewportGeoBox);
+    TextQuery query = TextQuery.withArea(queryString, queryArea);
 
     SearchOptions searchOptions = SearchOptions.withDefaults();
     searchOptions.languageCode = LanguageCode.enUs;
@@ -195,27 +198,29 @@ class SearchExample {
     searchOptions.languageCode = LanguageCode.enUs;
     searchOptions.maxItems = 5;
 
+    TextQueryArea queryArea = TextQueryArea.withCenter(centerGeoCoordinates);
+
     // Simulate a user typing a search term.
     _searchEngine.suggest(
-        TextQuery.withAreaCenter(
+        TextQuery.withArea(
             "p", // User typed "p".
-            centerGeoCoordinates),
+            queryArea),
         searchOptions, (SearchError? searchError, List<Suggestion>? list) async {
       _handleSuggestionResults(searchError, list);
     });
 
     _searchEngine.suggest(
-        TextQuery.withAreaCenter(
+        TextQuery.withArea(
             "pi", // User typed "pi".
-            centerGeoCoordinates),
+            queryArea),
         searchOptions, (SearchError? searchError, List<Suggestion>? list) async {
       _handleSuggestionResults(searchError, list);
     });
 
     _searchEngine.suggest(
-        TextQuery.withAreaCenter(
+        TextQuery.withArea(
             "piz", // User typed "piz".
-            centerGeoCoordinates),
+            queryArea),
         searchOptions, (SearchError? searchError, List<Suggestion>? list) async {
       _handleSuggestionResults(searchError, list);
     });

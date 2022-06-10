@@ -44,7 +44,8 @@ class RoutingExample {
       : _showDialog = showDialogCallback,
         _hereMapController = hereMapController {
     double distanceToEarthInMeters = 5000;
-    _hereMapController.camera.lookAtPointWithDistance(GeoCoordinates(52.520798, 13.409408), distanceToEarthInMeters);
+    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+    _hereMapController.camera.lookAtPointWithMeasure(GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
 
     try {
       _onlineRoutingEngine = RoutingEngine();
@@ -233,7 +234,8 @@ class RoutingExample {
     // For this app, we only add images of size 60x60 pixels.
     int imageWidth = 60;
     int imageHeight = 60;
-    // Note that you can optionally optimize by reusing the mapImage instance for other MapMarker instance.
+    // Note that you can reuse the same mapImage instance for other MapMarker instances
+    // to save resources.
     MapImage mapImage = MapImage.withFilePathAndWidthAndHeight(imageName, imageWidth, imageHeight);
     MapMarker mapMarker = MapMarker(geoCoordinates, mapImage);
     _hereMapController.mapScene.addMapMarker(mapMarker);

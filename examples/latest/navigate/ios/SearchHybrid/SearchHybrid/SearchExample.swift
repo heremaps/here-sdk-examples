@@ -37,8 +37,9 @@ class SearchExample: TapDelegate,
         self.viewController = viewController
         self.mapView = mapView
         let camera = mapView.camera
+        let distanceInMeters = MapMeasure(kind: .distance, value: 5000)
         camera.lookAt(point: GeoCoordinates(latitude: 52.520798, longitude: 13.409408),
-                      distanceInMeters: 5000)
+                      zoom: distanceInMeters)
 
         do {
             try searchEngine = SearchEngine()
@@ -90,7 +91,8 @@ class SearchExample: TapDelegate,
     private func searchInViewport(queryString: String) {
         clearMap()
 
-        let textQuery = TextQuery(queryString, in: getMapViewGeoBox())
+        let queryArea = TextQuery.Area(inBox: getMapViewGeoBox())
+        let textQuery = TextQuery(queryString, area: queryArea)
         let searchOptions = SearchOptions(languageCode: LanguageCode.enUs,
                                           maxItems: 30)
 
@@ -147,30 +149,32 @@ class SearchExample: TapDelegate,
         let autosuggestOptions = SearchOptions(languageCode: LanguageCode.enUs,
                                                maxItems: 5)
 
+        let queryArea = TextQuery.Area(areaCenter: centerGeoCoordinates)
+        
         if isDeviceConnected {
             // Simulate a user typing a search term.
-            _ = searchEngine.suggest(textQuery: TextQuery("p", near: centerGeoCoordinates),
+            _ = searchEngine.suggest(textQuery: TextQuery("p", area: queryArea),
                                      options: autosuggestOptions,
                                      completion: onSearchCompleted)
 
-            _ = searchEngine.suggest(textQuery: TextQuery("pi", near: centerGeoCoordinates),
+            _ = searchEngine.suggest(textQuery: TextQuery("pi", area: queryArea),
                                      options: autosuggestOptions,
                                      completion: onSearchCompleted)
 
-            _ = searchEngine.suggest(textQuery: TextQuery("piz", near: centerGeoCoordinates),
+            _ = searchEngine.suggest(textQuery: TextQuery("piz", area: queryArea),
                                      options: autosuggestOptions,
                                      completion: onSearchCompleted)
         } else {
             // Simulate a user typing a search term.
-            _ = offlineSearchEngine.suggest(textQuery: TextQuery("p", near: centerGeoCoordinates),
+            _ = offlineSearchEngine.suggest(textQuery: TextQuery("p", area: queryArea),
                                      options: autosuggestOptions,
                                      completion: onSearchCompleted)
 
-            _ = offlineSearchEngine.suggest(textQuery: TextQuery("pi", near: centerGeoCoordinates),
+            _ = offlineSearchEngine.suggest(textQuery: TextQuery("pi", area: queryArea),
                                      options: autosuggestOptions,
                                      completion: onSearchCompleted)
 
-            _ = offlineSearchEngine.suggest(textQuery: TextQuery("piz", near: centerGeoCoordinates),
+            _ = offlineSearchEngine.suggest(textQuery: TextQuery("piz", area: queryArea),
                                      options: autosuggestOptions,
                                      completion: onSearchCompleted)
         }
@@ -198,7 +202,8 @@ class SearchExample: TapDelegate,
     public func geocodeAnAddress() {
         // Set map to expected location.
         let geoCoordinates = GeoCoordinates(latitude: 52.53086, longitude: 13.38469)
-        mapView.camera.lookAt(point: geoCoordinates, distanceInMeters: 1000 * 5)
+        let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 5)
+        mapView.camera.lookAt(point: geoCoordinates, zoom: distanceInMeters)
 
         let streetName = "Invalidenstraße 116, Berlin"
         geocodeAddressAtLocation(queryString: streetName, geoCoordinates: geoCoordinates)

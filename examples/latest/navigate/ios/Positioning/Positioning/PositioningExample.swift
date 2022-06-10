@@ -105,8 +105,9 @@ class PositioningExample: LocationDelegate, LocationStatusDelegate, LocationAuth
         locationIndicator.updateLocation(myLocation)
         mapView.addLifecycleDelegate(locationIndicator)
         // Point camera to current location.
+        let distanceInMeters = MapMeasure(kind: .distance, value: PositioningExample.defaultCameraDistance)
         mapCamera.lookAt(point: myLocation.coordinates,
-                         distanceInMeters: PositioningExample.defaultCameraDistance)
+                         zoom: distanceInMeters)
     }
 
     private func updateMyLocationOnMap(myLocation: Location) {

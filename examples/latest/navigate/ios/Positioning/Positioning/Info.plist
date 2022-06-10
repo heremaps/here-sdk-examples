@@ -33,6 +33,10 @@
 	<string>This app needs to access your current location to display it on the map.</string>
 	<key>NSMotionUsageDescription</key>
 	<string>Motion detection is needed to determine more accurate locations, when no GPS signal is found or used.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

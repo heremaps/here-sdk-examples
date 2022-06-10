@@ -68,7 +68,9 @@ class SearchExample: TapDelegate,
     private func searchInViewport(queryString: String) {
         clearMap()
 
-        let textQuery = TextQuery(queryString, in: getMapViewGeoBox())
+        let queryArea = TextQuery.Area(inBox: getMapViewGeoBox())
+        let textQuery = TextQuery(queryString, area: queryArea)
+
         let searchOptions = SearchOptions(languageCode: LanguageCode.enUs,
                                           maxItems: 30)
         _ = searchEngine.search(textQuery: textQuery,
@@ -114,16 +116,18 @@ class SearchExample: TapDelegate,
         let autosuggestOptions = SearchOptions(languageCode: LanguageCode.enUs,
                                                maxItems: 5)
 
+        let queryArea = TextQuery.Area(areaCenter: centerGeoCoordinates)
+        
         // Simulate a user typing a search term.
-        _ = searchEngine.suggest(textQuery: TextQuery("p", near: centerGeoCoordinates),
+        _ = searchEngine.suggest(textQuery: TextQuery("p", area: queryArea),
                                  options: autosuggestOptions,
                                  completion: onSearchCompleted)
 
-        _ = searchEngine.suggest(textQuery: TextQuery("pi", near: centerGeoCoordinates),
+        _ = searchEngine.suggest(textQuery: TextQuery("pi", area: queryArea),
                                  options: autosuggestOptions,
                                  completion: onSearchCompleted)
 
-        _ = searchEngine.suggest(textQuery: TextQuery("piz", near: centerGeoCoordinates),
+        _ = searchEngine.suggest(textQuery: TextQuery("piz", area: queryArea),
                                  options: autosuggestOptions,
                                  completion: onSearchCompleted)
     }

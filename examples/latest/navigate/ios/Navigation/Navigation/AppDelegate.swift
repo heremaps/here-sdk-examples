@@ -50,5 +50,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // after calling deinitialize(), make sure to also call
         // visualNavigator.stopRendering() beforehand.
         MapView.deinitialize()
+
+        // Free HERE SDK resources before the application shuts down.
+        SDKNativeEngine.sharedInstance = nil
     }
 }

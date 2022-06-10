@@ -45,10 +45,10 @@ final class ViewController: UIViewController {
 
     private func searchForCategories() {
         let categoryList = [PlaceCategory(id: PlaceCategory.eatAndDrink),
-                            PlaceCategory(id: PlaceCategory.shoppingElectronics)]
-        let categoryQuery = CategoryQuery(categoryList,
-                                          areaCenter: GeoCoordinates(latitude: 52.520798,
-                                                                     longitude: 13.409408))
+                            PlaceCategory(id: PlaceCategory.shoppingElectronics)]        
+        let queryArea = CategoryQuery.Area(areaCenter: GeoCoordinates(latitude: 52.520798,
+                                                                      longitude: 13.409408))
+        let categoryQuery = CategoryQuery(categoryList, area: queryArea)
         let searchOptions = SearchOptions(languageCode: LanguageCode.enUs,
                                           maxItems: 30)
 

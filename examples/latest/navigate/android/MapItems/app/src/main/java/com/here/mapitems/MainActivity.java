@@ -31,8 +31,10 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.here.sdk.core.GeoCoordinates;
+import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.mapview.MapCamera;
 import com.here.sdk.mapview.MapError;
+import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
@@ -90,7 +92,8 @@ public class MainActivity extends AppCompatActivity {
                     mapViewPinExample = new MapViewPinExample(MainActivity.this, mapView);
 
                     double distanceInMeters = 1000 * 20;
-                    mapView.getCamera().lookAt(new GeoCoordinates(52.51760485151816, 13.380312380535472), distanceInMeters);
+                    MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
+                    mapView.getCamera().lookAt(new GeoCoordinates(52.51760485151816, 13.380312380535472), mapMeasureZoom);
                 } else {
                     Log.d(TAG, "onLoadScene failed: " + mapError.toString());
                 }
@@ -114,6 +117,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         mapView.onDestroy();
+
+        // Free HERE SDK resources before the application shuts down.
+        SDKNativeEngine hereSDKEngine = SDKNativeEngine.getSharedInstance();
+        if (hereSDKEngine != null) {
+            hereSDKEngine.dispose();
+        }
     }
 
     @Override

@@ -20,12 +20,14 @@
 package com.here.sdk.standaloneengine;
 
 import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.LanguageCode;
+import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.search.CategoryQuery;
 import com.here.sdk.search.Place;
@@ -70,7 +72,9 @@ public class MainActivity extends AppCompatActivity {
         List<PlaceCategory> categoryList = new ArrayList<>();
         categoryList.add(new PlaceCategory(PlaceCategory.EAT_AND_DRINK));
         categoryList.add(new PlaceCategory(PlaceCategory.SHOPPING_ELECTRONICS));
-        CategoryQuery categoryQuery = new CategoryQuery(categoryList, new GeoCoordinates(52.520798, 13.409408));
+
+        CategoryQuery.Area queryArea = new CategoryQuery.Area(new GeoCoordinates(52.520798, 13.409408));
+        CategoryQuery categoryQuery = new CategoryQuery(categoryList, queryArea);
 
         SearchOptions searchOptions = new SearchOptions();
         searchOptions.languageCode = LanguageCode.EN_US;
@@ -94,5 +98,16 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        // Free HERE SDK resources before the application shuts down.
+        SDKNativeEngine hereSDKEngine = SDKNativeEngine.getSharedInstance();
+        if (hereSDKEngine != null) {
+            hereSDKEngine.dispose();
+        }
     }
 }

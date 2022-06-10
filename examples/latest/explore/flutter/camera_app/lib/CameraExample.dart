@@ -32,8 +32,8 @@ class CameraExample {
   CameraExample(HereMapController hereMapController) : _hereMapController = hereMapController {
     // Set initial map center to a location in Berlin.
     GeoCoordinates mapCenter = GeoCoordinates(52.530932, 13.384915);
-    _hereMapController.camera.lookAtPointWithDistance(mapCenter, distanceToEarthInMeters);
-    _setNewMapCircle(mapCenter);
+    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+    _hereMapController.camera.lookAtPointWithMeasure(mapCenter, mapMeasureZoom);
   }
 
   void move() {

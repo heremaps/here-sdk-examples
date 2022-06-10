@@ -19,10 +19,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:here_sdk/core.dart';
+import 'package:here_sdk/core.engine.dart';
 import 'package:here_sdk/gestures.dart';
 import 'package:here_sdk/venue.data.dart';
 import 'package:indoor_map_app/drawing_switcher.dart';
-import 'package:indoor_map_app/indoor_routing_widget.dart';
 import 'package:indoor_map_app/level_switcher.dart';
 import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/venue.control.dart';
@@ -48,7 +48,6 @@ class VenueEngineWidget extends StatefulWidget {
 class VenueEngineState extends State<VenueEngineWidget> {
   HereMapController? _hereMapController;
   VenueEngine? _venueEngine;
-  IndoorRoutingState? _indoorRoutingState;
   GeometryInfoState? _geometryInfoState;
   late VenueServiceListener _serviceListener;
   late VenueSelectionListener _venueSelectionListener;
@@ -57,11 +56,13 @@ class VenueEngineState extends State<VenueEngineWidget> {
   late VenueLifecycleListenerImpl _venueLifecycleListener;
   VenueTapController? _venueTapController;
   VenueTapListenerImpl? _tapListener;
-  VenueLongPressListenerImpl? _longPressListener;
   final _drawingSwitcherState = DrawingSwitcherState();
   final _levelSwitcherState = LevelSwitcherState();
   final _venueSearchState = VenueSearchControllerState();
   final _venuesState = VenuesControllerState();
+
+  // Replace "CATALOG_HRN" with your platform catalog HRN value.
+  final String HRN = "CATALOG_HRN";
 
   @override
   Widget build(BuildContext context) {
@@ -77,6 +78,15 @@ class VenueEngineState extends State<VenueEngineWidget> {
     ]);
   }
 
+  @override
+  void dispose() {
+    // Free HERE SDK resources before the application shuts down.
+    SDKNativeEngine.sharedInstance?.dispose();
+    SdkContext.release();
+
+    super.dispose();
+  }
+
   VenueEngine? get venueEngine => _venueEngine;
 
   VenueSearchControllerState getVenueSearchState() {
@@ -87,11 +97,10 @@ class VenueEngineState extends State<VenueEngineWidget> {
     return _venuesState;
   }
 
-  set(HereMapController hereMapController, VenueEngine venueEngine, IndoorRoutingState indoorRoutingState,
+  set(HereMapController hereMapController, VenueEngine venueEngine,
       GeometryInfoState geometryInfoState) {
     _hereMapController = hereMapController;
     _venueEngine = venueEngine;
-    _indoorRoutingState = indoorRoutingState;
     _geometryInfoState = geometryInfoState;
   }
 
@@ -118,12 +127,10 @@ class VenueEngineState extends State<VenueEngineWidget> {
     // Create a venue tap controller.
     _venueTapController = VenueTapController(
         hereMapController: _hereMapController, venueMap: venueMap, geometryInfoState: _geometryInfoState);
-    _indoorRoutingState!.set(_hereMapController, venueEngine!);
-    _tapListener = VenueTapListenerImpl(_indoorRoutingState, _venueTapController);
-    _longPressListener = VenueLongPressListenerImpl(_indoorRoutingState);
+    _tapListener = VenueTapListenerImpl(_venueTapController);
+
     // Set a tap listener.
     _hereMapController!.gestures.tapListener = _tapListener;
-    _hereMapController!.gestures.longPressListener = _longPressListener;
     _venueSearchState.set(_venueTapController);
     _venuesState.set(venueMap);
     // Start VenueEngine. Once authentication is done, the authentication
@@ -131,6 +138,9 @@ class VenueEngineState extends State<VenueEngineWidget> {
     // VenueService. Once VenueService is initialized,
     // VenueServiceListener.onInitializationCompleted method will be called.
     venueEngine!.start(_onAuthCallback);
+
+    // Set platform catalog HRN
+    venueEngine!.venueService.setHrn(HRN);
   }
 
   _onAuthCallback(AuthenticationError? error, AuthenticationData? data) {
@@ -270,49 +280,20 @@ class VenueLifecycleListenerImpl implements VenueLifecycleListener {
 
 // A listener for the map tap event.
 class VenueTapListenerImpl implements TapListener {
-  IndoorRoutingState? _indoorRoutingState;
   VenueTapController? _tapController;
 
-  VenueTapListenerImpl(IndoorRoutingState? indoorRoutingState, VenueTapController? tapController) {
-    _indoorRoutingState = indoorRoutingState;
+  VenueTapListenerImpl(VenueTapController? tapController) {
     _tapController = tapController;
   }
 
   @override
   onTap(Point2D origin) {
-    if (_indoorRoutingState!.isEnabled) {
-      // In case if the indoor routing state is visible, set a destination point.
-      _indoorRoutingState!.setDestinationPoint(origin);
-    } else {
       // Otherwise, redirect the event to the venue tap controller.
       _tapController!.onTap(origin);
-    }
   }
-
   @override
   void release() {
     // Deprecated. Nothing to to here.
   }
 }
 
-// A listener for the map long press event.
-class VenueLongPressListenerImpl implements LongPressListener {
-  IndoorRoutingState? _indoorRoutingState;
-
-  VenueLongPressListenerImpl(IndoorRoutingState? indoorRoutingState) {
-    _indoorRoutingState = indoorRoutingState;
-  }
-
-  @override
-  onLongPress(GestureState state, Point2D origin) {
-    if (_indoorRoutingState!.isEnabled) {
-      // In case if the indoor routing state is visible, set a start point.
-      _indoorRoutingState!.setStartPoint(origin);
-    }
-  }
-
-  @override
-  void release() {
-    // Deprecated. Nothing to to here.
-  }
-}
