@@ -29,6 +29,7 @@ For an overview of the existing features, please check the _Developer's Guide_ f
 ## List of Available Example Apps (Version 4.11.4.0)
 
 - **HelloMap**: Shows the classic 'Hello World'.
+- **HelloMapKotlin**: Shows the classic 'Hello World' using Kotlin language (Android only).
 - **HelloMapWithStoryboard**: Shows the classic 'Hello World' using a Storyboard (iOS only).
 - **HelloMapAndroidAuto**: Shows how to integrate Android Auto into the _HelloMap_ app to show a map on an in-car head unit display (Android only). Exclusively available for the _Explore Edition_ and the _Navigate Edition_.
 - **HelloMapCarPlay**: Shows how CarPlay can be integrated into the _HelloMap_ app to display a map on an in-car head unit display (iOS only). Exclusively available for the _Explore Edition_ and the _Navigate Edition_.
@@ -53,7 +54,7 @@ For an overview of the existing features, please check the _Developer's Guide_ f
 - **Traffic**: Shows how to search for real-time traffic and how to visualize it on the map.
 - **StandAloneEngine**: Shows how to use an engine without a map view.
 - **IndoorMap**: Shows how to integrate private venues. Exclusively available for the _Navigate Edition_.
-- **UnitTesting**: Shows how to mock HERE SDK classes when writing unit tests (Android only, the example app is available for the _Explore Edition_ and the _Navigate Edition_).
+- **UnitTesting**: Shows how to mock HERE SDK classes when writing unit tests (the example app is available for the _Explore Edition_ and the _Navigate Edition_).
 
 Most example apps contain a class named "XY-Example" where XY stands for the feature, which is in most cases equal to the name of the app. If you are looking for example code that shows how to use a certain HERE SDK feature, then please look for this class as it contains the most interesting parts. Note that the overall app architecture is kept as simple as possible to not shadow the parts in focus.
 
