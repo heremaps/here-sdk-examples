@@ -50,7 +50,7 @@ final class ViewController: UIViewController {
 	mapViewPinsExample = MapViewPinsExample(mapView: mapView)
         isMapSceneLoaded = true
     }
-    
+
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         mapView.handleLowMemory()
@@ -67,46 +67,52 @@ final class ViewController: UIViewController {
     @IBAction func onMenuButtonClicked(_ sender: UIBarButtonItem) {
         performSegue(withIdentifier: "showMenu", sender: nil)
     }
-    
+
     private func onAnchoredButtonClicked(_ sender: Any) {
         if isMapSceneLoaded {
             mapItemsExample.onAnchoredButtonClicked()
         }
     }
-    
+
     private func onCenteredButtonClicked(_ sender: Any) {
         if isMapSceneLoaded {
             mapItemsExample.onCenteredButtonClicked()
         }
     }
-    
+
     private func onMapMarkerClusterButtonClicked(_ sender: Any) {
         if isMapSceneLoaded {
             mapItemsExample.onMapMarkerClusterButtonClicked()
         }
     }
-    
+
     private func onLocationIndicatorPedestrianButtonClicked(_ sender: Any) {
         if isMapSceneLoaded {
             mapItemsExample.onLocationIndicatorPedestrianButtonClicked()
         }
     }
-    
+
     private func onLocationIndicatorNavigationButtonClicked(_ sender: Any) {
         if isMapSceneLoaded {
             mapItemsExample.onLocationIndicatorNavigationButtonClicked()
         }
     }
-    
+
     private func onLocationIndicatorStateClicked(_ sender: Any) {
         if isMapSceneLoaded {
             mapItemsExample.toggleActiveStateForLocationIndicator()
         }
     }
-    
+
     private func onFlatMapMarkerButtonClicked(_ sender: Any) {
         if isMapSceneLoaded {
             mapItemsExample.onFlatMapMarkerButtonClicked()
+        }
+    }
+
+    private func on2DTextureButtonClicked(_ sender: Any) {
+        if isMapSceneLoaded {
+            mapItemsExample.on2DTextureButtonClicked()
         }
     }
 
@@ -176,7 +182,8 @@ final class ViewController: UIViewController {
             MenuItem(title: "Anchored (2D)", onSelect: onAnchoredButtonClicked),
             MenuItem(title: "Centered (2D)", onSelect: onCenteredButtonClicked),
             MenuItem(title: "MapMarkerCluster", onSelect: onMapMarkerClusterButtonClicked),
-            MenuItem(title: "Flat", onSelect: onFlatMapMarkerButtonClicked),
+            MenuItem(title: "Flat Marker", onSelect: onFlatMapMarkerButtonClicked),
+            MenuItem(title: "2D Texture", onSelect: on2DTextureButtonClicked),
             MenuItem(title: "3D Marker", onSelect: onMapMarker3DClicked)
         ])
     }

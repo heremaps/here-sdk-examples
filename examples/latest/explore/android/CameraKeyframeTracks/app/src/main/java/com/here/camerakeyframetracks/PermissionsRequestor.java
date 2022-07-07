@@ -17,7 +17,7 @@
  * License-Filename: LICENSE
  */
 
-package com.here.camerakeyframetracks.helper;
+package com.here.camerakeyframetracks;
 
 import android.Manifest;
 import android.app.Activity;

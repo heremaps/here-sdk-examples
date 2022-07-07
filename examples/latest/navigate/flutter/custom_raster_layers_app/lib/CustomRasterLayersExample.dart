@@ -17,6 +17,8 @@
  * License-Filename: LICENSE
  */
 
+import 'dart:typed_data';
+import 'package:flutter/services.dart';
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/mapview.datasource.dart';
@@ -25,6 +27,7 @@ class CustomRasterLayersExample {
   HereMapController _hereMapController;
   MapLayer? _rasterMapLayerTonerStyle;
   RasterDataSource? _rasterDataSourceTonerStyle;
+  MapImage? _poiMapImage;
 
   CustomRasterLayersExample(HereMapController this._hereMapController) {
     double distanceToEarthInMeters = 60000;
@@ -37,6 +40,9 @@ class CustomRasterLayersExample {
 
     // We want to start with the default map style.
     _rasterMapLayerTonerStyle?.setEnabled(false);
+
+    // Add a POI marker
+    _addPOIMapMarker(GeoCoordinates(52.530932, 13.384915), 1);
   }
 
   void enableButtonClicked() {
@@ -59,6 +65,9 @@ class CustomRasterLayersExample {
     RasterDataSourceProviderConfiguration rasterProviderConfig =
         RasterDataSourceProviderConfiguration.withDefaults(templateUrl, TilingScheme.quadTreeMercator, storageLevels);
 
+    // If you want to add transparent layers then set this to true.
+    rasterProviderConfig.hasAlphaChannel = false;
+
     // Raster tiles are stored in a separate cache on the device.
     String path = "cache/raster/toner";
     int maxDiskSizeInBytes = 1024 * 1024 * 32;
@@ -70,8 +79,8 @@ class CustomRasterLayersExample {
   }
 
   MapLayer _createMapLayer(String dataSourceName) {
-    // The layer should be rendered on top of other layers.
-    MapLayerPriority priority = MapLayerPriorityBuilder().renderedLast().build();
+    // The layer should be rendered on top of other layers except the cartography layer consisting of the embedded Carto POI markers.
+    MapLayerPriority priority = MapLayerPriorityBuilder().renderedLast().renderedAfterLayer("ocm_cartography").build();
     // And it should be visible for all zoom levels.
     MapLayerVisibilityRange range = MapLayerVisibilityRange(0, 22 + 1);
 
@@ -93,5 +102,28 @@ class CustomRasterLayersExample {
   void onDestroy() {
     _rasterMapLayerTonerStyle?.destroy();
     _rasterDataSourceTonerStyle?.destroy();
+  }
+
+  Future<void> _addPOIMapMarker(GeoCoordinates geoCoordinates, int drawOrder) async {
+    // Reuse existing MapImage for new map markers.
+    if (_poiMapImage == null) {
+      Uint8List imagePixelData = await _loadFileAsUint8List('assets/poi.png');
+      _poiMapImage = MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
+    }
+
+    // By default, the anchor point is set to 0.5, 0.5 (= centered).
+    // Here the bottom, middle position should point to the location.
+    Anchor2D anchor2D = Anchor2D.withHorizontalAndVertical(0.5, 1);
+
+    MapMarker mapMarker = MapMarker.withAnchor(geoCoordinates, _poiMapImage!, anchor2D);
+    mapMarker.drawOrder = drawOrder;
+
+    _hereMapController.mapScene.addMapMarker(mapMarker);
+  }
+
+  Future<Uint8List> _loadFileAsUint8List(String assetPathToFile) async {
+    // The path refers to the assets directory as specified in pubspec.yaml.
+    ByteData fileData = await rootBundle.load(assetPathToFile);
+    return Uint8List.view(fileData.buffer);
   }
 }

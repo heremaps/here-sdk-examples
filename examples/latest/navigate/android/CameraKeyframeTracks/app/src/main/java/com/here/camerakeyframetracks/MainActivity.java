@@ -19,7 +19,6 @@
 
 package com.here.camerakeyframetracks;
 
-import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -30,8 +29,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.here.camerakeyframetracks.helper.PermissionsRequestor;
-import com.here.camerakeyframetracks.helper.RouteCalculator;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.mapview.MapError;
@@ -76,9 +73,9 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    @SuppressLint("MissingSuperCall")
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         permissionsRequestor.onRequestPermissionsResult(requestCode, grantResults);
     }
 
@@ -107,18 +104,13 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (RouteCalculator.testRoute == null) {
-            Log.e("MainActivity", "Error: No route for testing ...");
-            return false;
-        }
-
         switch (item.getItemId()) {
             case R.id.stopToRouteAnimation:
                 routeAnimationExample.stopRouteAnimation();
                 return true;
             case R.id.startToRouteAnimation:
                 // An animation that moves the camera to the route without keyframe tracks.
-                routeAnimationExample.animateToRoute(RouteCalculator.testRoute);
+                routeAnimationExample.animateToRoute();
                 return true;
             case R.id.startNYCAnimation:
                 // A camera animation through New York.
@@ -134,25 +126,27 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
-        super.onPause();
         mapView.onPause();
+        super.onPause();
     }
 
     @Override
     protected void onResume() {
-        super.onResume();
         mapView.onResume();
+        super.onResume();
     }
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         mapView.onDestroy();
 
         // Free HERE SDK resources before the application shuts down.
         SDKNativeEngine hereSDKEngine = SDKNativeEngine.getSharedInstance();
         if (hereSDKEngine != null) {
             hereSDKEngine.dispose();
+            // For safety reasons, we explicitly set the shared instance to null to avoid situations, where a disposed instance is accidentally reused.
+            SDKNativeEngine.setSharedInstance(null);
         }
+        super.onDestroy();
     }
 }

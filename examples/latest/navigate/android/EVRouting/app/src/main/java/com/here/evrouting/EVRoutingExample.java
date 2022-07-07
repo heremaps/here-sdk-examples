@@ -40,6 +40,7 @@ import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapPolygon;
 import com.here.sdk.mapview.MapPolyline;
 import com.here.sdk.mapview.MapView;
+import com.here.sdk.routing.AvoidanceOptions;
 import com.here.sdk.routing.CalculateIsolineCallback;
 import com.here.sdk.routing.CalculateRouteCallback;
 import com.here.sdk.routing.ChargingConnectorType;
@@ -152,12 +153,18 @@ public class EVRoutingExample {
             put(90, 0.238);
         }};
 
-        // Ensure that the vehicle does not run out of energy along the way and charging stations are added as additional waypoints.
+        // Must be 0 for isoline calculation.
+        evCarOptions.routeOptions.alternatives = 0;
+
+        // Ensure that the vehicle does not run out of energy along the way
+        // and charging stations are added as additional waypoints.
         evCarOptions.ensureReachability = true;
 
-        // The below options are required when setting the ensureReachability option to true.
+        // The below options are required when setting the ensureReachability option to true
+        // (AvoidanceOptions need to be empty).
+        evCarOptions.avoidanceOptions = new AvoidanceOptions();
+        evCarOptions.routeOptions.speedCapInMetersPerSecond = null;
         evCarOptions.routeOptions.optimizationMode = OptimizationMode.FASTEST;
-        evCarOptions.routeOptions.alternatives = 0;
         evCarOptions.batterySpecifications.connectorTypes =
                 new ArrayList<>(Arrays.asList(ChargingConnectorType.TESLA,
                     ChargingConnectorType.IEC_62196_TYPE_1_COMBO, ChargingConnectorType.IEC_62196_TYPE_2_COMBO));

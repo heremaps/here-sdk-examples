@@ -130,8 +130,22 @@ class MapItemsExample: TapDelegate {
 
         let geoCoordinates = createRandomGeoCoordinatesAroundMapCenter()
 
+        // It's origin is centered on the location.
+        addFlatMarker(geoCoordinates: geoCoordinates)
+
+        // A centered 2D map marker to indicate the exact location.
+        // Note that 3D map markers are always drawn on top of 2D map markers.
+        addCircleMapMarker(geoCoordinates: geoCoordinates)
+    }
+
+    public func on2DTextureButtonClicked() {
+        // Tilt the map for a better 3D effect.
+        tiltMap()
+
+        let geoCoordinates = createRandomGeoCoordinatesAroundMapCenter()
+
         // Adds a flat POI marker that rotates and tilts together with the map.
-        addFlatMarker3D(geoCoordinates: geoCoordinates)
+        add2DTexture(geoCoordinates: geoCoordinates)
 
         // A centered 2D map marker to indicate the exact location.
         // Note that 3D map markers are always drawn on top of 2D map markers.
@@ -208,11 +222,11 @@ class MapItemsExample: TapDelegate {
         let mapMarker = MapMarker(at: geoCoordinates,
                                   image: MapImage(pixelData: imageData,
                                                   imageFormat: ImageFormat.png))
-        
+
         // Optionally, enable a fade in-out animation.
         let durationInSeconds: TimeInterval = 3
         mapMarker.fadeDuration = durationInSeconds
-        
+
         mapView.mapScene.addMapMarker(mapMarker)
         mapMarkers.append(mapMarker)
     }
@@ -245,7 +259,7 @@ class MapItemsExample: TapDelegate {
         }
     }
 
-    private func addFlatMarker3D(geoCoordinates: GeoCoordinates) {
+    private func add2DTexture(geoCoordinates: GeoCoordinates) {
         // Place the files to an "assets" directory via drag & drop.
         // Adjust file name and path as appropriate for your project.
         // Note: The bottom of the plane is centered on the origin.
@@ -263,6 +277,27 @@ class MapItemsExample: TapDelegate {
         mapMarkers3D.append(mapMarker3D)
     }
 
+    private func addFlatMarker(geoCoordinates: GeoCoordinates) {
+        guard
+            let image = UIImage(named: "poi.png"),
+            let imageData = image.pngData() else {
+                print("Error: Image not found.")
+                return
+        }
+        
+        // The default scale factor of the map marker is 1.0. For a scale of 2, the map marker becomes 2x larger.
+        // For a scale of 0.5, the map marker shrinks to half of its original size.
+        let scaleFactor: Double = 0.5
+
+        let mapImage:MapImage = MapImage(pixelData: imageData, imageFormat: ImageFormat.png)
+
+        // With DENSITY_INDEPENDENT_PIXELS the map marker will have a constant size on the screen regardless if the map is zoomed in or out.
+        let mapMarker3D: MapMarker3D = MapMarker3D(at: geoCoordinates, image: mapImage, scale: scaleFactor, unit: RenderSize.Unit.densityIndependentPixels)
+
+        mapView.mapScene.addMapMarker3d(mapMarker3D)
+        mapMarkers3D.append(mapMarker3D)
+    }
+
     private func addMapMarker3D(geoCoordinates: GeoCoordinates) {
         // Place the files to an "assets" directory via drag & drop.
         // Adjust file name and path as appropriate for your project.
@@ -271,16 +306,16 @@ class MapItemsExample: TapDelegate {
 
         // Without depth check, 3D models are rendered on top of everything. With depth check enabled,
         // it may be hidden by buildings. In addition:
-        // If a 3D object has its center at the origin of its internal coordinate system, 
+        // If a 3D object has its center at the origin of its internal coordinate system,
         // then parts of it may be rendered below the ground surface (altitude < 0).
-        // Note that the HERE SDK map surface is flat, following a Mercator or Globe projection. 
+        // Note that the HERE SDK map surface is flat, following a Mercator or Globe projection.
         // Therefore, a 3D object becomes visible when the altitude of its location is 0 or higher.
         // By default, without setting a scale factor, 1 unit in 3D coordinate space equals 1 meter.
-        let geoCoordinatesWithAltitude = GeoCoordinates(latitude: geoCoordinates.latitude, 
-                                                        longitude: geoCoordinates.longitude, 
-                                                        altitude: 18.0)        
+        let geoCoordinatesWithAltitude = GeoCoordinates(latitude: geoCoordinates.latitude,
+                                                        longitude: geoCoordinates.longitude,
+                                                        altitude: 18.0)
         let mapMarker3DModel = MapMarker3DModel(geometryFilePath: geometryFile, textureFilePath: textureFile)
-        let mapMarker3D = MapMarker3D(at: geoCoordinatesWithAltitude, model: mapMarker3DModel)     
+        let mapMarker3D = MapMarker3D(at: geoCoordinatesWithAltitude, model: mapMarker3DModel)
         mapMarker3D.scale = 6
         mapMarker3D.isDepthCheckEnabled = true
 
@@ -330,12 +365,12 @@ class MapItemsExample: TapDelegate {
         if let groupingList = pickedMapItems?.clusteredMarkers {
             handlePickedMapMarkerClusters(groupingList)
         }
-        
+
         // Note that 3D map markers can't be picked yet. Only marker, polgon and polyline map items are pickable.
         guard let topmostMapMarker = pickedMapItems?.markers.first else {
             return
         }
-        
+
         if let message = topmostMapMarker.metadata?.getString(key: "key_poi") {
             showDialog(title: "Map Marker picked", message: message)
             return
@@ -348,7 +383,7 @@ class MapItemsExample: TapDelegate {
         guard let topmostGrouping = groupingList.first else {
             return
         }
-        
+
         let clusterSize = topmostGrouping.markers.count
         if (clusterSize == 0) {
             // This cluster does not contain any MapMarker items.
@@ -361,7 +396,7 @@ class MapItemsExample: TapDelegate {
                        message: "Number of contained markers in this cluster: \(clusterSize). Total number of markers in this MapMarkerCluster: \(topmostGrouping.parent.markers.count)")
         }
     }
-    
+
     private func createRandomGeoCoordinatesAroundMapCenter() -> GeoCoordinates {
         let scaleFactor = UIScreen.main.scale
         let mapViewWidthInPixels = Double(mapView.bounds.width * scaleFactor)

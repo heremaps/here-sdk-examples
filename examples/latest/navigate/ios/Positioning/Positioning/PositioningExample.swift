@@ -66,6 +66,10 @@ class PositioningExample: LocationDelegate, LocationStatusDelegate, LocationAuth
     }
 
     private func startLocating() {
+        // Enable background updates.
+        locationEngine.setBackgroundLocationAllowed(allowed: true)
+        locationEngine.setBackgroundLocationIndicatorVisible(visible: true)
+        
         // Set delegates and start location engine.
         locationEngine.addLocationStatusDelegate(locationStatusDelegate: self)
         locationEngine.addLocationDelegate(locationDelegate: self)

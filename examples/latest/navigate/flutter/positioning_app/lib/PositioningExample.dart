@@ -262,7 +262,12 @@ class PositioningExample extends State<MyApp>
     }
 
     _addMyLocationToMap(location);
-    
+
+    // Enable background updates on iOS.
+    _locationEngine.setBackgroundLocationAllowed(true);
+    _locationEngine.setBackgroundLocationIndicatorVisible(true);
+
+    // Set delegates and start location engine.
     _locationEngine.addLocationListener(this);
     _locationEngine.addLocationStatusListener(this);
     _locationEngine.startWithLocationAccuracy(LocationAccuracy.bestAvailable);
@@ -276,7 +281,7 @@ class PositioningExample extends State<MyApp>
 
   void _addMyLocationToMap(Location myLocation) {
     if (_locationIndicator != null) {
-      _hereMapController?.removeLifecycleListener(_locationIndicator!);
+      return;
     }
     // Set-up location indicator.
     _locationIndicator = LocationIndicator();

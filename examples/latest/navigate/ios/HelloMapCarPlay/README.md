@@ -3,9 +3,9 @@ The HelloMapCarPlay example app shows how [CarPlay](https://www.apple.com/de/ios
 Build instructions:
 -------------------
 
-1) Edit `HelloMapCarPlay/HelloMapCarPlay/Entitlements.plist` to uncomment the key for testing purposes. For a production-ready app, [contact Apple](https://developer.apple.com/documentation/carplay/requesting_carplay_entitlements) to include the required entitlements in your provisioning profile for signing the app. Until then, this app cannot be tested on a real device. Use an iOS simulator instead. From the simulator menu bar, choose _I/O -> External Displays -> CarPlay_ to show the CarPlay head unit simulator on your development machine.
+1) Edit `HelloMapCarPlay/HelloMapCarPlay/Entitlements.plist` to uncomment the key for testing purposes. For a production-ready app, [contact Apple](https://developer.apple.com/documentation/carplay/requesting_carplay_entitlements) to include the required entitlements in your provisioning profile for signing the app. Until then, this app cannot be tested on a real device. Use an iOS simulator instead (>= min supported iOS version of HERE SDK). From the simulator menu bar, choose _I/O -> External Displays -> CarPlay_ to show the CarPlay head unit simulator on your development machine.
 
-2) Copy the `heresdk.xcframework` file to your app's root folder.
+2) Copy the `heresdk.xcframework` folder (as found in the HERE SDK package) to your app's root folder.
 
 Note: If your framework version is different than the version shown in the _Developer's Guide_, you may need to adapt the source code of the example app.
 

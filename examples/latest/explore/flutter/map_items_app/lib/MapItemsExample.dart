@@ -17,6 +17,7 @@
  * License-Filename: LICENSE
  */
 
+import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
@@ -127,14 +128,28 @@ class MapItemsExample {
     _addLocationIndicator(geoCoordinates, LocationIndicatorIndicatorStyle.navigation);
   }
 
-  void showFlatMapMarkers() {
+  void showFlatMapMarker() {
+    // Tilt the map for a better 3D effect.
+    _tiltMap();
+
+    GeoCoordinates geoCoordinates = _createRandomGeoCoordinatesAroundMapCenter();
+
+    // It's origin is centered on the location.
+    _addFlatMarker(geoCoordinates);
+
+    // A centered 2D map marker to indicate the exact location.
+    // Note that 3D map markers are always drawn on top of 2D map markers.
+    _addCircleMapMarker(geoCoordinates, 1);
+  }
+
+  void show2DTexture() {
     // Tilt the map for a better 3D effect.
     _tiltMap();
 
     GeoCoordinates geoCoordinates = _createRandomGeoCoordinatesAroundMapCenter();
 
     // Adds a flat POI marker that rotates and tilts together with the map.
-    _addFlatMarker3D(geoCoordinates);
+    _add2DTexture(geoCoordinates);
 
     // A centered 2D map marker to indicate the exact location.
     // Note that 3D map markers are always drawn on top of 2D map markers.
@@ -243,7 +258,23 @@ class MapItemsExample {
     _locationIndicatorList.add(locationIndicator);
   }
 
-  void _addFlatMarker3D(GeoCoordinates geoCoordinates) {
+  void _addFlatMarker(GeoCoordinates geoCoordinates) async {
+
+    Uint8List imagePixelData = await _loadFileAsUint8List('assets/poi.png');
+    MapImage mapImage = MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
+
+    // The default scale factor of the map marker is 1.0. For a scale of 2, the map marker becomes 2x larger.
+    // For a scale of 0.5, the map marker shrinks to half of its original size.
+    double scaleFactor = 0.5;
+
+    // With DENSITY_INDEPENDENT_PIXELS the map marker will have a constant size on the screen regardless if the map is zoomed in or out.
+    MapMarker3D mapMarker3D = MapMarker3D.fromImage(geoCoordinates,mapImage, scaleFactor, RenderSizeUnit.densityIndependentPixels);
+
+    _hereMapController.mapScene.addMapMarker3d(mapMarker3D);
+    _mapMarker3DList.add(mapMarker3D);
+  }
+
+  void _add2DTexture(GeoCoordinates geoCoordinates) {
     // Place the files in the "assets" directory as specified in pubspec.yaml.
     // Adjust file name and path as appropriate for your project.
     // Note: The bottom of the plane is centered on the origin.
