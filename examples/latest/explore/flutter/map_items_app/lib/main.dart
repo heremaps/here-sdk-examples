@@ -97,7 +97,11 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _flatMapMarkersButtonClicked() {
-    _mapItemsExample?.showFlatMapMarkers();
+    _mapItemsExample?.showFlatMapMarker();
+  }
+
+  void _2DTextureButtonClicked() {
+    _mapItemsExample?.show2DTexture();
   }
 
   void _mapMarkers3DButtonClicked() {
@@ -185,7 +189,8 @@ class _MyAppState extends State<MyApp> {
       MenuSectionItem("Anchored (2D)", _anchoredMapMarkersButtonClicked),
       MenuSectionItem("Centered (2D)", _centeredMapMarkersButtonClicked),
       MenuSectionItem("MapMarkerCluster", _mapMarkerClusterButtonClicked),
-      MenuSectionItem("Flat", _flatMapMarkersButtonClicked),
+      MenuSectionItem("Flat MapMarker", _flatMapMarkersButtonClicked),
+      MenuSectionItem("2DTexture", _2DTextureButtonClicked),
       MenuSectionItem("3D OBJ", _mapMarkers3DButtonClicked),
     ];
 

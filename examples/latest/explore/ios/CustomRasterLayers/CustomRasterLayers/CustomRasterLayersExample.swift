@@ -42,6 +42,9 @@ class CustomRasterLayersExample {
 
         // We want to start with the default map style.
         rasterMapLayerTonerStyle.setEnabled(false)
+        
+        // Add a POI marker
+        addPOIMapMarker(geoCoordinates: GeoCoordinates(latitude: 52.530932, longitude: 13.384915))
     }
 
     func onEnableButtonClicked() {
@@ -61,10 +64,13 @@ class CustomRasterLayersExample {
         let templateUrl = "https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png"
         // The storage levels available for this data source. Supported range [0, 31].
         let storageLevels: [Int32] = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
-        let rasterProviderConfig = RasterDataSourceConfiguration.Provider(templateUrl: templateUrl,
+        var rasterProviderConfig = RasterDataSourceConfiguration.Provider(templateUrl: templateUrl,
                                                                           tilingScheme: TilingScheme.quadTreeMercator,
                                                                           storageLevels: storageLevels)
 
+        // If you want to add transparent layers then set this to true.
+        rasterProviderConfig.hasAlphaChannel = false
+        
         // Raster tiles are stored in a separate cache on the device.
         let path = "cache/raster/toner"
         let maxDiskSizeInBytes: Int64 = 1024 * 1024 * 32
@@ -79,8 +85,8 @@ class CustomRasterLayersExample {
     }
 
     private func createMapLayer(dataSourceName: String) -> MapLayer {
-        // The layer should be rendered on top of other layers.
-        let priority = MapLayerPriorityBuilder().renderedLast().build()
+        // The layer should be rendered on top of other layers except the cartography layer consisting of the embedded Carto POI markers.
+        let priority = MapLayerPriorityBuilder().renderedLast().renderedAfterLayer(named: "ocm_cartography").build()
         // And it should be visible for all zoom levels.
         let range = MapLayerVisibilityRange(minimumZoomLevel: 0, maximumZoomLevel: 22 + 1)
 
@@ -100,5 +106,24 @@ class CustomRasterLayersExample {
         } catch let InstantiationException {
             fatalError("MapLayer creation failed Cause: \(InstantiationException)")
         }
+    }
+    
+    private func addPOIMapMarker(geoCoordinates: GeoCoordinates) {
+        guard
+            let image = UIImage(named: "poi.png"),
+            let imageData = image.pngData() else {
+                print("Error: Image not found.")
+                return
+        }
+
+        // The bottom, middle position should point to the location.
+        // By default, the anchor point is set to 0.5, 0.5.
+        let anchorPoint = Anchor2D(horizontal: 0.5, vertical: 1)
+        let mapMarker = MapMarker(at: geoCoordinates,
+                                  image: MapImage(pixelData: imageData,
+                                                  imageFormat: ImageFormat.png),
+                                  anchor: anchorPoint)
+
+        mapView.mapScene.addMapMarker(mapMarker)
     }
 }

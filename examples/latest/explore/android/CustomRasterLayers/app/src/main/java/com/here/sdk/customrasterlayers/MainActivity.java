@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
             public void onLoadScene(@Nullable MapError mapError) {
                 if (mapError == null) {
                     customRasterLayersExample = new CustomRasterLayersExample();
-                    customRasterLayersExample.onMapSceneLoaded(mapView);
+                    customRasterLayersExample.onMapSceneLoaded(mapView, MainActivity.this);
                 } else {
                     Log.d(TAG, "onLoadScene failed: " + mapError.toString());
                 }
@@ -92,28 +92,29 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
-        super.onPause();
         mapView.onPause();
+        super.onPause();
     }
 
     @Override
     protected void onResume() {
-        super.onResume();
         mapView.onResume();
+        super.onResume();
     }
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
-
         customRasterLayersExample.onDestroy();
 
         mapView.onDestroy();
-        
+
         // Free HERE SDK resources before the application shuts down.
         SDKNativeEngine hereSDKEngine = SDKNativeEngine.getSharedInstance();
         if (hereSDKEngine != null) {
             hereSDKEngine.dispose();
+            // For safety reasons, we explicitly set the shared instance to null to avoid situations, where a disposed instance is accidentally reused.
+            SDKNativeEngine.setSharedInstance(null);
         }
+        super.onDestroy();
     }
 }

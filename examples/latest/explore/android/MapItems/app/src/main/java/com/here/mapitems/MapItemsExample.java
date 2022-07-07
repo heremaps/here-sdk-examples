@@ -45,6 +45,7 @@ import com.here.sdk.mapview.MapMarkerCluster;
 import com.here.sdk.mapview.MapView;
 import com.here.sdk.mapview.MapViewBase;
 import com.here.sdk.mapview.PickMapItemsResult;
+import com.here.sdk.mapview.RenderSize;
 import com.here.time.Duration;
 
 import java.io.IOException;
@@ -134,14 +135,14 @@ public class MapItemsExample {
         addLocationIndicator(geoCoordinates, LocationIndicator.IndicatorStyle.NAVIGATION);
     }
 
-    public void showFlatMarker() {
+    public void show2DTexture() {
         // Tilt the map for a better 3D effect.
         tiltMap();
 
         GeoCoordinates geoCoordinates = createRandomGeoCoordinatesAroundMapCenter();
 
         // Adds a flat POI marker that rotates and tilts together with the map.
-        addFlatMarker3D(geoCoordinates);
+        add2DTexture(geoCoordinates);
 
         // A centered 2D map marker to indicate the exact location.
         // Note that 3D map markers are always drawn on top of 2D map markers.
@@ -157,6 +158,19 @@ public class MapItemsExample {
         // Adds a textured 3D model.
         // It's origin is centered on the location.
         addMapMarker3D(geoCoordinates);
+    }
+
+    public void showFlatMapMarker() {
+        // Tilt the map for a better 3D effect.
+        tiltMap();
+
+        GeoCoordinates geoCoordinates = createRandomGeoCoordinatesAroundMapCenter();
+
+        // It's origin is centered on the location.
+        addFlatMarker(geoCoordinates);
+
+        // A centered 2D map marker to indicate the exact location.
+        addCircleMapMarker(geoCoordinates);
     }
 
     public void clearMap() {
@@ -242,7 +256,7 @@ public class MapItemsExample {
         }
     }
 
-    private void addFlatMarker3D(GeoCoordinates geoCoordinates) {
+    private void add2DTexture(GeoCoordinates geoCoordinates) {
         // Place the files in the "assets" directory.
         // Full path example: app/src/main/assets/plane.obj
         // Adjust file name and path as appropriate for your project.
@@ -258,6 +272,20 @@ public class MapItemsExample {
         MapMarker3D mapMarker3D = new MapMarker3D(geoCoordinates, mapMarker3DModel);
         // Scale marker. Note that we used a normalized length of 2 units in 3D space.
         mapMarker3D.setScale(60);
+
+        mapView.getMapScene().addMapMarker3d(mapMarker3D);
+        mapMarker3DList.add(mapMarker3D);
+    }
+
+    private void addFlatMarker(GeoCoordinates geoCoordinates) {
+        MapImage mapImage = MapImageFactory.fromResource(context.getResources(), R.drawable.poi);
+
+        // The default scale factor of the map marker is 1.0. For a scale of 2, the map marker becomes 2x larger.
+        // For a scale of 0.5, the map marker shrinks to half of its original size.
+        double scaleFactor = 0.5;
+
+        // With DENSITY_INDEPENDENT_PIXELS the map marker will have a constant size on the screen regardless if the map is zoomed in or out.
+        MapMarker3D mapMarker3D = new MapMarker3D(geoCoordinates, mapImage, scaleFactor, RenderSize.Unit.DENSITY_INDEPENDENT_PIXELS);
 
         mapView.getMapScene().addMapMarker3d(mapMarker3D);
         mapMarker3DList.add(mapMarker3D);

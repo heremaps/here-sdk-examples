@@ -17,7 +17,7 @@
  * License-Filename: LICENSE
  */
 
-package com.here.camerakeyframetracks.helper;
+package com.here.camerakeyframetracks;
 
 import android.util.Log;
 
@@ -29,11 +29,9 @@ import com.here.sdk.core.GeoPolyline;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.mapview.MapPolyline;
 import com.here.sdk.mapview.MapView;
-import com.here.sdk.routing.CalculateRouteCallback;
 import com.here.sdk.routing.CarOptions;
 import com.here.sdk.routing.Route;
 import com.here.sdk.routing.RoutingEngine;
-import com.here.sdk.routing.RoutingError;
 import com.here.sdk.routing.Waypoint;
 
 import java.util.ArrayList;
@@ -60,19 +58,16 @@ public class RouteCalculator {
     }
 
     public void createRoute() {
-        // A random test route.
+        // A fixed test route.
         Waypoint startWaypoint = new Waypoint(new GeoCoordinates(40.7133, -74.0112));
         Waypoint destinationWaypoint = new Waypoint(new GeoCoordinates(40.7203, -74.3122));
         List<Waypoint> waypoints = new ArrayList<>(Arrays.asList(startWaypoint, destinationWaypoint));
-        routingEngine.calculateRoute(waypoints, new CarOptions(), new CalculateRouteCallback() {
-            @Override
-            public void onRouteCalculated(@Nullable RoutingError routingError, @Nullable List<Route> routes) {
-                if (routingError == null) {
-                    testRoute = routes.get(0);
-                    showRouteOnMap(testRoute);
-                } else {
-                    Log.e("RouteCalculator", "RoutingError: " + routingError.name());
-                }
+        routingEngine.calculateRoute(waypoints, new CarOptions(), (routingError, routes) -> {
+            if (routingError == null) {
+                testRoute = routes.get(0);
+                showRouteOnMap(testRoute);
+            } else {
+                Log.e("RouteCalculator", "RoutingError: " + routingError.name());
             }
         });
     }

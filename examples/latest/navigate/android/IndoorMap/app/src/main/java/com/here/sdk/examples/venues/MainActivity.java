@@ -31,6 +31,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.engine.SDKNativeEngine;
+import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.examples.venues.PermissionsRequestor.ResultListener;
 import com.here.sdk.gestures.TapListener;
 import com.here.sdk.mapview.MapMeasure;
@@ -119,7 +120,12 @@ public class MainActivity extends AppCompatActivity {
 
                 // Create a venue engine object. Once the initialization is done, a callback
                 // will be called.
-                venueEngine = new VenueEngine(this ::onVenueEngineInitCompleted);
+                try {
+                    venueEngine = new VenueEngine(this ::onVenueEngineInitCompleted);
+                } catch (InstantiationErrorException e) {
+                    Log.e(TAG, "SDK Engine instantiation failed");
+                    e.printStackTrace();
+                }
             } else {
                 Log.d(TAG, "Loading map failed: mapError: " + mapError.name());
             }
@@ -272,7 +278,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         if (mapView != null) {
             mapView.getGestures().setTapListener(null);
             mapView.getGestures().setLongPressListener(null);
@@ -284,6 +289,9 @@ public class MainActivity extends AppCompatActivity {
         SDKNativeEngine hereSDKEngine = SDKNativeEngine.getSharedInstance();
         if (hereSDKEngine != null) {
             hereSDKEngine.dispose();
+            // For safety reasons, we explicitly set the shared instance to null to avoid situations, where a disposed instance is accidentally reused.
+            SDKNativeEngine.setSharedInstance(null);
         }
+        super.onDestroy();
     }
 }

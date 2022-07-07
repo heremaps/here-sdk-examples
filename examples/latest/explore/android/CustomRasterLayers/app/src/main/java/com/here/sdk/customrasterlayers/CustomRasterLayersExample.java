@@ -19,14 +19,21 @@
 
  package com.here.sdk.customrasterlayers;
 
+ import android.content.Context;
+
+ import com.here.sdk.core.Anchor2D;
  import com.here.sdk.core.GeoCoordinates;
+ import com.here.sdk.core.Metadata;
  import com.here.sdk.mapview.MapCamera;
  import com.here.sdk.mapview.MapContentType;
+ import com.here.sdk.mapview.MapImage;
+ import com.here.sdk.mapview.MapImageFactory;
  import com.here.sdk.mapview.MapLayer;
  import com.here.sdk.mapview.MapLayerBuilder;
  import com.here.sdk.mapview.MapLayerPriority;
  import com.here.sdk.mapview.MapLayerPriorityBuilder;
  import com.here.sdk.mapview.MapLayerVisibilityRange;
+ import com.here.sdk.mapview.MapMarker;
  import com.here.sdk.mapview.MapMeasure;
  import com.here.sdk.mapview.MapView;
  import com.here.sdk.mapview.datasource.RasterDataSource;
@@ -43,9 +50,11 @@
      private MapView mapView;
      private MapLayer rasterMapLayerTonerStyle;
      private RasterDataSource rasterDataSourceTonerStyle;
+     private Context context;
 
-     public void onMapSceneLoaded(MapView mapView) {
+     public void onMapSceneLoaded(MapView mapView, Context context) {
          this.mapView = mapView;
+         this.context = context;
 
          MapCamera camera = mapView.getCamera();
          MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, DEFAULT_DISTANCE_TO_EARTH_IN_METERS);
@@ -57,6 +66,9 @@
 
          // We want to start with the default map style.
          rasterMapLayerTonerStyle.setEnabled(false);
+
+         // Add a POI marker
+         addPOIMapMarker(new GeoCoordinates(52.530932, 13.384915));
      }
 
      public void enableButtonClicked() {
@@ -81,6 +93,9 @@
                  TilingScheme.QUAD_TREE_MERCATOR,
                  storageLevels);
 
+         // If you want to add transparent layers then set this to true.
+         rasterProviderConfig.hasAlphaChannel = false;
+
          // Raster tiles are stored in a separate cache on the device.
          String path = "cache/raster/toner";
          long maxDiskSizeInBytes = 1024 * 1024 * 32;
@@ -92,8 +107,8 @@
      }
 
      private MapLayer createMapLayer(String dataSourceName) {
-         // The layer should be rendered on top of other layers.
-         MapLayerPriority priority = new MapLayerPriorityBuilder().renderedLast().build();
+         // The layer should be rendered on top of other layers except the cartography layer consisting of the embedded Carto POI markers.
+         MapLayerPriority priority = new MapLayerPriorityBuilder().renderedLast().renderedAfterLayer("ocm_cartography").build();
          // And it should be visible for all zoom levels.
          MapLayerVisibilityRange range = new MapLayerVisibilityRange(0, 22 + 1);
 
@@ -115,5 +130,16 @@
      public void onDestroy() {
          rasterMapLayerTonerStyle.destroy();
          rasterDataSourceTonerStyle.destroy();
+     }
+
+     private void addPOIMapMarker(GeoCoordinates geoCoordinates) {
+         MapImage mapImage = MapImageFactory.fromResource(context.getResources(), R.drawable.poi);
+
+         // The bottom, middle position should point to the location.
+         // By default, the anchor point is set to 0.5, 0.5.
+         Anchor2D anchor2D = new Anchor2D(0.5F, 1);
+         MapMarker mapMarker = new MapMarker(geoCoordinates, mapImage, anchor2D);
+
+         mapView.getMapScene().addMapMarker(mapMarker);
      }
  }

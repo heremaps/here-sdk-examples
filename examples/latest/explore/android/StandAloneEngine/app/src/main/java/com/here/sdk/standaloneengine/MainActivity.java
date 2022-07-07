@@ -101,12 +101,14 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
 
         // Free HERE SDK resources before the application shuts down.
         SDKNativeEngine hereSDKEngine = SDKNativeEngine.getSharedInstance();
         if (hereSDKEngine != null) {
             hereSDKEngine.dispose();
+            // For safety reasons, we explicitly set the shared instance to null to avoid situations, where a disposed instance is accidentally reused.
+            SDKNativeEngine.setSharedInstance(null);
         }
+        super.onDestroy();
     }
 }

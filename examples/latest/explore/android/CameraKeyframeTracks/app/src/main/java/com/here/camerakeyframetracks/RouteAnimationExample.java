@@ -21,7 +21,6 @@ package com.here.camerakeyframetracks;
 
 import android.util.Log;
 
-import com.here.camerakeyframetracks.helper.RouteCalculator;
 import com.here.sdk.animation.EasingFunction;
 import com.here.sdk.core.GeoOrientationUpdate;
 import com.here.sdk.core.Point2D;
@@ -52,16 +51,25 @@ public class RouteAnimationExample {
         mapView.getCamera().cancelAnimations();
     }
 
-    public void animateToRoute(Route route) {
-        // Untilt and unrotate the map.
+    public void animateToRoute() {
+        if (RouteCalculator.testRoute == null) {
+            Log.e("RouteAnimationExample", "Error: No route for testing ...");
+            return;
+        }
+
+        animateToRoute(RouteCalculator.testRoute);
+    }
+
+    private void animateToRoute(Route route) {
+        // The animation should result in an untilted and unrotated map.
         double bearing = 0;
         double tilt = 0;
-        // We want to show the route fitting in the map view without any additional padding.
-        Point2D origin = new Point2D(0, 0);
-        Size2D sizeInPixels = new Size2D(mapView.getWidth(), mapView.getHeight());
+        // We want to show the route fitting in the map view with an additional padding of 50 pixels
+        Point2D origin = new Point2D(50, 50);
+        Size2D sizeInPixels = new Size2D(mapView.getWidth() - 100, mapView.getHeight() - 100);
         Rectangle2D mapViewport = new Rectangle2D(origin, sizeInPixels);
 
-        // Animate to route.
+        // Animate to the route within a duration of 3 seconds.
         MapCameraUpdate update = MapCameraUpdateFactory.lookAt(
                 route.getBoundingBox(),
                 new GeoOrientationUpdate(bearing, tilt),

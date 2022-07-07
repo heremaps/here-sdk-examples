@@ -102,12 +102,18 @@ class EVRoutingExample {
     evCarOptions.consumptionModel.descentRecoveryInWattHoursPerMeter = 4.3;
     evCarOptions.consumptionModel.freeFlowSpeedTable = {0: 0.239, 27: 0.239, 60: 0.196, 90: 0.238};
 
-    // Ensure that the vehicle does not run out of energy along the way and charging stations are added as additional waypoints.
+    // Must be 0 for isoline calculation.
+    evCarOptions.routeOptions.alternatives = 0;
+
+    // Ensure that the vehicle does not run out of energy along the way
+    // and charging stations are added as additional waypoints.
     evCarOptions.ensureReachability = true;
 
-    // The below options are required when setting the ensureReachability option to true.
+    // The below options are required when setting the ensureReachability option to true
+    // (AvoidanceOptions need to be empty).
+    evCarOptions.avoidanceOptions = AvoidanceOptions.withDefaults();
+    evCarOptions.routeOptions.speedCapInMetersPerSecond = null;
     evCarOptions.routeOptions.optimizationMode = OptimizationMode.fastest;
-    evCarOptions.routeOptions.alternatives = 0;
     evCarOptions.batterySpecifications.connectorTypes = [
       ChargingConnectorType.tesla,
       ChargingConnectorType.iec62196Type1Combo,

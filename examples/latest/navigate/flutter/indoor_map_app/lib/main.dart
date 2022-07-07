@@ -18,6 +18,7 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:here_sdk/core.errors.dart';
 import 'package:indoor_map_app/geometry_info.dart';
 import 'package:indoor_map_app/settings_page.dart';
 import 'package:indoor_map_app/venue_engine_widget.dart';
@@ -134,8 +135,13 @@ class MainPage extends StatelessWidget {
       hereMapController.mapScene.setLayerVisibility(MapSceneLayers.extrudedBuildings, VisibilityState.hidden);
       // Create a venue engine object. Once the initialization is done,
       // a callback will be called.
-      var venueEngine = VenueEngine(_onVenueEngineCreated);
-      _venueEngineState.set(hereMapController, venueEngine, _geometryInfoState);
+      var venueEngine;
+      try {
+        venueEngine = VenueEngine(_onVenueEngineCreated);
+	_venueEngineState.set(hereMapController, venueEngine, _geometryInfoState);
+      } on InstantiationException catch(e){
+        print('error caught: $e');
+      }
     });
   }
 

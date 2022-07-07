@@ -4,7 +4,7 @@ assets. On top, the app shows how to customize the guidance view by setting cust
 Build instructions:
 -------------------
 
-1) Copy the `heresdk.xcframework` file to your app's root folder.
+1) Copy the `heresdk.xcframework` folder (as found in the HERE SDK package) to your app's root folder.
 
 Note: If your framework version is different than the version shown in the _Developer's Guide_, you may need to adapt the source code of the example app.
 

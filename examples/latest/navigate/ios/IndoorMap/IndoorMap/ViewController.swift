@@ -80,7 +80,12 @@ class ViewController: UIViewController {
 
         // Create a venue engine object. Once the initialization is done, a completion handler
         // will be called.
-        venueEngine = VenueEngine { [weak self] in self?.onVenueEngineInit() }
+        do {
+            try venueEngine = VenueEngine { [weak self] in self?.onVenueEngineInit() }
+        } catch {
+            print("SDK Engine not instantiated: \(error)")
+        }
+        
     }
 
     private func onVenueEngineInit() {

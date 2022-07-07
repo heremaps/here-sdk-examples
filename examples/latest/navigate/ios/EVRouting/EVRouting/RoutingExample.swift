@@ -95,12 +95,18 @@ class RoutingExample {
                                                             60: 0.196,
                                                             90: 0.238]
 
-        // Ensure that the vehicle does not run out of energy along the way and charging stations are added as additional waypoints.
+        // Must be 0 for isoline calculation.
+        evCarOptions.routeOptions.alternatives = 0
+
+        // Ensure that the vehicle does not run out of energy along the way
+        // and charging stations are added as additional waypoints.
         evCarOptions.ensureReachability = true
 
-        // The below options are required when setting the ensureReachability option to true.
+        // The below options are required when setting the ensureReachability option to true
+        // (AvoidanceOptions need to be empty).
+        evCarOptions.avoidanceOptions = AvoidanceOptions()
+        evCarOptions.routeOptions.speedCapInMetersPerSecond = nil
         evCarOptions.routeOptions.optimizationMode = .fastest
-        evCarOptions.routeOptions.alternatives = 0
         evCarOptions.batterySpecifications.connectorTypes = [.tesla, .iec62196Type1Combo, .iec62196Type2Combo]
         evCarOptions.batterySpecifications.totalCapacityInKilowattHours = 80.0
         evCarOptions.batterySpecifications.initialChargeInKilowattHours = 10.0

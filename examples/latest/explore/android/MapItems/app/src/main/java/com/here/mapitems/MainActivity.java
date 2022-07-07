@@ -103,26 +103,28 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
-        super.onPause();
         mapView.onPause();
+        super.onPause();
     }
 
     @Override
     protected void onResume() {
-        super.onResume();
         mapView.onResume();
+        super.onResume();
     }
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         mapView.onDestroy();
 
         // Free HERE SDK resources before the application shuts down.
         SDKNativeEngine hereSDKEngine = SDKNativeEngine.getSharedInstance();
         if (hereSDKEngine != null) {
             hereSDKEngine.dispose();
+            // For safety reasons, we explicitly set the shared instance to null to avoid situations, where a disposed instance is accidentally reused.
+            SDKNativeEngine.setSharedInstance(null);
         }
+        super.onDestroy();
     }
 
     @Override
@@ -171,8 +173,11 @@ public class MainActivity extends AppCompatActivity {
             case R.id.active_inactive_menu_item:
                 mapItemsExample.toggleActiveStateForLocationIndicator();
                 return true;
+            case R.id.flat_menu_item_image:
+                mapItemsExample.showFlatMapMarker();
+                return true;
             case R.id.flat_menu_item:
-                mapItemsExample.showFlatMarker();
+                mapItemsExample.show2DTexture();
                 return true;
             case R.id.obj_3D_menu_item:
                 mapItemsExample.showMapMarker3D();

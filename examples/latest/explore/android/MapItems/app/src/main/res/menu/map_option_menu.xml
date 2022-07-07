@@ -35,8 +35,10 @@
               android:title="Location (NAV)"/>
           <item android:id="@+id/active_inactive_menu_item"
               android:title="Active/Inactive"/>
+          <item android:id="@+id/flat_menu_item_image"
+              android:title="Flat Marker"/>
           <item android:id="@+id/flat_menu_item"
-              android:title="Flat"/>
+              android:title="2D Texture"/>
           <item android:id="@+id/obj_3D_menu_item"
               android:title="3D Object"/>
           <item android:id="@+id/clear_map_marker_menu_item"
