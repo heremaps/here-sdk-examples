@@ -45,7 +45,7 @@
 
  public class CustomRasterLayersExample {
 
-     private static final float DEFAULT_DISTANCE_TO_EARTH_IN_METERS = 200 * 1000;
+     private static final float DEFAULT_DISTANCE_TO_EARTH_IN_METERS = 60 * 1000;
 
      private MapView mapView;
      private MapLayer rasterMapLayerTonerStyle;
@@ -107,8 +107,8 @@
      }
 
      private MapLayer createMapLayer(String dataSourceName) {
-         // The layer should be rendered on top of other layers except the cartography layer consisting of the embedded Carto POI markers.
-         MapLayerPriority priority = new MapLayerPriorityBuilder().renderedLast().renderedAfterLayer("ocm_cartography").build();
+         // The layer should be rendered on top of other layers except the labels layer so that we don't overlap raster layer over POI markers.
+         MapLayerPriority priority = new MapLayerPriorityBuilder().renderedLast().renderedBeforeLayer("labels").build();
          // And it should be visible for all zoom levels.
          MapLayerVisibilityRange range = new MapLayerVisibilityRange(0, 22 + 1);
 

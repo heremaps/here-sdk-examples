@@ -95,7 +95,7 @@ public class CameraKeyframeTracksExample {
         scalarList.append(ScalarKeyframeModel(scalar: 8000000.0, duration: TimeInterval(2)))
         scalarList.append(ScalarKeyframeModel(scalar: 8000.0, duration: TimeInterval(2)))
         scalarList.append(ScalarKeyframeModel(scalar: 1000.0, duration: TimeInterval(2)))
-        scalarList.append(ScalarKeyframeModel(scalar: 500.0, duration: TimeInterval(3)))
+        scalarList.append(ScalarKeyframeModel(scalar: 400.0, duration: TimeInterval(3)))
         
         return scalarList
     }

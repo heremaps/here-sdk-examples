@@ -32,7 +32,7 @@ class CustomRasterLayersExample {
         self.mapView = mapView
 
         let camera = mapView.camera
-        let distanceInMeters = MapMeasure(kind: .distance, value: 200 * 1000)
+        let distanceInMeters = MapMeasure(kind: .distance, value: 60 * 1000)
         camera.lookAt(point: GeoCoordinates(latitude: 52.518043, longitude: 13.405991),
                       zoom: distanceInMeters)
 
@@ -85,8 +85,8 @@ class CustomRasterLayersExample {
     }
 
     private func createMapLayer(dataSourceName: String) -> MapLayer {
-        // The layer should be rendered on top of other layers except the cartography layer consisting of the embedded Carto POI markers.
-        let priority = MapLayerPriorityBuilder().renderedLast().renderedAfterLayer(named: "ocm_cartography").build()
+        // The layer should be rendered on top of other layers except the labels layer so that we don't overlap raster layer over POI markers.
+        let priority = MapLayerPriorityBuilder().renderedLast().renderedBeforeLayer(named: "labels").build()
         // And it should be visible for all zoom levels.
         let range = MapLayerVisibilityRange(minimumZoomLevel: 0, maximumZoomLevel: 22 + 1)
 
