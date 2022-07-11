@@ -163,7 +163,7 @@ public class CameraKeyframeTracksExample {
                 new ScalarKeyframe(8000000.0, Duration.ofMillis(2000)),
                 new ScalarKeyframe(8000.0, Duration.ofMillis(2000)),
                 new ScalarKeyframe(1000.0, Duration.ofMillis(2000)),
-                new ScalarKeyframe(500.0, Duration.ofMillis(3000)));
+                new ScalarKeyframe(400.0, Duration.ofMillis(3000)));
 
         return scalarKeyframesList;
     }

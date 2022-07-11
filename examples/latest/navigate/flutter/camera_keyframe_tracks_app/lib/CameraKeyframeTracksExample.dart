@@ -96,7 +96,7 @@ class CameraKeyframeTracksExample {
     scalarList.add(ScalarKeyframeModel(8000000.0, const Duration(milliseconds: 2000)));
     scalarList.add(ScalarKeyframeModel(8000.0, const Duration(milliseconds: 2000)));
     scalarList.add(ScalarKeyframeModel(1000.0, const Duration(milliseconds: 2000)));
-    scalarList.add(ScalarKeyframeModel(500.0, const Duration(milliseconds: 3000)));
+    scalarList.add(ScalarKeyframeModel(400.0, const Duration(milliseconds: 3000)));
 
     return scalarList;
   }

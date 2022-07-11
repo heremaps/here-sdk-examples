@@ -34,13 +34,13 @@ import com.here.sdk.core.Rectangle2D;
 import com.here.sdk.core.Size2D;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.mapview.MapCamera;
+import com.here.sdk.mapview.MapFeatureModes;
+import com.here.sdk.mapview.MapFeatures;
 import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapPolyline;
-import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapView;
 import com.here.sdk.mapview.MapViewBase;
 import com.here.sdk.mapview.PickMapContentResult;
-import com.here.sdk.mapview.VisibilityState;
 import com.here.sdk.traffic.TrafficEngine;
 import com.here.sdk.traffic.TrafficIncident;
 import com.here.sdk.traffic.TrafficIncidentLookupCallback;
@@ -50,7 +50,9 @@ import com.here.sdk.traffic.TrafficIncidentsQueryOptions;
 import com.here.sdk.traffic.TrafficQueryError;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TrafficExample {
 
@@ -93,15 +95,19 @@ public class TrafficExample {
     }
 
     private void enableTrafficVisualization() {
-        // Once these layers are added to the map, they will be automatically updated while panning the map.
-        mapView.getMapScene().setLayerVisibility(MapScene.Layers.TRAFFIC_FLOW, VisibilityState.VISIBLE);
-        // MapScene.Layers.TRAFFIC_INCIDENTS renders traffic icons and lines to indicate the location of incidents. Note that these are not directly pickable yet.
-        mapView.getMapScene().setLayerVisibility(MapScene.Layers.TRAFFIC_INCIDENTS, VisibilityState.VISIBLE);
+        Map<String, String> mapFeatures = new HashMap<>();
+        // Once these traffic layers are added to the map, they will be automatically updated while panning the map.
+        mapFeatures.put(MapFeatures.TRAFFIC_FLOW, MapFeatureModes.TRAFFIC_FLOW_WITH_FREE_FLOW);
+        // MapScene.Layers.TRAFFIC_INCIDENTS renders traffic icons and lines to indicate the location of incidents.
+        mapFeatures.put(MapFeatures.TRAFFIC_INCIDENTS, MapFeatureModes.DEFAULT);
+        mapView.getMapScene().enableFeatures(mapFeatures);
     }
 
     private void disableTrafficVisualization() {
-        mapView.getMapScene().setLayerVisibility(MapScene.Layers.TRAFFIC_FLOW, VisibilityState.HIDDEN);
-        mapView.getMapScene().setLayerVisibility(MapScene.Layers.TRAFFIC_INCIDENTS, VisibilityState.HIDDEN);
+        List<String> mapFeatures = new ArrayList<>();
+        mapFeatures.add(MapFeatures.TRAFFIC_FLOW);
+        mapFeatures.add(MapFeatures.TRAFFIC_INCIDENTS);
+        mapView.getMapScene().disableFeatures(mapFeatures);
 
         // This clears only the custom visualization for incidents found with the TrafficEngine.
         clearTrafficIncidentsMapPolylines();
