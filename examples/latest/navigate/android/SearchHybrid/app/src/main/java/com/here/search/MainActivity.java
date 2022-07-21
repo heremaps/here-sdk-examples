@@ -19,6 +19,7 @@
 
 package com.here.search;
 
+import android.content.Context;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,6 +29,8 @@ import android.view.View;
 
 import com.here.sdk.core.engine.SDKBuildInformation;
 import com.here.sdk.core.engine.SDKNativeEngine;
+import com.here.sdk.core.engine.SDKOptions;
+import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.mapview.MapError;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
@@ -44,6 +47,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
+        initializeHERESDK();
+
         setContentView(R.layout.activity_main);
 
         Log.d("", "HERE SDK version: " + SDKBuildInformation.sdkVersion().versionName);
@@ -53,6 +60,19 @@ public class MainActivity extends AppCompatActivity {
         mapView.onCreate(savedInstanceState);
 
         handleAndroidPermissions();
+    }
+
+    private void initializeHERESDK() {
+        // Set your credentials for the HERE SDK.
+        String accessKeyID = "YOUR_ACCESS_KEY_ID";
+        String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
+        SDKOptions options = new SDKOptions(accessKeyID, accessKeySecret);
+        try {
+            Context context = this;
+            SDKNativeEngine.makeSharedInstance(context, options);
+        } catch (InstantiationErrorException e) {
+            throw new RuntimeException("Initialization of HERE SDK failed: " + e.error.name());
+        }
     }
 
     private void handleAndroidPermissions() {
@@ -121,14 +141,20 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         mapView.onDestroy();
+        disposeHERESDK();
+        super.onDestroy();
+    }
 
+    private void disposeHERESDK() {
         // Free HERE SDK resources before the application shuts down.
-        SDKNativeEngine hereSDKEngine = SDKNativeEngine.getSharedInstance();
-        if (hereSDKEngine != null) {
-            hereSDKEngine.dispose();
-            // For safety reasons, we explicitly set the shared instance to null to avoid situations, where a disposed instance is accidentally reused.
+        // Usually, this should be called only on application termination.
+        // Afterwards, the HERE SDK is no longer usable unless it is initialized again.
+        SDKNativeEngine sdkNativeEngine = SDKNativeEngine.getSharedInstance();
+        if (sdkNativeEngine != null) {
+            sdkNativeEngine.dispose();
+            // For safety reasons, we explicitly set the shared instance to null to avoid situations,
+            // where a disposed instance is accidentally reused.
             SDKNativeEngine.setSharedInstance(null);
         }
-        super.onDestroy();
     }
 }

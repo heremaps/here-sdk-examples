@@ -19,21 +19,24 @@
 
 package com.here.hellomap;
 
+import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import android.util.Log;
 
 import com.here.hellomap.PermissionsRequestor.ResultListener;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.engine.SDKNativeEngine;
+import com.here.sdk.core.engine.SDKOptions;
+import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.mapview.MapError;
 import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
-import com.here.sdk.mapview.VisibilityState;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -44,9 +47,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
+        initializeHERESDK();
+
         setContentView(R.layout.activity_main);
 
-        // Get a MapView instance from the layout.
+        // Get a MapView instance from layout.
         mapView = findViewById(R.id.map_view);
         mapView.onCreate(savedInstanceState);
 
@@ -55,12 +62,25 @@ public class MainActivity extends AppCompatActivity {
             public void onMapViewReady() {
                 // This will be called each time after this activity is resumed.
                 // It will not be called before the first map scene was loaded.
-                // Any code that requires map data may not work as expected beforehand.
+                // Any code that requires map data may not work as expected until this event is received.
                 Log.d(TAG, "HERE Rendering Engine attached.");
             }
         });
 
         handleAndroidPermissions();
+    }
+
+    private void initializeHERESDK() {
+        // Set your credentials for the HERE SDK.
+        String accessKeyID = "YOUR_ACCESS_KEY_ID";
+        String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
+        SDKOptions options = new SDKOptions(accessKeyID, accessKeySecret);
+        try {
+            Context context = this;
+            SDKNativeEngine.makeSharedInstance(context, options);
+        } catch (InstantiationErrorException e) {
+            throw new RuntimeException("Initialization of HERE SDK failed: " + e.error.name());
+        }
     }
 
     private void handleAndroidPermissions() {
@@ -81,6 +101,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         permissionsRequestor.onRequestPermissionsResult(requestCode, grantResults);
     }
 
@@ -93,9 +114,6 @@ public class MainActivity extends AppCompatActivity {
                     double distanceInMeters = 1000 * 10;
                     MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
                     mapView.getCamera().lookAt(new GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
-
-                    // Optionally enable textured 3D landmarks.
-                    mapView.getMapScene().setLayerVisibility(MapScene.Layers.LANDMARKS, VisibilityState.VISIBLE);
                 } else {
                     Log.d(TAG, "Loading map failed: mapError: " + mapError.name());
                 }
@@ -118,14 +136,20 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         mapView.onDestroy();
+        disposeHERESDK();
+        super.onDestroy();
+    }
 
+    private void disposeHERESDK() {
         // Free HERE SDK resources before the application shuts down.
-        SDKNativeEngine hereSDKEngine = SDKNativeEngine.getSharedInstance();
-        if (hereSDKEngine != null) {
-            hereSDKEngine.dispose();
-            // For safety reasons, we explicitly set the shared instance to null to avoid situations, where a disposed instance is accidentally reused.
+        // Usually, this should be called only on application termination.
+        // Afterwards, the HERE SDK is no longer usable unless it is initialized again.
+        SDKNativeEngine sdkNativeEngine = SDKNativeEngine.getSharedInstance();
+        if (sdkNativeEngine != null) {
+            sdkNativeEngine.dispose();
+            // For safety reasons, we explicitly set the shared instance to null to avoid situations,
+            // where a disposed instance is accidentally reused.
             SDKNativeEngine.setSharedInstance(null);
         }
-        super.onDestroy();
     }
 }

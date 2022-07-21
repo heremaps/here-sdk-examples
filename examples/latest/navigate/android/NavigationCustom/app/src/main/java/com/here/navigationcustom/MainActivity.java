@@ -20,8 +20,8 @@
 package com.here.navigationcustom;
 
 import static com.here.sdk.mapview.LocationIndicator.IndicatorStyle;
-import static com.here.sdk.mapview.MapCamera.FlyToOptions;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -40,17 +40,19 @@ import com.here.sdk.core.GeoOrientationUpdate;
 import com.here.sdk.core.Location;
 import com.here.sdk.core.LocationListener;
 import com.here.sdk.core.engine.SDKNativeEngine;
+import com.here.sdk.core.engine.SDKOptions;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.mapview.LocationIndicator;
 import com.here.sdk.mapview.MapCameraAnimation;
 import com.here.sdk.mapview.MapCameraAnimationFactory;
 import com.here.sdk.mapview.MapError;
+import com.here.sdk.mapview.MapFeatureModes;
+import com.here.sdk.mapview.MapFeatures;
 import com.here.sdk.mapview.MapMarker3DModel;
 import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
-import com.here.sdk.mapview.VisibilityState;
 import com.here.sdk.navigation.CameraSettings;
 import com.here.sdk.navigation.LocationSimulator;
 import com.here.sdk.navigation.LocationSimulatorOptions;
@@ -64,6 +66,7 @@ import com.here.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
@@ -86,6 +89,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
+        initializeHERESDK();
+
         setContentView(R.layout.activity_main);
 
         // Get a MapView instance from the layout.
@@ -96,6 +103,19 @@ public class MainActivity extends AppCompatActivity {
 
         showDialog("Custom Navigation",
                 "Start / stop simulated route guidance. Toggle between custom / default LocationIndicator.");
+    }
+
+    private void initializeHERESDK() {
+        // Set your credentials for the HERE SDK.
+        String accessKeyID = "YOUR_ACCESS_KEY_ID";
+        String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
+        SDKOptions options = new SDKOptions(accessKeyID, accessKeySecret);
+        try {
+            Context context = this;
+            SDKNativeEngine.makeSharedInstance(context, options);
+        } catch (InstantiationErrorException e) {
+            throw new RuntimeException("Initialization of HERE SDK failed: " + e.error.name());
+        }
     }
 
     private void handleAndroidPermissions() {
@@ -151,10 +171,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Enable a few map layers that might be useful to see for drivers.
-        mapView.getMapScene().setLayerVisibility(MapScene.Layers.TRAFFIC_FLOW, VisibilityState.VISIBLE);
-        mapView.getMapScene().setLayerVisibility(MapScene.Layers.TRAFFIC_INCIDENTS, VisibilityState.VISIBLE);
-        mapView.getMapScene().setLayerVisibility(MapScene.Layers.SAFETY_CAMERAS, VisibilityState.VISIBLE);
-        mapView.getMapScene().setLayerVisibility(MapScene.Layers.VEHICLE_RESTRICTIONS, VisibilityState.VISIBLE);
+        Map<String, String> mapFeatures = new HashMap<>();
+        mapFeatures.put(MapFeatures.TRAFFIC_FLOW, MapFeatureModes.TRAFFIC_FLOW_WITH_FREE_FLOW);
+        mapFeatures.put(MapFeatures.TRAFFIC_INCIDENTS, MapFeatureModes.DEFAULT);
+        mapFeatures.put(MapFeatures.SAFETY_CAMERAS, MapFeatureModes.DEFAULT);
+        mapFeatures.put(MapFeatures.VEHICLE_RESTRICTIONS, MapFeatureModes.DEFAULT);
+        mapView.getMapScene().enableFeatures(mapFeatures);
 
         defaultLocationIndicator = new LocationIndicator();
         customLocationIndicator = createCustomLocationIndicator();
@@ -413,15 +435,21 @@ public class MainActivity extends AppCompatActivity {
         visualNavigator.stopRendering();
         locationSimulator.stop();
         mapView.onDestroy();
+        disposeHERESDK();
+        super.onDestroy();
+    }
 
+    private void disposeHERESDK() {
         // Free HERE SDK resources before the application shuts down.
-        SDKNativeEngine hereSDKEngine = SDKNativeEngine.getSharedInstance();
-        if (hereSDKEngine != null) {
-            hereSDKEngine.dispose();
-            // For safety reasons, we explicitly set the shared instance to null to avoid situations, where a disposed instance is accidentally reused.
+        // Usually, this should be called only on application termination.
+        // Afterwards, the HERE SDK is no longer usable unless it is initialized again.
+        SDKNativeEngine sdkNativeEngine = SDKNativeEngine.getSharedInstance();
+        if (sdkNativeEngine != null) {
+            sdkNativeEngine.dispose();
+            // For safety reasons, we explicitly set the shared instance to null to avoid situations,
+            // where a disposed instance is accidentally reused.
             SDKNativeEngine.setSharedInstance(null);
         }
-        super.onDestroy();
     }
 
     private void showDialog(String title, String message) {

@@ -98,7 +98,7 @@ public class TrafficExample {
         Map<String, String> mapFeatures = new HashMap<>();
         // Once these traffic layers are added to the map, they will be automatically updated while panning the map.
         mapFeatures.put(MapFeatures.TRAFFIC_FLOW, MapFeatureModes.TRAFFIC_FLOW_WITH_FREE_FLOW);
-        // MapScene.Layers.TRAFFIC_INCIDENTS renders traffic icons and lines to indicate the location of incidents.
+        // MapFeatures.TRAFFIC_INCIDENTS renders traffic icons and lines to indicate the location of incidents.
         mapFeatures.put(MapFeatures.TRAFFIC_INCIDENTS, MapFeatureModes.DEFAULT);
         mapView.getMapScene().enableFeatures(mapFeatures);
     }

@@ -66,14 +66,13 @@ class TrafficExample {
 
   void _enableTrafficVisualization() {
     // Once these layers are added to the map, they will be automatically updated while panning the map.
-    _hereMapController.mapScene.setLayerVisibility(MapSceneLayers.trafficFlow, VisibilityState.visible);
-    // MapSceneLayers.trafficIncidents renders traffic icons and lines to indicate the location of incidents. Note that these are not directly pickable yet.
-    _hereMapController.mapScene.setLayerVisibility(MapSceneLayers.trafficIncidents, VisibilityState.visible);
+    _hereMapController.mapScene.enableFeatures({MapFeatures.trafficFlow: MapFeatureModes.trafficFlowWithFreeFlow});
+    // MapFeatures.trafficIncidents renders traffic icons and lines to indicate the location of incidents. Note that these are not directly pickable yet.
+    _hereMapController.mapScene.enableFeatures({MapFeatures.trafficIncidents: MapFeatureModes.defaultMode});
   }
 
   void _disableTrafficVisualization() {
-    _hereMapController.mapScene.setLayerVisibility(MapSceneLayers.trafficFlow, VisibilityState.hidden);
-    _hereMapController.mapScene.setLayerVisibility(MapSceneLayers.trafficIncidents, VisibilityState.hidden);
+    _hereMapController.mapScene.disableFeatures([MapFeatures.trafficFlow, MapFeatures.trafficIncidents]);
 
     // This clears only the custom visualization for incidents found with the TrafficEngine.
     _clearTrafficIncidentsMapPolylines();

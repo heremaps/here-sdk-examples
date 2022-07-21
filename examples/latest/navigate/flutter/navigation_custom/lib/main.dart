@@ -107,10 +107,10 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
     }
 
     // Enable a few map layers that might be useful to see for drivers.
-    _hereMapController!.mapScene.setLayerVisibility(MapSceneLayers.trafficFlow, VisibilityState.visible);
-    _hereMapController!.mapScene.setLayerVisibility(MapSceneLayers.trafficIncidents, VisibilityState.visible);
-    _hereMapController!.mapScene.setLayerVisibility(MapSceneLayers.safetyCameras, VisibilityState.visible);
-    _hereMapController!.mapScene.setLayerVisibility(MapSceneLayers.vehicleRestrictions, VisibilityState.visible);
+    _hereMapController!.mapScene.enableFeatures({MapFeatures.trafficFlow: MapFeatureModes.trafficFlowWithFreeFlow});
+    _hereMapController!.mapScene.enableFeatures({MapFeatures.trafficIncidents: MapFeatureModes.defaultMode});
+    _hereMapController!.mapScene.enableFeatures({MapFeatures.safetyCameras: MapFeatureModes.defaultMode});
+    _hereMapController!.mapScene.enableFeatures({MapFeatures.vehicleRestrictions: MapFeatureModes.defaultMode});
 
     _defaultLocationIndicator = LocationIndicator();
     _customLocationIndicator = _createCustomLocationIndicator();

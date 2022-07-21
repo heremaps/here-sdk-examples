@@ -132,7 +132,8 @@ class MainPage extends StatelessWidget {
 
       // Hide the extruded building layer, so that it does not overlap
       // with the venues.
-      hereMapController.mapScene.setLayerVisibility(MapSceneLayers.extrudedBuildings, VisibilityState.hidden);
+      hereMapController.mapScene.disableFeatures([MapFeatures.extrudedBuildings]);
+
       // Create a venue engine object. Once the initialization is done,
       // a callback will be called.
       var venueEngine;

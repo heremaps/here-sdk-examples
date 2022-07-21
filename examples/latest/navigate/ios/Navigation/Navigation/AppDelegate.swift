@@ -27,10 +27,32 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 
+        // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
+        initializeHERESDK()
+
         // Keeping the screen alive is essential for a car navigation app.
         UIApplication.shared.isIdleTimerDisabled = true
 
         return true
+    }
+
+    private func initializeHERESDK() {
+        // Set your credentials for the HERE SDK.
+        let accessKeyID = "YOUR_ACCESS_KEY_ID"
+        let accessKeySecret = "YOUR_ACCESS_KEY_SECRET"
+        let options = SDKOptions(accessKeyId: accessKeyID, accessKeySecret: accessKeySecret)
+        do {
+            try SDKNativeEngine.makeSharedInstance(options: options)
+        } catch let engineInstantiationError {
+            fatalError("Failed to initialize the HERE SDK. Cause: \(engineInstantiationError)")
+        }
+    }
+
+    private func disposeHERESDK() {
+        // Free HERE SDK resources before the application shuts down.
+        // Usually, this should be called only on application termination.
+        // Afterwards, the HERE SDK is no longer usable unless it is initialized again.
+        SDKNativeEngine.sharedInstance = nil
     }
 
     func applicationDidEnterBackground(_ application: UIApplication) {
@@ -50,8 +72,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // after calling deinitialize(), make sure to also call
         // visualNavigator.stopRendering() beforehand.
         MapView.deinitialize()
-
-        // Free HERE SDK resources before the application shuts down.
-        SDKNativeEngine.sharedInstance = nil
+        disposeHERESDK()
     }
 }
