@@ -46,7 +46,7 @@ final class ViewController: UIViewController {
         self.isMapSceneLoaded = true
 
         // Enable traffic flows by default.
-        mapView.mapScene.setLayerVisibility(layerName: MapScene.Layers.trafficFlow, visibility: VisibilityState.visible)
+        mapView.mapScene.enableFeatures([MapFeatures.trafficFlow : MapFeatureModes.trafficFlowWithFreeFlow])
     }
 
     @IBAction func onAddRouteSimulatedLocationButtonClicked(_ sender: Any) {

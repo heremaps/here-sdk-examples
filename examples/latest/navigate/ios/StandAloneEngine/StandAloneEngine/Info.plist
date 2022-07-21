@@ -18,13 +18,6 @@
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
-	<key>HERECredentials</key>
-	<dict>
-		<key>AccessKeyId</key>
-		<string>YOUR_ACCESS_KEY_ID</string>
-		<key>AccessKeySecret</key>
-		<string>YOUR_ACCESS_KEY_SECRET</string>
-	</dict>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

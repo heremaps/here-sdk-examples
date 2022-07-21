@@ -12,6 +12,6 @@ Note: If your framework version is different than the version shown in the _Deve
 Note: In Xcode, open the _General_ settings of the _App target_ and make sure that the HERE SDK framework appears under _Embedded Binaries_. If it does not appear, add the `heresdk.framework` to the _Embedded Binaries_ section ("Add other..." -> "Create folder references").
 
 Please do not forget: To run the app, you need to follow the below mentioned steps. More information can be found in the _Get Started_ section of the _Developer's Guide_.
-1) Add your HERE SDK credentials to the `Info.plist` file.
+1) Add your HERE SDK credentials to the `AppDelegate.swift` file.
 2) Set the value of your indoor map catalog HRN to the constant `let hrn: String` in the `/IndoorMap/ViewController.swift` file.
 3) Enter your indoor map id once the app loads.

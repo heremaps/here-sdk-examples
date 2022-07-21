@@ -92,7 +92,8 @@ class _CameraKeyframeTracksAppState extends State<CameraKeyframeTracksApp> {
   void _onMapCreated(HereMapController hereMapController) {
     hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
       if (error == null) {
-        hereMapController.mapScene.setLayerVisibility(MapSceneLayers.landmarks, VisibilityState.visible);
+        // Users of the Navigate Edition can enable textured landmarks:
+        // hereMapController.mapScene.enableFeatures({MapFeatures.landmarks: MapFeatureModes.landmarksTextured});
         hereMapController.camera.lookAtPoint(GeoCoordinates(40.7133, -74.0112));
         _cameraKeyframeTracksExample = CameraKeyframeTracksExample(hereMapController);
         _routeAnimationExample = RouteAnimationExample(hereMapController);

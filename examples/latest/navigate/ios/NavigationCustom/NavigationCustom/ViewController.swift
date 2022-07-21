@@ -74,11 +74,11 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
         }
 
         // Enable a few map layers that might be useful to see for drivers.
-        mapView.mapScene.setLayerVisibility(layerName: MapScene.Layers.trafficFlow, visibility: VisibilityState.visible)
-        mapView.mapScene.setLayerVisibility(layerName: MapScene.Layers.trafficIncidents, visibility: VisibilityState.visible)
-        mapView.mapScene.setLayerVisibility(layerName: MapScene.Layers.safetyCameras, visibility: VisibilityState.visible)
-        mapView.mapScene.setLayerVisibility(layerName: MapScene.Layers.vehicleRestrictions, visibility: VisibilityState.visible)
-
+        mapView.mapScene.enableFeatures([MapFeatures.trafficFlow : MapFeatureModes.trafficFlowWithFreeFlow])
+        mapView.mapScene.enableFeatures([MapFeatures.trafficIncidents : MapFeatureModes.defaultMode])
+        mapView.mapScene.enableFeatures([MapFeatures.safetyCameras : MapFeatureModes.defaultMode])
+        mapView.mapScene.enableFeatures([MapFeatures.vehicleRestrictions : MapFeatureModes.defaultMode])
+        
         defaultLocationIndicator = LocationIndicator()
         customLocationIndicator = createCustomLocationIndicator()
 

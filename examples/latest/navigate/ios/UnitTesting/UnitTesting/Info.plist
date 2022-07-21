@@ -2,13 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>HERECredentials</key>
-	<dict>
-	    <key>AccessKeyId</key>
-	    <string>YOUR_ACCESS_KEY_ID</string>
-	    <key>AccessKeySecret</key>
-	    <string>YOUR_ACCESS_KEY_SECRET</string>
-	</dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleExecutable</key>

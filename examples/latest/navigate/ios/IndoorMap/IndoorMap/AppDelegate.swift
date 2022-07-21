@@ -27,7 +27,31 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+
+        // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
+        initializeHERESDK()
+
         return true
+    }
+
+    private func initializeHERESDK() {
+        // Set your credentials for the HERE SDK.
+        // Talk to your HERE representative to enable your private Venue data for use with these credentials.
+        let accessKeyID = "YOUR_ACCESS_KEY_ID"
+        let accessKeySecret = "YOUR_ACCESS_KEY_SECRET"
+        let options = SDKOptions(accessKeyId: accessKeyID, accessKeySecret: accessKeySecret)
+        do {
+            try SDKNativeEngine.makeSharedInstance(options: options)
+        } catch let engineInstantiationError {
+            fatalError("Failed to initialize the HERE SDK. Cause: \(engineInstantiationError)")
+        }
+    }
+
+    private func disposeHERESDK() {
+        // Free HERE SDK resources before the application shuts down.
+        // Usually, this should be called only on application termination.
+        // Afterwards, the HERE SDK is no longer usable unless it is initialized again.
+        SDKNativeEngine.sharedInstance = nil
     }
 
     func applicationDidEnterBackground(_ application: UIApplication) {
@@ -43,8 +67,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Deinitializes map renderer and releases all of its resources.
         // All existing MapView instances will become invalid after this call.
         MapView.deinitialize()
-
-        // Free HERE SDK resources before the application shuts down.
-        SDKNativeEngine.sharedInstance = nil
+        disposeHERESDK()
     }
 }

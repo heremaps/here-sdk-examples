@@ -24,17 +24,22 @@ import androidx.appcompat.app.AppCompatActivity
 import com.here.hellomap.PermissionsRequestor.ResultListener
 import com.here.sdk.core.GeoCoordinates
 import com.here.sdk.core.engine.SDKNativeEngine
+import com.here.sdk.core.engine.SDKOptions
+import com.here.sdk.core.errors.InstantiationErrorException
 import com.here.sdk.mapview.MapMeasure
 import com.here.sdk.mapview.MapScheme
 import com.here.sdk.mapview.MapView
 import com.here.sdk.mapview.MapView.OnReadyListener
-
 
 class MainActivity : AppCompatActivity() {
     private var permissionsRequestor: PermissionsRequestor? = null
     private var mapView: MapView? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
+        initializeHERESDK()
+
         setContentView(R.layout.activity_main)
 
         // Get a MapView instance from the layout.
@@ -47,6 +52,19 @@ class MainActivity : AppCompatActivity() {
             Log.d(TAG, "HERE Rendering Engine attached.")
         })
         handleAndroidPermissions()
+    }
+
+    private fun initializeHERESDK() {
+        // Set your credentials for the HERE SDK.
+        var accessKeyID = "YOUR_ACCESS_KEY_ID"
+        var accessKeySecret = "YOUR_ACCESS_KEY_SECRET"
+        var options = SDKOptions(accessKeyID, accessKeySecret)
+        try {
+            var context = this
+            SDKNativeEngine.makeSharedInstance(context, options)
+        } catch (e: InstantiationErrorException) {
+            throw RuntimeException("Initialization of HERE SDK failed: " + e.error.name)
+        }
     }
 
     private fun handleAndroidPermissions() {
@@ -92,14 +110,18 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         mapView?.onDestroy()
-
-        // Free HERE SDK resources before the application shuts down.
-        SDKNativeEngine.getSharedInstance()?.dispose()
-
-        // For safety reasons, we explicitly set the shared instance to null to avoid situations, where a disposed instance is accidentally reused.
-        SDKNativeEngine.setSharedInstance(null)
-
+        disposeHERESDK()
         super.onDestroy()
+    }
+
+    private fun disposeHERESDK() {
+        // Free HERE SDK resources before the application shuts down.
+        // Usually, this should be called only on application termination.
+        // Afterwards, the HERE SDK is no longer usable unless it is initialized again.
+        SDKNativeEngine.getSharedInstance()?.dispose()
+        // For safety reasons, we explicitly set the shared instance to null to avoid situations,
+        // where a disposed instance is accidentally reused.
+        SDKNativeEngine.setSharedInstance(null)
     }
 
     companion object {

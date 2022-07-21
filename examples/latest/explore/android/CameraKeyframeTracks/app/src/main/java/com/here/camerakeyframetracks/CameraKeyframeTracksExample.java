@@ -159,6 +159,7 @@ public class CameraKeyframeTracksExample {
         // The duration indicates the time it takes to reach the scalar (= camera distance in meters) of the keyframe.
         Collections.addAll(
                 scalarKeyframesList,
+                // Change the camera distance from 80000000 meters to 400 meters over time.
                 new ScalarKeyframe(80000000.0, Duration.ofMillis(0)),
                 new ScalarKeyframe(8000000.0, Duration.ofMillis(2000)),
                 new ScalarKeyframe(8000.0, Duration.ofMillis(2000)),

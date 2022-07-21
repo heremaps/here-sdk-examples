@@ -1,4 +1,4 @@
-This example app shows how to load custom raster layers. You can find how this is done in [CustomRasterLayersExample.java](app/src/main/java/com/here/sdk/customrasterlayers/CustomRasterLayersExample.java). 
+This example app shows how to load custom raster layers. You can find how this is done in [CustomRasterLayersExample.java](app/src/main/java/com/here/sdk/customrasterlayers/CustomRasterLayersExample.java).
 
 Build instructions:
 -------------------
@@ -9,4 +9,4 @@ Note: If your AAR version is different than the version shown in the _Developer'
 
 2) Open Android Studio and sync the project.
 
-Please do not forget: To run the app, you need to add your HERE SDK credentials to the `AndroidManifest.xml` file. More information can be found in the _Get Started_ section of the _Developer's Guide_.
+Please do not forget: To run the app, you need to add your HERE SDK credentials to the `MainActivity.java` file. More information can be found in the _Get Started_ section of the _Developer's Guide_.

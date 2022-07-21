@@ -19,6 +19,7 @@
 
 package com.here.sdk.examples.venues;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -31,14 +32,14 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.engine.SDKNativeEngine;
+import com.here.sdk.core.engine.SDKOptions;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.examples.venues.PermissionsRequestor.ResultListener;
 import com.here.sdk.gestures.TapListener;
+import com.here.sdk.mapview.MapFeatures;
 import com.here.sdk.mapview.MapMeasure;
-import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
-import com.here.sdk.mapview.VisibilityState;
 import com.here.sdk.venue.VenueEngine;
 import com.here.sdk.venue.control.Venue;
 import com.here.sdk.venue.control.VenueMap;
@@ -47,6 +48,9 @@ import com.here.sdk.venue.service.VenueListener;
 import com.here.sdk.venue.service.VenueService;
 import com.here.sdk.venue.service.VenueServiceInitStatus;
 import com.here.sdk.venue.service.VenueServiceListener;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -67,6 +71,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
+        initializeHERESDK();
+
         setContentView(R.layout.activity_main);
 
         // Get a MapView instance from the layout.
@@ -82,6 +90,19 @@ public class MainActivity extends AppCompatActivity {
         levelSwitcher = findViewById(R.id.level_switcher);
 
         handleAndroidPermissions();
+    }
+
+    private void initializeHERESDK() {
+        // Set your credentials for the HERE SDK.
+        String accessKeyID = "YOUR_ACCESS_KEY_ID";
+        String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
+        SDKOptions options = new SDKOptions(accessKeyID, accessKeySecret);
+        try {
+            Context context = this;
+            SDKNativeEngine.makeSharedInstance(context, options);
+        } catch (InstantiationErrorException e) {
+            throw new RuntimeException("Initialization of HERE SDK failed: " + e.error.name());
+        }
     }
 
     private void handleAndroidPermissions() {
@@ -115,8 +136,9 @@ public class MainActivity extends AppCompatActivity {
                         new GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
 
                 // Hide the extruded building layer, so that it does not overlap with the venues.
-                mapView.getMapScene().setLayerVisibility(MapScene.Layers.EXTRUDED_BUILDINGS,
-                        VisibilityState.HIDDEN);
+                List<String> mapFeatures = new ArrayList<>();
+                mapFeatures.add(MapFeatures.EXTRUDED_BUILDINGS);
+                mapView.getMapScene().disableFeatures(mapFeatures);
 
                 // Create a venue engine object. Once the initialization is done, a callback
                 // will be called.
@@ -284,14 +306,20 @@ public class MainActivity extends AppCompatActivity {
         }
         venueEngine.destroy();
         mapView.onDestroy();
+        disposeHERESDK();
+        super.onDestroy();
+    }
 
+    private void disposeHERESDK() {
         // Free HERE SDK resources before the application shuts down.
-        SDKNativeEngine hereSDKEngine = SDKNativeEngine.getSharedInstance();
-        if (hereSDKEngine != null) {
-            hereSDKEngine.dispose();
-            // For safety reasons, we explicitly set the shared instance to null to avoid situations, where a disposed instance is accidentally reused.
+        // Usually, this should be called only on application termination.
+        // Afterwards, the HERE SDK is no longer usable unless it is initialized again.
+        SDKNativeEngine sdkNativeEngine = SDKNativeEngine.getSharedInstance();
+        if (sdkNativeEngine != null) {
+            sdkNativeEngine.dispose();
+            // For safety reasons, we explicitly set the shared instance to null to avoid situations,
+            // where a disposed instance is accidentally reused.
             SDKNativeEngine.setSharedInstance(null);
         }
-        super.onDestroy();
     }
 }

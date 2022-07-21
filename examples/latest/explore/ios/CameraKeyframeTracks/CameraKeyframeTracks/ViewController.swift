@@ -43,8 +43,9 @@ final class ViewController: UIViewController {
             print("Error: Map scene not loaded, \(String(describing: mapError))")
             return
         }
-        
-        mapView.mapScene.setLayerVisibility(layerName: MapScene.Layers.landmarks, visibility: VisibilityState.visible)
+
+        // Users of the Navigate Edition can enable textured landmarks:
+        // mapView.mapScene.enableFeatures([MapFeatures.landmarks : MapFeatureModes.landmarksTextured])
         
         let distanceInMeters = MapMeasure(kind: .distance, value: 5000)
         mapView.camera.lookAt(point: geoCoordinates, zoom: distanceInMeters)

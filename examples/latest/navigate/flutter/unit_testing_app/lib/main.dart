@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'HERE SDK for Flutter - Unit Testing!',
+      title: 'HERE SDK for Flutter - Unit Testing',
       home: HereMap(onMapCreated: _onMapCreated),
     );
   }

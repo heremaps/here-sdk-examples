@@ -35,13 +35,6 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
-	<key>HERECredentials</key>
-	<dict>
-	    <key>AccessKeyId</key>
-	    <string>YOUR_ACCESS_KEY_ID</string>
-	    <key>AccessKeySecret</key>
-	    <string>YOUR_ACCESS_KEY_SECRET</string>
-	</dict>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

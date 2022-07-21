@@ -25,6 +25,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.android.material.snackbar.Snackbar;
+import com.here.sdk.BuildConfig;
 import com.here.sdk.core.GeoBox;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.LanguageCode;
@@ -152,7 +153,6 @@ public class OfflineMapsExample {
             @Override
             public void onMapUpdaterConstructe(@NonNull MapUpdater mapUpdater) {
                 OfflineMapsExample.this.mapUpdater = mapUpdater;
-
                 performUpdateChecks();
             }
         });
@@ -163,6 +163,7 @@ public class OfflineMapsExample {
     }
 
     private void performUpdateChecks() {
+        logHERESDKVersion();
         logCurrentMapVersion();
 
         // Checks if map updates are available for any of the already downloaded maps.
@@ -468,6 +469,10 @@ public class OfflineMapsExample {
         }
     }
 
+    private void logHERESDKVersion() {
+        Log.d("HERE SDK version: ", BuildConfig.VERSION_NAME);
+    }
+
     private void logCurrentMapVersion() {
         if (mapUpdater == null) {
             String message = "MapUpdater instance not ready. Try again.";
@@ -477,10 +482,11 @@ public class OfflineMapsExample {
 
         try {
             MapVersionHandle mapVersionHandle = mapUpdater.getCurrentMapVersion();
-            Log.e("Installed map version: ", mapVersionHandle.stringRepresentation(","));
+            // Version string my look like "47.47,47.47".
+            Log.d("Installed map version: ", mapVersionHandle.stringRepresentation(","));
         } catch (MapLoaderException e) {
             MapLoaderError mapLoaderError = e.error;
-            Log.d("MapLoaderError", "Fetching current map version failed: " + mapLoaderError.toString());
+            Log.e("MapLoaderError", "Fetching current map version failed: " + mapLoaderError.toString());
         }
     }
 }

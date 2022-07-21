@@ -10,7 +10,6 @@ Note: If your AAR version is different than the version shown in the _Developer'
 2) Open Android Studio and sync the project.
 
 Please do not forget: To run the app, you need to follow the below mentioned steps. More information can be found in the _Get Started_ section of the _Developer's Guide_.
-1) Add your HERE SDK credentials to the `AndroidManifest.xml` file. 
+1) Add your HERE SDK credentials to the `MainActivity.java` file. 
 2) Set the value of your indoor map catalog HRN to the constant `private final String HRN` in the `com.here.sdk.examples.venues.MainActivity.java` file.
 3) Enter your indoor map id once the app loads.
-
