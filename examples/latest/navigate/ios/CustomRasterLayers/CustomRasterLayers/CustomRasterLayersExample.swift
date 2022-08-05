@@ -73,7 +73,7 @@ class CustomRasterLayersExample {
         
         // Raster tiles are stored in a separate cache on the device.
         let path = "cache/raster/toner"
-        let maxDiskSizeInBytes: Int64 = 1024 * 1024 * 32
+        let maxDiskSizeInBytes: Int64 = 1024 * 1024 * 128 // 128 MB
         let cacheConfig = RasterDataSourceConfiguration.Cache(path: path,
                                                               diskSize: maxDiskSizeInBytes)
 

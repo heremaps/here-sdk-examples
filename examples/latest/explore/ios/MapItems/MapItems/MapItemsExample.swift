@@ -72,7 +72,7 @@ class MapItemsExample: TapDelegate {
 
     func onMapMarkerClusterButtonClicked() {
         guard
-            let image = UIImage(named: "blue_square.png"),
+            let image = UIImage(named: "green_square.png"),
             let imageData = image.pngData() else {
                 print("Error: Image not found.")
                 return
@@ -81,16 +81,27 @@ class MapItemsExample: TapDelegate {
         let clusterMapImage = MapImage(pixelData: imageData,
                                        imageFormat: ImageFormat.png)
 
-        let mapMarkerCluster = MapMarkerCluster(imageStyle: MapMarkerCluster.ImageStyle(image: clusterMapImage))
+        // Defines a text that indicates how many markers are included in the cluster.
+        var counterStyle = MapMarkerCluster.CounterStyle()
+        counterStyle.textColor = UIColor.black
+        counterStyle.fontSize = 40
+        counterStyle.maxCountNumber = 9
+        counterStyle.aboveMaxText = "+9"
+        
+        let mapMarkerCluster = MapMarkerCluster(imageStyle: MapMarkerCluster.ImageStyle(image: clusterMapImage),
+                                                counterStyle: counterStyle)
         mapView.mapScene.addMapMarkerCluster(mapMarkerCluster)
         mapMarkerClusters.append(mapMarkerCluster)
 
+        var index = 1
         for _ in 1...10 {
-            mapMarkerCluster.addMapMarker(marker: createRandomMapMarkerInViewport())
+            let indexString = String(index)
+            mapMarkerCluster.addMapMarker(marker: createRandomMapMarkerInViewport(indexString))
+            index = index + 1
         }
     }
 
-    func createRandomMapMarkerInViewport() -> MapMarker {
+    func createRandomMapMarkerInViewport(_ metaDataText: String) -> MapMarker {
         let geoCoordinates = createRandomGeoCoordinatesAroundMapCenter()
         guard
             let image = UIImage(named: "green_square.png"),
@@ -101,6 +112,11 @@ class MapItemsExample: TapDelegate {
         let mapImage = MapImage(pixelData: imageData,
                                        imageFormat: ImageFormat.png)
         let mapMarker = MapMarker(at: geoCoordinates, image: mapImage)
+        
+        let metadata = Metadata()
+        metadata.setString(key: "key_cluster", value: metaDataText)
+        mapMarker.metadata = metadata
+        
         return mapMarker
     }
 
@@ -390,13 +406,27 @@ class MapItemsExample: TapDelegate {
             return
         }
         if (clusterSize == 1) {
-            showDialog(title: "Map Marker picked", message: "This MapMarker belongs to a cluster.")
+            let metadata = getClusterMetadata(topmostGrouping.markers.first!)
+            showDialog(title: "Map Marker picked", message: "This MapMarker belongs to a cluster. Metadata: \(metadata)")
         } else {
+            var metadata = ""
+            for mapMarker in topmostGrouping.markers {
+                metadata += getClusterMetadata(mapMarker)
+                metadata += " "
+            }
+            let metadataMessage = "Contained Metadata: " + metadata + ". "
             showDialog(title: "Map marker cluster picked",
-                       message: "Number of contained markers in this cluster: \(clusterSize). Total number of markers in this MapMarkerCluster: \(topmostGrouping.parent.markers.count)")
+                       message: "Number of contained markers in this cluster: \(clusterSize). \(metadataMessage) Total number of markers in this MapMarkerCluster: \(topmostGrouping.parent.markers.count)")
         }
     }
 
+    private func getClusterMetadata(_ mapMarker: MapMarker) -> String {
+        if let message = mapMarker.metadata?.getString(key: "key_cluster") {
+             return message
+        }
+        return "No metadata."
+    }
+    
     private func createRandomGeoCoordinatesAroundMapCenter() -> GeoCoordinates {
         let scaleFactor = UIScreen.main.scale
         let mapViewWidthInPixels = Double(mapView.bounds.width * scaleFactor)

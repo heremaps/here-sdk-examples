@@ -31,19 +31,22 @@ class ViewController: UIViewController {
     @IBOutlet private weak var venuesManager: VenuesManager!
     @IBOutlet private weak var indoorRoutingUIConstraint: NSLayoutConstraint!
 
-    var mapView: MapView = MapView()
+    var mapView: MapView!
     var mapScheme: MapScheme = .normalDay
     var venueEngine: VenueEngine!
     var moveToVenue: Bool = false
     var venueTapHandler: VenueTapHandler?
+    
+    //Label text preference as per user choice
+    var labelPref = ["OCCUPANT_NAMES", "SPACE_NAME", "INTERNAL_ADDRESS"]
 
     // Replace "CATALOG_HRN" with your platform catalog HRN value.
     let hrn: String = "CATALOG_HRN"
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        mapView.frame = viewFrame.bounds
+       
+        mapView = MapView(frame: viewFrame.bounds)
         viewFrame.addSubview(mapView)
 
         venueIdInput?.keyboardType = UIKeyboardType.numberPad
@@ -121,6 +124,9 @@ class ViewController: UIViewController {
 
         // Set platform catalog HRN
         venueService.setHrn(hrn: hrn)
+        
+        // Set label text preference
+        venueService.setLabeltextPreference(labelTextPref: labelPref)
     }
 
     // Touch handler for the button which selects venues by id.

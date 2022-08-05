@@ -29,6 +29,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 
 import com.here.sdk.core.Anchor2D;
+import com.here.sdk.core.Color;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.GeoOrientationUpdate;
 import com.here.sdk.core.Location;
@@ -101,20 +102,36 @@ public class MapItemsExample {
     }
 
     public void showMapMarkerCluster() {
-        MapImage clusterMapImage = MapImageFactory.fromResource(context.getResources(), R.drawable.blue_square);
-        MapMarkerCluster mapMarkerCluster = new MapMarkerCluster(new MapMarkerCluster.ImageStyle(clusterMapImage));
+        MapImage clusterMapImage = MapImageFactory.fromResource(context.getResources(), R.drawable.green_square);
+
+        // Defines a text that indicates how many markers are included in the cluster.
+        MapMarkerCluster.CounterStyle counterStyle = new MapMarkerCluster.CounterStyle();
+        counterStyle.textColor = new Color(0, 0, 0, 1); // Black
+        counterStyle.fontSize = 40;
+        counterStyle.maxCountNumber = 9;
+        counterStyle.aboveMaxText = "+9";
+
+        MapMarkerCluster mapMarkerCluster = new MapMarkerCluster(
+                new MapMarkerCluster.ImageStyle(clusterMapImage), counterStyle);
         mapView.getMapScene().addMapMarkerCluster(mapMarkerCluster);
         mapMarkerClusterList.add(mapMarkerCluster);
 
         for (int i = 0; i < 10; i++) {
-            mapMarkerCluster.addMapMarker(createRandomMapMarkerInViewport());
+            mapMarkerCluster.addMapMarker(createRandomMapMarkerInViewport("" + i));
         }
     }
 
-    private MapMarker createRandomMapMarkerInViewport() {
+    private MapMarker createRandomMapMarkerInViewport(String metaDataText) {
         GeoCoordinates geoCoordinates = createRandomGeoCoordinatesAroundMapCenter();
         MapImage mapImage = MapImageFactory.fromResource(context.getResources(), R.drawable.green_square);
-        return new MapMarker(geoCoordinates, mapImage);
+
+        MapMarker mapMarker = new MapMarker(geoCoordinates, mapImage);
+
+        Metadata metadata = new Metadata();
+        metadata.setString("key_cluster", metaDataText);
+        mapMarker.setMetadata(metadata);
+
+        return mapMarker;
     }
 
     public void showLocationIndicatorPedestrian() {
@@ -403,12 +420,30 @@ public class MapItemsExample {
         }
         if (clusterSize == 1) {
             showDialog("Map marker picked",
-                    "This MapMarker belongs to a cluster.");
+                    "This MapMarker belongs to a cluster. Metadata: " + getClusterMetadata(topmostGrouping.markers.get(0)));
         } else {
+            String metadata = "";
+            for (MapMarker mapMarker: topmostGrouping.markers) {
+                metadata += getClusterMetadata(mapMarker);
+                metadata += " ";
+            }
             showDialog("Map marker cluster picked",
                     "Number of contained markers in this cluster: " + clusterSize + ". " +
+                            "Contained Metadata: " + metadata + ". " +
                             "Total number of markers in this MapMarkerCluster: " + topmostGrouping.parent.getMarkers().size());
         }
+    }
+
+    private String getClusterMetadata(MapMarker mapMarker) {
+        Metadata metadata = mapMarker.getMetadata();
+        String message = "No metadata.";
+        if (metadata != null) {
+            String string = metadata.getString("key_cluster");
+            if (string != null) {
+                message = string;
+            }
+        }
+        return message;
     }
 
     private void tiltMap() {

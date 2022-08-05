@@ -72,7 +72,6 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    private static final GeoCoordinates ROUTE_START_GEO_COORDINATES = new GeoCoordinates(52.520798, 13.409408);
     private static final double DISTANCE_IN_METERS = 1000;
 
     private PermissionsRequestor permissionsRequestor;
@@ -83,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
     private LocationIndicator defaultLocationIndicator;
     private LocationIndicator customLocationIndicator;
     private Location lastKnownLocation = null;
+    private GeoCoordinates routeStartGeoCoordinates;
     private boolean isVisualNavigatorRenderingStarted = false;
     private boolean isDefaultLocationIndicator = true;
 
@@ -141,6 +141,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadMapScene() {
+        routeStartGeoCoordinates = new GeoCoordinates(52.520798, 13.409408);
+
         // Load a scene from the HERE SDK to render the map with a map scheme.
         mapView.getMapScene().loadScene(MapScheme.NORMAL_DAY, new MapScene.LoadSceneCallback() {
             @Override
@@ -148,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
                 if (mapError == null) {
                     MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, DISTANCE_IN_METERS);
                     mapView.getCamera().lookAt(
-                            ROUTE_START_GEO_COORDINATES, mapMeasureZoom);
+                            routeStartGeoCoordinates, mapMeasureZoom);
                     startAppLogic();
                 } else {
                     Log.d(TAG, "Loading map failed: mapError: " + mapError.name());
@@ -210,7 +212,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Calculate a fixed route for testing and start guidance simulation along the route.
     public void startButtonClicked(View view) {
-        Waypoint startWaypoint = new Waypoint(ROUTE_START_GEO_COORDINATES);
+        Waypoint startWaypoint = new Waypoint(routeStartGeoCoordinates);
         Waypoint destinationWaypoint = new Waypoint(new GeoCoordinates(52.530905, 13.385007));
         routingEngine.calculateRoute(
                 new ArrayList<>(Arrays.asList(startWaypoint, destinationWaypoint)),
@@ -288,7 +290,7 @@ public class MainActivity extends AppCompatActivity {
             // including a bearing direction.
             // For testing purposes, we create below a Location object. Usually, you want to get this from
             // a GPS sensor instead. Check the Positioning example app for this.
-            Location location = new Location(ROUTE_START_GEO_COORDINATES);
+            Location location = new Location(routeStartGeoCoordinates);
             location.time = new Date();
             location.bearingInDegrees = 0.0;
             return location;

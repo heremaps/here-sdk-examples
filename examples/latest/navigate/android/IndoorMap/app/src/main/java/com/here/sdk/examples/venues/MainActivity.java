@@ -50,6 +50,7 @@ import com.here.sdk.venue.service.VenueServiceInitStatus;
 import com.here.sdk.venue.service.VenueServiceListener;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -67,6 +68,9 @@ public class MainActivity extends AppCompatActivity {
 
     // Replace "CATALOG_HRN" with your platform catalog HRN value.
     private final String HRN = "CATALOG_HRN";
+
+    //Label text preference as per user choice
+    private final List<String> labelPref = Arrays.asList("OCCUPANT_NAMES", "SPACE_NAME", "INTERNAL_ADDRESS");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,8 +98,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void initializeHERESDK() {
         // Set your credentials for the HERE SDK.
-        String accessKeyID = "YOUR_ACCESS_KEY_ID";
-        String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
+        String accessKeyID = "VENUE_ACCESS_KEY_ID";
+        String accessKeySecret = "VENUE_ACCESS_KEY_SECRET";
         SDKOptions options = new SDKOptions(accessKeyID, accessKeySecret);
         try {
             Context context = this;
@@ -189,6 +193,9 @@ public class MainActivity extends AppCompatActivity {
 
         // Set platform catalog HRN
         service.setHrn(HRN);
+
+        // Set label text preference
+        service.setLabeltextPreference(labelPref);
     }
 
     // Listener for the VenueService event.
@@ -304,7 +311,9 @@ public class MainActivity extends AppCompatActivity {
             mapView.getGestures().setTapListener(null);
             mapView.getGestures().setLongPressListener(null);
         }
-        venueEngine.destroy();
+        if(venueEngine != null) {
+            venueEngine.destroy();
+        }
         mapView.onDestroy();
         disposeHERESDK();
         super.onDestroy();

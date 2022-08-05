@@ -37,8 +37,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     private func initializeHERESDK() {
         // Set your credentials for the HERE SDK.
         // Talk to your HERE representative to enable your private Venue data for use with these credentials.
-        let accessKeyID = "YOUR_ACCESS_KEY_ID"
-        let accessKeySecret = "YOUR_ACCESS_KEY_SECRET"
+        let accessKeyID = "VENUE_ACCESS_KEY_ID"
+        let accessKeySecret = "VENUE_ACCESS_KEY_SECRET"
         let options = SDKOptions(accessKeyId: accessKeyID, accessKeySecret: accessKeySecret)
         do {
             try SDKNativeEngine.makeSharedInstance(options: options)

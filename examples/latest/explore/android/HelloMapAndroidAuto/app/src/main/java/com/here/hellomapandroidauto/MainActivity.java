@@ -36,7 +36,6 @@ import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
-import com.here.sdk.mapview.VisibilityState;
 
 public class MainActivity extends AppCompatActivity {
 
