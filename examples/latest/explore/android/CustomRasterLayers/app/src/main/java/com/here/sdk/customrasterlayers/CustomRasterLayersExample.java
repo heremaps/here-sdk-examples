@@ -98,7 +98,7 @@
 
          // Raster tiles are stored in a separate cache on the device.
          String path = "cache/raster/toner";
-         long maxDiskSizeInBytes = 1024 * 1024 * 32;
+         long maxDiskSizeInBytes = 1024 * 1024 * 128; // 128
          RasterDataSourceConfiguration.Cache cacheConfig = new RasterDataSourceConfiguration.Cache(path, maxDiskSizeInBytes);
 
          // Note that this will make the raster source already known to the passed map view.

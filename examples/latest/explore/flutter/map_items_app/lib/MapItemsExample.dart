@@ -17,10 +17,10 @@
  * License-Filename: LICENSE
  */
 
-import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/gestures.dart';
@@ -86,20 +86,28 @@ class MapItemsExample {
   Future<void> showMapMarkerCluster() async {
     // Reuse existing MapImage for new map markers.
     if (_blueSquareMapImage == null) {
-      Uint8List imagePixelData = await _loadFileAsUint8List('assets/blue_square.png');
+      Uint8List imagePixelData = await _loadFileAsUint8List('assets/green_square.png');
       _blueSquareMapImage = MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
     }
 
-    MapMarkerCluster mapMarkerCluster = MapMarkerCluster(MapMarkerClusterImageStyle(_blueSquareMapImage!));
+    // Defines a text that indicates how many markers are included in the cluster.
+    MapMarkerClusterCounterStyle counterStyle = MapMarkerClusterCounterStyle();
+    counterStyle.textColor = Colors.black;
+    counterStyle.fontSize = 40;
+    counterStyle.maxCountNumber = 9;
+    counterStyle.aboveMaxText = "+9";
+
+    MapMarkerCluster mapMarkerCluster =
+        MapMarkerCluster.WithCounter(MapMarkerClusterImageStyle(_blueSquareMapImage!), counterStyle);
     _hereMapController.mapScene.addMapMarkerCluster(mapMarkerCluster);
     _mapMarkerClusterList.add(mapMarkerCluster);
 
     for (int i = 0; i < 10; i++) {
-      mapMarkerCluster.addMapMarker(await _createRandomMapMarkerInViewport());
+      mapMarkerCluster.addMapMarker(await _createRandomMapMarkerInViewport(i.toString()));
     }
   }
 
-  Future<MapMarker> _createRandomMapMarkerInViewport() async {
+  Future<MapMarker> _createRandomMapMarkerInViewport(String metaDataText) async {
     // Reuse existing MapImage for new map markers.
     if (_greenSquareMapImage == null) {
       Uint8List imagePixelData = await _loadFileAsUint8List('assets/green_square.png');
@@ -107,6 +115,11 @@ class MapItemsExample {
     }
 
     MapMarker mapMarker = MapMarker(_createRandomGeoCoordinatesAroundMapCenter(), _greenSquareMapImage!);
+
+    Metadata metadata = new Metadata();
+    metadata.setString("key_cluster", metaDataText);
+    mapMarker.metadata = metadata;
+
     return mapMarker;
   }
 
@@ -259,7 +272,6 @@ class MapItemsExample {
   }
 
   void _addFlatMarker(GeoCoordinates geoCoordinates) async {
-
     Uint8List imagePixelData = await _loadFileAsUint8List('assets/poi.png');
     MapImage mapImage = MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
 
@@ -268,7 +280,8 @@ class MapItemsExample {
     double scaleFactor = 0.5;
 
     // With DENSITY_INDEPENDENT_PIXELS the map marker will have a constant size on the screen regardless if the map is zoomed in or out.
-    MapMarker3D mapMarker3D = MapMarker3D.fromImage(geoCoordinates,mapImage, scaleFactor, RenderSizeUnit.densityIndependentPixels);
+    MapMarker3D mapMarker3D =
+        MapMarker3D.fromImage(geoCoordinates, mapImage, scaleFactor, RenderSizeUnit.densityIndependentPixels);
 
     _hereMapController.mapScene.addMapMarker3d(mapMarker3D);
     _mapMarker3DList.add(mapMarker3D);
@@ -316,7 +329,8 @@ class MapItemsExample {
     // Therefore, a 3D object becomes visible when the altitude of its location is 0 or higher.
     // By default, without setting a scale factor, 1 unit in 3D coordinate space equals 1 meter.
     var altitude = 18.0;
-    GeoCoordinates geoCoordinatesWithAltitude = GeoCoordinates.withAltitude(geoCoordinates.latitude, geoCoordinates.longitude, altitude);
+    GeoCoordinates geoCoordinatesWithAltitude =
+        GeoCoordinates.withAltitude(geoCoordinates.latitude, geoCoordinates.longitude, altitude);
 
     // Optionally, consider to store the model for reuse (like we showed for MapImages above).
     MapMarker3DModel mapMarker3DModel = MapMarker3DModel.withTextureFilePath(geometryFilePath, textureFilePath);
@@ -385,14 +399,35 @@ class MapItemsExample {
       return;
     }
     if (clusterSize == 1) {
-      _showDialog("Map marker picked", "This MapMarker belongs to a cluster.");
+      _showDialog("Map marker picked",
+          "This MapMarker belongs to a cluster.  Metadata: " + _getClusterMetadata(topmostGrouping.markers.first));
     } else {
+      String metadata = "";
+      topmostGrouping.markers.forEach((element) {
+        metadata += _getClusterMetadata(element);
+        metadata += " ";
+      });
       int totalSize = topmostGrouping.parent.markers.length;
       _showDialog(
           "Map marker cluster picked",
           "Number of contained markers in this cluster: $clusterSize." +
+              "Contained Metadata: " +
+              metadata +
+              ". " +
               "Total number of markers in this MapMarkerCluster: $totalSize.");
     }
+  }
+
+  String _getClusterMetadata(MapMarker mapMarker) {
+    Metadata? metadata = mapMarker.metadata;
+    String message = "No metadata.";
+    if (metadata != null) {
+      String? string = metadata.getString("key_cluster");
+      if (string != null) {
+        message = string;
+      }
+    }
+    return message;
   }
 
   void _tiltMap() {

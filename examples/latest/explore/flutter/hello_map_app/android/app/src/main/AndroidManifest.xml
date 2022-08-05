@@ -6,6 +6,10 @@
         android:label="Hello Map"
         android:icon="@mipmap/ic_launcher">
 
+        <!-- Set the credentials for the HERE SDK here! -->
+        <meta-data android:name="com.here.sdk.access_key_id" android:value="YOUR_ACCESS_KEY_ID"/>
+        <meta-data android:name="com.here.sdk.access_key_secret" android:value="YOUR_ACCESS_KEY_SECRET"/>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

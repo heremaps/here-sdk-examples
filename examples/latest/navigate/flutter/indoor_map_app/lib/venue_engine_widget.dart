@@ -64,6 +64,9 @@ class VenueEngineState extends State<VenueEngineWidget> {
   // Replace "CATALOG_HRN" with your platform catalog HRN value.
   final String HRN = "CATALOG_HRN";
 
+  //Label text preference as per user choice
+  final List<String> _labelPref = ["OCCUPANT_NAMES", "SPACE_NAME", "INTERNAL_ADDRESS"];
+
   @override
   Widget build(BuildContext context) {
     return Stack(children: [
@@ -141,6 +144,9 @@ class VenueEngineState extends State<VenueEngineWidget> {
 
     // Set platform catalog HRN
     venueEngine!.venueService.setHrn(HRN);
+
+    // Set label text preference
+    venueEngine!.venueService.setLabeltextPreference(_labelPref);
   }
 
   _onAuthCallback(AuthenticationError? error, AuthenticationData? data) {
