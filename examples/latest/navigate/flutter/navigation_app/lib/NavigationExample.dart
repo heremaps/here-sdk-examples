@@ -462,6 +462,24 @@ class NavigationExample {
       }
     });
 
+    RoadSignWarningOptions roadSignWarningOptions = new RoadSignWarningOptions();
+    // Set a filter to get only shields relevant for TRUCKS and HEAVY_TRUCKS.
+    roadSignWarningOptions.vehicleTypesFilter = [RoadSignVehicleType.trucks, RoadSignVehicleType.heavyTrucks];
+    _visualNavigator.roadSignWarningOptions = roadSignWarningOptions;
+
+    // Notifies on road shields as they appear along the road.
+    _visualNavigator.roadSignWarningListener = RoadSignWarningListener((RoadSignWarning roadSignWarning) {
+      print("Road sign distance (m): ${roadSignWarning.distanceToRoadSignInMeters}");
+      print("Road sign type: ${roadSignWarning.type.name}");
+
+      if (roadSignWarning.signValue != null) {
+        // Optional text as it is printed on the local road sign.
+        print("Road sign text: ${roadSignWarning.signValue!.text}");
+      }
+
+      // For more road sign attributes, please check the API Reference.
+    });
+
     // Notifies truck drivers on road restrictions ahead.
     // For example, there can be a bridge ahead not high enough to pass a big truck
     // or there can be a road ahead where the weight of the truck is beyond it's permissible weight.

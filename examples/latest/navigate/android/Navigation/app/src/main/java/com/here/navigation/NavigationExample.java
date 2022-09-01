@@ -57,6 +57,10 @@ import com.here.sdk.navigation.NavigableLocation;
 import com.here.sdk.navigation.NavigableLocationListener;
 import com.here.sdk.navigation.RoadAttributes;
 import com.here.sdk.navigation.RoadAttributesListener;
+import com.here.sdk.navigation.RoadSignVehicleType;
+import com.here.sdk.navigation.RoadSignWarning;
+import com.here.sdk.navigation.RoadSignWarningListener;
+import com.here.sdk.navigation.RoadSignWarningOptions;
 import com.here.sdk.navigation.RoadTextsListener;
 import com.here.sdk.navigation.RouteDeviation;
 import com.here.sdk.navigation.RouteDeviationListener;
@@ -84,6 +88,7 @@ import com.here.sdk.trafficawarenavigation.DynamicRoutingEngineOptions;
 import com.here.sdk.trafficawarenavigation.DynamicRoutingListener;
 import com.here.time.Duration;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -425,6 +430,27 @@ public class NavigationExample {
             }
         });
 
+        RoadSignWarningOptions roadSignWarningOptions = new RoadSignWarningOptions();
+        // Set a filter to get only shields relevant for TRUCKS and HEAVY_TRUCKS.
+        roadSignWarningOptions.vehicleTypesFilter = Arrays.asList(RoadSignVehicleType.TRUCKS, RoadSignVehicleType.HEAVY_TRUCKS);
+        visualNavigator.setRoadSignWarningOptions(roadSignWarningOptions);
+
+        // Notifies on road shields as they appear along the road.
+        visualNavigator.setRoadSignWarningListener(new RoadSignWarningListener() {
+            @Override
+            public void onRoadSignWarningUpdated(@NonNull RoadSignWarning roadSignWarning) {
+                Log.d(TAG, "Road sign distance (m): " + roadSignWarning.distanceToRoadSignInMeters);
+                Log.d(TAG, "Road sign type: " + roadSignWarning.type.name());
+
+                if (roadSignWarning.signValue != null) {
+                    // Optional text as it is printed on the local road sign.
+                    Log.d(TAG, "Road sign text: " + roadSignWarning.signValue.text);
+                }
+
+                // For more road sign attributes, please check the API Reference.
+            }
+        });
+
         // Notifies truck drivers on road restrictions ahead.
         // For example, there can be a bridge ahead not high enough to pass a big truck
         // or there can be a road ahead where the weight of the truck is beyond it's permissible weight.
@@ -530,7 +556,6 @@ public class NavigationExample {
     }
 
     private Double getCurrentSpeedLimit(SpeedLimit speedLimit) {
-
         // Note that all values can be null if no data is available.
 
         // The regular speed limit if available. In case of unbounded speed limit, the value is zero.

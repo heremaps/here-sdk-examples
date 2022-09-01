@@ -11,4 +11,6 @@ Note: If your AAR version is different than the version shown in the _Developer'
 
 2) Open Android Studio and sync the project.
 
+3) Check the _Android Auto_ section in the _Developer's Guide_ on how to start Android's DHU.
+
 Please do not forget: To run the app, you need to add your HERE SDK credentials to the `MainActivity.java` file. More information can be found in the _Get Started_ section of the _Developer's Guide_.

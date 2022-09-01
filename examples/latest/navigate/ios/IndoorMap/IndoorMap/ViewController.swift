@@ -140,7 +140,7 @@ class ViewController: UIViewController {
                     venueIdLoad?.isEnabled = false
                     moveToVenue = true
                     // Select a venue by id.
-                    venueEngine?.venueMap.selectVenueAsync(venueId: id)
+                    venueEngine?.venueMap.selectVenueAsync(venueId: id, completion: self.onVenueLoadError)
                 } else {
                     print("Venue service is not initialized! Status: \(String(describing: venueEngine?.venueService.getInitStatus()))")
                 }
@@ -150,6 +150,44 @@ class ViewController: UIViewController {
         }
         venueIdInput?.resignFirstResponder()
     }
+    
+    private func onVenueLoadError(_ error: VenueErrorCode?) {
+            print("Error: \(error)")
+            var errorMessage: String
+            switch error {
+            case .noNetwork:
+                errorMessage = "The device has no internet connectivity"
+            case .noMetaDataFound:
+                errorMessage = "Meta data not present in platform collection catalog"
+            case .hrnMissing:
+                errorMessage = "HRN not provided. Please insert HRN"
+            case .hrnMismatch:
+                errorMessage = "HRN does not match with Auth key & secret"
+            case .noDefaultCollection:
+                errorMessage = "Default collection missing from platform collection catalog"
+            case .mapIdNotFound:
+                errorMessage = "Map ID requested is not part of the default collection"
+            case .mapDataIncorrect:
+                errorMessage = "Map data in collection is wrong"
+            case .internalServerError:
+                errorMessage = "Internal Server Error"
+            case .serviceUnavailable:
+                errorMessage = "Requested service is not available currently. Please try after some time"
+            default:
+                errorMessage = "Unknown Error encountered"
+            }
+            // Create a new alert
+            var dialogMessage = UIAlertController(title: "Attention", message: errorMessage, preferredStyle: .alert)
+            // Create OK button with action handler
+            let okk = UIAlertAction(title: "OK", style: .default, handler: { (action) -> Void in
+                print("Ok button tapped")
+            })
+            // Add OK button to a dialog message
+            dialogMessage.addAction(okk)
+            // Present Alert to
+            self.present(dialogMessage, animated: true, completion: nil)
+            venueIdLoad?.isEnabled = true
+        }
 
     @IBAction private func onSearchTap(_ sender: Any) {
         venueSearch.isHidden = !venueSearch.isHidden
