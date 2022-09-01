@@ -110,7 +110,64 @@ class VenueEngineState extends State<VenueEngineWidget> {
   selectVenue(int venueId) {
     if (_venueEngine != null) {
       // Select venue by ID.
-      _venueEngine!.venueMap.selectVenueAsync(venueId);
+      _venueEngine!.venueMap.selectVenueAsyncWithErrors(venueId, (VenueErrorCode? venueLoadError) {
+        String errorMsg;
+        switch(venueLoadError) {
+          case VenueErrorCode.noNetwork:
+            errorMsg = "The device has no internet connectivity";
+            break;
+          case VenueErrorCode.noMetaDataFound:
+            errorMsg = "Meta data not present in platform collection catalog";
+            break;
+          case VenueErrorCode.hrnMissing:
+            errorMsg = "HRN not provided. Please insert HRN";
+            break;
+          case VenueErrorCode.hrnMismatch:
+            errorMsg = "HRN does not match with Auth key & secret";
+            break;
+          case VenueErrorCode.noDefaultCollection:
+            errorMsg = "Default collection missing from platform collection catalog";
+            break;
+          case VenueErrorCode.mapIdNotFound:
+            errorMsg = "Map ID requested is not part of the default collection";
+            break;
+          case VenueErrorCode.mapDataIncorrect:
+            errorMsg = "Map data in collection is wrong";
+            break;
+          case VenueErrorCode.internalServerError:
+            errorMsg = "Internal Server Error";
+            break;
+          case VenueErrorCode.serviceUnavailable:
+            errorMsg = "Requested service is not available currently. Please try after some time";
+            break;
+          default:
+            errorMsg = "Unknown Error encountered";
+        }
+
+        // set up the button
+        Widget okButton = TextButton(
+          child: Text("OK"),
+          onPressed: () { Navigator.of(context, rootNavigator: true).pop('dialog'); },
+        );
+
+        // set up the AlertDialog
+        AlertDialog alert = AlertDialog(
+          title: Text("Attention"),
+          content: Text(errorMsg),
+          actions: [
+            okButton,
+          ],
+        );
+
+        // show the dialog
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return alert;
+          },
+        );
+
+      });
     }
   }
 

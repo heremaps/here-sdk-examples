@@ -174,7 +174,7 @@ public class VenueSearchController {
                     || searchType == VenueGeometryFilterType.NAME_OR_ADDRESS)
                     && geometry.getInternalAddress() != null)
             {
-                name.append("\n(Address: ").append(geometry.getInternalAddress().getLongAddress())
+                name.append("\n(Address: ").append(geometry.getInternalAddress().getAddress())
                         .append(")");
             }
             else if (searchType == VenueGeometryFilterType.ICON_NAME

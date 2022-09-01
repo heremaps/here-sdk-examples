@@ -20,6 +20,7 @@
 package com.here.sdk.examples.venues;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -28,6 +29,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.here.sdk.core.GeoCoordinates;
@@ -42,6 +44,7 @@ import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
 import com.here.sdk.venue.VenueEngine;
 import com.here.sdk.venue.control.Venue;
+import com.here.sdk.venue.control.VenueErrorCode;
 import com.here.sdk.venue.control.VenueMap;
 import com.here.sdk.venue.control.VenueSelectionListener;
 import com.here.sdk.venue.service.VenueListener;
@@ -254,13 +257,62 @@ public class MainActivity extends AppCompatActivity {
                     // Disable the button while a venue loading and selection is in progress.
                     setGoButtonEnabled(false);
                     // Select a venue by id.
-                    venueMap.selectVenueAsync(venueId);
+                    venueMap.selectVenueAsync(venueId, this ::onVenueLoadError);
                 }
             } catch (Exception e) {
                 Log.d(TAG, e.toString());
             }
             hideKeyboard();
         });
+    }
+
+    private void onVenueLoadError(VenueErrorCode venueLoadError) {
+        String errorMsg;
+        switch (venueLoadError) {
+            case NO_NETWORK:
+                errorMsg = "The device has no internet connectivity";
+                break;
+            case NO_META_DATA_FOUND:
+                errorMsg = "Meta data not present in platform collection catalog";
+                break;
+            case HRN_MISSING:
+                errorMsg = "HRN not provided. Please insert HRN";
+                break;
+            case HRN_MISMATCH:
+                errorMsg = "HRN does not match with Auth key & secret";
+                break;
+            case NO_DEFAULT_COLLECTION:
+                errorMsg = "Default collection missing from platform collection catalog";
+                break;
+            case MAP_ID_NOT_FOUND:
+                errorMsg = "Map ID requested is not part of the default collection";
+                break;
+            case MAP_DATA_INCORRECT:
+                errorMsg = "Map data in collection is wrong";
+                break;
+            case INTERNAL_SERVER_ERROR:
+                errorMsg = "Internal Server Error";
+                break;
+            case SERVICE_UNAVAILABLE:
+                errorMsg = "Requested service is not available currently. Please try after some time";
+                break;
+            default:
+                errorMsg = "Unknown Error encountered";
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(errorMsg)
+                .setCancelable(true)
+                .setTitle("Attention")
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.setCanceledOnTouchOutside(true);
+        alert.show();
     }
 
     // Hide a keyboard.

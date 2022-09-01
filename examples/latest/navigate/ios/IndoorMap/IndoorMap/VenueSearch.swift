@@ -158,7 +158,7 @@ extension VenueSearch: UITableViewDataSource {
         var name = geometry.name + ", " + geometry.level.name
         if let address = geometry.internalAddress {
             if filterType == .address || filterType == .nameOrAddress {
-                name += "\n(Address: " + address.longAddress + ")"
+                name += "\n(Address: " + address.address + ")"
             }
         }
         if filterType == .iconName {
