@@ -11,5 +11,5 @@ Note: If your AAR version is different than the version shown in the _Developer'
 
 Please do not forget: To run the app, you need to follow the below mentioned steps. More information can be found in the _Get Started_ section of the _Developer's Guide_.
 1) Add your HERE SDK credentials to the `MainActivity.java` file. 
-2) Set the value of your indoor map catalog HRN to the constant `private final String HRN` in the `com.here.sdk.examples.venues.MainActivity.java` file.
+2) Setting HRN is optional. If `private final String HRN` in the `com.here.sdk.examples.venues.MainActivity.java` file is not set, then HRN of default collection in realm will be selected automatically. Default collection contains all published indoor venue maps for a realm. If user wants to use a different collection then set the value of your indoor map catalog HRN to the constant `private final String HRN` in the `com.here.sdk.examples.venues.MainActivity.java` file.
 3) Enter your indoor map id once the app loads.

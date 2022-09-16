@@ -13,5 +13,5 @@ Note: In Xcode, open the _General_ settings of the _App target_ and make sure th
 
 Please do not forget: To run the app, you need to follow the below mentioned steps. More information can be found in the _Get Started_ section of the _Developer's Guide_.
 1) Add your HERE SDK credentials to the `AppDelegate.swift` file.
-2) Set the value of your indoor map catalog HRN to the constant `let hrn: String` in the `/IndoorMap/ViewController.swift` file.
+2) Setting HRN is optional. If `let hrn: String` in the `/IndoorMap/ViewController.swift` file is not set, then HRN of default collection in realm will be selected automatically. Default collection contains all published indoor venue maps for a realm. If user wants to use a different collection then set the value of your indoor map catalog HRN to the constant `let hrn: String` in the `/IndoorMap/ViewController.swift` file.
 3) Enter your indoor map id once the app loads.

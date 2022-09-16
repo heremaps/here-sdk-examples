@@ -73,9 +73,13 @@ class MapViewPinsExample {
         color: backgroundColor,
         border: Border.all(color: Colors.black),
       ),
-      child: Text(
+      child: GestureDetector(child: Text(
         label,
         style: TextStyle(fontSize: 20.0),
+      ),
+        onTap: () {
+        print("Tapped on " + label);
+        },
       ),
     );
   }

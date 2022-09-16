@@ -98,7 +98,7 @@ class DrawingSwitcherState extends State<DrawingSwitcher> {
 
   // Create a list view item from the drawing.
   Widget _drawingItemBuilder(BuildContext context, VenueDrawing drawing) {
-    bool isSelectedDrawing = drawing.id == _selectedDrawing!.id;
+    bool isSelectedDrawing = drawing.identifier == _selectedDrawing!.identifier;
     Property? nameProp = drawing.properties["name"];
     return FlatButton(
       color: isSelectedDrawing ? Colors.blue : Colors.white,

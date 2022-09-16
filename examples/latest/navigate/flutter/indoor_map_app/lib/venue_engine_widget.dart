@@ -61,8 +61,8 @@ class VenueEngineState extends State<VenueEngineWidget> {
   final _venueSearchState = VenueSearchControllerState();
   final _venuesState = VenuesControllerState();
 
-  // Replace "CATALOG_HRN" with your platform catalog HRN value.
-  final String HRN = "CATALOG_HRN";
+  // Set value for hrn with your platform catalog HRN value if you want to load non default collection.
+  String HRN = "";
 
   //Label text preference as per user choice
   final List<String> _labelPref = ["OCCUPANT_NAMES", "SPACE_NAME", "INTERNAL_ADDRESS"];
@@ -199,8 +199,10 @@ class VenueEngineState extends State<VenueEngineWidget> {
     // VenueServiceListener.onInitializationCompleted method will be called.
     venueEngine!.start(_onAuthCallback);
 
-    // Set platform catalog HRN
-    venueEngine!.venueService.setHrn(HRN);
+    if(HRN != "") {
+      // Set platform catalog HRN
+      venueEngine!.venueService.setHrn(HRN);
+    }
 
     // Set label text preference
     venueEngine!.venueService.setLabeltextPreference(_labelPref);
