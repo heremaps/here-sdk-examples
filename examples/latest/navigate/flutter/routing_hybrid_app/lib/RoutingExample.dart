@@ -121,6 +121,11 @@ class RoutingExample {
         _showRouteDetails(route);
         _showRouteOnMap(route);
         _logRouteViolations(route);
+
+        // Draw a circle to indicate the location of the waypoints.
+        _addCircleMapMarker(waypoint1.coordinates, "assets/red_dot.png");
+        _addCircleMapMarker(waypoint2.coordinates, "assets/red_dot.png");
+
       } else {
         var error = routingError.toString();
         _showDialog('Error', 'Error while calculating a route: $error');
@@ -206,7 +211,7 @@ class RoutingExample {
 
     // Draw a circle to indicate starting point and destination.
     _addCircleMapMarker(startGeoCoordinates, "assets/green_dot.png");
-    _addCircleMapMarker(destinationGeoCoordinates, "assets/red_dot.png");
+    _addCircleMapMarker(destinationGeoCoordinates, "assets/green_dot.png");
 
     // Log maneuver instructions per route section.
     List<Section> sections = route.sections;

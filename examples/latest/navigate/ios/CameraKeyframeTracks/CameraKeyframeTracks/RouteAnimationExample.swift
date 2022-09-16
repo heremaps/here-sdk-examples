@@ -42,16 +42,26 @@ public class RouteAnimationExample {
         mapView.camera.cancelAnimations()
     }
     
+    func animateToRoute() {
+        if (RouteCalculator.testRoute == nil) {
+            print("RouteAnimationExample: Error: No route for testing ...")
+            return
+        }
+
+        animateToRoute(route: RouteCalculator.testRoute!)
+    }
+    
     func animateToRoute(route: Route) {
         // Untilt and unrotate the map.
         let bearing: Double = 0
         let tilt: Double = 0
-        // We want to show the route fitting in the map view without any additional padding.
-        let origin:Point2D = Point2D(x: 0.0, y: 0.0)
-        let sizeInPixels:Size2D = Size2D(width: mapView.viewportSize.width, height: mapView.viewportSize.height)
+        
+        // We want to show the route fitting in the map view with an additional padding of 50 pixels.
+        let origin:Point2D = Point2D(x: 50.0, y: 50.0)
+        let sizeInPixels:Size2D = Size2D(width: mapView.viewportSize.width - 100, height: mapView.viewportSize.height - 100)
         let mapViewport:Rectangle2D = Rectangle2D(origin: origin, size: sizeInPixels)
 
-        // Animate to route.
+        // Animate to the route within a duration of 3 seconds.
         let update:MapCameraUpdate = MapCameraUpdateFactory.lookAt(area: route.boundingBox, orientation: GeoOrientationUpdate(GeoOrientation(bearing: bearing, tilt: tilt)), viewRectangle: mapViewport)
         let animation: MapCameraAnimation = MapCameraAnimationFactory.createAnimation(from: update, duration: TimeInterval(3), easingFunction: EasingFunction.inCubic)
         mapView.camera.startAnimation(animation)

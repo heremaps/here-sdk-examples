@@ -40,8 +40,8 @@ class ViewController: UIViewController {
     //Label text preference as per user choice
     var labelPref = ["OCCUPANT_NAMES", "SPACE_NAME", "INTERNAL_ADDRESS"]
 
-    // Replace "CATALOG_HRN" with your platform catalog HRN value.
-    let hrn: String = "CATALOG_HRN"
+    // Set value for hrn with your platform catalog HRN value if you want to load non default collection.
+    var hrn: String = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -121,9 +121,11 @@ class ViewController: UIViewController {
                 print("Failed to authenticate, reason: " + error.localizedDescription)
             }
         })
-
-        // Set platform catalog HRN
-        venueService.setHrn(hrn: hrn)
+        if(hrn != "")
+        {
+            // Set platform catalog HRN
+            venueService.setHrn(hrn: hrn)
+        }
         
         // Set label text preference
         venueService.setLabeltextPreference(labelTextPref: labelPref)
@@ -152,7 +154,7 @@ class ViewController: UIViewController {
     }
     
     private func onVenueLoadError(_ error: VenueErrorCode?) {
-            print("Error: \(error)")
+        print("Error: \(error)")
             var errorMessage: String
             switch error {
             case .noNetwork:

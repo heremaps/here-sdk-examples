@@ -70,12 +70,8 @@ final class ViewController: UIViewController {
     
     private func onStartAnimationToRouteButtonClicked(_ sender: Any) {
         if isMapSceneLoaded {
-            guard let route = RouteCalculator.testRoute else {
-                print("Error: Error: No route for testing ...")
-                return
-            }
-            
-            routeAnimationExample.animateToRoute(route: route)
+
+            routeAnimationExample.animateToRoute()
         }
     }
     

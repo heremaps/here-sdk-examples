@@ -38,7 +38,7 @@ public class RouteCalculator {
     }
     
     public func createRoute() {
-        
+        // A fixed test route.
         let start: Waypoint = Waypoint(coordinates: GeoCoordinates(latitude: 40.7133, longitude: -74.0112))
         let destination: Waypoint = Waypoint(coordinates: GeoCoordinates(latitude: 40.7203, longitude: -74.3122))
         

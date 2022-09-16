@@ -54,6 +54,7 @@ class MapViewPinsExample {
         // Move map to expected location.
         flyTo(geoCoordinates: mapCenterGeoCoordinates)
         
+        let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(onMapViewPinTapped))
         let textView = UITextView(frame: CGRect(x: 0, y: 0, width: 200, height: 40))
         textView.textAlignment = .center
         textView.isEditable = false
@@ -61,14 +62,21 @@ class MapViewPinsExample {
         textView.textColor = .white
         textView.font = .systemFont(ofSize: 17)
         textView.text = "Centered ViewPin"
+        textView.addGestureRecognizer(tapRecognizer)
 
         _ = mapView.pinView(textView, to: mapCenterGeoCoordinates)
+    }
+    
+    // This a handler for UITAPGestureRecognizer.
+    @objc func onMapViewPinTapped() {
+        print("Tapped on MapViewPin.")
     }
 
     private func showAnchoredMapViewPins() {
         // Move map to expected location.
         flyTo(geoCoordinates: mapCenterGeoCoordinates)
         
+        let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(onAnchoredMapViewPinTapped))
         let textView = UITextView(frame: CGRect(x: 0, y: 0, width: 200, height: 40))
         textView.textAlignment = .center
         textView.isEditable = false
@@ -77,8 +85,15 @@ class MapViewPinsExample {
         textView.font = .systemFont(ofSize: 17)
         textView.text = "Anchored ViewPin"
         textView.layer.anchorPoint = CGPoint(x: 0.5, y: 1)
+        textView.addGestureRecognizer(tapRecognizer)
 
         _ = mapView.pinView(textView, to: mapCenterGeoCoordinates)
+        
+    }
+    
+    // This a handler for UITAPGestureRecognizer.
+    @objc func onAnchoredMapViewPinTapped() {
+        print("Tapped on anchored MapViewPin.")
     }
 
     private func clearMap() {
@@ -110,3 +125,4 @@ class MapViewPinsExample {
         mapCamera.startAnimation(animation)
     }
 }
+

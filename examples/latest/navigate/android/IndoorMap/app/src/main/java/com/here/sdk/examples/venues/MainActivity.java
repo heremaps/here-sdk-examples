@@ -69,8 +69,8 @@ public class MainActivity extends AppCompatActivity {
     private VenueTapController venueTapController;
     private VenueSearchController venueSearchController;
 
-    // Replace "CATALOG_HRN" with your platform catalog HRN value.
-    private final String HRN = "CATALOG_HRN";
+    // Set value for hrn with your platform catalog HRN value if you want to load non default collection.
+    private String HRN = "";
 
     //Label text preference as per user choice
     private final List<String> labelPref = Arrays.asList("OCCUPANT_NAMES", "SPACE_NAME", "INTERNAL_ADDRESS");
@@ -194,8 +194,10 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Set platform catalog HRN
-        service.setHrn(HRN);
+        if(HRN != "") {
+            // Set platform catalog HRN
+            service.setHrn(HRN);
+        }
 
         // Set label text preference
         service.setLabeltextPreference(labelPref);

@@ -16,9 +16,6 @@
 		869BC1D728045F7B00BBA419 /* MenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 869BC1D628045F7B00BBA419 /* MenuViewController.swift */; };
 		869BC1DA2804606F00BBA419 /* heresdk.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 869BC1D92804606F00BBA419 /* heresdk.xcframework */; };
 		869BC1DB2804606F00BBA419 /* heresdk.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 869BC1D92804606F00BBA419 /* heresdk.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		869BC1DE280460E000BBA419 /* LocationKeyframeModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 869BC1DD280460E000BBA419 /* LocationKeyframeModel.swift */; };
-		869BC1E0280460FD00BBA419 /* OrientationKeyframeModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 869BC1DF280460FD00BBA419 /* OrientationKeyframeModel.swift */; };
-		869BC1E22804611800BBA419 /* ScalarKeyframeModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 869BC1E12804611800BBA419 /* ScalarKeyframeModel.swift */; };
 		869BC1E42804613500BBA419 /* RouteAnimationExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 869BC1E32804613500BBA419 /* RouteAnimationExample.swift */; };
 		869BC1E62804615700BBA419 /* RouteCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 869BC1E52804615700BBA419 /* RouteCalculator.swift */; };
 		869BC1E82804617B00BBA419 /* CameraKeyframeTracksExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 869BC1E72804617B00BBA419 /* CameraKeyframeTracksExample.swift */; };
@@ -49,9 +46,6 @@
 		869BC1D428045EA500BBA419 /* Menu.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Menu.storyboard; sourceTree = "<group>"; };
 		869BC1D628045F7B00BBA419 /* MenuViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuViewController.swift; sourceTree = "<group>"; };
 		869BC1D92804606F00BBA419 /* heresdk.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = heresdk.xcframework; sourceTree = "<group>"; };
-		869BC1DD280460E000BBA419 /* LocationKeyframeModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationKeyframeModel.swift; sourceTree = "<group>"; };
-		869BC1DF280460FD00BBA419 /* OrientationKeyframeModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrientationKeyframeModel.swift; sourceTree = "<group>"; };
-		869BC1E12804611800BBA419 /* ScalarKeyframeModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScalarKeyframeModel.swift; sourceTree = "<group>"; };
 		869BC1E32804613500BBA419 /* RouteAnimationExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteAnimationExample.swift; sourceTree = "<group>"; };
 		869BC1E52804615700BBA419 /* RouteCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteCalculator.swift; sourceTree = "<group>"; };
 		869BC1E72804617B00BBA419 /* CameraKeyframeTracksExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraKeyframeTracksExample.swift; sourceTree = "<group>"; };
@@ -97,9 +91,6 @@
 				8680500827FEC05700B4F52A /* AppDelegate.swift */,
 				8680500C27FEC05700B4F52A /* ViewController.swift */,
 				869BC1D628045F7B00BBA419 /* MenuViewController.swift */,
-				869BC1DD280460E000BBA419 /* LocationKeyframeModel.swift */,
-				869BC1DF280460FD00BBA419 /* OrientationKeyframeModel.swift */,
-				869BC1E12804611800BBA419 /* ScalarKeyframeModel.swift */,
 				869BC1E32804613500BBA419 /* RouteAnimationExample.swift */,
 				869BC1E52804615700BBA419 /* RouteCalculator.swift */,
 				869BC1E72804617B00BBA419 /* CameraKeyframeTracksExample.swift */,
@@ -188,14 +179,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				869BC1DE280460E000BBA419 /* LocationKeyframeModel.swift in Sources */,
 				869BC1E62804615700BBA419 /* RouteCalculator.swift in Sources */,
-				869BC1E0280460FD00BBA419 /* OrientationKeyframeModel.swift in Sources */,
 				869BC1E42804613500BBA419 /* RouteAnimationExample.swift in Sources */,
 				8680500D27FEC05700B4F52A /* ViewController.swift in Sources */,
 				869BC1D728045F7B00BBA419 /* MenuViewController.swift in Sources */,
 				8680500927FEC05700B4F52A /* AppDelegate.swift in Sources */,
-				869BC1E22804611800BBA419 /* ScalarKeyframeModel.swift in Sources */,
 				869BC1E82804617B00BBA419 /* CameraKeyframeTracksExample.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -137,7 +137,7 @@ public class VenueTapHandler {
         if let selectedVenue = selectedVenue, let venue = venue,
             let selectedGeometry = selectedGeometry {
             if venue.venueModel.id != selectedVenue.venueModel.id
-                || venue.selectedLevel.id != selectedGeometry.level.id {
+                || venue.selectedLevel.identifier != selectedGeometry.level.identifier {
                 deselectGeometry()
             }
         }

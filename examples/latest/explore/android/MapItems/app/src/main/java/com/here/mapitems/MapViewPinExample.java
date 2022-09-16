@@ -21,6 +21,8 @@ package com.here.mapitems;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.util.Log;
+import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -41,7 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MapViewPinExample {
-
+    private static final String TAG = MapViewPinExample.class.getSimpleName();
     private static final GeoCoordinates MAP_CENTER_GEO_COORDINATES = new GeoCoordinates(52.51760485151816, 13.380312380535472);
 
     private final Context context;
@@ -72,6 +74,12 @@ public class MapViewPinExample {
         linearLayout.setBackgroundResource(R.color.colorAccent);
         linearLayout.setPadding(10, 10, 10, 10);
         linearLayout.addView(textView);
+        linearLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(TAG, "Tapped on MapViewPin");
+            }
+        });
 
         mapView.pinView(linearLayout, MAP_CENTER_GEO_COORDINATES);
     }
@@ -88,6 +96,12 @@ public class MapViewPinExample {
         linearLayout.setBackgroundResource(R.color.colorPrimary);
         linearLayout.setPadding(10, 10, 10, 10);
         linearLayout.addView(textView);
+        linearLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(TAG, "Tapped on Anchored MapViewPin");
+            }
+        });
 
         MapView.ViewPin viewPin = mapView.pinView(linearLayout, MAP_CENTER_GEO_COORDINATES);
         viewPin.setAnchorPoint(new Anchor2D(0.5F, 1));

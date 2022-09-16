@@ -37,16 +37,25 @@ class RouteAnimationExample {
     _hereMapController.camera.cancelAnimations();
   }
 
-  void animateToRoute(routes.Route route) {
-    // Untilt and unrotate the map.
+  void animateToRoute() {
+    if (RouteCalculator.testRoute == null) {
+      print("RouteAnimationExample: Error: No route for testing ...");
+      return;
+    }
+
+    _animateToRoute(RouteCalculator.testRoute!);
+  }
+
+  void _animateToRoute(routes.Route route) {
+    // The animation should result in an untilted and unrotated map.
     double bearing = 0;
     double tilt = 0;
-    // We want to show the route fitting in the map view without any additional padding.
-    Point2D origin = Point2D(0, 0);
-    Size2D sizeInPixels = Size2D(_hereMapController.viewportSize.width, _hereMapController.viewportSize.height);
+    // We want to show the route fitting in the map view with an additional padding of 50 pixels.
+    Point2D origin = Point2D(50, 50);
+    Size2D sizeInPixels = Size2D(_hereMapController.viewportSize.width - 100, _hereMapController.viewportSize.height - 100);
     Rectangle2D mapViewport = Rectangle2D(origin, sizeInPixels);
 
-    // Animate to route.
+    // Animate to the route within a duration of 3 seconds.
     MapCameraUpdate update = MapCameraUpdateFactory.lookAtAreaWithGeoOrientationAndViewRectangle(route!.boundingBox,
         GeoOrientationUpdate(bearing, tilt),
         mapViewport);

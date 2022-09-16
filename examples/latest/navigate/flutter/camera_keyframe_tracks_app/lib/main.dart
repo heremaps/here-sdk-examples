@@ -104,11 +104,7 @@ class _CameraKeyframeTracksAppState extends State<CameraKeyframeTracksApp> {
   }
 
   void _startAnimationToRouteButtonClicked() {
-    if (RouteCalculator.testRoute != null) {
-      _routeAnimationExample.animateToRoute(RouteCalculator.testRoute!);
-    } else {
-      print("Route Empty: No route for testing ...");
-    }
+      _routeAnimationExample.animateToRoute();
   }
 
   void _stopAnimationToRouteButtonClicked() {

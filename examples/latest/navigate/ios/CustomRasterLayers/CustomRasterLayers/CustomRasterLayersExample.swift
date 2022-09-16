@@ -45,6 +45,10 @@ class CustomRasterLayersExample {
         
         // Add a POI marker
         addPOIMapMarker(geoCoordinates: GeoCoordinates(latitude: 52.530932, longitude: 13.384915))
+        
+        // Users of the Navigate Edition can set the visibility for all the POI categories to hidden.
+        // let categoryIds: [String] = []
+        // MapScene.setPoiVisibility(categoryIds: categoryIds, visibility: VisibilityState.hidden)
     }
 
     func onEnableButtonClicked() {
@@ -85,8 +89,8 @@ class CustomRasterLayersExample {
     }
 
     private func createMapLayer(dataSourceName: String) -> MapLayer {
-        // The layer should be rendered on top of other layers except the labels layer so that we don't overlap raster layer over POI markers.
-        let priority = MapLayerPriorityBuilder().renderedLast().renderedBeforeLayer(named: "labels").build()
+        // The layer should be rendered on top of other layers.
+        let priority = MapLayerPriorityBuilder().renderedLast().build()
         // And it should be visible for all zoom levels.
         let range = MapLayerVisibilityRange(minimumZoomLevel: 0, maximumZoomLevel: 22 + 1)
 

@@ -38,6 +38,7 @@ class RouteCalculator {
   }
 
   void createRoute() {
+    // A fixed test route.
     routes.Waypoint startWaypoint = routes.Waypoint(GeoCoordinates(40.7133, -74.0112));
     routes.Waypoint destinationWaypoint = routes.Waypoint(GeoCoordinates(40.7203, -74.3122));
     List<routes.Waypoint> waypoints = [startWaypoint, destinationWaypoint];

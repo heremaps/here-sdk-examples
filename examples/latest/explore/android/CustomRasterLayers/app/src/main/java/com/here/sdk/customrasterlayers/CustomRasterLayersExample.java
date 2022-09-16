@@ -35,11 +35,14 @@
  import com.here.sdk.mapview.MapLayerVisibilityRange;
  import com.here.sdk.mapview.MapMarker;
  import com.here.sdk.mapview.MapMeasure;
+ import com.here.sdk.mapview.MapScene;
  import com.here.sdk.mapview.MapView;
+ import com.here.sdk.mapview.VisibilityState;
  import com.here.sdk.mapview.datasource.RasterDataSource;
  import com.here.sdk.mapview.datasource.RasterDataSourceConfiguration;
  import com.here.sdk.mapview.datasource.TilingScheme;
 
+ import java.util.ArrayList;
  import java.util.Arrays;
  import java.util.List;
 
@@ -69,6 +72,10 @@
 
          // Add a POI marker
          addPOIMapMarker(new GeoCoordinates(52.530932, 13.384915));
+
+         // Users of the Navigate Edition can set the visibility for all the POI categories to hidden.
+         // List<String> categoryIds = new ArrayList<>();
+         // MapScene.setPoiVisibility(categoryIds, VisibilityState.HIDDEN);
      }
 
      public void enableButtonClicked() {
@@ -107,8 +114,8 @@
      }
 
      private MapLayer createMapLayer(String dataSourceName) {
-         // The layer should be rendered on top of other layers except the labels layer so that we don't overlap raster layer over POI markers.
-         MapLayerPriority priority = new MapLayerPriorityBuilder().renderedLast().renderedBeforeLayer("labels").build();
+         // The layer should be rendered on top of other layers.
+         MapLayerPriority priority = new MapLayerPriorityBuilder().renderedLast().build();
          // And it should be visible for all zoom levels.
          MapLayerVisibilityRange range = new MapLayerVisibilityRange(0, 22 + 1);
 
