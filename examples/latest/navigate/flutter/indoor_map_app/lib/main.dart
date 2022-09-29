@@ -23,12 +23,32 @@ import 'package:indoor_map_app/geometry_info.dart';
 import 'package:indoor_map_app/settings_page.dart';
 import 'package:indoor_map_app/venue_engine_widget.dart';
 import 'package:here_sdk/core.dart';
+import 'package:here_sdk/core.engine.dart';
+import 'package:here_sdk/core.errors.dart';
 import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/venue.dart';
 
 void main() {
-  SdkContext.init(IsolateOrigin.main);
+  // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
+  _initializeHERESDK();
+
   runApp(MyApp());
+}
+
+void _initializeHERESDK() async {
+  // Needs to be called before accessing SDKOptions to load necessary libraries.
+  SdkContext.init(IsolateOrigin.main);
+
+  // Set your credentials for the HERE SDK.
+  String accessKeyId = "YOUR_ACCESS_KEY_ID";
+  String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
+  SDKOptions sdkOptions = SDKOptions.withAccessKeySecret(accessKeyId, accessKeySecret);
+
+  try {
+    await SDKNativeEngine.makeSharedInstance(sdkOptions);
+  } on InstantiationException {
+    throw Exception("Failed to initialize the HERE SDK.");
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -80,9 +100,11 @@ class MainPage extends StatelessWidget {
             Container(
               margin: EdgeInsets.all(4),
               width: kMinInteractiveDimension,
-              child: FlatButton(
-                color: Colors.white,
-                padding: EdgeInsets.zero,
+              child: TextButton(
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.zero
+                ),
                 child: Icon(Icons.search, color: Colors.black, size: kMinInteractiveDimension),
                 onPressed: () {
                   _venueEngineState.getVenuesControllerState().setOpen(false);
@@ -94,9 +116,11 @@ class MainPage extends StatelessWidget {
             Container(
               margin: EdgeInsets.all(4),
               width: kMinInteractiveDimension,
-              child: FlatButton(
-                color: Colors.white,
-                padding: EdgeInsets.zero,
+              child: TextButton(
+                style: TextButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.zero
+                ),
                 child: Icon(Icons.settings, color: Colors.black, size: kMinInteractiveDimension),
                 onPressed: () => Navigator.pushNamed(context, '/settings'),
               ),

@@ -80,8 +80,10 @@ class VenuesControllerState extends State<VenuesController> {
         alignment: Alignment.centerLeft,
         child: Container(
           padding: EdgeInsets.only(right: kMinInteractiveDimension),
-          child: FlatButton(
-            color: Colors.blue,
+          child: TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.blue,
+            ),
             child: Text(
               name,
               style: TextStyle(
@@ -100,9 +102,11 @@ class VenuesControllerState extends State<VenuesController> {
         alignment: Alignment.centerRight,
         child: Container(
           width: kMinInteractiveDimension * 0.75,
-          child: FlatButton(
-            color: Colors.redAccent,
-            padding: EdgeInsets.zero,
+          child: TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.redAccent,
+              padding: EdgeInsets.zero,
+            ),
             child: Icon(Icons.close, color: Colors.white, size: kMinInteractiveDimension * 0.75),
             onPressed: () {
               setState(() {

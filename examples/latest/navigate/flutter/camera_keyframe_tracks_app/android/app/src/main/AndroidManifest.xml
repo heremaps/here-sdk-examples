@@ -1,15 +1,22 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.here.examples.camera_keyframe_tracks_app">
+
    <application
         android:label="camera_keyframe_tracks_app"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 
-       <!-- Set your credentials for the HERE SDK. -->
-       <meta-data android:name="com.here.sdk.access_key_id" android:value="YOUR_ACCESS_KEY_ID"/>
-       <meta-data android:name="com.here.sdk.access_key_secret" android:value="YOUR_ACCESS_KEY_SECRET"/>
+        <!-- Disable the InitProvider of the HERE SDK to prevent auto-initialization
+             until the InitProvider is removed with release 4.15.0. -->
+        <provider
+            android:name="com.here.sdk.engine.InitProvider"
+            android:authorities="com.here.sdk.engine.InitProvider"
+            android:exported="false"
+            tools:node="remove" />
 
-       <activity
+        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:launchMode="singleTop"

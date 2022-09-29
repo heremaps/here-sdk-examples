@@ -47,6 +47,7 @@ import com.here.sdk.venue.control.Venue;
 import com.here.sdk.venue.control.VenueErrorCode;
 import com.here.sdk.venue.control.VenueMap;
 import com.here.sdk.venue.control.VenueSelectionListener;
+import com.here.sdk.venue.data.VenueInfo;
 import com.here.sdk.venue.service.VenueListener;
 import com.here.sdk.venue.service.VenueService;
 import com.here.sdk.venue.service.VenueServiceInitStatus;
@@ -258,6 +259,11 @@ public class MainActivity extends AppCompatActivity {
                 if (selectedVenue == null || selectedVenue.getVenueModel().getId() != venueId) {
                     // Disable the button while a venue loading and selection is in progress.
                     setGoButtonEnabled(false);
+                    //Get List of venues info
+                    List<VenueInfo> venueInfo = venueMap.getVenueInfoList();
+                    for (int i = 0; i< venueInfo.size(); i++) {
+                        Log.d(TAG, "Venue Identifier: " + venueInfo.get(i).getVenueIdentifier() + " Venue Id: "+venueInfo.get(i).getVenueId() + " Venue Name: "+venueInfo.get(i).getVenueName());
+                    }
                     // Select a venue by id.
                     venueMap.selectVenueAsync(venueId, this ::onVenueLoadError);
                 }

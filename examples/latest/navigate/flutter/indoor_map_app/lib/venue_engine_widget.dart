@@ -109,6 +109,12 @@ class VenueEngineState extends State<VenueEngineWidget> {
 
   selectVenue(int venueId) {
     if (_venueEngine != null) {
+      //Get List of venues info
+      List<VenueInfo> venueInfo = _venueEngine!.venueMap.getVenueInfoList();
+      for (int i = 0; i < venueInfo.length; i++) {
+        int venueId = venueInfo[i].venueId;
+        print("Venue Identifier: " + venueInfo[i].venueIdentifier + " Venue Id: $venueId" + " Venue Name: "+venueInfo[i].venueName);
+      }
       // Select venue by ID.
       _venueEngine!.venueMap.selectVenueAsyncWithErrors(venueId, (VenueErrorCode? venueLoadError) {
         String errorMsg;

@@ -141,8 +141,10 @@ class VenueSearchControllerState extends State<VenueSearchController> {
 
   Widget _geometryItemBuilder(BuildContext context, VenueGeometry geometry) {
     String name = geometry.name + ", " + geometry.level.name;
-    return FlatButton(
-      color: Colors.blue,
+    return TextButton(
+      style: TextButton.styleFrom(
+        foregroundColor: Colors.blue,
+      ),
       child: Text(
         name,
         style: TextStyle(

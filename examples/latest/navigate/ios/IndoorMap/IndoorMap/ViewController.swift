@@ -141,6 +141,13 @@ class ViewController: UIViewController {
                     // Disable the input UI while a venue loading and selection is in progress.
                     venueIdLoad?.isEnabled = false
                     moveToVenue = true
+                    //Get List of venues info
+                    let venueInfo:[VenueInfo]? = venueEngine?.venueMap.getVenueInfoList()
+                    if let venueInfo = venueInfo {
+                      for venueInfo in venueInfo {
+                          print("Venue Identifier: \(venueInfo.venueIdentifier)." + " Venue Id: \(venueInfo.venueId)." + " Venue Name: \(venueInfo.venueName).")
+                      }
+                    }
                     // Select a venue by id.
                     venueEngine?.venueMap.selectVenueAsync(venueId: id, completion: self.onVenueLoadError)
                 } else {

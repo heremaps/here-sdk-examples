@@ -46,9 +46,11 @@ class SettingsPage extends StatelessWidget {
               controller: accessSecretController,
               decoration: InputDecoration(border: InputBorder.none, hintText: 'Enter an access secret'),
             )),
-        FlatButton(
-            color: Colors.blue,
-            padding: EdgeInsets.only(left: 8, right: 8),
+        TextButton(
+            style: TextButton.styleFrom(
+                foregroundColor: Colors.blue,
+                padding: EdgeInsets.only(left: 8, right: 8),
+            ),
             child: Text(
               'Restart the venue engine',
               textAlign: TextAlign.center,

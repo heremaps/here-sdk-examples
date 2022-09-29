@@ -1,14 +1,20 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.here.sdk.examples.map_items_app">
 
-    <application
+<application
         android:name="${applicationName}"
         android:label="Map Items"
         android:icon="@mipmap/ic_launcher">
 
-        <!-- Set your HERE SDK credentials below. -->
-        <meta-data android:name="com.here.sdk.access_key_id" android:value="YOUR_ACCESS_KEY_ID"/>
-        <meta-data android:name="com.here.sdk.access_key_secret" android:value="YOUR_ACCESS_KEY_SECRET"/>
+        <!-- Disable the InitProvider of the HERE SDK to prevent auto-initialization
+             until the InitProvider is removed with release 4.15.0. -->
+        <provider
+            android:name="com.here.sdk.engine.InitProvider"
+            android:authorities="com.here.sdk.engine.InitProvider"
+            android:exported="false"
+            tools:node="remove" />
 
         <activity
             android:name=".MainActivity"

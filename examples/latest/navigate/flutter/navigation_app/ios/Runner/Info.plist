@@ -27,15 +27,6 @@
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
 
-	<!-- Set your HERE SDK credentials -->
-	<key>HERECredentials</key>
-    <dict>
-      <key>AccessKeyId</key>
-      <string>YOUR_ACCESS_KEY_ID</string>
-      <key>AccessKeySecret</key>
-      <string>YOUR_ACCESS_KEY_SECRET</string>
-    </dict>
-
     <!-- Required for HERE Positioning -->
     <key>NSLocationAlwaysUsageDescription</key>
     <string>Location permission is needed when the app is in use.</string>
@@ -47,6 +38,7 @@
     <array>
         <string>location</string>
     </array>
+
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
@@ -62,5 +54,7 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 </dict>
 </plist>

@@ -28,9 +28,27 @@ import 'package:here_sdk/navigation.dart';
 import 'package:here_sdk/routing.dart' as HERE;
 
 void main() {
-  HERE.SdkContext.init(HERE.IsolateOrigin.main);
+  // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
+  _initializeHERESDK();
+
   // Ensure that all widgets, including MyApp, have a MaterialLocalizations object available.
   runApp(MaterialApp(home: MyApp()));
+}
+
+void _initializeHERESDK() async {
+  // Needs to be called before accessing SDKOptions to load necessary libraries.
+  SdkContext.init(IsolateOrigin.main);
+
+  // Set your credentials for the HERE SDK.
+  String accessKeyId = "YOUR_ACCESS_KEY_ID";
+  String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
+  SDKOptions sdkOptions = SDKOptions.withAccessKeySecret(accessKeyId, accessKeySecret);
+
+  try {
+    await SDKNativeEngine.makeSharedInstance(sdkOptions);
+  } on InstantiationException {
+    throw Exception("Failed to initialize the HERE SDK.");
+  }
 }
 
 class MyApp extends StatefulWidget {
@@ -315,14 +333,16 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
   }
 
   void _customizeGuidanceView() {
-    // The CameraSettings can be updated during guidance at any time as often as desired.
-    _visualNavigator?.cameraSettings = CameraSettings.withDefaults();
+    FixedCameraBehavior cameraBehavior = FixedCameraBehavior();
     // Set custom zoom level and tilt.
-    _visualNavigator?.cameraSettings.cameraDistanceInMeters = 50; // Defaults to 150.
-    _visualNavigator?.cameraSettings.cameraTiltInDegrees = 70; // Defaults to 50.
+    cameraBehavior.cameraDistanceInMeters = 50; // Defaults to 150.
+    cameraBehavior.cameraTiltInDegrees = 70; // Defaults to 50.
     // Disable North-Up mode by setting null. Enable North-up mode by setting 0.
     // By default, North-Up mode is disabled.
-    _visualNavigator?.cameraSettings.cameraBearingInDegrees = null;
+    cameraBehavior.cameraBearingInDegrees = null;
+
+    // The CameraBehavior can be updated during guidance at any time as often as desired.
+    _visualNavigator?.cameraBehavior = cameraBehavior;
   }
 
   // Implement HERE.LocationListener.

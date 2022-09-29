@@ -53,7 +53,7 @@ import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
-import com.here.sdk.navigation.CameraSettings;
+import com.here.sdk.navigation.FixedCameraBehavior;
 import com.here.sdk.navigation.LocationSimulator;
 import com.here.sdk.navigation.LocationSimulatorOptions;
 import com.here.sdk.navigation.VisualNavigator;
@@ -382,16 +382,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void customizeGuidanceView() {
-        CameraSettings cameraSettings = new CameraSettings();
+        FixedCameraBehavior cameraBehavior = new FixedCameraBehavior();
         // Set custom zoom level and tilt.
-        cameraSettings.cameraDistanceInMeters = 50; // Defaults to 150.
-        cameraSettings.cameraTiltInDegrees = 70; // Defaults to 50.
+        cameraBehavior.setCameraDistanceInMeters(50); // Defaults to 150.
+        cameraBehavior.setCameraTiltInDegrees(70); // Defaults to 50.
         // Disable North-Up mode by setting null. Enable North-up mode by setting Double.valueOf(0).
         // By default, North-Up mode is disabled.
-        cameraSettings.cameraBearingInDegrees = null;
+        cameraBehavior.setCameraBearingInDegrees(null);
 
-        // The CameraSettings can be updated during guidance at any time as often as desired.
-        visualNavigator.setCameraSettings(cameraSettings);
+        // The CameraBehavior can be updated during guidance at any time as often as desired.
+        // Alternatively, use DynamicCameraBehavior for auto-zoom.
+        visualNavigator.setCameraBehavior(cameraBehavior);
     }
 
     private final LocationListener myLlocationListener = new LocationListener() {
