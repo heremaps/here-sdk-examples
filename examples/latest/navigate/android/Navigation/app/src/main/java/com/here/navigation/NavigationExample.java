@@ -36,10 +36,10 @@ import com.here.sdk.core.UnitSystem;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.location.LocationAccuracy;
 import com.here.sdk.mapview.MapView;
-import com.here.sdk.navigation.CameraTrackingMode;
 import com.here.sdk.navigation.DestinationReachedListener;
 import com.here.sdk.navigation.DimensionRestrictionType;
 import com.here.sdk.navigation.DistanceType;
+import com.here.sdk.navigation.DynamicCameraBehavior;
 import com.here.sdk.navigation.JunctionViewLaneAssistance;
 import com.here.sdk.navigation.JunctionViewLaneAssistanceListener;
 import com.here.sdk.navigation.Lane;
@@ -126,6 +126,9 @@ public class NavigationExample {
         } catch (InstantiationErrorException e) {
             throw new RuntimeException("Initialization of VisualNavigator failed: " + e.error.name());
         }
+
+        // Enable auto-zoom during guidance.
+        visualNavigator.setCameraBehavior(new DynamicCameraBehavior());
 
         // This enables a navigation view including a rendered navigation arrow.
         visualNavigator.startRendering(mapView);
@@ -656,11 +659,11 @@ public class NavigationExample {
     }
 
     public void startCameraTracking() {
-        visualNavigator.setCameraMode(CameraTrackingMode.ENABLED);
+        visualNavigator.setCameraBehavior(new DynamicCameraBehavior());
     }
 
     public void stopCameraTracking() {
-        visualNavigator.setCameraMode(CameraTrackingMode.DISABLED);
+        visualNavigator.setCameraBehavior(null);
     }
 
     @Nullable

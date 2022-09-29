@@ -54,6 +54,9 @@ class NavigationExample {
       throw Exception("Initialization of VisualNavigator failed.");
     }
 
+    // Enable auto-zoom during guidance.
+    _visualNavigator.cameraBehavior = DynamicCameraBehavior();
+
     // This enables a navigation view including a rendered navigation arrow.
     _visualNavigator.startRendering(_hereMapController);
 
@@ -148,9 +151,9 @@ class NavigationExample {
 
   void setTracking(bool isTracking) {
     if (isTracking) {
-      _visualNavigator.cameraMode = CameraTrackingMode.enabled;
+      _visualNavigator.cameraBehavior = DynamicCameraBehavior();
     } else {
-      _visualNavigator.cameraMode = CameraTrackingMode.disabled;
+      _visualNavigator.cameraBehavior = null;
     }
   }
 
@@ -166,6 +169,10 @@ class NavigationExample {
     // It is recommended to stop rendering before leaving the app.
     // This also removes the current location marker.
     _visualNavigator.stopRendering();
+
+    // Stop LocationSimulator and DynamicRoutingEngine in case they were started before.
+    _locationSimulationProvider.stop();
+    _dynamicRoutingEngine.stop();
 
     // It is recommended to stop the LocationEngine before leaving the app.
     _herePositioningProvider.stop();
@@ -284,7 +291,8 @@ class NavigationExample {
     });
 
     // Notifies when a waypoint on the route is reached or missed
-    _visualNavigator.milestoneStatusListener = MilestoneStatusListener((Milestone milestone, MilestoneStatus milestoneStatus) {
+    _visualNavigator.milestoneStatusListener =
+        MilestoneStatusListener((Milestone milestone, MilestoneStatus milestoneStatus) {
       // Handle results from onMilestoneStatusUpdated().
       if (milestone.waypointIndex != null && milestoneStatus == MilestoneStatus.reached) {
         print("A user-defined waypoint was reached, index of waypoint: " + milestone.waypointIndex.toString());

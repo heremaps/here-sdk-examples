@@ -41,14 +41,7 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<!-- Set your credentials for the HERE SDK. Talk to your HERE representative to enable your
-	 private Venue data for use with these credentials. -->
-	<key>HERECredentials</key>
-    <dict>
-        <key>AccessKeyId</key>
-        <string>VENUE_ACCESS_KEY_ID</string>
-        <key>AccessKeySecret</key>
-        <string>VENUE_ACCESS_KEY_SECRET</string>
-    </dict>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 </dict>
 </plist>

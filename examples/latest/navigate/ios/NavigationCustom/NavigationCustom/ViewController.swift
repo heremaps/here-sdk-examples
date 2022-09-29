@@ -308,17 +308,18 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
     }
 
     private func customizeGuidanceView() {
+        let cameraBehavior = FixedCameraBehavior()
+        
         // Set custom zoom level and tilt.
-        let cameraDistanceInMeters: Double = 50 // Defaults to 150.
-        let cameraTiltInDegrees: Double = 70 // Defaults to 50.
-        // Disable North-Up mode by setting null. Enable North-up mode by setting 0.
+        cameraBehavior.cameraDistanceInMeters = 50 // Defaults to 150.
+        cameraBehavior.cameraTiltInDegrees = 70 // Defaults to 50.
+        // Disable North-Up mode by setting nil. Enable North-up mode by setting 0.
         // By default, North-Up mode is disabled.
-        let cameraBearingInDegrees: Double? = nil
+        cameraBehavior.cameraBearingInDegrees = nil
 
         // The CameraSettings can be updated during guidance at any time as often as desired.
-        visualNavigator?.cameraSettings = CameraSettings(cameraDistanceInMeters: cameraDistanceInMeters,
-                                                         cameraTiltInDegrees: cameraTiltInDegrees,
-                                                         cameraBearingInDegrees: cameraBearingInDegrees)
+        // Alternatively, set DynamicCameraBehavior to enable auto-zoom.
+        visualNavigator?.cameraBehavior = cameraBehavior
     }
 
     private func startRouteSimulation(route: Route) {

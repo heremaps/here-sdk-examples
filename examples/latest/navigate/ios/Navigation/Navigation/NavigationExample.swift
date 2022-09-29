@@ -64,6 +64,9 @@ class NavigationExample : NavigableLocationDelegate,
             fatalError("Failed to initialize VisualNavigator. Cause: \(engineInstantiationError)")
         }
 
+        // By default, enable auto-zoom during guidance.
+        visualNavigator.cameraBehavior = DynamicCameraBehavior()
+        
         visualNavigator.startRendering(mapView: mapView)
 
         // A class to receive real location events.
@@ -572,12 +575,11 @@ class NavigationExample : NavigableLocationDelegate,
     }
 
     func startCameraTracking() {
-        // By default, this is enabled.
-        visualNavigator.cameraMode = CameraTrackingMode.enabled
+        visualNavigator.cameraBehavior = DynamicCameraBehavior()
     }
 
     func stopCameraTracking() {
-        visualNavigator.cameraMode = CameraTrackingMode.disabled
+        visualNavigator.cameraBehavior = nil
     }
 
     func getLastKnownLocation() -> Location? {

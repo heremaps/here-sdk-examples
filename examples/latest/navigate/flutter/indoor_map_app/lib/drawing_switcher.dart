@@ -79,8 +79,10 @@ class DrawingSwitcherState extends State<DrawingSwitcher> {
           Container(
             alignment: Alignment.topCenter,
             width: kMinInteractiveDimension,
-            child: FlatButton(
-              padding: EdgeInsets.zero,
+            child: TextButton(
+              style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero
+              ),
               child:
                   Icon(Icons.menu, color: _isOpen ? Colors.blue : Colors.black, size: kMinInteractiveDimension * 0.75),
               onPressed: () {
@@ -100,9 +102,11 @@ class DrawingSwitcherState extends State<DrawingSwitcher> {
   Widget _drawingItemBuilder(BuildContext context, VenueDrawing drawing) {
     bool isSelectedDrawing = drawing.identifier == _selectedDrawing!.identifier;
     Property? nameProp = drawing.properties["name"];
-    return FlatButton(
-      color: isSelectedDrawing ? Colors.blue : Colors.white,
-      padding: EdgeInsets.zero,
+    return TextButton(
+      style: TextButton.styleFrom(
+          foregroundColor: isSelectedDrawing ? Colors.blue : Colors.white,
+          padding: EdgeInsets.zero
+      ),
       child: Text(
         nameProp != null ? nameProp.asString : "",
         textAlign: TextAlign.center,
