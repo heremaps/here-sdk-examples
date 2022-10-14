@@ -491,27 +491,30 @@ class NavigationExample : NavigableLocationDelegate,
     func onTruckRestrictionsWarningUpdated(_ restrictions: [TruckRestrictionWarning]) {
         // The list is guaranteed to be non-empty.
         for truckRestrictionWarning in restrictions {
-            if (truckRestrictionWarning.distanceType == DistanceType.ahead) {
+            if truckRestrictionWarning.distanceType == DistanceType.ahead {
                 print("TruckRestrictionWarning ahead in \(truckRestrictionWarning.distanceInMeters) meters.")
+            } else if truckRestrictionWarning.distanceType == DistanceType.reached {
+                print("A restriction has been reached.")
+            } else if truckRestrictionWarning.distanceType == DistanceType.passed {
+                // If not preceded by a "reached"-notification, this restriction was valid only for the passed location.
+                print("A restriction was just passed.")
             }
-            else if (truckRestrictionWarning.distanceType == DistanceType.passed) {
-                print("A restriction just passed.")
-            }
-            // One of the following restrictions applies ahead, if more restrictions apply at the same time,
+            
+            // One of the following restrictions applies, if more restrictions apply at the same time,
             // they are part of another TruckRestrictionWarning element contained in the list.
-            if (truckRestrictionWarning.weightRestriction != nil) {
-              // For now only one weight type (= truck) is exposed.
-              let type = truckRestrictionWarning.weightRestriction!.type
-              let value = truckRestrictionWarning.weightRestriction!.valueInKilograms
-              print("TruckRestriction for weight (kg): \(type): \(value)")
-            }
-            if (truckRestrictionWarning.dimensionRestriction != nil) {
-              // Can be either a length, width or height restriction of the truck. For example, a height
-              // restriction can apply for a tunnel. Other possible restrictions are delivered in
-              // separate TruckRestrictionWarning objects contained in the list, if any.
-              let type = truckRestrictionWarning.dimensionRestriction!.type
-              let value = truckRestrictionWarning.dimensionRestriction!.valueInCentimeters
-              print("TruckRestriction for dimension: \(type): \(value)")
+            if truckRestrictionWarning.weightRestriction != nil {
+                let type = truckRestrictionWarning.weightRestriction!.type
+                let value = truckRestrictionWarning.weightRestriction!.valueInKilograms
+                print("TruckRestriction for weight (kg): \(type): \(value)")
+            } else if truckRestrictionWarning.dimensionRestriction != nil {
+                // Can be either a length, width or height restriction of the truck. For example, a height
+                // restriction can apply for a tunnel. Other possible restrictions are delivered in
+                // separate TruckRestrictionWarning objects contained in the list, if any.
+                let type = truckRestrictionWarning.dimensionRestriction!.type
+                let value = truckRestrictionWarning.dimensionRestriction!.valueInCentimeters
+                print("TruckRestriction for dimension: \(type): \(value)")
+            } else {
+                print("TruckRestriction: General restriction - no trucks allowed.")
             }
         }
     }

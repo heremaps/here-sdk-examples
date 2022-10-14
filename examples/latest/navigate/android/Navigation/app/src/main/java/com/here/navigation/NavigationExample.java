@@ -465,27 +465,30 @@ public class NavigationExample {
             public void onTruckRestrictionsWarningUpdated(@NonNull List<TruckRestrictionWarning> list) {
                 // The list is guaranteed to be non-empty.
                 for (TruckRestrictionWarning truckRestrictionWarning : list) {
-
                     if (truckRestrictionWarning.distanceType == DistanceType.AHEAD) {
                         Log.d(TAG, "TruckRestrictionWarning ahead in: "+ truckRestrictionWarning.distanceInMeters + " meters.");
+                    } else if (truckRestrictionWarning.distanceType == DistanceType.REACHED) {
+                        Log.d(TAG, "A restriction has been reached.");
                     } else if (truckRestrictionWarning.distanceType == DistanceType.PASSED) {
+                        // If not preceded by a "REACHED"-notification, this restriction was valid only for the passed location.
                         Log.d(TAG, "A restriction just passed.");
                     }
+
                     // One of the following restrictions applies ahead, if more restrictions apply at the same time,
                     // they are part of another TruckRestrictionWarning element contained in the list.
                     if (truckRestrictionWarning.weightRestriction != null) {
-                        // For now only one weight type (= truck) is exposed.
                         WeightRestrictionType type = truckRestrictionWarning.weightRestriction.type;
                         int value = truckRestrictionWarning.weightRestriction.valueInKilograms;
                         Log.d(TAG, "TruckRestriction for weight (kg): " + type.name() + ": " + value);
-                    }
-                    if (truckRestrictionWarning.dimensionRestriction != null) {
+                    } else if (truckRestrictionWarning.dimensionRestriction != null) {
                         // Can be either a length, width or height restriction of the truck. For example, a height
                         // restriction can apply for a tunnel. Other possible restrictions are delivered in
                         // separate TruckRestrictionWarning objects contained in the list, if any.
                         DimensionRestrictionType type = truckRestrictionWarning.dimensionRestriction.type;
                         int value = truckRestrictionWarning.dimensionRestriction.valueInCentimeters;
                         Log.d(TAG, "TruckRestriction for dimension: " + type.name() + ": " + value);
+                    } else {
+                        Log.d(TAG, "TruckRestriction: General restriction - no trucks allowed.");
                     }
                 }
             }
