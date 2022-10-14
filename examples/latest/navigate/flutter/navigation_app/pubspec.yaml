@@ -31,7 +31,7 @@ dependencies:
 
   # The following adds the permission_handler plugin, to request various different
   # permissions from the user.
-  permission_handler: 6.0.0
+  permission_handler: 9.2.0
 
   # The following adds the HERE SDK for Flutter plugin folder to your application.
   here_sdk:

@@ -31,7 +31,6 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.google.gson.Gson;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.Location;
 import com.here.sdk.core.errors.InstantiationErrorException;
@@ -50,7 +49,6 @@ public class BackgroundPositioningExample {
 
     private final MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, CAMERA_DISTANCE_IN_METERS);
     private final GeoCoordinates defaultCoordinates = new GeoCoordinates(52.520798,13.409408);
-    private final Gson gson = new Gson();
 
     private MapView mapView;
     private Context context;
@@ -102,13 +100,13 @@ public class BackgroundPositioningExample {
             positioningService = ((HEREBackgroundPositioningService.LocalBinder)service).getService();
             positioningService.registerListener(new BackgroundServiceListener() {
                 @Override
-                public void onStateUpdate(String state) {
+                public void onStateUpdate(HEREBackgroundPositioningService.State state) {
                     Log.i(TAG, "onStateUpdate: " + state);
                 }
 
                 @Override
-                public void onLocationUpdated(String json) {
-                    updateMyLocationOnMap(gson.fromJson(json, Location.class));
+                public void onLocationUpdated(Location location) {
+                    updateMyLocationOnMap(location);
                 }
             });
         }

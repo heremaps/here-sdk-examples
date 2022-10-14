@@ -136,7 +136,7 @@ class ViewController: UIViewController {
         if let text = venueIdInput.text {
             // Try to parse a venue id.
             if let id = Int32(text) {
-                if venueEngine?.venueService.isInitialized() ?? false {
+                if (venueEngine?.venueService.isInitialized() ?? false) && (id != venueEngine?.venueMap.selectedVenue?.venueModel.id) {
                     print("Loading venue \(id).")
                     // Disable the input UI while a venue loading and selection is in progress.
                     venueIdLoad?.isEnabled = false

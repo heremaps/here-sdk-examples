@@ -30,7 +30,6 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.google.gson.Gson;
 import com.here.sdk.consent.Consent;
 import com.here.sdk.consent.ConsentEngine;
 import com.here.sdk.core.Location;
@@ -45,25 +44,19 @@ import com.here.sdk.location.LocationStatusListener;
 import java.util.List;
 
 interface BackgroundServiceListener {
-    void onStateUpdate(String state);
-    void onLocationUpdated(String location);
+    void onStateUpdate(HEREBackgroundPositioningService.State state);
+    void onLocationUpdated(Location location);
 }
 
 public class HEREBackgroundPositioningService extends Service {
-    private static final String TAG = HEREBackgroundPositioningService.class.getSimpleName();
+    public enum State {STOPPED, STARTING, RUNNING, FAILED}
 
+    private static final String TAG = HEREBackgroundPositioningService.class.getSimpleName();
     private static final String KEY_CONTENT_INTENT = "contentIntent";
-    private final Gson gson = new Gson();
     private static boolean running;
     private NotificationUtils notificationUtils;
     private LocationEngine locationEngine;
     private BackgroundServiceListener serviceListener;
-    private enum State {
-        STOPPED,
-        STARTING,
-        RUNNING,
-        FAILED
-    }
     private State serviceState = State.STOPPED;
     private Location location;
 
@@ -264,7 +257,7 @@ public class HEREBackgroundPositioningService extends Service {
     private void reportStateValue() {
         final BackgroundServiceListener listener = serviceListener;
         if (listener != null) {
-            listener.onStateUpdate(gson.toJson(serviceState));
+            listener.onStateUpdate(serviceState);
         }
     }
 
@@ -275,7 +268,7 @@ public class HEREBackgroundPositioningService extends Service {
         }
         final BackgroundServiceListener listener = serviceListener;
         if (listener != null) {
-            listener.onLocationUpdated(gson.toJson(location));
+            listener.onLocationUpdated(location);
         }
     }
 
