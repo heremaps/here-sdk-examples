@@ -59,11 +59,21 @@ public class PermissionsRequestor {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private String[] getPermissionsToRequest() {
         ArrayList<String> permissionList = new ArrayList<>();
         try {
-            PackageInfo packageInfo = activity.getPackageManager().getPackageInfo(
-                    activity.getPackageName(), PackageManager.GET_PERMISSIONS);
+            String packageName = activity.getPackageName();
+            PackageInfo packageInfo;
+            if (Build.VERSION.SDK_INT >= 33) {
+                packageInfo = activity.getPackageManager().getPackageInfo(
+                        packageName,
+                        PackageManager.PackageInfoFlags.of(PackageManager.GET_PERMISSIONS));
+            } else {
+                packageInfo = activity.getPackageManager().getPackageInfo(
+                        packageName,
+                        PackageManager.GET_PERMISSIONS);
+            }
             if (packageInfo.requestedPermissions != null) {
                 for (String permission : packageInfo.requestedPermissions) {
                     if (ContextCompat.checkSelfPermission(

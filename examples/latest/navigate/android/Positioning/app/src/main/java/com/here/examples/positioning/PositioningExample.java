@@ -19,7 +19,6 @@
 
 package com.here.examples.positioning;
 
-import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -51,7 +50,6 @@ public class PositioningExample {
     private final GeoCoordinates defaultCoordinates = new GeoCoordinates(52.520798,13.409408);
 
     private MapView mapView;
-    private Context context;
     private LocationEngine locationEngine;
     private ConsentEngine consentEngine;
     private LocationIndicator locationIndicator;
@@ -77,9 +75,8 @@ public class PositioningExample {
         }
     };
 
-    public void onMapSceneLoaded(MapView mapView, Context context) {
+    public void onMapSceneLoaded(MapView mapView) {
         this.mapView = mapView;
-        this.context = context;
 
         try {
             consentEngine = new ConsentEngine();

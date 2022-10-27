@@ -131,6 +131,7 @@ public class HEREBackgroundPositioningService extends Service {
         context.stopService(serviceIntent);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // The service is starting, due to a call to startService()

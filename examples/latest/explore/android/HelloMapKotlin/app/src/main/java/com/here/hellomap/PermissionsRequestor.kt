@@ -51,6 +51,7 @@ class PermissionsRequestor(private val activity: Activity) {
         private get() {
             val permissionList = ArrayList<String>()
             try {
+                @Suppress("DEPRECATION")
                 val packageInfo = activity.packageManager.getPackageInfo(
                         activity.packageName, PackageManager.GET_PERMISSIONS)
                 if (packageInfo.requestedPermissions != null) {

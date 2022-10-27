@@ -66,11 +66,21 @@ public class PermissionsRequestor {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private String[] getPermissionsToRequest() {
         ArrayList<String> permissionList = new ArrayList<>();
         try {
-            PackageInfo packageInfo = activity.getPackageManager().getPackageInfo(
-                    activity.getPackageName(), PackageManager.GET_PERMISSIONS);
+            String packageName = activity.getPackageName();
+            PackageInfo packageInfo;
+            if (Build.VERSION.SDK_INT >= 33) {
+                packageInfo = activity.getPackageManager().getPackageInfo(
+                        packageName,
+                        PackageManager.PackageInfoFlags.of(PackageManager.GET_PERMISSIONS));
+            } else {
+                packageInfo = activity.getPackageManager().getPackageInfo(
+                        packageName,
+                        PackageManager.GET_PERMISSIONS);
+            }
             if (packageInfo.requestedPermissions != null) {
                 for (String permission : packageInfo.requestedPermissions) {
                     if (ContextCompat.checkSelfPermission(
@@ -90,6 +100,11 @@ public class PermissionsRequestor {
                         // FOREGROUND_SERVICE is needed on Android 9+ (API 28+)
                         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P &&
                                 permission.equals(Manifest.permission.FOREGROUND_SERVICE)) {
+                            continue;
+                        }
+                        // POST_NOTIFICATIONS is needed on Android 13+ (API 33+)
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU &&
+                                permission.equals(Manifest.permission.POST_NOTIFICATIONS)) {
                             continue;
                         }
                         permissionList.add(permission);
