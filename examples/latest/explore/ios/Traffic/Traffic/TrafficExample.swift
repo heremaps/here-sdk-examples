@@ -62,8 +62,8 @@ class TrafficExample: TapDelegate {
     private func enableTrafficVisualization() {
         // Once these layers are added to the map, they will be automatically updated while panning the map.
         mapView.mapScene.enableFeatures([MapFeatures.trafficFlow : MapFeatureModes.trafficFlowWithFreeFlow])
-        // MapFeatures.trafficIncidents renders traffic icons and lines to indicate the location of incidents. Note that these are not directly pickable yet.
-        mapView.mapScene.enableFeatures([MapFeatures.trafficIncidents : MapFeatureModes.defaultMode])
+        // MapFeatures.trafficIncidents renders traffic icons and lines to indicate the location of incidents.
+        mapView.mapScene.enableFeatures([MapFeatures.trafficIncidents: MapFeatureModes.defaultMode])
     }
 
     private func disableTrafficVisualization() {

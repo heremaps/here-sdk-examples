@@ -39,6 +39,8 @@ import com.here.sdk.core.engine.SDKOptions;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.gestures.TapListener;
 import com.here.sdk.mapview.MapError;
+import com.here.sdk.mapview.MapFeatureModes;
+import com.here.sdk.mapview.MapFeatures;
 import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
@@ -51,7 +53,9 @@ import com.here.sdk.search.PlaceIdQuery;
 import com.here.sdk.search.PlaceIdSearchCallback;
 import com.here.sdk.search.SearchError;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
@@ -132,8 +136,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startExample() {
-        showDialog("Tap on Carto POIs",
-                "This app show how to pick embedded markers on the map, such as subway stations and ATMs.");
+        showDialog("Tap on Map Content",
+                "This app shows how to pick vehicle restrictions and embedded markers on the map, such as subway stations and ATMs.");
+
+        enableVehicleRestrictionsOnMap();
 
         try {
             // Allows to search on already downloaded or cached map data.
@@ -142,45 +148,57 @@ public class MainActivity extends AppCompatActivity {
             throw new RuntimeException("Initialization of OfflineSearchEngine failed: " + e.error.name());
         }
 
-        // Setting a tap handler to pick embedded carto POIs from map.
+        // Setting a tap handler to pick embedded map content.
         setTapGestureHandler();
+    }
+
+    private void enableVehicleRestrictionsOnMap() {
+        Map<String, String> mapFeatures = new HashMap<>();
+        mapFeatures.put(MapFeatures.VEHICLE_RESTRICTIONS,
+                        MapFeatureModes.VEHICLE_RESTRICTIONS_ACTIVE_AND_INACTIVE_DIFFERENTIATED);
+        mapView.getMapScene().enableFeatures(mapFeatures);
     }
 
     private void setTapGestureHandler() {
         mapView.getGestures().setTapListener(new TapListener() {
             @Override
             public void onTap(@NonNull Point2D touchPoint) {
-                pickMapMarker(touchPoint);
+                pickMapContent(touchPoint);
             }
         });
     }
 
-    private void pickMapMarker(final Point2D touchPoint) {
-        // You can also use a larger area to include multiple carto POIs.
-        Rectangle2D rectangle2D = new Rectangle2D(touchPoint, new Size2D(1, 1));
+    private void pickMapContent(final Point2D touchPoint) {
+        // You can also use a larger area to include multiple map icons.
+        Rectangle2D rectangle2D = new Rectangle2D(touchPoint, new Size2D(50, 50));
         mapView.pickMapContent(rectangle2D, new MapViewBase.PickMapContentCallback() {
             @Override
             public void onPickMapContent(@Nullable PickMapContentResult pickMapContentResult) {
                 if (pickMapContentResult == null) {
-                    // An error occurred while performing the pick operation.
+                    Log.e("onPickMapContent", "An error occurred while performing the pick operation.");
                     return;
                 }
 
-                List<PickMapContentResult.PoiResult> cartoPOIList = pickMapContentResult.getPois();
-                int listSize = cartoPOIList.size();
-                if (listSize == 0) {
-                    return;
-                }
-
-                PickMapContentResult.PoiResult topmostCartoPOI = cartoPOIList.get(0);
-                showDialog("Carto POI picked:", topmostCartoPOI.name + ", Location: " +
-                        topmostCartoPOI.coordinates.latitude + ", " +
-                        topmostCartoPOI.coordinates.longitude + ". " +
-                        "See log for more place details.");
-
-                fetchCartoPOIDetails(topmostCartoPOI.offlineSearchId);
+                handlePickedCartoPOIs(pickMapContentResult.getPois());
+                handlePickedTrafficIncidents(pickMapContentResult.getTrafficIncidents());
+                handlePickedVehicleRestrictions(pickMapContentResult.getVehicleRestrictions());
             }
         });
+    }
+
+    private void handlePickedCartoPOIs(List<PickMapContentResult.PoiResult> cartoPOIList) {
+        int listSize = cartoPOIList.size();
+        if (listSize == 0) {
+            return;
+        }
+
+        PickMapContentResult.PoiResult topmostCartoPOI = cartoPOIList.get(0);
+        showDialog("Carto POI picked:", topmostCartoPOI.name + ", Location: " +
+                topmostCartoPOI.coordinates.latitude + ", " +
+                topmostCartoPOI.coordinates.longitude + ". " +
+                "See log for more place details.");
+
+        fetchCartoPOIDetails(topmostCartoPOI.offlineSearchId);
     }
 
     // The ID is only given for cached or downloaded maps data.
@@ -200,6 +218,37 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "Title: " + place.getAddress().addressText);
             }
         });
+    }
+
+    private void handlePickedTrafficIncidents(List<PickMapContentResult.TrafficIncidentResult> trafficIndicents) {
+        // See Traffic example app.
+    }
+
+    private void handlePickedVehicleRestrictions(List<PickMapContentResult.VehicleRestrictionResult> vehicleRestrictions) {
+        int listSize = vehicleRestrictions.size();
+        if (listSize == 0) {
+            return;
+        }
+
+        // The text is non-translated and will vary depending on the region.
+        // For example, for a height restriction the text might be "5.5m" in Germany and "12'5"" in the US for a
+        // restriction of type "HEIGHT". An example for a "WEIGHT" restriction: "15t".
+        // The text might be empty, for example, in case of type "GENERAL_TRUCK_RESTRICTION", indicated by a "no-truck" sign.
+        PickMapContentResult.VehicleRestrictionResult topmostVehicleRestriction = vehicleRestrictions.get(0);
+        String text = topmostVehicleRestriction.text;
+        if (text.isEmpty()) {
+            text = "General vehicle restriction.";
+        }
+
+        showDialog("Vehicle restriction picked:", text + ", Location: " +
+                topmostVehicleRestriction.coordinates.latitude + ", " +
+                topmostVehicleRestriction.coordinates.longitude + ". " +
+                // A textual normed representation of the type.
+                "Type: " + topmostVehicleRestriction.restrictionType +
+                ". See log for more details.");
+
+        // GDF time domains format according to ISO 14825.
+        Log.d("VR TimeIntervals", topmostVehicleRestriction.timeIntervals);
     }
 
     @Override
