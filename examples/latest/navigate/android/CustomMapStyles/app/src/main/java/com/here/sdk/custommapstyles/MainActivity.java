@@ -21,6 +21,8 @@ package com.here.sdk.custommapstyles;
 
 import android.content.Context;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
@@ -127,6 +129,12 @@ public class MainActivity extends AppCompatActivity {
         mapView.onDestroy();
         disposeHERESDK();
         super.onDestroy();
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        mapView.onSaveInstanceState(outState);
+        super.onSaveInstanceState(outState);
     }
 
     private void disposeHERESDK() {

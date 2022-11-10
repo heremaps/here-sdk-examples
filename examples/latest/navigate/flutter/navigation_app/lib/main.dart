@@ -75,7 +75,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   // When using HERE Positioning in your app, it is required to request and to show the user's consent decision.
   // In addition, users must be able to change their consent decision at any time.
   // Note that this is only needed when running on Android devices.
-  final ConsentEngine _consentEngine = ConsentEngine();
+  ConsentEngine? _consentEngine;
   String _consentState = "Pending ...";
   String _messageState = "";
 
@@ -120,6 +120,12 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   void _onMapCreated(HereMapController hereMapController) {
+    try {
+      _consentEngine = ConsentEngine();
+    } on InstantiationException {
+      throw ("Initialization of ConsentEngine failed.");
+    }
+
     hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) async {
       _updateMessageState("Loading MapView ...");
       if (error == null) {
@@ -133,7 +139,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         }
 
         // 2. Once permissions are granted, we request the user's consent decision which is required for HERE Positioning.
-        if (_consentEngine.userConsentState == ConsentUserReply.notHandled) {
+        if (_consentEngine?.userConsentState == ConsentUserReply.notHandled) {
           await _requestConsent();
         } else {
           _updateConsentState();
@@ -173,7 +179,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   Future<void> _requestConsent() async {
     if (!Platform.isIOS) {
       // This shows a localized widget that asks the user if data can be collected or not.
-      await _consentEngine.requestUserConsent(context);
+      await _consentEngine?.requestUserConsent(context);
     }
 
     _updateConsentState();
@@ -184,7 +190,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     String stateMessage;
     if (Platform.isIOS) {
       stateMessage = "Info: On iOS no consent is required as on iOS no data is collected.";
-    } else if (_consentEngine.userConsentState == ConsentUserReply.granted) {
+    } else if (_consentEngine?.userConsentState == ConsentUserReply.granted) {
       stateMessage = "Positioning consent: You have granted consent to the data collection.";
     } else {
       stateMessage = "Positioning consent: You have denied consent to the data collection.";
@@ -279,13 +285,13 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         ),
         onPressed: callbackFunction,
         child: Container(
-            width: MediaQuery.of(context).size.width  * 0.8,
-            padding: EdgeInsets.all(2.0),
-            child: Text(
-              buttonLabel,
-              style: TextStyle(fontSize: 15),
-              textAlign: TextAlign.center,
-            ),
+          width: MediaQuery.of(context).size.width * 0.8,
+          padding: EdgeInsets.all(2.0),
+          child: Text(
+            buttonLabel,
+            style: TextStyle(fontSize: 15),
+            textAlign: TextAlign.center,
+          ),
         ),
       ),
     );
@@ -298,7 +304,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         padding: EdgeInsets.all(8.0),
         child: Text(
           messageState,
-          style: TextStyle(fontSize: 15, color: Colors.white,),
+          style: TextStyle(
+            fontSize: 15,
+            color: Colors.white,
+          ),
         ),
       ),
       color: Colors.blue,

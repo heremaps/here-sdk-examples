@@ -3,9 +3,7 @@ The Routing Hybrid example app shows how to calculate a route from A to B with a
 Build instructions:
 -------------------
 
-1) Set your HERE SDK credentials to
-- `android/app/src/main/AndroidManifest.xml`
-- `ios/Runner/Info.plist`
+1) Set your HERE SDK credentials programmatically in `lib/main.dart`.
 
 2) Unzip the HERE SDK plugin to the plugins folder inside this project. Name the folder 'here_sdk': `plugins/here_sdk`.
 

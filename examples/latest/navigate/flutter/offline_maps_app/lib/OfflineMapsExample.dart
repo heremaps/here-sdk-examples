@@ -274,61 +274,77 @@ class OfflineMapsExample {
       return;
     }
 
-    _mapUpdater.checkMapUpdate((MapLoaderError? mapLoaderError, MapUpdateAvailability? mapUpdateAvailability) {
+    _mapUpdater.retrieveCatalogsUpdateInfo((mapLoaderError, catalogList) {
       if (mapLoaderError != null) {
-        print("MapUpdateCheck Error: " + mapLoaderError.toString());
+        print("CatalogUpdateCheck Error: " + mapLoaderError.toString());
         return;
       }
 
-      if (mapUpdateAvailability == MapUpdateAvailability.available) {
-        print("MapUpdateCheck: One or more map updates are available.");
-        _logCurrentMapVersion();
-        _performMapUpdate();
-        return;
+      // When error is null, then the list is guaranteed to be not null.
+      if (catalogList!.isEmpty) {
+        print("CatalogUpdateCheck: No map updates are available.");
       }
 
-      print("MapUpdateCheck: No map update available. Latest versions are already installed.");
+      _logCurrentMapVersion();
+
+      // Usually, only one global catalog is available that contains regions for the whole world.
+      // For some regions like Japan only a base map is available, by default.
+      // If your company has an agreement with HERE to use a detailed Japan map, then in this case you
+      // can install and use a second catalog that references the detailed Japan map data.
+      // All map data is part of downloadable regions. A catalog contains references to the
+      // available regions. The map data for a region may differ based on the catalog that is used
+      // or on the version that is downloaded and installed.
+      for (CatalogUpdateInfo catalogUpdateInfo in catalogList) {
+        print("CatalogUpdateCheck - Catalog name:" + catalogUpdateInfo.installedCatalog.catalogIdentifier.hrn);
+        print("CatalogUpdateCheck - Installed map version:" +
+            catalogUpdateInfo.installedCatalog.catalogIdentifier.version.toString());
+        print("CatalogUpdateCheck - Latest available map version:" + catalogUpdateInfo.latestVersion.toString());
+        _performMapUpdate(catalogUpdateInfo);
+      }
     });
   }
 
   // Downloads and installs map updates for any of the already downloaded regions.
   // Note that this example only shows how to download one region.
-  void _performMapUpdate() {
+  void _performMapUpdate(CatalogUpdateInfo catalogUpdateInfo) {
     if (_mapUpdater == null) {
       _showDialog("Note", "MapUpdater instance not ready. Try again.");
       return;
     }
 
     // This method conveniently updates all installed regions if an update is available.
-    // Optionally, you can use the MapUpdateTask to pause / resume or cancel the update.
-    MapUpdateTask mapUpdateTask =
-        _mapUpdater.performMapUpdate(MapUpdateProgressListener((RegionId regionId, int percentage) {
-      // Handle events from onProgress().
-      print("MapUpdate: Downloading and installing a map update. Progress for ${regionId.id}: $percentage%.");
-    }, (MapLoaderError? mapLoaderError) {
-      // Handle events from onPause().
-      if (mapLoaderError == null) {
-        print("MapUpdate:  The map update was paused by the user calling mapUpdateTask.pause().");
-      } else {
-        print("Map update onPause error. The task tried to often to retry the update: " + mapLoaderError.toString());
-      }
-    }, (MapLoaderError? mapLoaderError) {
-      // Handle events from onComplete().
-      if (mapLoaderError != null) {
-        print("Map update completion error: " + mapLoaderError.toString());
-        return;
-      }
-      print("MapUpdate: One or more map update has been successfully installed.");
-      _logCurrentMapVersion();
+    // Optionally, you can use the CatalogUpdateTask to pause / resume or cancel the update.
+    CatalogUpdateTask catalogUpdateTask = _mapUpdater.updateCatalog(
+        catalogUpdateInfo,
+        CatalogUpdateProgressListener((RegionId regionId, int percentage) {
+          // Handle events from onProgress().
+          print("CatalogUpdate: Downloading and installing a map update. Progress for ${regionId.id}: $percentage%.");
+        }, (MapLoaderError? mapLoaderError) {
+          // Handle events from onPause().
+          if (mapLoaderError == null) {
+            print("CatalogUpdate:  The map update was paused by the user calling catalogUpdateTask.pause().");
+          } else {
+            print("CatalogUpdate: Map update onPause error. The task tried to often to retry the update: " +
+                mapLoaderError.toString());
+          }
+        }, (MapLoaderError? mapLoaderError) {
+          // Handle events from onComplete().
+          if (mapLoaderError != null) {
+            print("CatalogUpdate: Map update completion error: " + mapLoaderError.toString());
+            return;
+          }
 
-      // It is recommend to call now also `getDownloadableRegions()` to update
-      // the internal catalog data that is needed to download, update or delete
-      // existing `Region` data. It is required to do this at least once
-      // before doing a new download, update or delete operation.
-    }, () {
-      // Handle events from onResume():
-      print("MapUpdate: A previously paused map update has been resumed.");
-    }));
+          print("CatalogUpdate: One or more map update has been successfully installed.");
+          _logCurrentMapVersion();
+
+          // It is recommend to call now also `getDownloadableRegions()` to update
+          // the internal catalog data that is needed to download, update or delete
+          // existing `Region` data. It is required to do this at least once
+          // before doing a new download, update or delete operation.
+        }, () {
+          // Handle events from onResume():
+          print("CatalogUpdate: A previously paused map update has been resumed.");
+        }));
   }
 
   _checkInstallationStatus() {

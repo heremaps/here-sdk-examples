@@ -115,7 +115,7 @@ public class HEREBackgroundPositioningService extends Service {
             return;
         }
         final Intent activityIntent = new Intent(context, MainActivity.class);
-        final PendingIntent contentIntent = PendingIntent.getActivity(context, 0, activityIntent, PendingIntent.FLAG_IMMUTABLE);
+        final PendingIntent contentIntent = createPendingIntentGetActivity(context, 0, activityIntent, 0);
         final Intent serviceIntent = new Intent(context, HEREBackgroundPositioningService.class);
         serviceIntent.putExtra(KEY_CONTENT_INTENT, contentIntent);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -282,6 +282,14 @@ public class HEREBackgroundPositioningService extends Service {
         locationEngine.removeLocationListener(locationListener);
         locationEngine.removeLocationStatusListener(statusListener);
         locationEngine = null;
+    }
+
+    private static PendingIntent createPendingIntentGetActivity(Context context, int id, Intent intent, int flag) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            return PendingIntent.getActivity(context, id, intent, PendingIntent.FLAG_IMMUTABLE | flag);
+        } else {
+            return PendingIntent.getActivity(context, id, intent, flag);
+        }
     }
 }
 

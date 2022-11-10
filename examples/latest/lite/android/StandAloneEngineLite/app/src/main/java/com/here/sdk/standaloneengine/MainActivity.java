@@ -124,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
         disposeHERESDK();
         super.onDestroy();
     }
-
+    
     private void disposeHERESDK() {
         // Free HERE SDK resources before the application shuts down.
         // Usually, this should be called only on application termination.

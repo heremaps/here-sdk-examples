@@ -31,7 +31,10 @@ import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.LanguageCode;
 import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.core.errors.InstantiationErrorException;
-import com.here.sdk.maploader.CheckMapUpdateCallback;
+import com.here.sdk.maploader.CatalogUpdateInfo;
+import com.here.sdk.maploader.CatalogUpdateProgressListener;
+import com.here.sdk.maploader.CatalogUpdateTask;
+import com.here.sdk.maploader.CatalogsUpdateInfoCallback;
 import com.here.sdk.maploader.DownloadRegionsStatusListener;
 import com.here.sdk.maploader.DownloadableRegionsCallback;
 import com.here.sdk.maploader.MapDownloader;
@@ -39,9 +42,6 @@ import com.here.sdk.maploader.MapDownloaderConstructionCallback;
 import com.here.sdk.maploader.MapDownloaderTask;
 import com.here.sdk.maploader.MapLoaderError;
 import com.here.sdk.maploader.MapLoaderException;
-import com.here.sdk.maploader.MapUpdateAvailability;
-import com.here.sdk.maploader.MapUpdateProgressListener;
-import com.here.sdk.maploader.MapUpdateTask;
 import com.here.sdk.maploader.MapUpdater;
 import com.here.sdk.maploader.MapUpdaterConstructionCallback;
 import com.here.sdk.maploader.MapVersionHandle;
@@ -366,78 +366,89 @@ public class OfflineMapsExample {
             return;
         }
 
-        mapUpdater.checkMapUpdate(new CheckMapUpdateCallback() {
+        mapUpdater.retrieveCatalogsUpdateInfo(new CatalogsUpdateInfoCallback() {
             @Override
-            public void onCompleted(@Nullable MapLoaderError mapLoaderError, @Nullable MapUpdateAvailability mapUpdateAvailability) {
+            public void apply(@Nullable MapLoaderError mapLoaderError, @Nullable List<CatalogUpdateInfo> catalogList) {
                 if (mapLoaderError != null) {
-                    Log.e("MapUpdateCheck", "Error: " + mapLoaderError.name());
+                    Log.e("CatalogUpdateCheck", "Error: " + mapLoaderError.name());
                     return;
                 }
 
-                if (mapUpdateAvailability == MapUpdateAvailability.AVAILABLE) {
-                    Log.d("MapUpdateCheck", "One or more map updates are available.");
-                    logCurrentMapVersion();
-                    performMapUpdate();
-                    return;
+                // When error is null, then the list is guaranteed to be not null.
+                if (catalogList.isEmpty()) {
+                    Log.d("CatalogUpdateCheck", "No map updates are available.");
                 }
 
-                Log.d("MapUpdateCheck", "No map update available. Latest versions are already installed.");
+                logCurrentMapVersion();
+
+                // Usually, only one global catalog is available that contains regions for the whole world.
+                // For some regions like Japan only a base map is available, by default.
+                // If your company has an agreement with HERE to use a detailed Japan map, then in this case you
+                // can install and use a second catalog that references the detailed Japan map data.
+                // All map data is part of downloadable regions. A catalog contains references to the
+                // available regions. The map data for a region may differ based on the catalog that is used
+                // or on the version that is downloaded and installed.
+                for (CatalogUpdateInfo catalogUpdateInfo : catalogList) {
+                    Log.d("CatalogUpdateCheck", "Catalog name:" + catalogUpdateInfo.installedCatalog.catalogIdentifier.hrn);
+                    Log.d("CatalogUpdateCheck", "Installed map version:" + catalogUpdateInfo.installedCatalog.catalogIdentifier.version);
+                    Log.d("CatalogUpdateCheck", "Latest available map version:" + catalogUpdateInfo.latestVersion);
+                    performMapUpdate(catalogUpdateInfo);
+                }
             }
         });
     }
 
     // Downloads and installs map updates for any of the already downloaded regions.
     // Note that this example only shows how to download one region.
-    private void performMapUpdate() {
+    private void performMapUpdate(CatalogUpdateInfo catalogUpdateInfo) {
         if (mapUpdater == null) {
             String message = "MapUpdater instance not ready. Try again.";
             snackbar.setText(message).show();
             return;
         }
 
-        // This method conveniently updates all installed regions if an update is available.
-        // Optionally, you can use the MapUpdateTask to pause / resume or cancel the update.
-        MapUpdateTask mapUpdateTask = mapUpdater.performMapUpdate(new MapUpdateProgressListener() {
+        // This method conveniently updates all installed regions for a catalog if an update is available.
+        // Optionally, you can use the CatalogUpdateTask to pause / resume or cancel the update.
+        CatalogUpdateTask task = mapUpdater.updateCatalog(catalogUpdateInfo, new CatalogUpdateProgressListener() {
             @Override
             public void onProgress(@NonNull RegionId regionId, int percentage) {
-                Log.d("MapUpdate", "Downloading and installing a map update. Progress for " + regionId.id + ": " + percentage);
+                Log.d("CatalogUpdate", "Downloading and installing a map update. Progress for " + regionId.id + ": " + percentage);
             }
 
             @Override
             public void onPause(@Nullable MapLoaderError mapLoaderError) {
                 if (mapLoaderError == null) {
-                    String message = "The map update was paused by the user calling mapUpdateTask.pause().";
-                    Log.e("MapUpdate", message);
+                    String message = "The map update was paused by the user calling catalogUpdateTask.pause().";
+                    Log.e("CatalogUpdate", message);
                 } else {
                     String message = "Map update onPause error. The task tried to often to retry the update: " + mapLoaderError;
-                    Log.d("MapUpdate", message);
+                    Log.d("CatalogUpdate", message);
                 }
             }
 
             @Override
             public void onResume() {
                 String message = "A previously paused map update has been resumed.";
-                Log.d("MapUpdate", message);
+                Log.d("CatalogUpdate", message);
             }
 
             @Override
             public void onComplete(@Nullable MapLoaderError mapLoaderError) {
                 if (mapLoaderError != null) {
                     String message = "Map update completion error: " + mapLoaderError;
-                    Log.d("MapUpdate", message);
+                    Log.d("CatalogUpdate", message);
                     return;
                 }
 
                 String message = "One or more map update has been successfully installed.";
-                Log.d("MapUpdate", message);
+                Log.d("CatalogUpdate", message);
                 logCurrentMapVersion();
 
                 // It is recommend to call now also `getDownloadableRegions()` to update
                 // the internal catalog data that is needed to download, update or delete
                 // existing `Region` data. It is required to do this at least once
                 // before doing a new download, update or delete operation.
-            }
-        });
+            }});
     }
 
     private void checkInstallationStatus() {

@@ -3,9 +3,7 @@ The positioning example app shows how to retrieve and show your current location
 Build instructions:
 -------------------
 
-1) Set your HERE SDK credentials to
-- `positioning/android/app/src/main/AndroidManifest.xml`
-- `positioning/ios/Runner/Info.plist`
+1) Set your HERE SDK credentials programmatically in `lib/main.dart`.
 
 2) Unzip the HERE SDK plugin to the plugins folder inside this project. Name the folder 'here_sdk': `positioning/plugins/here_sdk`.
 

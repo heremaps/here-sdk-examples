@@ -3,9 +3,7 @@ The Navigation Quick Start example app shows how the HERE SDK can be set up to n
 Build instructions:
 -------------------
 
-1) Set your HERE SDK credentials to
-- `navigation_quick_start/android/app/src/main/AndroidManifest.xml`
-- `navigation_quick_start/ios/Runner/Info.plist`
+1) Set your HERE SDK credentials programmatically in `lib/main.dart`.
 
 2) Unzip the HERE SDK plugin to the plugins folder inside this project. Name the folder 'here_sdk': `navigation_quick_start/plugins/here_sdk`.
 

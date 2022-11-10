@@ -3,9 +3,7 @@ The unit_testing example app shows how the HERE SDK can be mocked for unit testi
 Build instructions:
 -------------------
 
-1) Set your HERE SDK credentials to
-- `unit_testing/android/app/src/main/AndroidManifest.xml`
-- `unit_testing/ios/Runner/Info.plist`
+1) Set your HERE SDK credentials programmatically in `lib/main.dart`.
 
 2) Unzip the HERE SDK plugin to the plugins folder inside this project. Name the folder 'here_sdk': `unit_testing/plugins/here_sdk`.
 

@@ -21,15 +21,15 @@ package com.here.sdk.standaloneengine;
 
 import android.content.Context;
 import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
 
-import com.here.sdk.core.engine.SDKNativeEngine;
-import com.here.sdk.core.engine.SDKOptions;
-import com.here.sdk.core.errors.InstantiationErrorException;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.LanguageCode;
+import com.here.sdk.core.engine.SDKNativeEngine;
+import com.here.sdk.core.engine.SDKOptions;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.search.CategoryQuery;
 import com.here.sdk.search.Place;
