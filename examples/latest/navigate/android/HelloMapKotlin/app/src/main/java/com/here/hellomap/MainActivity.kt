@@ -114,6 +114,11 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        mapView?.onSaveInstanceState(outState)
+        super.onSaveInstanceState(outState)
+    }
+
     private fun disposeHERESDK() {
         // Free HERE SDK resources before the application shuts down.
         // Usually, this should be called only on application termination.

@@ -4,9 +4,7 @@ assets. On top, the app shows how to customize the guidance view by setting cust
 Build instructions:
 -------------------
 
-1) Set your HERE SDK credentials to
-- `navigation_custom/android/app/src/main/AndroidManifest.xml`
-- `navigation_custom/ios/Runner/Info.plist`
+1) Set your HERE SDK credentials programmatically in `lib/main.dart`.
 
 2) Unzip the HERE SDK plugin to the plugins folder inside this project. Name the folder 'here_sdk': `navigation_custom/plugins/here_sdk`.
 

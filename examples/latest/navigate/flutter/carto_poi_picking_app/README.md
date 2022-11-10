@@ -3,9 +3,7 @@ The carto_poi_picking example app shows how the HERE SDK can be used to pick emb
 Build instructions:
 -------------------
 
-1) Set your HERE SDK credentials to
-- `carto_poi_picking/android/app/src/main/AndroidManifest.xml`
-- `carto_poi_picking/ios/Runner/Info.plist`
+1) Set your HERE SDK credentials programmatically in `lib/main.dart`.
 
 2) Unzip the HERE SDK plugin to the plugins folder inside this project. Name the folder 'here_sdk': `carto_poi_picking/plugins/here_sdk`.
 

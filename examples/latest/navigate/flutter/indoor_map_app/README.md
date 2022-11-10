@@ -3,9 +3,7 @@ The Indoor Map example app shows how to display private venues on a map view and
 Build instructions:
 -------------------
 
-1) Set your HERE SDK credentials to
-- `indoor_map_app/android/app/src/main/AndroidManifest.xml`
-- `indoor_map_app/ios/Runner/Info.plist`
+1) Set your HERE SDK credentials programmatically in `lib/main.dart`.
 
 2) Setting HRN is optional. If `final String HRN` in the `/lib/venue_engine_widget.dart` file is not set, then HRN of default collection in realm will be selected automatically. Default collection contains all published indoor venue maps for a realm. If user wants to use a different collection then set the value of your indoor map catalog HRN to the constant `final String HRN` in the `/lib/venue_engine_widget.dart` file.
 
