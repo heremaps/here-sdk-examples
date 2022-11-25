@@ -114,6 +114,8 @@ public class PositioningExample {
     private void addMyLocationToMap(@NonNull Location myLocation) {
         //Create and setup location indicator.
         locationIndicator = new LocationIndicator();
+        // Enable a halo to indicate the horizontal accuracy.
+        locationIndicator.setAccuracyVisualized(true);
         locationIndicator.setLocationIndicatorStyle(LocationIndicator.IndicatorStyle.PEDESTRIAN);
         locationIndicator.updateLocation(myLocation);
         mapView.addLifecycleListener(locationIndicator);

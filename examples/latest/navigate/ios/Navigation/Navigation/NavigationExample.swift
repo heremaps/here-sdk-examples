@@ -39,7 +39,9 @@ class NavigationExample : NavigableLocationDelegate,
                           DynamicRoutingDelegate,
                           RoadSignWarningDelegate,
                           TruckRestrictionsWarningDelegate,
-                          RoadTextsDelegate {
+                          RoadTextsDelegate,
+                          SignpostWarningDelegate,
+                          JunctionViewWarningDelegate {
 
     private let viewController: UIViewController
     private let mapView: MapView
@@ -93,6 +95,8 @@ class NavigationExample : NavigableLocationDelegate,
         visualNavigator.roadSignWarningDelegate = self
         visualNavigator.truckRestrictionsWarningDelegate = self
         visualNavigator.roadTextsDelegate = self
+        visualNavigator.signpostWarningDelegate = self
+        visualNavigator.junctionViewWarningDelegate = self
     }
 
     func startLocationProvider() {
@@ -519,6 +523,51 @@ class NavigationExample : NavigableLocationDelegate,
         }
     }
 
+    // Notifies on signposts as they appear along a road on a shield to indicate the upcoming directions and destinations, such
+    // as cities or road names.
+    // Optionally, you can use a feature-configuration to preload the assets as part of a Region.
+    func onSignpostWarningUpdated(_ signpostWarning: SignpostWarning) {
+        let distance = signpostWarning.distanceToSignpostsInMeters
+        let distanceType: DistanceType = signpostWarning.distanceType
+                      
+        // Note that DistanceType.reached is not used for Signposts.
+        if distanceType == DistanceType.ahead {
+            print("A Signpost ahead in: " + String(distance) + " meters.")
+        } else if distanceType == DistanceType.passed {
+            print("A Signpost just passed.")
+        }
+        
+        // Multiple signs can appear at the same location.
+        for signpost in signpostWarning.signposts {
+            let svgImageContent = signpost.svgImageContent
+            print("Signpost SVG data: " + String(svgImageContent))
+            // The resolution-independent SVG data can now be used in an application to visualize the image.
+            // Use a SVG library of your choice for this.
+        }
+    }
+    
+    // Notifies on complex junction views for which a 3D visualization is available as a static image to help orientate the driver.
+    // The event matches the notification for complex junctions, see JunctionViewLaneAssistance.
+    // Note that the SVG data for junction view is composed out of several 3D elements such as trees, a horizon and the actual junction
+    // geometry. Approx. size per image is 15 MB. In the future, we we reduce the level of realism to reduce the size of the assets.
+    // Optionally, you can use a feature-configuration to preload the assets as part of a Region.
+    func onJunctionViewWarningUpdated(_ junctionViewWarning: JunctionViewWarning) {
+        let distance = junctionViewWarning.distanceToJunctionViewInMeters
+        let distanceType: DistanceType = junctionViewWarning.distanceType
+                      
+        // Note that DistanceType.reached is not used for junction views.
+        if distanceType == DistanceType.ahead {
+            print("A JunctionView ahead in: " + String(distance) + " meters.")
+        } else if distanceType == DistanceType.passed {
+            print("A JunctionView just passed.")
+        }
+        
+        let svgImageContent = junctionViewWarning.junctionView.svgImageContent
+        print("JunctionView SVG data: " + String(svgImageContent))
+        // The resolution-independent SVG data can now be used in an application to visualize the image.
+        // Use a SVG library of your choice for this.
+    }
+    
     // Conform to RoadTextsDelegate
     // Notifies whenever any textual attribute of the current road changes, i.e., the current road texts differ
     // from the previous one. This can be useful during tracking mode, when no maneuver information is provided.
@@ -531,6 +580,8 @@ class NavigationExample : NavigableLocationDelegate,
         setupSpeedWarnings()
         setupRoadSignWarnings()
         setupVoiceGuidance()
+        setupSignpostWarnings()
+        setupJunctionViewWarnings()
 
         // Switches to navigation mode when no route was set before, otherwise navigation mode is kept.
         visualNavigator.route = route
@@ -601,6 +652,16 @@ class NavigationExample : NavigableLocationDelegate,
         // Set a filter to get only shields relevant for trucks and heavyTrucks.
         roadSignWarningOptions.vehicleTypesFilter = [RoadSignVehicleType.trucks, RoadSignVehicleType.heavyTrucks]
         visualNavigator.roadSignWarningOptions = roadSignWarningOptions
+    }
+    
+    private func setupSignpostWarnings() {
+        let signpostWarningOptions = SignpostWarningOptions(aspectRatio: AspectRatio.aspectRatio3X4, darkTheme: false)
+        visualNavigator.signpostWarningOptions = signpostWarningOptions
+    }
+    
+    private func setupJunctionViewWarnings() {
+        let junctionViewWarningOptions = JunctionViewWarningOptions(aspectRatio: AspectRatio.aspectRatio3X4, darkTheme: false)
+        visualNavigator.junctionViewWarningOptions = junctionViewWarningOptions
     }
     
     private func setupVoiceGuidance() {
