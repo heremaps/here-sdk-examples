@@ -105,6 +105,8 @@ class PositioningExample: LocationDelegate, LocationStatusDelegate, LocationAuth
     private func addMyLocationToMap(myLocation: Location) {
         // Setup location indicator.
         locationIndicator = LocationIndicator()
+        // Enable a halo to indicate the horizontal accuracy.
+        locationIndicator.isAccuracyVisualized = true
         locationIndicator.locationIndicatorStyle = .pedestrian;
         locationIndicator.updateLocation(myLocation)
         mapView.addLifecycleDelegate(locationIndicator)

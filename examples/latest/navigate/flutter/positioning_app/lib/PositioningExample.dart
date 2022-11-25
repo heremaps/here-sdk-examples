@@ -298,6 +298,8 @@ class PositioningExample extends State<MyApp>
     }
     // Set-up location indicator.
     _locationIndicator = LocationIndicator();
+    // Enable a halo to indicate the horizontal accuracy.
+    _locationIndicator!.isAccuracyVisualized = true;
     _locationIndicator!.locationIndicatorStyle = LocationIndicatorIndicatorStyle.pedestrian;
     _locationIndicator!.updateLocation(myLocation);
     _hereMapController!.addLifecycleListener(_locationIndicator!);

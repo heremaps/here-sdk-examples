@@ -542,10 +542,10 @@ public class NavigationExample {
             }
         });
 
-        JunctionViewWarningOptions juntionViewWarning = new JunctionViewWarningOptions();
-        juntionViewWarning.aspectRatio = AspectRatio.ASPECT_RATIO_3_X_4;
-        juntionViewWarning.darkTheme = false;
-        visualNavigator.setJunctionViewWarningOptions(juntionViewWarning);
+        JunctionViewWarningOptions junctionViewWarningOptions = new JunctionViewWarningOptions();
+        junctionViewWarningOptions.aspectRatio = AspectRatio.ASPECT_RATIO_3_X_4;
+        junctionViewWarningOptions.darkTheme = false;
+        visualNavigator.setJunctionViewWarningOptions(junctionViewWarningOptions);
 
         // Notifies on complex junction views for which a 3D visualization is available as a static image to help orientate the driver.
         // The event matches the notification for complex junctions, see JunctionViewLaneAssistance.
