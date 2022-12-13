@@ -212,6 +212,10 @@ public class MainActivity extends AppCompatActivity {
 
     // Calculate a fixed route for testing and start guidance simulation along the route.
     public void startButtonClicked(View view) {
+        if (isVisualNavigatorRenderingStarted) {
+            return;
+        }
+
         Waypoint startWaypoint = new Waypoint(routeStartGeoCoordinates);
         Waypoint destinationWaypoint = new Waypoint(new GeoCoordinates(52.530905, 13.385007));
         routingEngine.calculateRoute(
@@ -232,7 +236,7 @@ public class MainActivity extends AppCompatActivity {
         stopGuidance();
     }
 
-    // Toogle between the default LocationIndicator and custom LocationIndicator.
+    // Toggle between the default LocationIndicator and custom LocationIndicator.
     // The default LocationIndicator uses a 3D asset that is part of the HERE SDK.
     // The custom LocationIndicator uses different 3D assets, see asset folder.
     public void toggleButtonClicked(View view) {

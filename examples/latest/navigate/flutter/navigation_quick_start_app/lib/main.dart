@@ -109,7 +109,7 @@ class _MyAppState extends State<MyApp> {
     HERE.Waypoint startWaypoint = HERE.Waypoint(HERE.GeoCoordinates(52.520798, 13.409408));
     HERE.Waypoint destinationWaypoint = HERE.Waypoint(HERE.GeoCoordinates(52.530905, 13.385007));
 
-    _routingEngine!.calculateCarRoute([startWaypoint, destinationWaypoint], HERE.CarOptions.withDefaults(),
+    _routingEngine!.calculateCarRoute([startWaypoint, destinationWaypoint], HERE.CarOptions(),
         (HERE.RoutingError? routingError, List<HERE.Route>? routeList) async {
       if (routingError == null) {
         // When error is null, it is guaranteed that the routeList is not empty.
@@ -150,7 +150,7 @@ class _MyAppState extends State<MyApp> {
   _setupLocationSource(HERE.LocationListener locationListener, HERE.Route route) {
     try {
       // Provides fake GPS signals based on the route geometry.
-      _locationSimulator = HERE.LocationSimulator.withRoute(route, HERE.LocationSimulatorOptions.withDefaults());
+      _locationSimulator = HERE.LocationSimulator.withRoute(route, HERE.LocationSimulatorOptions());
     } on InstantiationException {
       throw Exception("Initialization of LocationSimulator failed.");
     }

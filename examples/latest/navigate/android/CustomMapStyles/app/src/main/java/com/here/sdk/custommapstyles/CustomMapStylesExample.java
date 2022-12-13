@@ -73,7 +73,7 @@
                  if (mapError == null) {
                      // Scene loaded.
                  } else {
-                     Log.d("CustomMapStylesExample", "onLoadScene failed: " + mapError.toString());
+                     Log.d("CustomMapStylesExample", "onLoadScene failed: " + mapError);
                  }
              }
          });
@@ -86,7 +86,7 @@
                  if (mapError == null) {
                     // Scene loaded.
                  } else {
-                     Log.d("CustomMapStylesExample", "onLoadScene failed: " + mapError.toString());
+                     Log.d("CustomMapStylesExample", "onLoadScene failed: " + mapError);
                  }
              }
          });

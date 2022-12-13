@@ -38,7 +38,7 @@ class RouteCalculator {
     List<Waypoint> waypoints = [startWaypoint, destinationWaypoint];
 
     // A route handle is required for the DynamicRoutingEngine to get updates on traffic-optimized routes.
-    var routingOptions = HERE.CarOptions.withDefaults();
+    var routingOptions = HERE.CarOptions();
     routingOptions.routeOptions.enableRouteHandle = true;
 
     _routingEngine.calculateCarRoute(waypoints, routingOptions, calculateRouteCallback);

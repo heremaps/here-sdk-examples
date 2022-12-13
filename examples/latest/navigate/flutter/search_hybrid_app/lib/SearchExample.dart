@@ -135,7 +135,7 @@ class SearchExample {
   }
 
   Future<void> _getAddressForCoordinates(GeoCoordinates geoCoordinates) async {
-    SearchOptions reverseGeocodingOptions = SearchOptions.withDefaults();
+    SearchOptions reverseGeocodingOptions = SearchOptions();
     reverseGeocodingOptions.languageCode = LanguageCode.enGb;
     reverseGeocodingOptions.maxItems = 1;
 
@@ -202,7 +202,7 @@ class SearchExample {
     TextQueryArea queryArea = TextQueryArea.withBox(viewportGeoBox);
     TextQuery query = TextQuery.withArea(queryString, queryArea);
 
-    SearchOptions searchOptions = SearchOptions.withDefaults();
+    SearchOptions searchOptions = SearchOptions();
     searchOptions.languageCode = LanguageCode.enUs;
     searchOptions.maxItems = 30;
 
@@ -244,7 +244,7 @@ class SearchExample {
   Future<void> _autoSuggestExample() async {
     GeoCoordinates centerGeoCoordinates = _getMapViewCenter();
 
-    SearchOptions searchOptions = SearchOptions.withDefaults();
+    SearchOptions searchOptions = SearchOptions();
     searchOptions.languageCode = LanguageCode.enUs;
     searchOptions.maxItems = 5;
 
@@ -329,7 +329,7 @@ class SearchExample {
 
     AddressQuery query = AddressQuery.withAreaCenter(queryString, geoCoordinates);
 
-    SearchOptions geocodingOptions = SearchOptions.withDefaults();
+    SearchOptions geocodingOptions = SearchOptions();
     geocodingOptions.languageCode = LanguageCode.deDe;
     geocodingOptions.maxItems = 30;
 

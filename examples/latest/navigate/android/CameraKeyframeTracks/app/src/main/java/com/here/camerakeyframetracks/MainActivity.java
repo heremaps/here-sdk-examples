@@ -112,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
                     cameraKeyframeTracksExample = new CameraKeyframeTracksExample(mapView);
                     routeAnimationExample = new RouteAnimationExample(mapView);
                 } else {
-                    Log.d(TAG, "onLoadScene failed: " + mapError.toString());
+                    Log.d(TAG, "onLoadScene failed: " + mapError);
                 }
             }
         });

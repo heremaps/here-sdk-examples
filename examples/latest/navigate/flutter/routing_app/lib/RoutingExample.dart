@@ -34,6 +34,7 @@ class RoutingExample {
   List<MapPolyline> _mapPolylines = [];
   late RoutingEngine _routingEngine;
   final ShowDialogFunction _showDialog;
+  final _BERLIN_HQ_GEO_COORDINATES = GeoCoordinates(52.530971, 13.385088);
 
   RoutingExample(ShowDialogFunction showDialogCallback, HereMapController hereMapController)
       : _showDialog = showDialogCallback,
@@ -50,14 +51,14 @@ class RoutingExample {
   }
 
   Future<void> addRoute() async {
-    var startGeoCoordinates = _createRandomGeoCoordinatesInViewport();
+    var startGeoCoordinates = _BERLIN_HQ_GEO_COORDINATES;
     var destinationGeoCoordinates = _createRandomGeoCoordinatesInViewport();
     var startWaypoint = Waypoint.withDefaults(startGeoCoordinates);
     var destinationWaypoint = Waypoint.withDefaults(destinationGeoCoordinates);
 
     List<Waypoint> waypoints = [startWaypoint, destinationWaypoint];
 
-    _routingEngine.calculateCarRoute(waypoints, CarOptions.withDefaults(),
+    _routingEngine.calculateCarRoute(waypoints, CarOptions(),
         (RoutingError? routingError, List<here.Route>? routeList) async {
       if (routingError == null) {
         // When error is null, then the list guaranteed to be not null.
@@ -140,7 +141,8 @@ class RoutingExample {
   GeoCoordinates _createRandomGeoCoordinatesInViewport() {
     GeoBox? geoBox = _hereMapController.camera.boundingBox;
     if (geoBox == null) {
-      // Happens only when map is not fully covering the viewport.
+      // Happens only when map is not fully covering the viewport as the map is tilted.
+      print("The map view is tilted, falling back to fixed destination coordinate.");
       return GeoCoordinates(52.530932, 13.384915);
     }
 

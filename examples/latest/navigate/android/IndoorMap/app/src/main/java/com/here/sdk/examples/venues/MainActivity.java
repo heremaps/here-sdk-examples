@@ -25,8 +25,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -47,6 +50,7 @@ import com.here.sdk.venue.control.Venue;
 import com.here.sdk.venue.control.VenueErrorCode;
 import com.here.sdk.venue.control.VenueMap;
 import com.here.sdk.venue.control.VenueSelectionListener;
+import com.here.sdk.venue.data.VenueGeometryFilterType;
 import com.here.sdk.venue.data.VenueInfo;
 import com.here.sdk.venue.service.VenueListener;
 import com.here.sdk.venue.service.VenueService;
@@ -63,15 +67,17 @@ public class MainActivity extends AppCompatActivity {
     private PermissionsRequestor permissionsRequestor;
     private MapView mapView;
     private VenueEngine venueEngine;
-    private EditText venueChooser;
     private Button goButton;
     private DrawingSwitcher drawingSwitcher;
     private LevelSwitcher levelSwitcher;
     private VenueTapController venueTapController;
     private VenueSearchController venueSearchController;
+    private Spinner venueInfoListSpinner;
+    private Integer[] venueInfoListItems;
+    private int selectedVenueId;
 
-    // Set value for hrn with your platform catalog HRN value if you want to load non default collection.
-    private String HRN = "";
+    // Set value for hrn with your platform catalog HRN value if you wan    t to load non default collection.
+    private String HRN = "YOUR_CATALOG_HRN";
 
     //Label text preference as per user choice
     private final List<String> labelPref = Arrays.asList("OCCUPANT_NAMES", "SPACE_NAME", "INTERNAL_ADDRESS");
@@ -90,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
         mapView.onCreate(savedInstanceState);
 
         // Get UI elements for selection venue by id.
-        venueChooser = findViewById(R.id.venueChooser);
+        venueInfoListSpinner = findViewById(R.id.VenueInfoList);
         goButton = findViewById(R.id.goButton);
 
         // Get drawing and level UI switchers.
@@ -162,6 +168,19 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    AdapterView.OnItemSelectedListener onVenueInfoListSelectedListener =
+            new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    selectedVenueId = (int) parent.getItemAtPosition(position);
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+                    Log.e(TAG, "Nothing Selected");
+                }
+            };
+
     private void onVenueEngineInitCompleted() {
         // Get VenueService and VenueMap objects.
         VenueService service = venueEngine.getVenueService();
@@ -209,6 +228,24 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onInitializationCompleted(@NonNull VenueServiceInitStatus result) {
             if (result == VenueServiceInitStatus.ONLINE_SUCCESS) {
+                try{
+                    venueInfoListItems = new Integer[venueEngine.getVenueMap().getVenueInfoList().size()];
+                    List<VenueInfo> venueInfo = venueEngine.getVenueMap().getVenueInfoList();
+                    for (int i = 0; i< venueInfo.size(); i++) {
+                        Log.d(TAG, "Venue Identifier: " + venueInfo.get(i).getVenueIdentifier() + " Venue Id: "+venueInfo.get(i).getVenueId() + " Venue Name: "+venueInfo.get(i).getVenueName());
+                        venueInfoListItems[i] = venueInfo.get(i).getVenueId();
+                    }
+
+                    ArrayAdapter<Integer> adapter = new ArrayAdapter<>(MainActivity.this,
+                            android.R.layout.simple_spinner_dropdown_item, venueInfoListItems);
+                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    venueInfoListSpinner.setAdapter(adapter);
+                    venueInfoListSpinner.setOnItemSelectedListener(onVenueInfoListSelectedListener);
+                }
+                catch (Exception e) {
+                    Log.d(TAG, e.toString());
+                }
+
                 // Enable button for venue selection. From this moment the venue loading
                 // is available.
                 setGoButtonClickListener();
@@ -250,25 +287,19 @@ public class MainActivity extends AppCompatActivity {
     // Listener for the button which selects venues by id.
     private void setGoButtonClickListener() {
         goButton.setOnClickListener(v -> {
-            String venueString = venueChooser.getText().toString();
             try {
                 // Try to parse a venue id.
-                final int venueId = Integer.parseInt(venueString);
+                final int venueId = selectedVenueId;
                 VenueMap venueMap = venueEngine.getVenueMap();
                 Venue selectedVenue = venueMap.getSelectedVenue();
                 if (selectedVenue == null || selectedVenue.getVenueModel().getId() != venueId) {
                     // Disable the button while a venue loading and selection is in progress.
                     setGoButtonEnabled(false);
-                    //Get List of venues info
-                    List<VenueInfo> venueInfo = venueMap.getVenueInfoList();
-                    for (int i = 0; i< venueInfo.size(); i++) {
-                        Log.d(TAG, "Venue Identifier: " + venueInfo.get(i).getVenueIdentifier() + " Venue Id: "+venueInfo.get(i).getVenueId() + " Venue Name: "+venueInfo.get(i).getVenueName());
-                    }
                     // Select a venue by id.
                     venueMap.selectVenueAsync(venueId, this ::onVenueLoadError);
                 }
             } catch (Exception e) {
-                Log.d(TAG, e.toString());
+                Log.d(TAG, "No Maps Found. " + e.toString());
             }
             hideKeyboard();
         });

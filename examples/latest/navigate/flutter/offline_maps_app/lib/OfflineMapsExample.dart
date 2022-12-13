@@ -237,7 +237,7 @@ class OfflineMapsExample {
     TextQueryArea queryArea = TextQueryArea.withBox(viewportGeoBox);
     TextQuery query = TextQuery.withArea(queryString, queryArea);
 
-    SearchOptions searchOptions = SearchOptions.withDefaults();
+    SearchOptions searchOptions = SearchOptions();
     searchOptions.languageCode = LanguageCode.enUs;
     searchOptions.maxItems = 30;
 
@@ -258,6 +258,16 @@ class OfflineMapsExample {
         print("Search result: $title, $address");
       }
     });
+  }
+
+  onOnlineButtonClicked() {
+    SDKNativeEngine.sharedInstance?.isOfflineMode = false;
+    _showDialog("Note", "The app is allowed to go online.");
+  }
+
+  onOfflineButtonClicked() {
+    SDKNativeEngine.sharedInstance?.isOfflineMode = true;
+    _showDialog("Note", "The app is radio-silence.");
   }
 
   GeoBox _getMapViewGeoBox() {

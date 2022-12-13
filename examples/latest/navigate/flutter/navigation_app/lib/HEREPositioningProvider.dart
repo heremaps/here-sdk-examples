@@ -91,9 +91,4 @@ class HEREPositioningProvider implements LocationStatusListener {
       print("Feature not available: " + feature.toString());
     }
   }
-
-  @override
-  void release() {
-    stop();
-  }
 }

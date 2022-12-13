@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
                     cameraExample = new CameraExample();
                     cameraExample.onMapSceneLoaded(MainActivity.this, mapView);
                 } else {
-                    Log.d(TAG, "onLoadScene failed: " + mapError.toString());
+                    Log.d(TAG, "onLoadScene failed: " + mapError);
                 }
             }
         });

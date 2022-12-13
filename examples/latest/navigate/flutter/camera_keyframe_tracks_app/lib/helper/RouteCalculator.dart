@@ -43,7 +43,7 @@ class RouteCalculator {
     routes.Waypoint destinationWaypoint = routes.Waypoint(GeoCoordinates(40.7203, -74.3122));
     List<routes.Waypoint> waypoints = [startWaypoint, destinationWaypoint];
 
-    _routingEngine.calculateCarRoute(waypoints, routes.CarOptions.withDefaults(), (_routingError, _routes) {
+    _routingEngine.calculateCarRoute(waypoints, routes.CarOptions(), (_routingError, _routes) {
       if (_routingError == null) {
         testRoute = _routes?.elementAt(0);
         _showRouteOnMap(testRoute!);

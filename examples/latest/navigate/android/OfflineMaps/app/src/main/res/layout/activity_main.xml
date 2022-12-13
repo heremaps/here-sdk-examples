@@ -14,6 +14,7 @@
 
     <LinearLayout
         app:layout_constraintTop_toTopOf="parent"
+        android:id="@+id/first_button_row"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
@@ -56,6 +57,32 @@
             android:textSize="8sp"
             android:text="Test"
             android:onClick="onSearchPlaceClicked" />
+    </LinearLayout>
+
+    <LinearLayout
+        app:layout_constraintTop_toBottomOf="@+id/first_button_row"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:backgroundTint="@android:color/holo_blue_light"
+            android:textColor="@android:color/white"
+            android:textSize="8sp"
+            android:text="Switch Online"
+            android:onClick="switchOnlineButtonClicked" />
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:backgroundTint="@android:color/holo_blue_light"
+            android:textColor="@android:color/white"
+            android:textSize="8sp"
+            android:text="Switch Offline"
+            android:onClick="switchOfflineButtonClicked" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

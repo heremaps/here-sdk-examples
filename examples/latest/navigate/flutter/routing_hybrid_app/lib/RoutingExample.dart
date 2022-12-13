@@ -39,6 +39,7 @@ class RoutingExample {
   GeoCoordinates? _startGeoCoordinates;
   GeoCoordinates? _destinationGeoCoordinates;
   ShowDialogFunction _showDialog;
+  final _BERLIN_HQ_GEO_COORDINATES = GeoCoordinates(52.530971, 13.385088);
 
   RoutingExample(ShowDialogFunction showDialogCallback, HereMapController hereMapController)
       : _showDialog = showDialogCallback,
@@ -73,14 +74,14 @@ class RoutingExample {
   Future<void> addRoute() async {
     clearMap();
 
-    _startGeoCoordinates = _createRandomGeoCoordinatesInViewport();
+    _startGeoCoordinates = _BERLIN_HQ_GEO_COORDINATES;
     _destinationGeoCoordinates = _createRandomGeoCoordinatesInViewport();
     var startWaypoint = Waypoint.withDefaults(_startGeoCoordinates!);
     var destinationWaypoint = Waypoint.withDefaults(_destinationGeoCoordinates!);
 
     List<Waypoint> waypoints = [startWaypoint, destinationWaypoint];
 
-    _routingEngine.calculateCarRoute(waypoints, CarOptions.withDefaults(),
+    _routingEngine.calculateCarRoute(waypoints, CarOptions(),
         (RoutingError? routingError, List<here.Route>? routeList) async {
       if (routingError == null) {
         // When error is null, it is guaranteed that the list is not empty.
@@ -113,7 +114,7 @@ class RoutingExample {
 
     List<Waypoint> waypoints = [startWaypoint, waypoint1, waypoint2, destinationWaypoint];
 
-    _routingEngine.calculateCarRoute(waypoints, CarOptions.withDefaults(),
+    _routingEngine.calculateCarRoute(waypoints, CarOptions(),
         (RoutingError? routingError, List<here.Route>? routeList) async {
       if (routingError == null) {
         // When error is null, it is guaranteed that the list is not empty.
@@ -250,7 +251,8 @@ class RoutingExample {
   GeoCoordinates _createRandomGeoCoordinatesInViewport() {
     GeoBox? geoBox = _hereMapController.camera.boundingBox;
     if (geoBox == null) {
-      // Happens only when map is not fully covering the viewport.
+      // Happens only when map is not fully covering the viewport as the map is tilted.
+      print("The map view is tilted, falling back to fixed destination coordinate.");
       return GeoCoordinates(52.530932, 13.384915);
     }
 

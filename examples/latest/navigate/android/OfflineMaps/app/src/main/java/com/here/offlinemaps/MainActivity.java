@@ -159,4 +159,12 @@ public class MainActivity extends AppCompatActivity {
     public void onSearchPlaceClicked(View view) {
         offlineMapsExample.onSearchPlaceClicked();
     }
+
+    public void switchOnlineButtonClicked(View view) {
+        offlineMapsExample.onSwitchOnlineButtonClicked();
+    }
+
+    public void switchOfflineButtonClicked(View view) {
+        offlineMapsExample.onSwitchOfflineButtonClicked();
+    }
 }

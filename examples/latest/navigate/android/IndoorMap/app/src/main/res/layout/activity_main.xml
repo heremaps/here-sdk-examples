@@ -14,15 +14,13 @@
             android:layout_height="50dp"
             android:gravity="start"
             android:orientation="horizontal" >
-            <EditText
-                android:id="@+id/venueChooser"
-                android:inputType="number"
+            <Spinner
+                android:id="@+id/VenueInfoList"
                 android:layout_width="108dp"
                 android:layout_height="match_parent"
-                android:layout_gravity="start"
+                android:layout_alignParentTop="true"
                 android:layout_marginStart="5dp"
-                android:importantForAutofill="no"
-                android:hint="@string/venue_id"/>
+                android:visibility="visible" />
             <Button
                 android:id="@+id/goButton"
                 android:backgroundTint="@color/colorPrimary"
@@ -31,7 +29,7 @@
                 android:layout_alignParentTop="true"
                 android:layout_gravity="start"
                 android:layout_marginStart="5dp"
-                android:layout_toEndOf="@+id/venueChooser"
+                android:layout_toEndOf="@+id/VenueInfoList"
                 android:text="@string/go"
                 android:textColor="@android:color/white"/>
             <ImageView

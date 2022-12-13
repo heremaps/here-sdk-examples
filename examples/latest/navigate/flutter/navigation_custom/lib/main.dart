@@ -164,10 +164,14 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
 
   // Calculate a fixed route for testing and start guidance simulation along the route.
   void _startButtonClicked() {
+    if (_isVisualNavigatorRenderingStarted) {
+      return;
+    }
+
     HERE.Waypoint startWaypoint = HERE.Waypoint(_routeStartGeoCoordinates);
     HERE.Waypoint destinationWaypoint = HERE.Waypoint(HERE.GeoCoordinates(52.530905, 13.385007));
 
-    _routingEngine!.calculateCarRoute([startWaypoint, destinationWaypoint], HERE.CarOptions.withDefaults(),
+    _routingEngine!.calculateCarRoute([startWaypoint, destinationWaypoint], HERE.CarOptions(),
         (HERE.RoutingError? routingError, List<HERE.Route>? routeList) async {
       if (routingError == null) {
         // When error is null, it is guaranteed that the routeList is not empty.
@@ -185,7 +189,7 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
     _stopGuidance();
   }
 
-  // Toogle between the default LocationIndicator and custom LocationIndicator.
+  // Toggle between the default LocationIndicator and custom LocationIndicator.
   // The default LocationIndicator uses a 3D asset that is part of the HERE SDK.
   // The custom LocationIndicator uses different 3D assets, see asset folder.
   void _toggleButtonClicked() {
@@ -359,7 +363,7 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
 
     try {
       // Provides fake GPS signals based on the route geometry.
-      _locationSimulator = LocationSimulator.withRoute(route, LocationSimulatorOptions.withDefaults());
+      _locationSimulator = LocationSimulator.withRoute(route, LocationSimulatorOptions());
     } on InstantiationException {
       throw Exception("Initialization of LocationSimulator failed.");
     }

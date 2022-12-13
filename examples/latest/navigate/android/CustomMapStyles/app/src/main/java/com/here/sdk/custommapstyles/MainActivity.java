@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
                     customMapStylesExample = new CustomMapStylesExample();
                     customMapStylesExample.onMapSceneLoaded(MainActivity.this, mapView);
                 } else {
-                    Log.d(TAG, "onLoadScene failed: " + mapError.toString());
+                    Log.d(TAG, "onLoadScene failed: " + mapError);
                 }
             }
         });

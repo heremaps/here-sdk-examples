@@ -83,6 +83,13 @@ class _MyAppState extends State<MyApp> {
                   button('Test Search', _testButtonClicked),
                 ],
               ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  button('Switch Online', _onlineButtonClicked),
+                  button('Switch Offline', _offlineButtonClicked),
+                ],
+              ),
             ],
           ),
         ],
@@ -114,6 +121,14 @@ class _MyAppState extends State<MyApp> {
 
   void _testButtonClicked() {
     _offlineMapsExample?.onSearchPlaceClicked();
+  }
+
+  void _onlineButtonClicked() {
+    _offlineMapsExample?.onOnlineButtonClicked();
+  }
+
+  void _offlineButtonClicked() {
+    _offlineMapsExample?.onOfflineButtonClicked();
   }
 
   @override
