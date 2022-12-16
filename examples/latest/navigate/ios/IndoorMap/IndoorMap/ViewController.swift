@@ -22,26 +22,28 @@ import UIKit
 
 class ViewController: UIViewController {
     @IBOutlet weak var viewFrame: UIView!
-    @IBOutlet private weak var venueIdInput: UITextField!
     @IBOutlet private weak var venueIdLoad: UIButton!
     @IBOutlet private weak var levelSwitcher: LevelSwitcher!
     @IBOutlet private weak var drawingSwitcher: DrawingSwitcher!
     @IBOutlet private weak var geometryNameLabel: UILabel!
     @IBOutlet private weak var venueSearch: VenueSearch!
-    @IBOutlet private weak var venuesManager: VenuesManager!
     @IBOutlet private weak var indoorRoutingUIConstraint: NSLayoutConstraint!
-
+    @IBOutlet weak var btnDrop: UIButton!
+    @IBOutlet weak var tblView: UITableView!
+    
     var mapView: MapView!
     var mapScheme: MapScheme = .normalDay
     var venueEngine: VenueEngine!
     var moveToVenue: Bool = false
     var venueTapHandler: VenueTapHandler?
-    
+    var venueMapList = [String]()
+    var selectedVenue : String!
+
     //Label text preference as per user choice
     var labelPref = ["OCCUPANT_NAMES", "SPACE_NAME", "INTERNAL_ADDRESS"]
 
     // Set value for hrn with your platform catalog HRN value if you want to load non default collection.
-    var hrn: String = ""
+    var hrn: String = "YOUR_CATALOG_HRN"
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -49,11 +51,33 @@ class ViewController: UIViewController {
         mapView = MapView(frame: viewFrame.bounds)
         viewFrame.addSubview(mapView)
 
-        venueIdInput?.keyboardType = UIKeyboardType.numberPad
         venueIdLoad?.setTitle("loading...", for: .disabled)
 
         // Load the map scene using a map scheme to render the map with.
         mapView.mapScene.loadScene(mapScheme: MapScheme.normalDay, completion: onLoadScene)
+        
+        self.tblView.isHidden = true
+    }
+
+    @IBAction func onClickDropButton(_ sender: Any) {
+        if tblView.isHidden {
+            animate(toogle: true)
+        } else {
+            animate(toogle: false)
+        }
+    }
+    
+    func animate(toogle: Bool) {
+        if toogle {
+            UIView.animate(withDuration: 0.3) {
+                self.tblView.isHidden = false
+            }
+        } else {
+            UIView.animate(withDuration: 0.3) {
+                self.tblView.isHidden = true
+            }
+        }
+        
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -111,7 +135,6 @@ class ViewController: UIViewController {
                                          geometryLabel: geometryNameLabel)
         venueSearch.setup(venueMap, tapHandler: venueTapHandler)
         mapView.gestures.tapDelegate = self
-        venuesManager.setup(venueMap, mapView: mapView)
 
         // Start VenueEngine. Once authentication is done, the authentication completion handler
         // will be triggered. Afterwards, VenueEngine will start VenueService. Once VenueService
@@ -133,31 +156,19 @@ class ViewController: UIViewController {
 
     // Touch handler for the button which selects venues by id.
     @IBAction private func loadVenue(_ sender: Any) {
-        if let text = venueIdInput.text {
-            // Try to parse a venue id.
-            if let id = Int32(text) {
-                if (venueEngine?.venueService.isInitialized() ?? false) && (id != venueEngine?.venueMap.selectedVenue?.venueModel.id) {
-                    print("Loading venue \(id).")
-                    // Disable the input UI while a venue loading and selection is in progress.
-                    venueIdLoad?.isEnabled = false
-                    moveToVenue = true
-                    //Get List of venues info
-                    let venueInfo:[VenueInfo]? = venueEngine?.venueMap.getVenueInfoList()
-                    if let venueInfo = venueInfo {
-                      for venueInfo in venueInfo {
-                          print("Venue Identifier: \(venueInfo.venueIdentifier)." + " Venue Id: \(venueInfo.venueId)." + " Venue Name: \(venueInfo.venueName).")
-                      }
-                    }
-                    // Select a venue by id.
-                    venueEngine?.venueMap.selectVenueAsync(venueId: id, completion: self.onVenueLoadError)
-                } else {
-                    print("Venue service is not initialized! Status: \(String(describing: venueEngine?.venueService.getInitStatus()))")
-                }
+        // Try to parse a venue id.
+        if let id = Int32(selectedVenue) {
+            if (venueEngine?.venueService.isInitialized() ?? false) && (id != venueEngine?.venueMap.selectedVenue?.venueModel.id) {
+                print("Loading venue \(id).")
+                // Disable the input UI while a venue loading and selection is in progress.
+                venueIdLoad?.isEnabled = false
+                moveToVenue = true
+                // Select a venue by id.
+                venueEngine?.venueMap.selectVenueAsync(venueId: id, completion: self.onVenueLoadError)
             } else {
-                print("Load venue id is not a number!")
+                print("Venue service is not initialized! Status: \(String(describing: venueEngine?.venueService.getInitStatus()))")
             }
         }
-        venueIdInput?.resignFirstResponder()
     }
     
     private func onVenueLoadError(_ error: VenueErrorCode?) {
@@ -196,14 +207,11 @@ class ViewController: UIViewController {
             // Present Alert to
             self.present(dialogMessage, animated: true, completion: nil)
             venueIdLoad?.isEnabled = true
+            viewWillDisappear(true)
         }
 
     @IBAction private func onSearchTap(_ sender: Any) {
         venueSearch.isHidden = !venueSearch.isHidden
-    }
-
-    @IBAction private func onEditTap(_ sender: Any) {
-        venuesManager.isHidden = !venuesManager.isHidden
     }
 
     override func didReceiveMemoryWarning() {
@@ -225,6 +233,22 @@ extension ViewController: VenueServiceDelegate {
     func onInitializationCompleted(result: VenueServiceInitStatus) {
         if (result == .onlineSuccess) {
             print("Venue Service successfully initialized.")
+            var index: Int
+            index = 0
+            //Get List of venues info
+            let venueInfo:[VenueInfo]? = venueEngine?.venueMap.getVenueInfoList()
+            if let venueInfo = venueInfo {
+              for venueInfo in venueInfo {
+                  print("Venue Identifier: \(venueInfo.venueIdentifier)." + " Venue Id: \(venueInfo.venueId)." + " Venue Name: \(venueInfo.venueName).")
+                  let venueIdStr = venueInfo.venueIdentifier
+                  venueMapList.insert(String(venueIdStr.dropFirst(41)), at: index)
+                  index = index+1
+              }
+                self.tblView.delegate = self
+                self.tblView.dataSource = self
+                self.tblView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+                self.view.addSubview(tblView)
+            }
         } else {
             print("Venue Service failed to initialize!")
         }
@@ -240,6 +264,7 @@ extension ViewController: VenueDelegate {
     func onGetVenueCompleted(venueId: Int32, venueModel: VenueModel?, online: Bool, venueStyle: VenueStyle?) {
         if venueModel == nil {
             print("Loading of venue \(venueId) failed!")
+            venueIdLoad?.isEnabled = true
         }
     }
 }
@@ -257,5 +282,23 @@ extension ViewController: VenueSelectionDelegate {
         DispatchQueue.main.async {
             self.venueIdLoad?.isEnabled = true
         }
+    }
+}
+
+extension ViewController: UITableViewDelegate, UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return venueMapList.count;
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell =  tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        cell.textLabel?.text = String(venueMapList[indexPath.row])
+        return cell;
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        btnDrop.setTitle(venueMapList[indexPath.row], for: .normal)
+        selectedVenue = venueMapList[indexPath.row]
+        animate(toogle: false)
     }
 }

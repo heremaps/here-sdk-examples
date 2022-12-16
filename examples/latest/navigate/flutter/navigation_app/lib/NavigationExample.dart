@@ -75,7 +75,7 @@ class NavigationExample {
   }
 
   void _createDynamicRoutingEngine() {
-    var dynamicRoutingOptions = DynamicRoutingEngineOptions.withAllDefaults();
+    var dynamicRoutingOptions = DynamicRoutingEngineOptions();
     // We want an update for each poll iteration, so we specify 0 difference.
     dynamicRoutingOptions.minTimeDifference = Duration.zero;
     dynamicRoutingOptions.minTimeDifferencePercentage = 0.0;
@@ -616,7 +616,7 @@ class NavigationExample {
   }
 
   void setupSpeedWarnings() {
-    SpeedLimitOffset speedLimitOffset = SpeedLimitOffset.withDefaults();
+    SpeedLimitOffset speedLimitOffset = SpeedLimitOffset();
     speedLimitOffset.lowSpeedOffsetInMetersPerSecond = 2;
     speedLimitOffset.highSpeedOffsetInMetersPerSecond = 4;
     speedLimitOffset.highSpeedBoundaryInMetersPerSecond = 25;

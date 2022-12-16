@@ -33,6 +33,7 @@ class PublicTransportRoutingExample {
   List<MapPolyline> _mapPolylines = [];
   late TransitRoutingEngine _transitRoutingEngine;
   final ShowDialogFunction _showDialog;
+  final _BERLIN_HQ_GEO_COORDINATES = GeoCoordinates(52.530971, 13.385088);
 
   PublicTransportRoutingExample(this._showDialog, this._hereMapController) {
     double distanceToEarthInMeters = 10000;
@@ -43,18 +44,18 @@ class PublicTransportRoutingExample {
   }
 
   Future<void> addTransitRoute() async {
-    var startGeoCoordinates = _createRandomGeoCoordinatesInViewport();
+    var startGeoCoordinates = _BERLIN_HQ_GEO_COORDINATES;
     var destinationGeoCoordinates = _createRandomGeoCoordinatesInViewport();
 
-    var startWaypoint = TransitWaypoint.withDefaults(startGeoCoordinates);
-    var destinationWaypoint = TransitWaypoint.withDefaults(destinationGeoCoordinates);
+    var startWaypoint = TransitWaypoint(startGeoCoordinates);
+    var destinationWaypoint = TransitWaypoint(destinationGeoCoordinates);
 
-    var options = TransitRouteOptions.withDefaults();
+    var options = TransitRouteOptions();
 
     _transitRoutingEngine.calculateRoute(startWaypoint, destinationWaypoint, options,
         (RoutingError? routingError, List<here.Route>? routeList) async {
       if (routingError == null) {
-        // Whenn error is null, the list is guaranteed to be non empty.
+        // When error is null, the list is guaranteed to be non empty.
         here.Route route = routeList!.first;
         _showRouteDetails(route);
         _showRouteOnMap(route);
@@ -140,7 +141,8 @@ class PublicTransportRoutingExample {
   GeoCoordinates _createRandomGeoCoordinatesInViewport() {
     GeoBox? geoBox = _hereMapController.camera.boundingBox;
     if (geoBox == null) {
-      // Happens only when map is not fully covering the viewport.
+      // Happens only when map is not fully covering the viewport as the map is tilted.
+      print("The map view is tilted, falling back to fixed destination coordinate.");
       return GeoCoordinates(52.530932, 13.384915);
     }
 

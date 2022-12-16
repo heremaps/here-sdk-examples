@@ -58,6 +58,14 @@ final class ViewController: UIViewController {
         offlineMapsExample.onSearchPlaceClicked()
     }
 
+    @IBAction func onSwitchOnlineClicked(_ sender: Any) {
+        offlineMapsExample.onSwitchOnlineClicked()
+    }
+
+    @IBAction func onSwitchOfflineClicked(_ sender: Any) {
+        offlineMapsExample.onSwitchOfflineClicked()
+    }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         mapView.handleLowMemory()

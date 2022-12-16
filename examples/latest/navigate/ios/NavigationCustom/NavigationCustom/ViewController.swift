@@ -133,6 +133,10 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
 
     // Calculate a fixed route for testing and start guidance simulation along the route.
     @IBAction func startButtonClicked(_ sender: Any) {
+        if isVisualNavigatorRenderingStarted {
+            return;
+        }
+
         let startWaypoint = Waypoint(coordinates: routeStartGeoCoordinates)
         let destinationWaypoint = Waypoint(coordinates: GeoCoordinates(latitude: 52.530905, longitude: 13.385007))
 
@@ -154,7 +158,7 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
         stopGuidance()
     }
 
-    // Toogle between the default LocationIndicator and custom LocationIndicator.
+    // Toggle between the default LocationIndicator and custom LocationIndicator.
     // The default LocationIndicator uses a 3D asset that is part of the HERE SDK.
     // The custom LocationIndicator uses different 3D assets, see asset folder.
     @IBAction func toggleButtonClicked(_ sender: Any) {

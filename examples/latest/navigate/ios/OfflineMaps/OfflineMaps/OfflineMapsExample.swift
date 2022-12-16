@@ -343,6 +343,16 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
         }
     }
 
+    func onSwitchOnlineClicked() {
+        SDKNativeEngine.sharedInstance?.isOfflineMode = false
+        self.showMessage("The app is allowed to go online.")
+    }
+    
+    func onSwitchOfflineClicked() {
+        SDKNativeEngine.sharedInstance?.isOfflineMode = true
+        self.showMessage("The app is radio-silence.")
+    }
+    
     private func checkInstallationStatus() {
         guard let mapDownloader = mapDownloader else {
             showMessage("MapDownloader instance not ready. Try again.")

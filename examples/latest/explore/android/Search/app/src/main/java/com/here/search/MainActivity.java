@@ -94,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         permissionsRequestor.onRequestPermissionsResult(requestCode, grantResults);
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     private void loadMapScene() {
@@ -104,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
                 if (mapError == null) {
                     searchExample = new SearchExample(MainActivity.this, mapView);
                 } else {
-                    Log.d(TAG, "onLoadScene failed: " + mapError.toString());
+                    Log.d(TAG, "onLoadScene failed: " + mapError);
                 }
             }
         });
@@ -142,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
         mapView.onSaveInstanceState(outState);
         super.onSaveInstanceState(outState);
     }
-    
+
     private void disposeHERESDK() {
         // Free HERE SDK resources before the application shuts down.
         // Usually, this should be called only on application termination.

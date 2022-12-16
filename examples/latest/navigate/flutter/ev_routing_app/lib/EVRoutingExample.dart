@@ -95,7 +95,7 @@ class EVRoutingExample {
   }
 
   EVCarOptions _getEVCarOptions() {
-    EVCarOptions evCarOptions = EVCarOptions.withDefaults();
+    EVCarOptions evCarOptions = EVCarOptions();
 
     // The below three options are the minimum you must specify or routing will result in an error.
     evCarOptions.consumptionModel.ascentConsumptionInWattHoursPerMeter = 9;
@@ -111,7 +111,7 @@ class EVRoutingExample {
 
     // The below options are required when setting the ensureReachability option to true
     // (AvoidanceOptions need to be empty).
-    evCarOptions.avoidanceOptions = AvoidanceOptions.withDefaults();
+    evCarOptions.avoidanceOptions = AvoidanceOptions();
     evCarOptions.routeOptions.speedCapInMetersPerSecond = null;
     evCarOptions.routeOptions.optimizationMode = OptimizationMode.fastest;
     evCarOptions.batterySpecifications.connectorTypes = [
@@ -227,7 +227,7 @@ class EVRoutingExample {
         TextQueryArea.withCorridor(routeCorridor, _hereMapController.camera.state.targetCoordinates);
     TextQuery textQuery = TextQuery.withArea("charging station", queryArea);
 
-    SearchOptions searchOptions = SearchOptions.withDefaults();
+    SearchOptions searchOptions = SearchOptions();
     searchOptions.languageCode = LanguageCode.enUs;
     searchOptions.maxItems = 30;
 

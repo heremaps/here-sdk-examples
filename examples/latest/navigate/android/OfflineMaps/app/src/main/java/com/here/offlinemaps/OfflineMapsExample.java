@@ -319,6 +319,15 @@ public class OfflineMapsExample {
         mapDownloaderTasks.clear();
     }
 
+    public void onSwitchOnlineButtonClicked() {
+        SDKNativeEngine.getSharedInstance().setOfflineMode(false);
+        snackbar.setText("The app is allowed to go online.").show();
+    }
+    public void onSwitchOfflineButtonClicked() {
+        SDKNativeEngine.getSharedInstance().setOfflineMode(true);
+        snackbar.setText("The app is radio-silence.").show();
+    }
+
     // A test call that shows that, for example, search is possible on downloaded regions.
     // For this make sure you have successfully downloaded a region, device is offline and
     // the viewport shows a part of the region. Note: We need the OfflineSearchEngine, as

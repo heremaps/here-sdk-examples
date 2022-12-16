@@ -41,7 +41,7 @@ class HEREPositioningSimulator {
 
   // Provides fake GPS signals based on the route geometry.
   HERE.LocationSimulator _createLocationSimulator(HERE.Route route, HERE.LocationListener locationListener) {
-    HERE.LocationSimulatorOptions locationSimulatorOptions = HERE.LocationSimulatorOptions.withDefaults();
+    HERE.LocationSimulatorOptions locationSimulatorOptions = HERE.LocationSimulatorOptions();
     locationSimulatorOptions.speedFactor = 2;
     locationSimulatorOptions.notificationInterval = Duration(milliseconds: 500);
 

@@ -27,6 +27,8 @@ import 'package:here_sdk/core.engine.dart';
 import 'package:here_sdk/core.errors.dart';
 import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/venue.dart';
+import 'dart:convert';
+import 'events.dart';
 
 void main() {
   // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
@@ -65,9 +67,25 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MainPage extends StatelessWidget {
+class MainPage extends StatefulWidget {
+  const MainPage({super.key});
+
+  @override
+  State<MainPage> createState() => _MainPageState();
+}
+
+class _MainPageState extends State<MainPage> {
   final VenueEngineState _venueEngineState = VenueEngineState();
   final GeometryInfoState _geometryInfoState = GeometryInfoState();
+  late String _venueIdAsString = "";
+  late String _selectedVenue = "Venue Id";
+  List _venueList = ["Venue Id"];
+  bool _isPressed = false;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,34 +98,86 @@ class MainPage extends StatelessWidget {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 120,
+            Padding(
               padding: EdgeInsets.only(left: 5, right: 5),
-              // Widget for opening venue by provided ID.
-              child: TextField(
-                  decoration: InputDecoration(border: InputBorder.none, hintText: 'Enter a venue ID'),
-                  onSubmitted: (text) {
-                    try {
-                      // Try to parse a venue id.
-                      int venueId = int.parse(text);
-                      // Select a venue by id.
-                      _venueEngineState.selectVenue(venueId);
-                    } on FormatException catch (_) {
-                      print("Venue ID should be a number!");
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  ValueListenableBuilder<List>(
+                    builder: (BuildContext context, List value, Widget? child) {
+                      _venueList = value;
+                      return DropdownButton(
+                        hint: Text("MapList"),
+                        value: _selectedVenue,
+                        items: _venueList.map((item) {
+                          return DropdownMenuItem(
+                            child: Text(item),
+                            value: item,
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedVenue = "$value";
+                            _venueIdAsString = _selectedVenue;
+                            _isPressed = false;
+                            mapLoading.isMapLoading.value = false;
+                          });
+                        },
+                      );
+                    },
+                    valueListenable: listEventHandler.updatedList,
+                    // The child parameter is most helpful if the child is
+                    // expensive to build and does not depend on the value from
+                    // the notifier.
+                  ),
+                ],
+              ),
+            ),
+            Container(
+                margin: EdgeInsets.all(4),
+                width: 100,
+                child: ValueListenableBuilder<bool>(
+                  builder: (BuildContext context, bool value, Widget? child) {
+                    if(value) {
+                      _isPressed = false;
                     }
-                  }),
+                    return ElevatedButton(
+                      onPressed: mapLoading.isMapLoading.value ? null: () async {
+                        if(_isPressed) {
+                          setState(() => _isPressed = false);
+                        }
+                        else {
+                          setState(() => _isPressed = true);
+                        }
+
+                        try {
+                          // Try to parse a venue id.
+                          int venueId = int.parse(_venueIdAsString);
+                          // Select a venue by id.
+                          _venueEngineState.selectVenue(venueId);
+                        } on FormatException catch (_) {
+                          print("Venue ID should be a number!");
+                        }
+                      },
+                      child: Text(_isPressed ? 'Loading...' : 'Go'),
+                    );
+                  },
+                  valueListenable: mapLoading.isMapLoading,
+                  // The child parameter is most helpful if the child is
+                  // expensive to build and does not depend on the value from
+                  // the notifier.
+                ),
             ),
             Container(
               margin: EdgeInsets.all(4),
               width: kMinInteractiveDimension,
               child: TextButton(
                 style: TextButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.zero
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.zero
                 ),
                 child: Icon(Icons.search, color: Colors.black, size: kMinInteractiveDimension),
                 onPressed: () {
-                  _venueEngineState.getVenuesControllerState().setOpen(false);
                   final venueSearchState = _venueEngineState.getVenueSearchState();
                   venueSearchState.setOpen(!venueSearchState.isOpen());
                 },
@@ -163,7 +233,7 @@ class MainPage extends StatelessWidget {
       var venueEngine;
       try {
         venueEngine = VenueEngine(_onVenueEngineCreated);
-	_venueEngineState.set(hereMapController, venueEngine, _geometryInfoState);
+        _venueEngineState.set(hereMapController, venueEngine, _geometryInfoState);
       } on InstantiationException catch(e){
         print('error caught: $e');
       }
