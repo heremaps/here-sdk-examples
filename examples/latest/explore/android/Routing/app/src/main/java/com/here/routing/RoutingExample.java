@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 HERE Europe B.V.
+ * Copyright (C) 2019-2023 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -138,9 +138,11 @@ public class RoutingExample {
 
     private void showRouteDetails(Route route) {
         long estimatedTravelTimeInSeconds = route.getDuration().getSeconds();
+        long estimatedTrafficDelayInSeconds = route.getTrafficDelay().getSeconds();
         int lengthInMeters = route.getLengthInMeters();
 
         String routeDetails = "Travel Time: " + formatTime(estimatedTravelTimeInSeconds)
+                            + ", traffic delay: " + formatTime(estimatedTrafficDelayInSeconds)
                             + ", Length: " + formatLength(lengthInMeters);
 
         showDialog("Route Details", routeDetails);

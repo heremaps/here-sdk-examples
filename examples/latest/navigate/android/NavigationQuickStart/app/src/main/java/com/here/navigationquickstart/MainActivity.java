@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 HERE Europe B.V.
+ * Copyright (C) 2019-2023 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,15 +64,24 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
-        initializeHERESDK();
+        if (SDKNativeEngine.getSharedInstance() == null) {
+            initializeHERESDK();
+            // We are starting from scratch without a bundled state.
+            setupMapView(null);
+            handleAndroidPermissions();
+        } else {
+            // The Activity is recreated, for example, due to an orientation change:
+            // We can reuse the bundled state and keep the existing HERE SDK instance.
+            setupMapView(savedInstanceState);
+        }
+    }
 
+    private void setupMapView(Bundle savedInstanceState) {
         setContentView(R.layout.activity_main);
-
-        // Get a MapView instance from the layout.
+        // Get MapView instance from layout.
         mapView = findViewById(R.id.map_view);
+        // If the Activity is recreated, we can start with the last bundled state of the map view.
         mapView.onCreate(savedInstanceState);
-
-        handleAndroidPermissions();
     }
 
     private void initializeHERESDK() {
@@ -106,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         permissionsRequestor.onRequestPermissionsResult(requestCode, grantResults);
     }
 
@@ -210,8 +220,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         mapView.onDestroy();
-        disposeHERESDK();
         super.onDestroy();
+        if (isFinishing()) {
+            disposeHERESDK();
+        }
     }
 
     @Override

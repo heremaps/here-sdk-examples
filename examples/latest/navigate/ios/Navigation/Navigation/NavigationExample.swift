@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 HERE Europe B.V.
+ * Copyright (C) 2019-2023 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,6 +53,7 @@ class NavigationExample : NavigableLocationDelegate,
     private var lastMapMatchedLocation: MapMatchedLocation?
     private var previousManeuverIndex: Int32 = -1
     private var messageTextView: UITextView
+    private let routePrefetcher: RoutePrefetcher
 
     init(viewController: UIViewController, mapView: MapView, messageTextView: UITextView) {
         self.viewController = viewController
@@ -68,13 +69,16 @@ class NavigationExample : NavigableLocationDelegate,
 
         // By default, enable auto-zoom during guidance.
         visualNavigator.cameraBehavior = DynamicCameraBehavior()
-        
+
         visualNavigator.startRendering(mapView: mapView)
 
         // A class to receive real location events.
         herePositioningProvider = HEREPositioningProvider()
         // A class to receive simulated location events.
         herePositioningSimulator = HEREPositioningSimulator()
+        // The RoutePrefetcher downloads map data in advance into the map cache.
+        // This is not mandatory, but can help to improve the guidance experience.
+        routePrefetcher = RoutePrefetcher(SDKNativeEngine.sharedInstance!)
 
         // A helper class for TTS.
         voiceAssistant = VoiceAssistant()
@@ -106,6 +110,16 @@ class NavigationExample : NavigableLocationDelegate,
                                               accuracy: .navigation)
     }
 
+    func prefetchMapData(currentGeoCoordinates: GeoCoordinates) {
+        // Prefetches map data around the provided location with a radius of 2 km into the map cache.
+        // For the best experience, prefetchAroundLocation() should be called as early as possible.
+        routePrefetcher.prefetchAroundLocation(currentLocation: currentGeoCoordinates)
+        // Prefetches map data within a corridor along the route that is currently set to the provided Navigator instance.
+        // This happens continuously in discrete intervals.
+        // If no route is set, no data will be prefetched.
+        routePrefetcher.prefetchAroundRouteOnIntervals(navigator: visualNavigator)
+    }
+    
     func createDynamicRoutingEngine() -> DynamicRoutingEngine {
         // We want an update for each poll iteration, so we specify 0 difference.
         let minTimeDifferencePercentage = 0.0
@@ -119,7 +133,7 @@ class NavigationExample : NavigableLocationDelegate,
 
         do {
             // With the dynamic routing engine you can poll the HERE backend services to search for routes with less traffic.
-            // THis can happen during guidance - or you can periodically update a route that is shown in a route planner.
+            // This can happen during guidance - or you can periodically update a route that is shown in a route planner.
             let dynamicRoutingEngine = try DynamicRoutingEngine(options: dynamicRoutingOptions)
             return dynamicRoutingEngine
         } catch let engineInstantiationError {
@@ -503,7 +517,7 @@ class NavigationExample : NavigableLocationDelegate,
                 // If not preceded by a "reached"-notification, this restriction was valid only for the passed location.
                 print("A restriction was just passed.")
             }
-            
+
             // One of the following restrictions applies, if more restrictions apply at the same time,
             // they are part of another TruckRestrictionWarning element contained in the list.
             if truckRestrictionWarning.weightRestriction != nil {
@@ -529,14 +543,14 @@ class NavigationExample : NavigableLocationDelegate,
     func onSignpostWarningUpdated(_ signpostWarning: SignpostWarning) {
         let distance = signpostWarning.distanceToSignpostsInMeters
         let distanceType: DistanceType = signpostWarning.distanceType
-                      
+
         // Note that DistanceType.reached is not used for Signposts.
         if distanceType == DistanceType.ahead {
             print("A Signpost ahead in: " + String(distance) + " meters.")
         } else if distanceType == DistanceType.passed {
             print("A Signpost just passed.")
         }
-        
+
         // Multiple signs can appear at the same location.
         for signpost in signpostWarning.signposts {
             let svgImageContent = signpost.svgImageContent
@@ -545,7 +559,7 @@ class NavigationExample : NavigableLocationDelegate,
             // Use a SVG library of your choice for this.
         }
     }
-    
+
     // Notifies on complex junction views for which a 3D visualization is available as a static image to help orientate the driver.
     // The event matches the notification for complex junctions, see JunctionViewLaneAssistance.
     // Note that the SVG data for junction view is composed out of several 3D elements such as trees, a horizon and the actual junction
@@ -554,20 +568,20 @@ class NavigationExample : NavigableLocationDelegate,
     func onJunctionViewWarningUpdated(_ junctionViewWarning: JunctionViewWarning) {
         let distance = junctionViewWarning.distanceToJunctionViewInMeters
         let distanceType: DistanceType = junctionViewWarning.distanceType
-                      
+
         // Note that DistanceType.reached is not used for junction views.
         if distanceType == DistanceType.ahead {
             print("A JunctionView ahead in: " + String(distance) + " meters.")
         } else if distanceType == DistanceType.passed {
             print("A JunctionView just passed.")
         }
-        
+
         let svgImageContent = junctionViewWarning.junctionView.svgImageContent
         print("JunctionView SVG data: " + String(svgImageContent))
         // The resolution-independent SVG data can now be used in an application to visualize the image.
         // Use a SVG library of your choice for this.
     }
-    
+
     // Conform to RoadTextsDelegate
     // Notifies whenever any textual attribute of the current road changes, i.e., the current road texts differ
     // from the previous one. This can be useful during tracking mode, when no maneuver information is provided.
@@ -577,6 +591,9 @@ class NavigationExample : NavigableLocationDelegate,
 
     func startNavigation(route: Route,
                                 isSimulated: Bool) {
+        let startGeoCoordinates = route.geometry.vertices[0]
+        prefetchMapData(currentGeoCoordinates: startGeoCoordinates)
+        
         setupSpeedWarnings()
         setupRoadSignWarnings()
         setupVoiceGuidance()
@@ -610,6 +627,7 @@ class NavigationExample : NavigableLocationDelegate,
         // Without a route the navigator will only notify on the current map-matched location
         // including info such as speed and current street name.
         dynamicRoutingEngine!.stop()
+        routePrefetcher.stopPrefetchAroundRoute()
         visualNavigator.route = nil
         enableDevicePositioning()
         showMessage("Tracking device's location.")
@@ -653,17 +671,17 @@ class NavigationExample : NavigableLocationDelegate,
         roadSignWarningOptions.vehicleTypesFilter = [RoadSignVehicleType.trucks, RoadSignVehicleType.heavyTrucks]
         visualNavigator.roadSignWarningOptions = roadSignWarningOptions
     }
-    
+
     private func setupSignpostWarnings() {
         let signpostWarningOptions = SignpostWarningOptions(aspectRatio: AspectRatio.aspectRatio3X4, darkTheme: false)
         visualNavigator.signpostWarningOptions = signpostWarningOptions
     }
-    
+
     private func setupJunctionViewWarnings() {
         let junctionViewWarningOptions = JunctionViewWarningOptions(aspectRatio: AspectRatio.aspectRatio3X4, darkTheme: false)
         visualNavigator.junctionViewWarningOptions = junctionViewWarningOptions
     }
-    
+
     private func setupVoiceGuidance() {
         let ttsLanguageCode = getLanguageCodeForDevice(supportedVoiceSkins: VisualNavigator.availableLanguagesForManeuverNotifications())
         visualNavigator.maneuverNotificationOptions = ManeuverNotificationOptions(language: ttsLanguageCode,

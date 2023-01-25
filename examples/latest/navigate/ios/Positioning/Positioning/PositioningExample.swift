@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 HERE Europe B.V.
+ * Copyright (C) 2019-2023 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 import heresdk
 import UIKit
 
-class PositioningExample: LocationDelegate, LocationStatusDelegate, LocationAuthorizationChangeDelegate {
+class PositioningExample: LocationDelegate, LocationStatusDelegate {
 
     private static let defaultGeoCoordinates = GeoCoordinates(latitude: 52.520798, longitude: 13.409408)
     private static let defaultCameraDistance = 1000.0
@@ -51,7 +51,6 @@ class PositioningExample: LocationDelegate, LocationStatusDelegate, LocationAuth
             defaultLocation.time = Date()
             addMyLocationToMap(myLocation: defaultLocation)
         }
-        locationAuthorization.authorizationChangeDelegate = self
         startLocating()
     }
 
@@ -59,10 +58,8 @@ class PositioningExample: LocationDelegate, LocationStatusDelegate, LocationAuth
         stopLocating()
     }
 
-    func locationAuthorizatioChanged(granted: Bool) {
-        if granted {
-            startLocating()
-        }
+    func locationAuthorizatioChanged() {
+        startLocating()
     }
 
     private func startLocating() {

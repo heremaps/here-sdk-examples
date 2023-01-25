@@ -1,4 +1,4 @@
-The Navigation Quick Start example app shows how the HERE SDK can be set up to navigate to a location in the most simplest way.
+The Navigation Quick Start example app shows how the HERE SDK can be set up to navigate to a location in the most simplest way. It also shows how to properly handle screen orienation changes.
 
 Build instructions:
 -------------------

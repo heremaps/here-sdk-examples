@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 HERE Europe B.V.
+ * Copyright (C) 2019-2023 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,12 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:here_sdk/core.dart';
+import 'package:here_sdk/core.engine.dart';
 import 'package:here_sdk/core.errors.dart';
 import 'package:here_sdk/location.dart';
 import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/navigation.dart';
+import 'package:here_sdk/prefetcher.dart';
 import 'package:here_sdk/routing.dart' as HERE;
 import 'package:here_sdk/routing.dart';
 import 'package:here_sdk/trafficawarenavigation.dart';
@@ -38,16 +40,26 @@ import 'LanguageCodeConverter.dart';
 class NavigationExample {
   final HereMapController _hereMapController;
   late VisualNavigator _visualNavigator;
-  late HEREPositioningSimulator _locationSimulationProvider;
-  late HEREPositioningProvider _herePositioningProvider;
+  HEREPositioningSimulator _locationSimulationProvider;
+  HEREPositioningProvider _herePositioningProvider;
   late DynamicRoutingEngine _dynamicRoutingEngine;
   MapMatchedLocation? _lastMapMatchedLocation;
   int _previousManeuverIndex = -1;
   final ValueChanged<String> _updateMessageState;
+  RoutePrefetcher _routePrefetcher;
 
   NavigationExample(HereMapController hereMapController, ValueChanged<String> updateMessageState)
       : _hereMapController = hereMapController,
-        _updateMessageState = updateMessageState {
+        _updateMessageState = updateMessageState,
+        // For easy testing, this location provider simulates location events along a route.
+        // You can use HERE positioning to feed real locations, see the "Positioning"-section in
+        // our Developer's Guide for an example
+        _locationSimulationProvider = HEREPositioningSimulator(),
+        // Access the device's GPS sensor and other data.
+        _herePositioningProvider = HEREPositioningProvider(),
+        // The RoutePrefetcher downloads map data in advance into the map cache.
+        // This is not mandatory, but can help to improve the guidance experience.
+        _routePrefetcher = RoutePrefetcher(SDKNativeEngine.sharedInstance!) {
     try {
       _visualNavigator = VisualNavigator();
     } on InstantiationException {
@@ -60,18 +72,21 @@ class NavigationExample {
     // This enables a navigation view including a rendered navigation arrow.
     _visualNavigator.startRendering(_hereMapController);
 
-    // For easy testing, this location provider simulates location events along a route.
-    // You can use HERE positioning to feed real locations, see the "Positioning"-section in
-    // our Developer's Guide for an example.
-    _locationSimulationProvider = HEREPositioningSimulator();
-
-    // Access the device's GPS sensor and other data.
-    _herePositioningProvider = HEREPositioningProvider();
     _herePositioningProvider.startLocating(_visualNavigator, LocationAccuracy.navigation);
 
     _createDynamicRoutingEngine();
 
     setupListeners();
+  }
+
+  void prefetchMapData(GeoCoordinates currentGeoCoordinates) {
+    // Prefetches map data around the provided location with a radius of 2 km into the map cache.
+    // For the best experience, prefetchAroundLocation() should be called as early as possible.
+    _routePrefetcher.prefetchAroundLocation(currentGeoCoordinates);
+    // Prefetches map data within a corridor along the route that is currently set to the provided Navigator instance.
+    // This happens continuously in discrete intervals.
+    // If no route is set, no data will be prefetched.
+    _routePrefetcher.prefetchAroundRouteOnIntervals(_visualNavigator);
   }
 
   void _createDynamicRoutingEngine() {
@@ -83,7 +98,7 @@ class NavigationExample {
 
     try {
       // With the dynamic routing engine you can poll the HERE backend services to search for routes with less traffic.
-      // THis can happen during guidance - or you can periodically update a route that is shown in a route planner.
+      // This can happen during guidance - or you can periodically update a route that is shown in a route planner.
       _dynamicRoutingEngine = DynamicRoutingEngine(dynamicRoutingOptions);
     } on InstantiationException {
       throw Exception("Initialization of DynamicRoutingEngine failed.");
@@ -108,6 +123,9 @@ class NavigationExample {
   }
 
   void startNavigation(HERE.Route route) {
+    GeoCoordinates startGeoCoordinates = route.geometry.vertices[0];
+    prefetchMapData(startGeoCoordinates);
+
     _prepareNavigation(route);
 
     // Stop in case it was started before.
@@ -161,6 +179,7 @@ class NavigationExample {
     // Stop in case it was started before.
     _locationSimulationProvider.stop();
     _dynamicRoutingEngine.stop();
+    _routePrefetcher.stopPrefetchAroundRoute();
     startTracking();
     _updateMessageState("Tracking device's location.");
   }
@@ -546,7 +565,7 @@ class NavigationExample {
 
       // Note that DistanceType.reached is not used for Signposts.
       if (distanceType == DistanceType.ahead) {
-        print("A Signpost ahead in: "+ distance.toString() + " meters.");
+        print("A Signpost ahead in: " + distance.toString() + " meters.");
       } else if (distanceType == DistanceType.passed) {
         print("A Signpost just passed.");
       }
@@ -570,13 +589,14 @@ class NavigationExample {
     // Note that the SVG data for junction view is composed out of several 3D elements such as trees, a horizon and the actual junction
     // geometry. Approx. size per image is 15 MB. In the future, we we reduce the level of realism to reduce the size of the assets.
     // Optionally, you can use a feature-configuration to preload the assets as part of a Region.
-    _visualNavigator.junctionViewWarningListener =  JunctionViewWarningListener((JunctionViewWarning junctionViewWarning) {
+    _visualNavigator.junctionViewWarningListener =
+        JunctionViewWarningListener((JunctionViewWarning junctionViewWarning) {
       double distance = junctionViewWarning.distanceToJunctionViewInMeters;
       DistanceType distanceType = junctionViewWarning.distanceType;
 
       // Note that DistanceType.reached is not used for junction views.
       if (distanceType == DistanceType.ahead) {
-        print("A JunctionView ahead in: "+ distance.toString() + " meters.");
+        print("A JunctionView ahead in: " + distance.toString() + " meters.");
       } else if (distanceType == DistanceType.passed) {
         print("A JunctionView just passed.");
       }

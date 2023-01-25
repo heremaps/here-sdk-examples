@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 HERE Europe B.V.
+ * Copyright (C) 2019-2023 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,11 @@ import UIKit
 
 class CustomRasterLayersExample {
 
-    private let viewController: UIViewController
     private let mapView: MapView
     private var rasterMapLayerTonerStyle: MapLayer!
     private var rasterDataSourceTonerStyle: RasterDataSource!
 
-    init(viewController: UIViewController, mapView: MapView) {
-        self.viewController = viewController
+    init(mapView: MapView) {
         self.mapView = mapView
 
         let camera = mapView.camera
