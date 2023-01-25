@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 HERE Europe B.V.
+ * Copyright (C) 2019-2023 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,19 +21,12 @@ import CoreLocation
 import heresdk
 import UIKit
 
-// Location authorization changes are reported using this protocol.
-public protocol LocationAuthorizationChangeDelegate {
-    func locationAuthorizatioChanged(granted: Bool)
-}
-
 // Location authorization delegate for requesting location authorization.
 public protocol LocationAuthorizationDelegate {
-    var authorizationChangeDelegate: LocationAuthorizationChangeDelegate? { get set }
     func requestLocationAuthorization()
 }
 
 class ViewController: UIViewController, LocationAuthorizationDelegate, CLLocationManagerDelegate {
-
     // Core location instance is needed for requesting location authorization.
     private let locationManager = CLLocationManager()
 
@@ -42,9 +35,6 @@ class ViewController: UIViewController, LocationAuthorizationDelegate, CLLocatio
 
     // Map view instance.
     private var mapView: MapView!
-
-    // Location authorization change delegate reference.
-    var authorizationChangeDelegate: LocationAuthorizationChangeDelegate?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -57,9 +47,6 @@ class ViewController: UIViewController, LocationAuthorizationDelegate, CLLocatio
 
         // Finally add map view as sub view.
         view.addSubview(mapView)
-
-        // Listen for location authorization status changes
-        locationManager.delegate = self
 
         // Create positioning example.
         positioningExample = PositioningExample(locationAuthorization: self)
@@ -78,48 +65,17 @@ class ViewController: UIViewController, LocationAuthorizationDelegate, CLLocatio
         }
     }
 
-    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        if let delegate = authorizationChangeDelegate {
-            let allowed = [
-                CLAuthorizationStatus.authorizedAlways,
-                CLAuthorizationStatus.authorizedWhenInUse
-            ].contains(CLLocationManager.authorizationStatus())
-            delegate.locationAuthorizatioChanged(granted: allowed)
-        }
+    public func requestLocationAuthorization() {
+        locationManager.delegate = self
+        let alert = UIAlertController(title: "Location access required", message: "This example requires location access to function correctly, please accept location access in following dialog.", preferredStyle: .alert)
+        let okAction = UIAlertAction(title: "OK", style: .default, handler: { action in
+            self.locationManager.requestWhenInUseAuthorization()
+        })
+        alert.addAction(okAction)
+        present(alert, animated: true, completion: nil)
     }
 
-    public func requestLocationAuthorization() {
-        // Get current location authorization status.
-        let locationAuthorizationStatus = CLLocationManager.authorizationStatus()
-
-        // Check authorization.
-        switch locationAuthorizationStatus {
-        case .restricted:
-            // Access to location services restricted in the system settings.
-            let alert = UIAlertController(title: "Location Services are restricted", message: "Please remove Location Services restriction in your device Settings", preferredStyle: .alert)
-            let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
-            alert.addAction(okAction)
-            present(alert, animated: true, completion: nil)
-            return
-
-        case .denied:
-            // Location access denied for the application.
-            let alert = UIAlertController(title: "Location access is denied", message: "Please allow location access for the application in your device Settings", preferredStyle: .alert)
-            let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
-            alert.addAction(okAction)
-            present(alert, animated: true, completion: nil)
-            return
-
-        case .authorizedWhenInUse, .authorizedAlways:
-            // Authorization ok.
-            break
-
-        case .notDetermined:
-            locationManager.requestWhenInUseAuthorization()
-            break
-
-        default:
-            break
-        }
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        positioningExample.locationAuthorizatioChanged()
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 HERE Europe B.V.
+ * Copyright (C) 2019-2023 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,9 +31,11 @@ class HEREPositioningProvider : NSObject,
     // We need to check if the device is authorized to use location capabilities like GPS sensors.
     // Results are handled in the CLLocationManagerDelegate below.
     private let locationManager = CLLocationManager()
-    private var locationEngine: LocationEngine
+    private let locationEngine: LocationEngine
     private var locationUpdateDelegate: LocationDelegate?
-    
+    private var accuracy = LocationAccuracy.bestAvailable
+    private var isLocating = false
+
     override init() {
         do {
             try locationEngine = LocationEngine()
@@ -48,7 +50,7 @@ class HEREPositioningProvider : NSObject,
     func getLastKnownLocation() -> Location? {
         return locationEngine.lastKnownLocation
     }
-    
+
     private func authorizeNativeLocationServices() {
         locationManager.delegate = self
         locationManager.requestAlwaysAuthorization()
@@ -63,6 +65,9 @@ class HEREPositioningProvider : NSObject,
                 print("Native location services denied or disabled by user in device settings.")
                 break
             case .authorizedWhenInUse, .authorizedAlways:
+                if let locationUpdateDelegate = locationUpdateDelegate, isLocating {
+                    startLocating(locationDelegate: locationUpdateDelegate, accuracy: accuracy)
+                }
                 print("Native location services authorized by user.")
                 break
             default:
@@ -76,13 +81,18 @@ class HEREPositioningProvider : NSObject,
             return
         }
 
+        isLocating = true
         locationUpdateDelegate = locationDelegate
+        self.accuracy = accuracy
 
         // Set delegates to get location updates.
         locationEngine.addLocationDelegate(locationDelegate: locationUpdateDelegate!)
         locationEngine.addLocationStatusDelegate(locationStatusDelegate: self)
-        
-        _ = locationEngine.start(locationAccuracy: accuracy)
+
+        // Without native permissins granted by user, the LocationEngine cannot be started.
+        if locationEngine.start(locationAccuracy: .bestAvailable) == .missingPermissions {
+            authorizeNativeLocationServices()
+        }
     }
 
     // Does nothing when engine is already stopped.
@@ -95,8 +105,9 @@ class HEREPositioningProvider : NSObject,
         locationEngine.removeLocationDelegate(locationDelegate: locationUpdateDelegate!)
         locationEngine.removeLocationStatusDelegate(locationStatusDelegate: self)
         locationEngine.stop()
+        isLocating = false
     }
-    
+
     // Conforms to the LocationStatusDelegate protocol.
     func onStatusChanged(locationEngineStatus: LocationEngineStatus) {
         print("Location engine status changed: \(locationEngineStatus)")

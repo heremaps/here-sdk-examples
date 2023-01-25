@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 HERE Europe B.V.
+ * Copyright (C) 2019-2023 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.LanguageCode;
 import com.here.sdk.core.Location;
 import com.here.sdk.core.UnitSystem;
+import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.location.LocationAccuracy;
 import com.here.sdk.mapview.MapView;
@@ -85,6 +86,7 @@ import com.here.sdk.navigation.TruckRestrictionWarning;
 import com.here.sdk.navigation.TruckRestrictionsWarningListener;
 import com.here.sdk.navigation.VisualNavigator;
 import com.here.sdk.navigation.WeightRestrictionType;
+import com.here.sdk.prefetcher.RoutePrefetcher;
 import com.here.sdk.routing.Maneuver;
 import com.here.sdk.routing.ManeuverAction;
 import com.here.sdk.routing.RoadTexts;
@@ -116,6 +118,7 @@ public class NavigationExample {
     private final VoiceAssistant voiceAssistant;
     private int previousManeuverIndex = -1;
     private MapMatchedLocation lastMapMatchedLocation;
+    private RoutePrefetcher routePrefetcher;
 
     private final TextView messageView;
 
@@ -127,6 +130,9 @@ public class NavigationExample {
         herePositioningProvider = new HEREPositioningProvider();
         // A class to receive simulated location events.
         herePositioningSimulator = new HEREPositioningSimulator();
+        // The RoutePrefetcher downloads map data in advance into the map cache.
+        // This is not mandatory, but can help to improve the guidance experience.
+        routePrefetcher = new RoutePrefetcher(SDKNativeEngine.getSharedInstance());
 
         try {
             // Without a route set, this starts tracking mode.
@@ -157,6 +163,16 @@ public class NavigationExample {
         herePositioningProvider.startLocating(visualNavigator, LocationAccuracy.NAVIGATION);
     }
 
+    private void prefetchMapData(GeoCoordinates currentGeoCoordinates) {
+        // Prefetches map data around the provided location with a radius of 2 km into the map cache.
+        // For the best experience, prefetchAroundLocation() should be called as early as possible.
+        routePrefetcher.prefetchAroundLocation(currentGeoCoordinates);
+        // Prefetches map data within a corridor along the route that is currently set to the provided Navigator instance.
+        // This happens continuously in discrete intervals.
+        // If no route is set, no data will be prefetched.
+        routePrefetcher.prefetchAroundRouteOnIntervals(visualNavigator);
+    }
+
     private void createDynamicRoutingEngine() {
         DynamicRoutingEngineOptions dynamicRoutingOptions = new DynamicRoutingEngineOptions();
         // We want an update for each poll iteration, so we specify 0 difference.
@@ -166,7 +182,7 @@ public class NavigationExample {
 
         try {
             // With the dynamic routing engine you can poll the HERE backend services to search for routes with less traffic.
-            // THis can happen during guidance - or you can periodically update a route that is shown in a route planner.
+            // This can happen during guidance - or you can periodically update a route that is shown in a route planner.
             dynamicRoutingEngine = new DynamicRoutingEngine(dynamicRoutingOptions);
         } catch (InstantiationErrorException e) {
             throw new RuntimeException("Initialization of DynamicRoutingEngine failed: " + e.error.name());
@@ -662,6 +678,9 @@ public class NavigationExample {
     }
 
     public void startNavigation(Route route, boolean isSimulated) {
+        GeoCoordinates startGeoCoordinates = route.getGeometry().vertices.get(0);
+        prefetchMapData(startGeoCoordinates);
+
         setupSpeedWarnings();
         setupVoiceGuidance();
 
@@ -716,6 +735,7 @@ public class NavigationExample {
         messageView.setText("Tracking device's location.");
 
         dynamicRoutingEngine.stop();
+        routePrefetcher.stopPrefetchAroundRoute();
     }
 
     // Provides simulated location updates based on the given route.

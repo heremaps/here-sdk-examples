@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 HERE Europe B.V.
+ * Copyright (C) 2019-2023 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,9 +94,11 @@ class RoutingExample {
 
     private func showRouteDetails(route: Route) {
         let estimatedTravelTimeInSeconds = route.duration
+        let estimatedTrafficDelayInSeconds = route.trafficDelay
         let lengthInMeters = route.lengthInMeters
         
-        let routeDetails = "Travel Time: " + formatTime(sec: estimatedTravelTimeInSeconds)
+        let routeDetails = "Travel Time (h:m): " + formatTime(sec: estimatedTravelTimeInSeconds)
+                         + ", Traffic Delay (h:m): " + formatTime(sec: estimatedTrafficDelayInSeconds)
                          + ", Length: " + formatLength(meters: lengthInMeters)
 
         showDialog(title: "Route Details", message: routeDetails)
