@@ -279,6 +279,9 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
         if isVisualNavigatorRenderingStarted {
             return
         }
+        
+        // Set the route and maneuver arrow color.
+        customizeVisualNavigatorColors()
 
         // Set custom guidance perspective.
         customizeGuidanceView()
@@ -311,6 +314,29 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
         animateToDefaultMapPerspective()
     }
 
+    private func customizeVisualNavigatorColors() {
+        let routeAheadColor = UIColor.blue
+        let routeBehindColor = UIColor.red
+        let routeAheadOutlineColor = UIColor.yellow
+        let routeBehindOutlineColor = UIColor.gray
+        let maneuverArrowColor = UIColor.green
+
+        let visualNavigatorColors = VisualNavigatorColors.dayColors()
+        let routeProgressColors = RouteProgressColors(
+            ahead: routeAheadColor,
+            behind: routeBehindColor,
+            outlineAhead: routeAheadOutlineColor,
+            outlineBehind: routeBehindOutlineColor
+        )
+
+        // Sets the color used to draw maneuver arrows.
+        visualNavigatorColors.maneuverArrowColor = maneuverArrowColor
+        // Sets route color for a single transport mode. Other modes are kept using defaults.
+        visualNavigatorColors.setRouteProgressColors(sectionTransportMode: SectionTransportMode.car, routeProgressColors: routeProgressColors)
+        // Sets the adjusted colors for route progress and maneuver arrows based on the day color scheme.
+        visualNavigator?.colors = visualNavigatorColors
+    }
+    
     private func customizeGuidanceView() {
         let cameraBehavior = FixedCameraBehavior()
         

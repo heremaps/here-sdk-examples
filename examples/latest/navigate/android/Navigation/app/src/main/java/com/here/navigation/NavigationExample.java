@@ -44,9 +44,6 @@ import com.here.sdk.navigation.DistanceType;
 import com.here.sdk.navigation.DynamicCameraBehavior;
 import com.here.sdk.navigation.JunctionViewLaneAssistance;
 import com.here.sdk.navigation.JunctionViewLaneAssistanceListener;
-import com.here.sdk.navigation.JunctionViewWarning;
-import com.here.sdk.navigation.JunctionViewWarningListener;
-import com.here.sdk.navigation.JunctionViewWarningOptions;
 import com.here.sdk.navigation.Lane;
 import com.here.sdk.navigation.LaneRecommendationState;
 import com.here.sdk.navigation.ManeuverNotificationListener;
@@ -60,6 +57,10 @@ import com.here.sdk.navigation.MilestoneStatus;
 import com.here.sdk.navigation.MilestoneStatusListener;
 import com.here.sdk.navigation.NavigableLocation;
 import com.here.sdk.navigation.NavigableLocationListener;
+import com.here.sdk.navigation.RealisticView;
+import com.here.sdk.navigation.RealisticViewWarning;
+import com.here.sdk.navigation.RealisticViewWarningListener;
+import com.here.sdk.navigation.RealisticViewWarningOptions;
 import com.here.sdk.navigation.RoadAttributes;
 import com.here.sdk.navigation.RoadAttributesListener;
 import com.here.sdk.navigation.RoadSignVehicleType;
@@ -72,10 +73,6 @@ import com.here.sdk.navigation.RouteDeviationListener;
 import com.here.sdk.navigation.RouteProgress;
 import com.here.sdk.navigation.RouteProgressListener;
 import com.here.sdk.navigation.SectionProgress;
-import com.here.sdk.navigation.Signpost;
-import com.here.sdk.navigation.SignpostWarning;
-import com.here.sdk.navigation.SignpostWarningListener;
-import com.here.sdk.navigation.SignpostWarningOptions;
 import com.here.sdk.navigation.SpeedLimit;
 import com.here.sdk.navigation.SpeedLimitListener;
 import com.here.sdk.navigation.SpeedLimitOffset;
@@ -527,64 +524,45 @@ public class NavigationExample {
             }
         });
 
-        SignpostWarningOptions signpostWarningOptions = new SignpostWarningOptions();
-        signpostWarningOptions.aspectRatio = AspectRatio.ASPECT_RATIO_3_X_4;
-        signpostWarningOptions.darkTheme = false;
-        visualNavigator.setSignpostWarningOptions(signpostWarningOptions);
+        RealisticViewWarningOptions realisticViewWarningOptions = new RealisticViewWarningOptions();
+        realisticViewWarningOptions.aspectRatio = AspectRatio.ASPECT_RATIO_3_X_4;
+        realisticViewWarningOptions.darkTheme = false;
+        visualNavigator.setRealisticViewWarningOptions(realisticViewWarningOptions);
 
-        // Notifies on signposts as they appear along a road on a shield to indicate the upcoming directions and destinations, such
-        // as cities or road names.
+        // Notifies on signposts together with complex junction views.
+        // Signposts are shown as they appear along a road on a shield to indicate the upcoming directions and
+        // destinations, such as cities or road names.
+        // Junction views appear as a 3D visualization (as a static image) to help to orientate the driver.
+        //
         // Optionally, you can use a feature-configuration to preload the assets as part of a Region.
-        visualNavigator.setSignpostWarningListener(new SignpostWarningListener() {
-            @Override
-            public void onSignpostWarningUpdated(@NonNull SignpostWarning signpostWarning) {
-                double distance = signpostWarning.distanceToSignpostsInMeters;
-                DistanceType distanceType = signpostWarning.distanceType;
-
-                // Note that DistanceType.REACHED is not used for Signposts.
-                if (distanceType == DistanceType.AHEAD) {
-                    Log.d(TAG, "A Signpost ahead in: "+ distance + " meters.");
-                } else if (distanceType == DistanceType.PASSED) {
-                     Log.d(TAG, "A Signpost just passed.");
-                }
-
-                // Multiple signs can appear at the same location.
-                for (Signpost signpost : signpostWarning.signposts) {
-                    String svgImageContent = signpost.svgImageContent;
-                    Log.d(TAG, "Signpost SVG data: " + svgImageContent);
-                    // The resolution-independent SVG data can now be used in an application to visualize the image.
-                    // Use a SVG library of your choice for this.
-                }
-            }
-        });
-
-        JunctionViewWarningOptions junctionViewWarningOptions = new JunctionViewWarningOptions();
-        junctionViewWarningOptions.aspectRatio = AspectRatio.ASPECT_RATIO_3_X_4;
-        junctionViewWarningOptions.darkTheme = false;
-        visualNavigator.setJunctionViewWarningOptions(junctionViewWarningOptions);
-
-        // Notifies on complex junction views for which a 3D visualization is available as a static image to help orientate the driver.
+        //
         // The event matches the notification for complex junctions, see JunctionViewLaneAssistance.
-        // Note that the SVG data for junction view is composed out of several 3D elements such as trees, a horizon and the actual junction
-        // geometry. Approx. size per image is 15 MB. In the future, we we reduce the level of realism to reduce the size of the assets.
-        // Optionally, you can use a feature-configuration to preload the assets as part of a Region.
-        visualNavigator.setJunctionViewWarningListener(new JunctionViewWarningListener() {
+        // Note that the SVG data for junction view is composed out of several 3D elements such as trees,
+        // a horizon and the actual junction geometry.
+        visualNavigator.setRealisticViewWarningListener(new RealisticViewWarningListener() {
             @Override
-            public void onJunctionViewWarningUpdated(@NonNull JunctionViewWarning junctionViewWarning) {
-                double distance = junctionViewWarning.distanceToJunctionViewInMeters;
-                DistanceType distanceType = junctionViewWarning.distanceType;
+            public void onRealisticViewWarningUpdated(@NonNull RealisticViewWarning realisticViewWarning) {
+                double distance = realisticViewWarning.distanceToRealisticViewInMeters;
+                DistanceType distanceType = realisticViewWarning.distanceType;
 
-                // Note that DistanceType.REACHED is not used for junction views.
+                // Note that DistanceType.REACHED is not used for Signposts and junction views.
                 if (distanceType == DistanceType.AHEAD) {
-                    Log.d(TAG, "A JunctionView ahead in: "+ distance + " meters.");
+                    Log.d(TAG, "A RealisticView ahead in: "+ distance + " meters.");
                 } else if (distanceType == DistanceType.PASSED) {
-                    Log.d(TAG, "A JunctionView just passed.");
+                    Log.d(TAG, "A RealisticView just passed.");
                 }
 
-                String svgImageContent = junctionViewWarning.junctionView.svgImageContent;
-                Log.d(TAG, "JunctionView SVG data: " + svgImageContent);
+                RealisticView realisticView = realisticViewWarning.realisticView;
+                String signpostSvgImageContent = realisticView.signpostSvgImageContent;
+                String junctionViewSvgImageContent = realisticView.junctionViewSvgImageContent;
                 // The resolution-independent SVG data can now be used in an application to visualize the image.
-                // Use a SVG library of your choice for this.
+                // Use a SVG library of your choice to create an SVG image out of the SVG string.
+                // Both SVGs contain the same dimension and the signpostSvgImageContent should be shown on top of
+                // the junctionViewSvgImageContent.
+                // The images can be quite detailed, therefore it is recommended to show them on a secondary display
+                // in full size.
+                Log.d("signpostSvgImage", signpostSvgImageContent);
+                Log.d("junctionViewSvgImage", junctionViewSvgImageContent);
             }
         });
     }

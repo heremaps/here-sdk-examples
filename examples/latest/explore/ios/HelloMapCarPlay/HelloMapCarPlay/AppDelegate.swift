@@ -87,15 +87,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CPApplicationDelegate {
         // Override point for customization when disconnecting from car interface.
     }
 
-    func applicationDidEnterBackground(_ application: UIApplication) {
-        // Prevent GPU calls when the app runs in background.
-        MapView.pause()
-    }
-
-    func applicationWillEnterForeground(_ application: UIApplication) {
-        MapView.resume()
-    }
-
     func applicationWillTerminate(_ application: UIApplication) {
         // Deinitializes map renderer and releases all of its resources.
         // All existing MapView instances will become invalid after this call.
