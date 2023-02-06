@@ -40,8 +40,7 @@ class NavigationExample : NavigableLocationDelegate,
                           RoadSignWarningDelegate,
                           TruckRestrictionsWarningDelegate,
                           RoadTextsDelegate,
-                          SignpostWarningDelegate,
-                          JunctionViewWarningDelegate {
+                          RealisticViewWarningDelegate {
 
     private let viewController: UIViewController
     private let mapView: MapView
@@ -99,8 +98,7 @@ class NavigationExample : NavigableLocationDelegate,
         visualNavigator.roadSignWarningDelegate = self
         visualNavigator.truckRestrictionsWarningDelegate = self
         visualNavigator.roadTextsDelegate = self
-        visualNavigator.signpostWarningDelegate = self
-        visualNavigator.junctionViewWarningDelegate = self
+        visualNavigator.realisticViewWarningDelegate = self
     }
 
     func startLocationProvider() {
@@ -119,7 +117,7 @@ class NavigationExample : NavigableLocationDelegate,
         // If no route is set, no data will be prefetched.
         routePrefetcher.prefetchAroundRouteOnIntervals(navigator: visualNavigator)
     }
-    
+
     func createDynamicRoutingEngine() -> DynamicRoutingEngine {
         // We want an update for each poll iteration, so we specify 0 difference.
         let minTimeDifferencePercentage = 0.0
@@ -537,49 +535,38 @@ class NavigationExample : NavigableLocationDelegate,
         }
     }
 
-    // Notifies on signposts as they appear along a road on a shield to indicate the upcoming directions and destinations, such
-    // as cities or road names.
+    // Notifies on signposts together with complex junction views.
+    // Signposts are shown as they appear along a road on a shield to indicate the upcoming directions and
+    // destinations, such as cities or road names.
+    // Junction views appear as a 3D visualization (as a static image) to help to orientate the driver.
+    //
     // Optionally, you can use a feature-configuration to preload the assets as part of a Region.
-    func onSignpostWarningUpdated(_ signpostWarning: SignpostWarning) {
-        let distance = signpostWarning.distanceToSignpostsInMeters
-        let distanceType: DistanceType = signpostWarning.distanceType
-
-        // Note that DistanceType.reached is not used for Signposts.
-        if distanceType == DistanceType.ahead {
-            print("A Signpost ahead in: " + String(distance) + " meters.")
-        } else if distanceType == DistanceType.passed {
-            print("A Signpost just passed.")
-        }
-
-        // Multiple signs can appear at the same location.
-        for signpost in signpostWarning.signposts {
-            let svgImageContent = signpost.svgImageContent
-            print("Signpost SVG data: " + String(svgImageContent))
-            // The resolution-independent SVG data can now be used in an application to visualize the image.
-            // Use a SVG library of your choice for this.
-        }
-    }
-
-    // Notifies on complex junction views for which a 3D visualization is available as a static image to help orientate the driver.
+    //
     // The event matches the notification for complex junctions, see JunctionViewLaneAssistance.
-    // Note that the SVG data for junction view is composed out of several 3D elements such as trees, a horizon and the actual junction
-    // geometry. Approx. size per image is 15 MB. In the future, we we reduce the level of realism to reduce the size of the assets.
-    // Optionally, you can use a feature-configuration to preload the assets as part of a Region.
-    func onJunctionViewWarningUpdated(_ junctionViewWarning: JunctionViewWarning) {
-        let distance = junctionViewWarning.distanceToJunctionViewInMeters
-        let distanceType: DistanceType = junctionViewWarning.distanceType
+    // Note that the SVG data for junction view is composed out of several 3D elements such as trees,
+    // a horizon and the actual junction geometry.
+    func onRealisticViewWarningUpdated(_ realisticViewWarning: RealisticViewWarning) {
+        let distance = realisticViewWarning.distanceToRealisticViewInMeters
+        let distanceType: DistanceType = realisticViewWarning.distanceType
 
-        // Note that DistanceType.reached is not used for junction views.
+        // Note that DistanceType.reached is not used for Signposts and junction views.
         if distanceType == DistanceType.ahead {
-            print("A JunctionView ahead in: " + String(distance) + " meters.")
+            print("A RealisticView ahead in: " + String(distance) + " meters.")
         } else if distanceType == DistanceType.passed {
-            print("A JunctionView just passed.")
+            print("A RealisticView just passed.")
         }
 
-        let svgImageContent = junctionViewWarning.junctionView.svgImageContent
-        print("JunctionView SVG data: " + String(svgImageContent))
+        let realisticView = realisticViewWarning.realisticView
+        let signpostSvgImageContent = realisticView.signpostSvgImageContent
+        let junctionViewSvgImageContent = realisticView.junctionViewSvgImageContent
         // The resolution-independent SVG data can now be used in an application to visualize the image.
-        // Use a SVG library of your choice for this.
+        // Use a SVG library of your choice to create an SVG image out of the SVG string.
+        // Both SVGs contain the same dimension and the signpostSvgImageContent should be shown on top of
+        // the junctionViewSvgImageContent.
+        // The images can be quite detailed, therefore it is recommended to show them on a secondary display
+        // in full size.
+        print("signpostSvgImage: \(signpostSvgImageContent)")
+        print("junctionViewSvgImage: \(junctionViewSvgImageContent)")
     }
 
     // Conform to RoadTextsDelegate
@@ -593,12 +580,11 @@ class NavigationExample : NavigableLocationDelegate,
                                 isSimulated: Bool) {
         let startGeoCoordinates = route.geometry.vertices[0]
         prefetchMapData(currentGeoCoordinates: startGeoCoordinates)
-        
+
         setupSpeedWarnings()
         setupRoadSignWarnings()
         setupVoiceGuidance()
-        setupSignpostWarnings()
-        setupJunctionViewWarnings()
+        setupRealisticViewWarnings()
 
         // Switches to navigation mode when no route was set before, otherwise navigation mode is kept.
         visualNavigator.route = route
@@ -672,14 +658,9 @@ class NavigationExample : NavigableLocationDelegate,
         visualNavigator.roadSignWarningOptions = roadSignWarningOptions
     }
 
-    private func setupSignpostWarnings() {
-        let signpostWarningOptions = SignpostWarningOptions(aspectRatio: AspectRatio.aspectRatio3X4, darkTheme: false)
-        visualNavigator.signpostWarningOptions = signpostWarningOptions
-    }
-
-    private func setupJunctionViewWarnings() {
-        let junctionViewWarningOptions = JunctionViewWarningOptions(aspectRatio: AspectRatio.aspectRatio3X4, darkTheme: false)
-        visualNavigator.junctionViewWarningOptions = junctionViewWarningOptions
+    private func setupRealisticViewWarnings() {
+        let realisticViewWarningOptions = RealisticViewWarningOptions(aspectRatio: AspectRatio.aspectRatio3X4, darkTheme: false)
+        visualNavigator.realisticViewWarningOptions = realisticViewWarningOptions
     }
 
     private func setupVoiceGuidance() {

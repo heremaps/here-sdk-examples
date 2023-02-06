@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19162" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="ahb-nz-Yt4">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19144"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Menu View Controller-->
+        <scene sceneID="3FV-Xe-5Do">
+            <objects>
+                <viewController storyboardIdentifier="showMenu" id="ahb-nz-Yt4" customClass="MenuViewController" customModule="HikingDiary" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" tag="1" contentMode="scaleToFill" id="c8M-i2-75L">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" translatesAutoresizingMaskIntoConstraints="NO" id="ELf-G6-JDN">
+                                <rect key="frame" x="0.0" y="44" width="414" height="818"/>
+                                <prototypes>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="MenuEntry" id="Cpd-is-lcN">
+                                        <rect key="frame" x="20" y="49.5" width="374" height="43.5"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Cpd-is-lcN" id="aVT-0x-0bh">
+                                            <rect key="frame" x="0.0" y="0.0" width="374" height="43.5"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                        </tableViewCellContentView>
+                                        <connections>
+                                            <segue destination="Rti-kO-CcF" kind="unwind" unwindAction="unwindToViewController:" id="QsZ-Ff-wbP"/>
+                                        </connections>
+                                    </tableViewCell>
+                                </prototypes>
+                            </tableView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="b0g-eY-Ese"/>
+                        <constraints>
+                            <constraint firstItem="b0g-eY-Ese" firstAttribute="trailing" secondItem="ELf-G6-JDN" secondAttribute="trailing" id="EAg-Yc-M7V"/>
+                            <constraint firstItem="b0g-eY-Ese" firstAttribute="top" secondItem="ELf-G6-JDN" secondAttribute="top" id="JsC-1K-hZl"/>
+                            <constraint firstItem="ELf-G6-JDN" firstAttribute="leading" secondItem="b0g-eY-Ese" secondAttribute="leading" id="N1n-5T-toj"/>
+                            <constraint firstItem="b0g-eY-Ese" firstAttribute="bottom" secondItem="ELf-G6-JDN" secondAttribute="bottom" id="YiK-gG-0s0"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" id="pnr-H7-HJe">
+                        <barButtonItem key="leftBarButtonItem" image="menu" id="l5K-oi-Hy9"/>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="table" destination="ELf-G6-JDN" id="evP-nw-kp0"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="h4R-5j-62u" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+                <exit id="Rti-kO-CcF" userLabel="Exit" sceneMemberID="exit"/>
+            </objects>
+            <point key="canvasLocation" x="549" y="-138"/>
+        </scene>
+        <!--Main-->
+        <scene sceneID="l2E-4e-Fzh">
+            <objects>
+                <viewControllerPlaceholder storyboardName="Main" id="Xi8-g1-JBC" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="m8b-AW-Jtt"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Cl2-ww-1gE" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1470" y="-139"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="menu" width="25" height="25"/>
+    </resources>
+</document>

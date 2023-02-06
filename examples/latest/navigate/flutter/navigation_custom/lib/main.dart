@@ -26,6 +26,7 @@ import 'package:here_sdk/core.errors.dart';
 import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/navigation.dart';
 import 'package:here_sdk/routing.dart' as HERE;
+import 'package:here_sdk/routing.dart';
 
 void main() {
   // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
@@ -305,6 +306,9 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
       return;
     }
 
+    // Set the route and maneuver arrow color.
+    _customizeVisualNavigatorColors();
+
     // Set custom guidance perspective.
     _customizeGuidanceView();
 
@@ -334,6 +338,28 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
     _switchToPedestrianLocationIndicator();
 
     _animateToDefaultMapPerspective();
+  }
+
+  void _customizeVisualNavigatorColors() {
+    Color routeAheadColor =  Colors.blue;
+    Color routeBehindColor = Colors.red;
+    Color routeAheadOutlineColor = Colors.yellow;
+    Color routeBehindOutlineColor = Colors.grey;
+    Color maneuverArrowColor = Colors.green;
+
+    VisualNavigatorColors visualNavigatorColors = VisualNavigatorColors.dayColors();
+    RouteProgressColors routeProgressColors = new RouteProgressColors(
+        routeAheadColor,
+        routeBehindColor,
+        routeAheadOutlineColor,
+        routeBehindOutlineColor);
+
+    // Sets the color used to draw maneuver arrows.
+    visualNavigatorColors.maneuverArrowColor = maneuverArrowColor;
+    // Sets route color for a single transport mode. Other modes are kept using defaults.
+    visualNavigatorColors.setRouteProgressColors(SectionTransportMode.car, routeProgressColors);
+    // Sets the adjusted colors for route progress and maneuver arrows based on the day color scheme.
+    _visualNavigator?.colors = visualNavigatorColors;
   }
 
   void _customizeGuidanceView() {

@@ -551,60 +551,39 @@ class NavigationExample {
       // See _getRoadName() how to get the current road name from the provided RoadTexts.
     });
 
-    SignpostWarningOptions signpostWarningOptions = SignpostWarningOptions();
-    signpostWarningOptions.aspectRatio = AspectRatio.aspectRatio3X4;
-    signpostWarningOptions.darkTheme = false;
-    _visualNavigator.signpostWarningOptions = signpostWarningOptions;
-
-    // Notifies on signposts as they appear along a road on a shield to indicate the upcoming directions and destinations, such
-    // as cities or road names.
+    // Notifies on signposts together with complex junction views.
+    // Signposts are shown as they appear along a road on a shield to indicate the upcoming directions and
+    // destinations, such as cities or road names.
+    // Junction views appear as a 3D visualization (as a static image) to help to orientate the driver.
+    //
     // Optionally, you can use a feature-configuration to preload the assets as part of a Region.
-    _visualNavigator.signpostWarningListener = SignpostWarningListener((SignpostWarning signpostWarning) {
-      double distance = signpostWarning.distanceToSignpostsInMeters;
-      DistanceType distanceType = signpostWarning.distanceType;
-
-      // Note that DistanceType.reached is not used for Signposts.
-      if (distanceType == DistanceType.ahead) {
-        print("A Signpost ahead in: " + distance.toString() + " meters.");
-      } else if (distanceType == DistanceType.passed) {
-        print("A Signpost just passed.");
-      }
-
-      // Multiple signs can appear at the same location.
-      for (Signpost signpost in signpostWarning.signposts) {
-        String svgImageContent = signpost.svgImageContent;
-        print("Signpost SVG data: " + svgImageContent);
-        // The resolution-independent SVG data can now be used in an application to visualize the image.
-        // Use a SVG library of your choice for this.
-      }
-    });
-
-    JunctionViewWarningOptions junctionViewWarningOptions = new JunctionViewWarningOptions();
-    junctionViewWarningOptions.aspectRatio = AspectRatio.aspectRatio3X4;
-    junctionViewWarningOptions.darkTheme = false;
-    _visualNavigator.junctionViewWarningOptions = junctionViewWarningOptions;
-
-    // Notifies on complex junction views for which a 3D visualization is available as a static image to help orientate the driver.
+    //
     // The event matches the notification for complex junctions, see JunctionViewLaneAssistance.
-    // Note that the SVG data for junction view is composed out of several 3D elements such as trees, a horizon and the actual junction
-    // geometry. Approx. size per image is 15 MB. In the future, we we reduce the level of realism to reduce the size of the assets.
-    // Optionally, you can use a feature-configuration to preload the assets as part of a Region.
-    _visualNavigator.junctionViewWarningListener =
-        JunctionViewWarningListener((JunctionViewWarning junctionViewWarning) {
-      double distance = junctionViewWarning.distanceToJunctionViewInMeters;
-      DistanceType distanceType = junctionViewWarning.distanceType;
+    // Note that the SVG data for junction view is composed out of several 3D elements such as trees,
+    // a horizon and the actual junction geometry.
+    _visualNavigator.realisticViewWarningListener =
+        RealisticViewWarningListener((RealisticViewWarning realisticViewWarning) {
+      double distance = realisticViewWarning.distanceToRealisticViewInMeters;
+      DistanceType distanceType = realisticViewWarning.distanceType;
 
-      // Note that DistanceType.reached is not used for junction views.
+      // Note that DistanceType.reached is not used for Signposts and junction views.
       if (distanceType == DistanceType.ahead) {
-        print("A JunctionView ahead in: " + distance.toString() + " meters.");
+        print("A RealisticView ahead in: " + distance.toString() + " meters.");
       } else if (distanceType == DistanceType.passed) {
-        print("A JunctionView just passed.");
+        print("A RealisticView just passed.");
       }
 
-      String svgImageContent = junctionViewWarning.junctionView.svgImageContent;
-      print("JunctionView SVG data: " + svgImageContent);
+      RealisticView realisticView = realisticViewWarning.realisticView;
+      String signpostSvgImageContent = realisticView.signpostSvgImageContent;
+      String junctionViewSvgImageContent = realisticView.junctionViewSvgImageContent;
       // The resolution-independent SVG data can now be used in an application to visualize the image.
-      // Use a SVG library of your choice for this.
+      // Use a SVG library of your choice to create an SVG image out of the SVG string.
+      // Both SVGs contain the same dimension and the signpostSvgImageContent should be shown on top of
+      // the junctionViewSvgImageContent.
+      // The images can be quite detailed, therefore it is recommended to show them on a secondary display
+      // in full size.
+      print("signpostSvgImage: " + signpostSvgImageContent);
+      print("junctionViewSvgImage: " + junctionViewSvgImageContent);
     });
   }
 

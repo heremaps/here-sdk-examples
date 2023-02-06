@@ -80,7 +80,9 @@ class PositioningExample extends State<MyApp>
     if (state == AppLifecycleState.detached) {
       _stopLocating();
     } else if (state == AppLifecycleState.resumed) {
-      _startLocating();
+      if (_locationEngine != null) {
+        _startLocating();
+      }
     }
   }
 

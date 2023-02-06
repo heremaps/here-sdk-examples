@@ -34,6 +34,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.here.navigationcustom.PermissionsRequestor.ResultListener;
 import com.here.sdk.animation.AnimationListener;
 import com.here.sdk.animation.AnimationState;
+import com.here.sdk.core.Color;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.GeoCoordinatesUpdate;
 import com.here.sdk.core.GeoOrientationUpdate;
@@ -56,10 +57,13 @@ import com.here.sdk.mapview.MapView;
 import com.here.sdk.navigation.FixedCameraBehavior;
 import com.here.sdk.navigation.LocationSimulator;
 import com.here.sdk.navigation.LocationSimulatorOptions;
+import com.here.sdk.navigation.RouteProgressColors;
 import com.here.sdk.navigation.VisualNavigator;
+import com.here.sdk.navigation.VisualNavigatorColors;
 import com.here.sdk.routing.CarOptions;
 import com.here.sdk.routing.Route;
 import com.here.sdk.routing.RoutingEngine;
+import com.here.sdk.routing.SectionTransportMode;
 import com.here.sdk.routing.Waypoint;
 import com.here.time.Duration;
 
@@ -280,7 +284,7 @@ public class MainActivity extends AppCompatActivity {
             visualNavigator.setCustomLocationIndicator(customLocationIndicator);
 
             // Note that the type of the LocationIndicator is taken from the route's TransportMode.
-            // It cannot be overriden during guidance.
+            // It cannot be overridden during guidance.
             // During tracking mode (not shown in this app) you can specify the marker type via:
             // visualNavigator.setTrackingTransportMode(TransportMode.PEDESTRIAN);
         }
@@ -352,6 +356,9 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        // Set the route and maneuver arrow color.
+        customizeVisualNavigatorColors();
+
         // Set custom guidance perspective.
         customizeGuidanceView();
 
@@ -385,6 +392,28 @@ public class MainActivity extends AppCompatActivity {
         animateToDefaultMapPerspective();
     }
 
+    private void customizeVisualNavigatorColors() {
+        Color routeAheadColor =  Color.valueOf(android.graphics.Color.BLUE);
+        Color routeBehindColor = Color.valueOf(android.graphics.Color.RED);
+        Color routeAheadOutlineColor = Color.valueOf(android.graphics.Color.YELLOW);
+        Color routeBehindOutlineColor = Color.valueOf(android.graphics.Color.DKGRAY);
+        Color maneuverArrowColor = Color.valueOf(android.graphics.Color.GREEN);
+
+        VisualNavigatorColors visualNavigatorColors = VisualNavigatorColors.dayColors();
+        RouteProgressColors routeProgressColors = new RouteProgressColors(
+                routeAheadColor,
+                routeBehindColor,
+                routeAheadOutlineColor,
+                routeBehindOutlineColor);
+
+        // Sets the color used to draw maneuver arrows.
+        visualNavigatorColors.setManeuverArrowColor(maneuverArrowColor);
+        // Sets route color for a single transport mode. Other modes are kept using defaults.
+        visualNavigatorColors.setRouteProgressColors(SectionTransportMode.CAR, routeProgressColors);
+        // Sets the adjusted colors for route progress and maneuver arrows based on the day color scheme.
+        visualNavigator.setColors(visualNavigatorColors);
+    }
+
     private void customizeGuidanceView() {
         FixedCameraBehavior cameraBehavior = new FixedCameraBehavior();
         // Set custom zoom level and tilt.
@@ -399,7 +428,7 @@ public class MainActivity extends AppCompatActivity {
         visualNavigator.setCameraBehavior(cameraBehavior);
     }
 
-    private final LocationListener myLlocationListener = new LocationListener() {
+    private final LocationListener myLocationListener = new LocationListener() {
         @Override
         public void onLocationUpdated(@NonNull Location location) {
             // Feed location data into the VisualNavigator.
@@ -421,7 +450,7 @@ public class MainActivity extends AppCompatActivity {
             throw new RuntimeException("Initialization of LocationSimulator failed: " + e.error.name());
         }
 
-        locationSimulator.setListener(myLlocationListener);
+        locationSimulator.setListener(myLocationListener);
         locationSimulator.start();
     }
 
