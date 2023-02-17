@@ -348,6 +348,15 @@ public class NavigationExample {
 
                 int distanceInMeters = (int) currentGeoCoordinates.distanceTo(lastGeoCoordinatesOnRoute);
                 Log.d(TAG, "RouteDeviation in meters is " + distanceInMeters);
+
+                // Now, an application needs to decide if the user has deviated far enough and
+                // what should happen next: For example, you can notify the user or simply try to
+                // calculate a new route. When you calculate a new route, you can, for example,
+                // take the current location as new start and keep the destination - another
+                // option could be to calculate a new route back to the lastMapMatchedLocationOnRoute.
+                // At least, make sure to not calculate a new route every time you get a RouteDeviation
+                // event as the route calculation happens asynchronously and takes also some time to
+                // complete.
             }
         });
 
@@ -532,12 +541,12 @@ public class NavigationExample {
         // Notifies on signposts together with complex junction views.
         // Signposts are shown as they appear along a road on a shield to indicate the upcoming directions and
         // destinations, such as cities or road names.
-        // Junction views appear as a 3D visualization (as a static image) to help to orientate the driver.
+        // Junction views appear as a 3D visualization (as a static image) to help the driver to orientate.
         //
         // Optionally, you can use a feature-configuration to preload the assets as part of a Region.
         //
         // The event matches the notification for complex junctions, see JunctionViewLaneAssistance.
-        // Note that the SVG data for junction view is composed out of several 3D elements such as trees,
+        // Note that the SVG data for junction view is composed out of several 3D elements,
         // a horizon and the actual junction geometry.
         visualNavigator.setRealisticViewWarningListener(new RealisticViewWarningListener() {
             @Override
@@ -545,7 +554,8 @@ public class NavigationExample {
                 double distance = realisticViewWarning.distanceToRealisticViewInMeters;
                 DistanceType distanceType = realisticViewWarning.distanceType;
 
-                // Note that DistanceType.REACHED is not used for Signposts and junction views.
+                // Note that DistanceType.REACHED is not used for Signposts and junction views
+                // as a junction is identified through a location instead of an area.
                 if (distanceType == DistanceType.AHEAD) {
                     Log.d(TAG, "A RealisticView ahead in: "+ distance + " meters.");
                 } else if (distanceType == DistanceType.PASSED) {

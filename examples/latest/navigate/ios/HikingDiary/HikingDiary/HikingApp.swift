@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 HERE Europe B.V.
+ * Copyright (C) 2022-2023 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,19 +32,17 @@ class HikingApp: LocationDelegate {
     private var isGPXTrackLoaded = false
     private var gpxTrackWriter = GPXTrackWriter()
     private let gpxManager: GPXManager
-    private var lastAcceptedGeoCoordinates: GeoCoordinates?
     private let positioningVisualizer: HEREPositioningVisualizer
     private let outdoorRasterLayer: OutdoorRasterLayer
     private let messageTextView = UITextView()
-    
-    // These two parameters define if incoming location updates are considered to be good enough.
-    // In the field, the GPS signal can be very unreliable, so we need to filter out inaccurate signals.
-    static let accuracyRadiusThresholdInMeters = 10.0
-    static let distanceThresholdInMeters = 10.0
+    private var locationFilter: LocationFilterStrategy
     
     init(mapView: MapView) {
         self.mapView = mapView
   
+        // A class to filter out undesired location signals.
+        locationFilter = DistanceAccuracyLocationFilter()
+        
         // A class to manage GPX operations.
         gpxManager = GPXManager(gpxDocumentFileName: "myGPXDocument")
         
@@ -67,7 +65,6 @@ class HikingApp: LocationDelegate {
         clearMap()
         isHiking = true
         isGPXTrackLoaded = false
-        lastAcceptedGeoCoordinates = nil
         animateCameraToCurrentLocation()
         setMessage("Start Hike.")
         
@@ -79,10 +76,8 @@ class HikingApp: LocationDelegate {
         clearMap()
         gpxManager.stopGPXTrackPlayback()
         
-        if isHiking && isGPXTrackLoaded == false && lastAcceptedGeoCoordinates != nil {
+        if isHiking && isGPXTrackLoaded == false {
             saveDiaryEntry()
-        } else {
-            setMessage("Stopped.")
         }
         
         isHiking = false
@@ -105,7 +100,7 @@ class HikingApp: LocationDelegate {
             positioningVisualizer.renderUnfilteredLocationSignals(location)
         }
         
-        if isHiking && checkIfLocationCanBeUsed(location) {
+        if isHiking && locationFilter.checkIfLocationCanBeUsed(location) {
             // Here we store only locations that are considered to be accurate enough.
             gpxTrackWriter.onLocationUpdated(location)
             
@@ -118,48 +113,6 @@ class HikingApp: LocationDelegate {
                 setMessage("Hike Distance: \(distanceTravelled) m")
             }
         }
-    }
-    
-    private func checkIfLocationCanBeUsed(_ location: Location) -> Bool {
-        if isAccuracyGoodEnough(location) && isDistanceFarEnough(location) {
-            lastAcceptedGeoCoordinates = location.coordinates
-
-            return true
-        }
-        
-        return false
-    }
-
-    // Checks if the accuracy of the received GPS signal is good enough.
-    private func isAccuracyGoodEnough(_ location: Location) -> Bool {
-        guard let horizontalAccuracyInMeters = location.horizontalAccuracyInMeters else {
-            return false
-        }
-
-        // If the location lies within the radius of accuracyCircleRadiusInMetersThreshold then we accept it.
-        if horizontalAccuracyInMeters <= HikingApp.accuracyRadiusThresholdInMeters {
-            return true
-        }
-        
-        return false
-    }
-    
-    // Checks if last accepted location is farther away than xx meters.
-    // If it is, the new location will be accepted.
-    // This way we can filter out signals that are caused by a non-moving user.
-    private func isDistanceFarEnough(_ location: Location) -> Bool {
-        guard let lastAcceptedGeoCoordinates = lastAcceptedGeoCoordinates else {
-            // We always accept the first location with good enough accuracy.
-            self.lastAcceptedGeoCoordinates = location.coordinates
-            return true
-        }
-
-        let distance = location.coordinates.distance(to: lastAcceptedGeoCoordinates)
-        if distance >= HikingApp.distanceThresholdInMeters {
-            return true
-        }
-
-        return false
     }
     
     private func updateTravelledPath(_ location: Location) -> MapPolyline? {

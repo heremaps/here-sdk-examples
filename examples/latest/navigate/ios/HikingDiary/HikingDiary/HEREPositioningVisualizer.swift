@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 HERE Europe B.V.
+ * Copyright (C) 2022-2023 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ class HEREPositioningVisualizer {
     private var mapCircles = [MapPolygon]()
     private var mapPolyline: MapPolyline?
     private var geoCoordinatesList: [GeoCoordinates] = []
+    private let accuracyRadiusThresholdInMeters = 10.0
 
     init(_ mapView: MapView) {
         self.mapView = mapView
@@ -46,10 +47,10 @@ class HEREPositioningVisualizer {
         // Black means that no accuracy information is available.
         var fillColor: UIColor = .black
         if let accuracy = location.horizontalAccuracyInMeters {
-            if accuracy < HikingApp.accuracyRadiusThresholdInMeters / 2 {
+            if accuracy < accuracyRadiusThresholdInMeters / 2 {
                 // Green means that we have very good accuracy.
                 fillColor = .green
-            } else if accuracy <= HikingApp.accuracyRadiusThresholdInMeters {
+            } else if accuracy <= accuracyRadiusThresholdInMeters {
                 // Orange means that we have acceptable accuracy.
                 fillColor = .orange
             } else {
