@@ -51,6 +51,7 @@ For an overview of the existing features, please check the _Developer's Guide_ f
 - **NavigationQuickStart**: Shows how to get started with turn-by-turn navigation. Exclusively available for the _Navigate Edition_.
 - **Navigation**: Gives an overview of how to implement many of the available turn-by-turn navigation and tracking features. Exclusively available for the _Navigate Edition_.
 - **NavigationCustom**: Shows how the guidance view can be customized. Exclusively available for the _Navigate Edition_.
+- **SpatialAudioNavigation**: Shows how to make use of spatial audio notifications for TTS voices during guidance. Exclusively available for the _Navigate Edition_.
 - **Positioning**: Shows how to integrate HERE Positioning. Exclusively available for the _Navigate Edition_.
 - **PositioningWithBackgroundUpdates**: Shows how to integrate HERE Positioning with background location updates on Android using a foreground service. Exclusively available for the _Navigate Edition_.
 - **HikingDiary**: Shows how to record GPX traces with HERE Positioning. Exclusively available for the _Navigate Edition_ (iOS only).
