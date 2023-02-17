@@ -157,6 +157,11 @@ class ViewController: UIViewController {
     // Touch handler for the button which selects venues by id.
     @IBAction private func loadVenue(_ sender: Any) {
         // Try to parse a venue id.
+        if selectedVenue == nil {
+            print("Error: No ID selected yet.")
+            return
+        }
+        
         if let id = Int32(selectedVenue) {
             if (venueEngine?.venueService.isInitialized() ?? false) && (id != venueEngine?.venueMap.selectedVenue?.venueModel.id) {
                 print("Loading venue \(id).")
@@ -172,7 +177,7 @@ class ViewController: UIViewController {
     }
     
     private func onVenueLoadError(_ error: VenueErrorCode?) {
-        print("Error: \(error)")
+        print("Error: \(String(describing: error))")
             var errorMessage: String
             switch error {
             case .noNetwork:
@@ -197,7 +202,7 @@ class ViewController: UIViewController {
                 errorMessage = "Unknown Error encountered"
             }
             // Create a new alert
-            var dialogMessage = UIAlertController(title: "Attention", message: errorMessage, preferredStyle: .alert)
+            let dialogMessage = UIAlertController(title: "Attention", message: errorMessage, preferredStyle: .alert)
             // Create OK button with action handler
             let okk = UIAlertAction(title: "OK", style: .default, handler: { (action) -> Void in
                 print("Ok button tapped")

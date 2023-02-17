@@ -10,6 +10,7 @@
 		860CC35928928F5600C0214A /* HEREPositioningProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 860CC35828928F5600C0214A /* HEREPositioningProvider.swift */; };
 		865AEB892886A03B00B2AB21 /* Menu.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 865AEB882886A03B00B2AB21 /* Menu.storyboard */; };
 		865AEB8B2886A5F100B2AB21 /* MenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 865AEB8A2886A5F100B2AB21 /* MenuViewController.swift */; };
+		86B135502994BB9A009D213F /* LocationFilterStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86B1354F2994BB9A009D213F /* LocationFilterStrategy.swift */; };
 		86CFBCB528868A8400064E7E /* HikingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86CFBCB428868A8400064E7E /* HikingApp.swift */; };
 		86D2664B298792AD001E6CC1 /* HEREPositioningSimulator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86D2664A298792AD001E6CC1 /* HEREPositioningSimulator.swift */; };
 		C81C8AE3295DA66700BAE03C /* HEREPositioningVisualizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C81C8AE2295DA66700BAE03C /* HEREPositioningVisualizer.swift */; };
@@ -43,6 +44,7 @@
 		860CC35828928F5600C0214A /* HEREPositioningProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HEREPositioningProvider.swift; sourceTree = "<group>"; };
 		865AEB882886A03B00B2AB21 /* Menu.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Menu.storyboard; sourceTree = "<group>"; };
 		865AEB8A2886A5F100B2AB21 /* MenuViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuViewController.swift; sourceTree = "<group>"; };
+		86B1354F2994BB9A009D213F /* LocationFilterStrategy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationFilterStrategy.swift; sourceTree = "<group>"; };
 		86CFBCB428868A8400064E7E /* HikingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HikingApp.swift; sourceTree = "<group>"; };
 		86D2664A298792AD001E6CC1 /* HEREPositioningSimulator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HEREPositioningSimulator.swift; sourceTree = "<group>"; };
 		C81C8AE2295DA66700BAE03C /* HEREPositioningVisualizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HEREPositioningVisualizer.swift; sourceTree = "<group>"; };
@@ -114,6 +116,7 @@
 				C827C54B23293726003AA0C5 /* LaunchScreen.storyboard */,
 				C827C54E23293726003AA0C5 /* Info.plist */,
 				86D2664A298792AD001E6CC1 /* HEREPositioningSimulator.swift */,
+				86B1354F2994BB9A009D213F /* LocationFilterStrategy.swift */,
 			);
 			path = HikingDiary;
 			sourceTree = "<group>";
@@ -206,6 +209,7 @@
 				C883A6A92968D6AC004F0509 /* GPXManager.swift in Sources */,
 				C827C5432329371C003AA0C5 /* AppDelegate.swift in Sources */,
 				86CFBCB528868A8400064E7E /* HikingApp.swift in Sources */,
+				86B135502994BB9A009D213F /* LocationFilterStrategy.swift in Sources */,
 				865AEB8B2886A5F100B2AB21 /* MenuViewController.swift in Sources */,
 				C81C8AE5295DD02F00BAE03C /* OutdoorRasterLayer.swift in Sources */,
 				C81C8AE3295DA66700BAE03C /* HEREPositioningVisualizer.swift in Sources */,
@@ -359,6 +363,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = "";
+				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -382,6 +387,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = "";
+				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",

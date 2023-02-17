@@ -1,0 +1,2 @@
+Put the latest AAR file of the HERE SDK for Android to this folder.
+If using Mach1 spatial audio engine, put the latest AAR file of the Mach1 SDK for Android to this folder. Alternatively, add Mach1 Spatial Audio Engine library via gradle (for more information visit Mach1 developer website at https://www.mach1.tech/developers).
