@@ -44,7 +44,7 @@ class HikingApp: LocationDelegate {
         locationFilter = DistanceAccuracyLocationFilter()
         
         // A class to manage GPX operations.
-        gpxManager = GPXManager(gpxDocumentFileName: "myGPXDocument")
+        gpxManager = GPXManager(gpxDocumentFileName: "myGPXDocument.gpx")
         
         // A helper to show our current location and the raw location signals.
         positioningVisualizer = HEREPositioningVisualizer(mapView)
@@ -74,10 +74,11 @@ class HikingApp: LocationDelegate {
     
     func onStopHikingButtonClicked() {
         clearMap()
-        gpxManager.stopGPXTrackPlayback()
         
         if isHiking && isGPXTrackLoaded == false {
             saveDiaryEntry()
+        } else {
+            setMessage("Stopped.")
         }
         
         isHiking = false
@@ -187,8 +188,6 @@ class HikingApp: LocationDelegate {
         
         addMapPolyline(diaryGeoPolyline)
         animateCameraTo(diaryGeoCoordinatesList)
-        
-        gpxManager.startGPXTrackPlayback(self, gpxTrack)
         
         setMessage("Diary Entry from: " + gpxTrack.description + "\n" +
                    "Hike Distance: \(distanceTravelled) m")

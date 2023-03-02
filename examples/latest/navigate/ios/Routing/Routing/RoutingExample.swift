@@ -133,6 +133,9 @@ class RoutingExample {
         mapView.mapScene.addMapPolyline(routeMapPolyline)
         mapPolylineList.append(routeMapPolyline)
 
+        // Optionally, render traffic on route.
+        showTrafficOnRoute(route)
+        
         let startPoint = route.sections.first!.departurePlace.mapMatchedCoordinates
         let destination = route.sections.last!.arrivalPlace.mapMatchedCoordinates
         
@@ -196,6 +199,41 @@ class RoutingExample {
         }
     }
 
+    // This renders the traffic flow on top of the route as multiple MapPolylines per span.
+    private func showTrafficOnRoute(_ route: Route) {
+        for section in route.sections {
+            for span in section.spans {
+                // A polyline needs to have two or more coordinates.
+                guard let spanGeoPolyline = try? GeoPolyline(vertices: span.polyline) else {
+                    print("Error: Initialization of GeoPolyline failed.")
+                    return
+                }
+                let trafficSpeed = span.trafficSpeed
+                let trafficSpanMapPolyline = MapPolyline(geometry: spanGeoPolyline,
+                                                         widthInPixels: 10,
+                                                         color: getTrafficColor(trafficSpeed.jamFactor ?? 0))
+                mapView.mapScene.addMapPolyline(trafficSpanMapPolyline)
+                mapPolylineList.append(trafficSpanMapPolyline)
+        }
+      }
+    }
+
+    // Define a traffic color scheme based on the route's jam factor.
+    // 0 <= jamFactor < 4: No or light traffic.
+    // 4 <= jamFactor < 8: Moderate or slow traffic.
+    // 8 <= jamFactor < 10: Severe traffic.
+    // jamFactor = 10: No traffic, ie. the road is blocked.
+    private func getTrafficColor(_ jamFactor: Double) -> UIColor {
+      if (jamFactor < 4) {
+        return UIColor(red: 0, green: 0, blue: 0, alpha: 0) // Fully transparent
+      } else if (jamFactor >= 4 && jamFactor < 8) {
+        return UIColor(red: 1, green: 1, blue: 0, alpha: 0.63) // Yellow
+      } else if (jamFactor >= 8 && jamFactor < 10) {
+        return UIColor(red: 1, green: 0, blue: 0, alpha: 0.63) // Red
+      }
+      return UIColor(red: 0, green: 0, blue: 0, alpha: 0.63) // Black
+    }
+    
     func clearMap() {
         clearWaypointMapMarker()
         clearRoute()
