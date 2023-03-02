@@ -46,6 +46,8 @@ import com.here.sdk.routing.RoutingEngine;
 import com.here.sdk.routing.RoutingError;
 import com.here.sdk.routing.Section;
 import com.here.sdk.routing.SectionNotice;
+import com.here.sdk.routing.Span;
+import com.here.sdk.routing.TrafficSpeed;
 import com.here.sdk.routing.Waypoint;
 
 import java.text.DateFormat;
@@ -176,6 +178,9 @@ public class RoutingExample {
         mapView.getMapScene().addMapPolyline(routeMapPolyline);
         mapPolylines.add(routeMapPolyline);
 
+        // Optionally, render traffic on route.
+        showTrafficOnRoute(route);
+
         GeoCoordinates startPoint =
                 route.getSections().get(0).getDeparturePlace().mapMatchedCoordinates;
         GeoCoordinates destination =
@@ -256,6 +261,44 @@ public class RoutingExample {
             mapView.getMapScene().removeMapPolyline(mapPolyline);
         }
         mapPolylines.clear();
+    }
+
+    // This renders the traffic flow on top of the route as multiple MapPolylines per span.
+    private void showTrafficOnRoute(Route route) {
+        for (Section section : route.getSections()) {
+            for (Span span : section.getSpans()) {
+                GeoPolyline spanGeoPolyline;
+                try {
+                    // A polyline needs to have two or more coordinates.
+                    spanGeoPolyline = new GeoPolyline(span.getPolyline());
+                } catch (InstantiationErrorException e) {
+                    e.printStackTrace();
+                    return;
+                }
+                float widthInPixels = 10;
+                TrafficSpeed trafficSpeed = span.getTrafficSpeed();
+                Color lineColor = getTrafficColor(trafficSpeed.jamFactor);
+                MapPolyline trafficSpanMapPolyline = new MapPolyline(spanGeoPolyline, widthInPixels, lineColor);
+                mapView.getMapScene().addMapPolyline(trafficSpanMapPolyline);
+                mapPolylines.add(trafficSpanMapPolyline);
+            }
+        }
+    }
+
+    // Define a traffic color scheme based on the route's jam factor.
+    // 0 <= jamFactor < 4: No or light traffic.
+    // 4 <= jamFactor < 8: Moderate or slow traffic.
+    // 8 <= jamFactor < 10: Severe traffic.
+    // jamFactor = 10: No traffic, ie. the road is blocked.
+    private Color getTrafficColor(Double jamFactor) {
+        if (jamFactor == null || jamFactor < 4) {
+            return Color.valueOf(0, 0, 0, 0); // Fully transparent (RGBA)
+        } else if (jamFactor >= 4 && jamFactor < 8) {
+            return Color.valueOf(1, 1, 0, 0.63f); // Yellow
+        } else if (jamFactor >= 8 && jamFactor < 10) {
+            return Color.valueOf(1, 0, 0, 0.63f); // Red
+        }
+        return Color.valueOf(0, 0, 0, 0.63f); // Black
     }
 
     private GeoCoordinates createRandomGeoCoordinatesAroundMapCenter() {

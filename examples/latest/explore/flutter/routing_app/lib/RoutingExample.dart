@@ -18,14 +18,15 @@
  */
 
 import 'dart:math';
-import 'package:intl/intl.dart';
+
 import 'package:flutter/material.dart';
+import 'package:here_sdk/animation.dart';
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/core.errors.dart';
 import 'package:here_sdk/mapview.dart';
-import 'package:here_sdk/animation.dart';
 import 'package:here_sdk/routing.dart';
 import 'package:here_sdk/routing.dart' as here;
+import 'package:intl/intl.dart';
 
 // A callback to notify the hosting widget.
 typedef ShowDialogFunction = void Function(String title, String message);
@@ -99,7 +100,7 @@ class RoutingExample {
     for (int i = 0; i < route.sections.length; i++) {
       Section section = route.sections.elementAt(i);
 
-      print("Route Section : " + (i+1).toString());
+      print("Route Section : " + (i + 1).toString());
       print("Route Section Departure Time : " + dateFormat.format(section.departureLocationTime!.localTime));
       print("Route Section Arrival Time : " + dateFormat.format(section.arrivalLocationTime!.localTime));
       print("Route Section length : " + section.lengthInMeters.toString() + " m");
@@ -112,9 +113,12 @@ class RoutingExample {
     int estimatedTrafficDelayInSeconds = route.trafficDelay.inSeconds;
     int lengthInMeters = route.lengthInMeters;
 
-    String routeDetails = 'Travel Time: ' + _formatTime(estimatedTravelTimeInSeconds)
-                        + ', Traffic Delay: ' + _formatTime(estimatedTrafficDelayInSeconds)
-                        + ', Length: ' + _formatLength(lengthInMeters);
+    String routeDetails = 'Travel Time: ' +
+        _formatTime(estimatedTravelTimeInSeconds) +
+        ', Traffic Delay: ' +
+        _formatTime(estimatedTrafficDelayInSeconds) +
+        ', Length: ' +
+        _formatLength(lengthInMeters);
 
     _showDialog('Route Details', '$routeDetails');
   }
@@ -140,6 +144,47 @@ class RoutingExample {
     MapPolyline routeMapPolyline = MapPolyline(routeGeoPolyline, widthInPixels, Color.fromARGB(160, 0, 144, 138));
     _hereMapController.mapScene.addMapPolyline(routeMapPolyline);
     _mapPolylines.add(routeMapPolyline);
+
+    // Optionally, render traffic on route.
+    _showTrafficOnRoute(route);
+  }
+
+  // This renders the traffic flow on top of the route as multiple MapPolylines per span.
+  _showTrafficOnRoute(here.Route route) {
+    for (var section in route.sections) {
+      for (var span in section.spans) {
+        GeoPolyline spanGeoPolyline;
+        try {
+          // A polyline needs to have two or more coordinates.
+          spanGeoPolyline = GeoPolyline(span.polyline);
+        } on InstantiationException {
+          print("Error: Initialization of GeoPolyline failed.");
+          return;
+        }
+        double widthInPixels = 10;
+        TrafficSpeed trafficSpeed = span.trafficSpeed;
+        Color lineColor = _getTrafficColor(trafficSpeed.jamFactor ?? 0);
+        MapPolyline trafficSpanMapPolyline = new MapPolyline(spanGeoPolyline, widthInPixels, lineColor);
+        _hereMapController.mapScene.addMapPolyline(trafficSpanMapPolyline);
+        _mapPolylines.add(trafficSpanMapPolyline);
+      }
+    }
+  }
+
+  // Define a traffic color scheme based on the route's jam factor.
+  // 0 <= jamFactor < 4: No or light traffic.
+  // 4 <= jamFactor < 8: Moderate or slow traffic.
+  // 8 <= jamFactor < 10: Severe traffic.
+  // jamFactor = 10: No traffic, ie. the road is blocked.
+  Color _getTrafficColor(double jamFactor) {
+    if (jamFactor < 4) {
+      return Color.fromARGB(0, 0, 0, 0); // Fully transparent
+    } else if (jamFactor >= 4 && jamFactor < 8) {
+      return Color.fromARGB(160, 255, 255, 0); // Yellow
+    } else if (jamFactor >= 8 && jamFactor < 10) {
+      return Color.fromARGB(160, 255, 0, 0); // Red
+    }
+    return Color.fromARGB(160, 0, 0, 0); // Black
   }
 
   GeoCoordinates _createRandomGeoCoordinatesInViewport() {
@@ -174,13 +219,13 @@ class RoutingExample {
     double tilt = 0;
     // We want to show the route fitting in the map view with an additional padding of 50 pixels.
     Point2D origin = Point2D(50, 50);
-    Size2D sizeInPixels = Size2D(_hereMapController.viewportSize.width - 100, _hereMapController.viewportSize.height - 100);
+    Size2D sizeInPixels =
+        Size2D(_hereMapController.viewportSize.width - 100, _hereMapController.viewportSize.height - 100);
     Rectangle2D mapViewport = Rectangle2D(origin, sizeInPixels);
 
     // Animate to the route within a duration of 3 seconds.
-    MapCameraUpdate update = MapCameraUpdateFactory.lookAtAreaWithGeoOrientationAndViewRectangle(route!.boundingBox,
-        GeoOrientationUpdate(bearing, tilt),
-        mapViewport);
+    MapCameraUpdate update = MapCameraUpdateFactory.lookAtAreaWithGeoOrientationAndViewRectangle(
+        route!.boundingBox, GeoOrientationUpdate(bearing, tilt), mapViewport);
     MapCameraAnimation animation = MapCameraAnimationFactory.createAnimationFromUpdate(
         update, const Duration(milliseconds: 3000), EasingFunction.inCubic);
     _hereMapController.camera.startAnimation(animation);

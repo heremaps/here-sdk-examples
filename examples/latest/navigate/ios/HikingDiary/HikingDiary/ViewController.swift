@@ -29,7 +29,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         
         // Load the map scene using a map scheme to render the map with.
-        mapView.mapScene.loadScene(mapScheme: MapScheme.normalDay, completion: onLoadScene)
+        mapView.mapScene.loadScene(mapScheme: MapScheme.satellite, completion: onLoadScene)
     }
     
     // Completion handler when loading a map scene.
