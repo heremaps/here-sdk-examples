@@ -47,7 +47,7 @@ For an overview of the existing features, please check the _Developer's Guide_ f
 - **EVRouting**: Shows how to calculate routes for _electric vehicles_ and how to calculate the area of reach with _isoline routing_. Also shows how to search along a route.
 - **Public Transit**: Shows how to calculate routes for public transportation vehicles such as subways, trains, or busses.
 - **Search**: Shows how to search POIs and add them to the map. Shows also geocoding and reverse geocoding.
-- **SearchHybrid**: Shows how to search POIs and add them to the map. Shows geocoding and reverse geocoding. Also shows how to search offline, when no internet connection is available. Exclusively available for the _Navigate Edition_.
+- **SearchHybrid**: Shows how to search for places including auto suggestions, for the address that belongs to certain geographic coordinates (reverse geocoding) and for the geographic coordinates that belong to an address (geocoding). It also shows how to search offline, when no internet connection is available. Exclusively available for the _Navigate Edition_.
 - **NavigationQuickStart**: Shows how to get started with turn-by-turn navigation. Exclusively available for the _Navigate Edition_.
 - **Navigation**: Gives an overview of how to implement many of the available turn-by-turn navigation and tracking features. Exclusively available for the _Navigate Edition_.
 - **NavigationCustom**: Shows how the guidance view can be customized. Exclusively available for the _Navigate Edition_.
