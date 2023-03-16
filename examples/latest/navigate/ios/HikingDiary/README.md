@@ -1,4 +1,4 @@
-This app shows how to use positioning to calculate the distance travelled by a user. You can find how this is done in [HikingExample.swift](HikingDiary/HikingApp.swift).
+This app shows how to record GPX traces with HERE Positioning. You can find how this is done in [HikingExample.swift](HikingDiary/HikingApp.swift).
 
 Build instructions:
 -------------------
