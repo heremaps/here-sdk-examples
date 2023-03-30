@@ -78,11 +78,11 @@ class RoutingExample {
             }
         }
     }
-    
+
     private func logRouteSectionDetails(route: Route) {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "HH:mm"
-        
+
         for (i, sections) in route.sections.enumerated() {
             print("Route Section : " + String(i));
             print("Route Section Departure Time : " + dateFormatter.string(from: sections.departureLocationTime!.localTime));
@@ -96,7 +96,7 @@ class RoutingExample {
         let estimatedTravelTimeInSeconds = route.duration
         let estimatedTrafficDelayInSeconds = route.trafficDelay
         let lengthInMeters = route.lengthInMeters
-        
+
         let routeDetails = "Travel Time (h:m): " + formatTime(sec: estimatedTravelTimeInSeconds)
                          + ", Traffic Delay (h:m): " + formatTime(sec: estimatedTrafficDelayInSeconds)
                          + ", Length: " + formatLength(meters: lengthInMeters)
@@ -121,7 +121,7 @@ class RoutingExample {
     private func showRouteOnMap(route: Route) {
         // Optionally, clear any previous route.
         clearMap()
-        
+
         // Show route as polyline.
         let routeGeoPolyline = route.geometry
         let routeMapPolyline = MapPolyline(geometry: routeGeoPolyline,
@@ -135,10 +135,10 @@ class RoutingExample {
 
         // Optionally, render traffic on route.
         showTrafficOnRoute(route)
-        
+
         let startPoint = route.sections.first!.departurePlace.mapMatchedCoordinates
         let destination = route.sections.last!.arrivalPlace.mapMatchedCoordinates
-        
+
         // Draw a circle to indicate starting point and destination.
         addCircleMapMarker(geoCoordinates: startPoint, imageName: "green_dot.png")
         addCircleMapMarker(geoCoordinates: destination, imageName: "green_dot.png")
@@ -201,17 +201,26 @@ class RoutingExample {
 
     // This renders the traffic flow on top of the route as multiple MapPolylines per span.
     private func showTrafficOnRoute(_ route: Route) {
+        if route.lengthInMeters / 1000 > 5000 {
+          print("Skip showing traffic-on-route for longer routes.");
+          return
+        }
+
         for section in route.sections {
             for span in section.spans {
+                let trafficSpeed = span.trafficSpeed
+                guard let lineColor = getTrafficColor(trafficSpeed.jamFactor) else {
+                    // Skip rendering low traffic.
+                    continue
+                }
                 // A polyline needs to have two or more coordinates.
                 guard let spanGeoPolyline = try? GeoPolyline(vertices: span.polyline) else {
                     print("Error: Initialization of GeoPolyline failed.")
                     return
                 }
-                let trafficSpeed = span.trafficSpeed
                 let trafficSpanMapPolyline = MapPolyline(geometry: spanGeoPolyline,
                                                          widthInPixels: 10,
-                                                         color: getTrafficColor(trafficSpeed.jamFactor ?? 0))
+                                                         color: lineColor)
                 mapView.mapScene.addMapPolyline(trafficSpanMapPolyline)
                 mapPolylineList.append(trafficSpanMapPolyline)
         }
@@ -223,17 +232,21 @@ class RoutingExample {
     // 4 <= jamFactor < 8: Moderate or slow traffic.
     // 8 <= jamFactor < 10: Severe traffic.
     // jamFactor = 10: No traffic, ie. the road is blocked.
-    private func getTrafficColor(_ jamFactor: Double) -> UIColor {
-      if (jamFactor < 4) {
-        return UIColor(red: 0, green: 0, blue: 0, alpha: 0) // Fully transparent
-      } else if (jamFactor >= 4 && jamFactor < 8) {
-        return UIColor(red: 1, green: 1, blue: 0, alpha: 0.63) // Yellow
-      } else if (jamFactor >= 8 && jamFactor < 10) {
-        return UIColor(red: 1, green: 0, blue: 0, alpha: 0.63) // Red
-      }
-      return UIColor(red: 0, green: 0, blue: 0, alpha: 0.63) // Black
+    // Returns nil in case of no or light traffic.
+    private func getTrafficColor(_ jamFactor: Double?) -> UIColor? {
+        guard let jamFactor = jamFactor else {
+            return nil
+        }
+        if jamFactor < 4 {
+            return nil
+        } else if jamFactor >= 4 && jamFactor < 8 {
+          return UIColor(red: 1, green: 1, blue: 0, alpha: 0.63) // Yellow
+        } else if jamFactor >= 8 && jamFactor < 10 {
+          return UIColor(red: 1, green: 0, blue: 0, alpha: 0.63) // Red
+        }
+        return UIColor(red: 0, green: 0, blue: 0, alpha: 0.63) // Black
     }
-    
+
     func clearMap() {
         clearWaypointMapMarker()
         clearRoute()

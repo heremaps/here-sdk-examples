@@ -151,8 +151,19 @@ class RoutingExample {
 
   // This renders the traffic flow on top of the route as multiple MapPolylines per span.
   _showTrafficOnRoute(here.Route route) {
+    if (route.lengthInMeters / 1000 > 5000) {
+      print("Skip showing traffic-on-route for longer routes.");
+      return;
+    }
+
     for (var section in route.sections) {
       for (var span in section.spans) {
+        TrafficSpeed trafficSpeed = span.trafficSpeed;
+        Color? lineColor = _getTrafficColor(trafficSpeed.jamFactor);
+        if (lineColor == null) {
+          // We skip rendering low traffic.
+          continue;
+        }
         GeoPolyline spanGeoPolyline;
         try {
           // A polyline needs to have two or more coordinates.
@@ -162,8 +173,6 @@ class RoutingExample {
           return;
         }
         double widthInPixels = 10;
-        TrafficSpeed trafficSpeed = span.trafficSpeed;
-        Color lineColor = _getTrafficColor(trafficSpeed.jamFactor ?? 0);
         MapPolyline trafficSpanMapPolyline = new MapPolyline(spanGeoPolyline, widthInPixels, lineColor);
         _hereMapController.mapScene.addMapPolyline(trafficSpanMapPolyline);
         _mapPolylines.add(trafficSpanMapPolyline);
@@ -176,9 +185,10 @@ class RoutingExample {
   // 4 <= jamFactor < 8: Moderate or slow traffic.
   // 8 <= jamFactor < 10: Severe traffic.
   // jamFactor = 10: No traffic, ie. the road is blocked.
-  Color _getTrafficColor(double jamFactor) {
-    if (jamFactor < 4) {
-      return Color.fromARGB(0, 0, 0, 0); // Fully transparent
+  // Returns null in case of no or light traffic.
+  Color? _getTrafficColor(double? jamFactor) {
+    if (jamFactor == null || jamFactor < 4) {
+      return null;
     } else if (jamFactor >= 4 && jamFactor < 8) {
       return Color.fromARGB(160, 255, 255, 0); // Yellow
     } else if (jamFactor >= 8 && jamFactor < 10) {

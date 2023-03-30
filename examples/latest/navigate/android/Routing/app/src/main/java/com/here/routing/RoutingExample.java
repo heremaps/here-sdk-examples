@@ -30,6 +30,7 @@ import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.GeoPolyline;
 import com.here.sdk.core.Point2D;
 import com.here.sdk.core.errors.InstantiationErrorException;
+import com.here.sdk.core.threading.TaskHandle;
 import com.here.sdk.mapview.MapCamera;
 import com.here.sdk.mapview.MapImage;
 import com.here.sdk.mapview.MapImageFactory;
@@ -125,15 +126,15 @@ public class RoutingExample {
     private void logRouteSectionDetails(Route route) {
         DateFormat dateFormat = new SimpleDateFormat("HH:mm");
 
-        for (int i = 0; i< route.getSections().size(); i++) {
+        for (int i = 0; i < route.getSections().size(); i++) {
             Section section = route.getSections().get(i);
 
-            Log.d(TAG, "Route Section : " + (i+1));
+            Log.d(TAG, "Route Section : " + (i + 1));
             Log.d(TAG, "Route Section Departure Time : "
                     + dateFormat.format(section.getDepartureLocationTime().localTime));
             Log.d(TAG, "Route Section Arrival Time : "
                     + dateFormat.format(section.getArrivalLocationTime().localTime));
-            Log.d(TAG, "Route Section length : " +  section.getLengthInMeters() + " m");
+            Log.d(TAG, "Route Section length : " + section.getLengthInMeters() + " m");
             Log.d(TAG, "Route Section duration : " + section.getDuration().getSeconds() + " s");
         }
     }
@@ -144,8 +145,8 @@ public class RoutingExample {
         int lengthInMeters = route.getLengthInMeters();
 
         String routeDetails = "Travel Time: " + formatTime(estimatedTravelTimeInSeconds)
-                            + ", traffic delay: " + formatTime(estimatedTrafficDelayInSeconds)
-                            + ", Length: " + formatLength(lengthInMeters);
+                + ", traffic delay: " + formatTime(estimatedTrafficDelayInSeconds)
+                + ", Length: " + formatLength(lengthInMeters);
 
         showDialog("Route Details", routeDetails);
     }
@@ -265,8 +266,19 @@ public class RoutingExample {
 
     // This renders the traffic flow on top of the route as multiple MapPolylines per span.
     private void showTrafficOnRoute(Route route) {
+        if (route.getLengthInMeters() / 1000 > 5000) {
+            Log.d(TAG, "Skip showing traffic-on-route for longer routes.");
+            return;
+        }
+
         for (Section section : route.getSections()) {
             for (Span span : section.getSpans()) {
+                TrafficSpeed trafficSpeed = span.getTrafficSpeed();
+                Color lineColor = getTrafficColor(trafficSpeed.jamFactor);
+                if (lineColor == null) {
+                    // We skip rendering low traffic.
+                    continue;
+                }
                 GeoPolyline spanGeoPolyline;
                 try {
                     // A polyline needs to have two or more coordinates.
@@ -276,8 +288,6 @@ public class RoutingExample {
                     return;
                 }
                 float widthInPixels = 10;
-                TrafficSpeed trafficSpeed = span.getTrafficSpeed();
-                Color lineColor = getTrafficColor(trafficSpeed.jamFactor);
                 MapPolyline trafficSpanMapPolyline = new MapPolyline(spanGeoPolyline, widthInPixels, lineColor);
                 mapView.getMapScene().addMapPolyline(trafficSpanMapPolyline);
                 mapPolylines.add(trafficSpanMapPolyline);
@@ -290,9 +300,11 @@ public class RoutingExample {
     // 4 <= jamFactor < 8: Moderate or slow traffic.
     // 8 <= jamFactor < 10: Severe traffic.
     // jamFactor = 10: No traffic, ie. the road is blocked.
+    // Returns null in case of no or light traffic.
+    @Nullable
     private Color getTrafficColor(Double jamFactor) {
         if (jamFactor == null || jamFactor < 4) {
-            return Color.valueOf(0, 0, 0, 0); // Fully transparent (RGBA)
+            return null;
         } else if (jamFactor >= 4 && jamFactor < 8) {
             return Color.valueOf(1, 1, 0, 0.63f); // Yellow
         } else if (jamFactor >= 8 && jamFactor < 10) {
