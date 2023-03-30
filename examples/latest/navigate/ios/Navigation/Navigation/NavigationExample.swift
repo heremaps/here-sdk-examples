@@ -188,9 +188,9 @@ class NavigationExample : NavigableLocationDelegate,
         let nextRoadTexts = maneuver.nextRoadTexts
 
         let currentRoadName = currentRoadTexts.names.defaultValue()
-        let currentRoadNumber = currentRoadTexts.numbers.defaultValue()
+        let currentRoadNumber = currentRoadTexts.numbersWithDirection.defaultValue()
         let nextRoadName = nextRoadTexts.names.defaultValue()
-        let nextRoadNumber = nextRoadTexts.numbers.defaultValue()
+        let nextRoadNumber = nextRoadTexts.numbersWithDirection.defaultValue()
 
         var roadName = nextRoadName == nil ? nextRoadNumber : nextRoadName
 
@@ -544,6 +544,7 @@ class NavigationExample : NavigableLocationDelegate,
         }
     }
 
+    // Conform to RealisticViewWarningDelegate.
     // Notifies on signposts together with complex junction views.
     // Signposts are shown as they appear along a road on a shield to indicate the upcoming directions and
     // destinations, such as cities or road names.
@@ -567,8 +568,13 @@ class NavigationExample : NavigableLocationDelegate,
         }
 
         let realisticView = realisticViewWarning.realisticView
-        let signpostSvgImageContent = realisticView.signpostSvgImageContent
-        let junctionViewSvgImageContent = realisticView.junctionViewSvgImageContent
+        guard let signpostSvgImageContent = realisticView?.signpostSvgImageContent,
+              let junctionViewSvgImageContent = realisticView?.junctionViewSvgImageContent
+        else {
+            print("A RealisticView just passed. No SVG data delivered.")
+            return
+        }
+
         // The resolution-independent SVG data can now be used in an application to visualize the image.
         // Use a SVG library of your choice to create an SVG image out of the SVG string.
         // Both SVGs contain the same dimension and the signpostSvgImageContent should be shown on top of

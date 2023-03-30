@@ -210,9 +210,9 @@ class NavigationExample {
     RoadTexts nextRoadTexts = maneuver.nextRoadTexts;
 
     String? currentRoadName = currentRoadTexts.names.getDefaultValue();
-    String? currentRoadNumber = currentRoadTexts.numbers.getDefaultValue();
+    String? currentRoadNumber = currentRoadTexts.numbersWithDirection.getDefaultValue();
     String? nextRoadName = nextRoadTexts.names.getDefaultValue();
-    String? nextRoadNumber = nextRoadTexts.numbers.getDefaultValue();
+    String? nextRoadNumber = nextRoadTexts.numbersWithDirection.getDefaultValue();
 
     String? roadName = nextRoadName == null ? nextRoadNumber : nextRoadName;
 
@@ -584,7 +584,12 @@ class NavigationExample {
         print("A RealisticView just passed.");
       }
 
-      RealisticView realisticView = realisticViewWarning.realisticView;
+      RealisticView? realisticView = realisticViewWarning.realisticView;
+      if (realisticView == null) {
+        print("A RealisticView just passed. No SVG content delivered.");
+        return;
+      }
+
       String signpostSvgImageContent = realisticView.signpostSvgImageContent;
       String junctionViewSvgImageContent = realisticView.junctionViewSvgImageContent;
       // The resolution-independent SVG data can now be used in an application to visualize the image.
