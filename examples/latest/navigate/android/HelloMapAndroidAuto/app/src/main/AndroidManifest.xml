@@ -47,7 +47,8 @@
             </intent-filter>
         </service>
 
-        <!-- Declare the Android Auto API Level and layout template. -->
+        <!-- Declare the Android Auto API Level and layout template. Value for minCarApiLevel needs
+             to be set '2' to enable gesture handling of MapSurface. -->
         <meta-data
             android:name="androidx.car.app.minCarApiLevel"
             android:value="1"/>

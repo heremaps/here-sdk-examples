@@ -94,6 +94,12 @@ public class HelloMapScreen extends Screen implements SurfaceCallback {
 
         NavigationTemplate.Builder builder = new NavigationTemplate.Builder();
         builder.setActionStrip(actionStripBuilder.build());
+
+        builder.setMapActionStrip(
+                new ActionStrip.Builder().addAction(
+                        // must be present (even on a car with touch screen) to enable PAN mode
+                        new Action.Builder(Action.PAN).build()).build());
+
         return builder.build();
     }
 
@@ -142,5 +148,40 @@ public class HelloMapScreen extends Screen implements SurfaceCallback {
     private Point2D getCenterPoint() {
         Size2D viewport = mapSurface.getViewportSize();
         return new Point2D(viewport.width * 0.5, viewport.height * 0.5);
+    }
+
+    /**
+     * Will be called on scroll event. Needs car api version 2 to work.
+     * See {@link SurfaceCallback#onScroll(float, float)} definition for more details.
+     */
+    @Override
+    public void onScroll(float distanceX, float distanceY) {
+        mapSurface.getGestures().getScrollHandler().onScroll(distanceX, distanceY);
+    }
+
+    /**
+     * Will be called on scale event. Needs car api version 2 to work.
+     * See {@link SurfaceCallback#onScale(float, float, float)} definition for more details.
+     */
+    @Override
+    public void onScale(float focusX, float focusY, float scaleFactor) {
+        mapSurface.getGestures().getScaleHandler().onScale(focusX, focusY, scaleFactor);
+    }
+
+    /**
+     * Will be called on scale event. Needs car api version 2 to work.
+     * See {@link SurfaceCallback#onFling(float, float)} definition for more details.
+     */
+    @Override
+    public void onFling(float velocityX, float velocityY) {
+        /**
+         *
+         * Fling event appears to have inverted axis compared to scroll event on desktop head unit.
+         * This should not be the case according to
+         * {@link androidx.car.app.navigation.model.NavigationTemplate}. To compensate this, a
+         * factor of -1 was introduced. This might differ depending on which head unit model is
+         * used.
+         */
+        mapSurface.getGestures().getFlingHandler().onFling(-1*velocityX, -1*velocityY);
     }
 }
