@@ -351,6 +351,8 @@ class NavigationExample : NavigableLocationDelegate,
         // At least, make sure to not calculate a new route every time you get a RouteDeviation
         // event as the route calculation happens asynchronously and takes also some time to
         // complete.
+        // The deviation event is sent any time an off-route location is detected: It may make
+        // sense to await around 3 events before deciding on possible actions.   
     }
 
     // Conform to ManeuverNotificationDelegate.
@@ -507,7 +509,7 @@ class NavigationExample : NavigableLocationDelegate,
     }
 
     // Conform to the TruckRestrictionsWarningDelegate.
-    // Notifies truck drivers on road restrictions ahead.
+    // Notifies truck drivers on road restrictions ahead. Called whenever there is a change.
     // For example, there can be a bridge ahead not high enough to pass a big truck
     // or there can be a road ahead where the weight of the truck is beyond it's permissible weight.
     // This event notifies on truck restrictions in general,

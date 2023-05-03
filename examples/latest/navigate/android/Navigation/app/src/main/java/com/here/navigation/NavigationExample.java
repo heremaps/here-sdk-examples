@@ -73,6 +73,7 @@ import com.here.sdk.navigation.RouteDeviationListener;
 import com.here.sdk.navigation.RouteProgress;
 import com.here.sdk.navigation.RouteProgressListener;
 import com.here.sdk.navigation.SectionProgress;
+import com.here.sdk.navigation.SpeedBasedCameraBehavior;
 import com.here.sdk.navigation.SpeedLimit;
 import com.here.sdk.navigation.SpeedLimitListener;
 import com.here.sdk.navigation.SpeedLimitOffset;
@@ -137,9 +138,6 @@ public class NavigationExample {
         } catch (InstantiationErrorException e) {
             throw new RuntimeException("Initialization of VisualNavigator failed: " + e.error.name());
         }
-
-        // Enable auto-zoom during guidance.
-        visualNavigator.setCameraBehavior(new DynamicCameraBehavior());
 
         // This enables a navigation view including a rendered navigation arrow.
         visualNavigator.startRendering(mapView);
@@ -218,6 +216,26 @@ public class NavigationExample {
                 String roadName = getRoadName(nextManeuver);
                 String logMessage = action.name() + " on " + roadName +
                         " in " + nextManeuverProgress.remainingDistanceInMeters + " meters.";
+
+                // Angle is null for some maneuvers like Depart, Arrive and Roundabout.
+                Double turnAngle = nextManeuver.getTurnAngleInDegrees();
+                if (turnAngle != null) {
+                    if (turnAngle > 10) {
+                        Log.d(TAG, "At the next maneuver: Make a right turn of " + turnAngle + " degrees.");
+                    } else if (turnAngle < -10) {
+                        Log.d(TAG, "At the next maneuver: Make a left turn of " + turnAngle + " degrees.");
+                    } else {
+                        Log.d(TAG, "At the next maneuver: Go straight.");
+                    }
+                }
+
+                // Angle is null when the roundabout maneuver is not an enter, exit or keep maneuver.
+                Double roundaboutAngle = nextManeuver.getRoundaboutAngleInDegrees();
+                if (roundaboutAngle != null) {
+                    // Note that the value is negative only for left-driving countries such as UK.
+                    Log.d(TAG, "At the next maneuver: Follow the roundabout for " +
+                            roundaboutAngle + " degrees to reach the exit.");
+                }
 
                 if (previousManeuverIndex != nextManeuverIndex) {
                     messageView.setText("New maneuver: " + logMessage);
@@ -357,6 +375,8 @@ public class NavigationExample {
                 // At least, make sure to not calculate a new route every time you get a RouteDeviation
                 // event as the route calculation happens asynchronously and takes also some time to
                 // complete.
+                // The deviation event is sent any time an off-route location is detected: It may make
+                // sense to await around 3 events before deciding on possible actions.   
             }
         });
 
@@ -484,7 +504,7 @@ public class NavigationExample {
             }
         });
 
-        // Notifies truck drivers on road restrictions ahead.
+        // Notifies truck drivers on road restrictions ahead. Called whenever there is a change.
         // For example, there can be a bridge ahead not high enough to pass a big truck
         // or there can be a road ahead where the weight of the truck is beyond it's permissible weight.
         // This event notifies on truck restrictions in general,
@@ -567,7 +587,7 @@ public class NavigationExample {
                     Log.d(TAG, "A RealisticView just passed. No SVG data delivered.");
                     return;
                 }
-                
+
                 String signpostSvgImageContent = realisticView.signpostSvgImageContent;
                 String junctionViewSvgImageContent = realisticView.junctionViewSvgImageContent;
                 // The resolution-independent SVG data can now be used in an application to visualize the image.
@@ -680,6 +700,9 @@ public class NavigationExample {
         // Switches to navigation mode when no route was set before, otherwise navigation mode is kept.
         visualNavigator.setRoute(route);
 
+        // Enable auto-zoom during guidance.
+        visualNavigator.setCameraBehavior(new DynamicCameraBehavior());
+
         if (isSimulated) {
             enableRoutePlayback(route);
             messageView.setText("Starting simulated navgation.");
@@ -724,6 +747,8 @@ public class NavigationExample {
         // Without a route the navigator will only notify on the current map-matched location
         // including info such as speed and current street name.
         visualNavigator.setRoute(null);
+        // SpeedBasedCameraBehavior is recommended for tracking mode.
+        visualNavigator.setCameraBehavior(new SpeedBasedCameraBehavior());
         enableDevicePositioning();
         messageView.setText("Tracking device's location.");
 

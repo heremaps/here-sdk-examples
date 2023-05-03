@@ -347,12 +347,12 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
         SDKNativeEngine.sharedInstance?.isOfflineMode = false
         self.showMessage("The app is allowed to go online.")
     }
-    
+
     func onSwitchOfflineClicked() {
         SDKNativeEngine.sharedInstance?.isOfflineMode = true
         self.showMessage("The app is radio-silence.")
     }
-    
+
     private func checkInstallationStatus() {
         guard let mapDownloader = mapDownloader else {
             showMessage("MapDownloader instance not ready. Try again.")
@@ -377,6 +377,12 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
             print("RepairPersistentMap: Repair operation completed successfully!")
             return
         }
+
+        // In this case, check the PersistentMapStatus and the recommended
+        // healing option listed in the API Reference. For example, if the status
+        // is "pendingUpdate", it cannot be repaired, but instead an update
+        // should be executed. It is recommended to inform your users to
+        // perform the recommended action.
         print("RepairPersistentMap: Repair operation failed: \(String(describing: persistentMapRepairError))")
     }
 

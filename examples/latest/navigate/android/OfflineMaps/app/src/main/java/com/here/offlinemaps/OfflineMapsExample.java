@@ -483,6 +483,11 @@ public class OfflineMapsExample {
                         return;
                     }
 
+                    // In this case, check the PersistentMapStatus and the recommended
+                    // healing option listed in the API Reference. For example, if the status
+                    // is PENDING_UPDATE, it cannot be repaired, but instead an update
+                    // should be executed. It is recommended to inform your users to
+                    // perform the recommended action.               
                     Log.d("RepairPersistentMap", "Repair operation failed: " + persistentMapRepairError.name());
                 }
             });
