@@ -54,7 +54,7 @@ For an overview of the existing features, please check the _Developer's Guide_ f
 - **SpatialAudioNavigation**: Shows how to make use of spatial audio notifications for TTS voices during guidance. Exclusively available for the _Navigate Edition_.
 - **Positioning**: Shows how to integrate HERE Positioning. Exclusively available for the _Navigate Edition_.
 - **PositioningWithBackgroundUpdates**: Shows how to integrate HERE Positioning with background location updates on Android using a foreground service. Exclusively available for the _Navigate Edition_.
-- **HikingDiary**: Shows how to record GPX traces with HERE Positioning. Exclusively available for the _Navigate Edition_ (iOS only).
+- **HikingDiary**: Shows how to record GPX traces with HERE Positioning. Exclusively available for the _Navigate Edition_ (Android and iOS only).
 - **Traffic**: Shows how to search for real-time traffic and how to visualize it on the map.
 - **StandAloneEngine**: Shows how to use an engine without a map view.
 - **IndoorMap**: Shows how to integrate private venues. Exclusively available for the _Navigate Edition_.
