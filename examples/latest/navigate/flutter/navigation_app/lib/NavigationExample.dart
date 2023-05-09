@@ -148,8 +148,8 @@ class NavigationExample {
             print("DynamicRoutingEngine: etaDifferenceInSeconds: $etaDifferenceInSeconds.");
             print("DynamicRoutingEngine: distanceDifferenceInMeters: $distanceDifferenceInMeters.");
 
-            // An implementation can decide to switch to the new route:
-            // _visualNavigator.route = newRoute;
+            // An implementation needs to decide when to switch to the new route based
+            // on above criteria.
           }, (RoutingError routingError) {
             final error = routingError.toString();
             _updateMessageState("Error while dynamically searching for a better route: $error");
@@ -401,7 +401,7 @@ class NavigationExample {
       // event as the route calculation happens asynchronously and takes also some time to
       // complete.
       // The deviation event is sent any time an off-route location is detected: It may make
-      // sense to await around 3 events before deciding on possible actions.   
+      // sense to await around 3 events before deciding on possible actions.
     });
 
     // Notifies on voice maneuver messages.

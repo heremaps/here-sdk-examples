@@ -259,6 +259,9 @@ class RoutingExample {
                 return
         }
 
+        // Clear previously added polygon area, if any.
+        clearIsolines()
+        
         // This finds the area that an electric vehicle can reach by consuming 400 Wh or less,
         // while trying to take the fastest possible route into any possible straight direction from start.
         // Note: We have specified evCarOptions.routeOptions.optimizationMode = .fastest for EV car options above.

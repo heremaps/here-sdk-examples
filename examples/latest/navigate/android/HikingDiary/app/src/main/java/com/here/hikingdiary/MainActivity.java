@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 HERE Europe B.V.
+ * Copyright (C) 2022-2023 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,11 @@ package com.here.hikingdiary;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -30,12 +33,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
-import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.appcompat.widget.Toolbar;
@@ -84,10 +87,12 @@ public class MainActivity extends AppCompatActivity {
         mySwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    hikingApp.enableOutdoorRasterLayer();
-                } else {
-                    hikingApp.disableOutdoorRasterLayer();
+                if (hikingApp != null) {
+                    if (isChecked) {
+                        hikingApp.enableOutdoorRasterLayer();
+                    } else {
+                        hikingApp.disableOutdoorRasterLayer();
+                    }
                 }
             }
         });
@@ -101,10 +106,11 @@ public class MainActivity extends AppCompatActivity {
                             int index = data.getIntExtra(CLICKED_INDEX_KEY, -1);
                             boolean isIndexDeleted = data.getBooleanExtra(DELETE_INDEX_KEY, false);
                             // Handle the returned index here.
-                            hikingApp.loadDiaryEntry(index);
-
-                            if (isIndexDeleted) {
-                                hikingApp.deleteDiaryEntry(index);
+                            if (hikingApp != null) {
+                                hikingApp.loadDiaryEntry(index);
+                                if (isIndexDeleted) {
+                                    hikingApp.deleteDiaryEntry(index);
+                                }
                             }
                         }
                     }
@@ -115,21 +121,24 @@ public class MainActivity extends AppCompatActivity {
         diaryScreenButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ArrayList<String> entryKeys = hikingApp.getMenuEntryKeys() != null ? new ArrayList<>(hikingApp.getMenuEntryKeys()) : new ArrayList<>();
-                ArrayList<String> entryDescriptions = hikingApp.getMenuEntryDescriptions() != null ? new ArrayList<>(hikingApp.getMenuEntryDescriptions()) : new ArrayList<>();
+                if (hikingApp != null) {
+                    ArrayList<String> entryKeys = hikingApp.getMenuEntryKeys() != null ? new ArrayList<>(hikingApp.getMenuEntryKeys()) : new ArrayList<>();
+                    ArrayList<String> entryDescriptions = hikingApp.getMenuEntryDescriptions() != null ? new ArrayList<>(hikingApp.getMenuEntryDescriptions()) : new ArrayList<>();
 
-                if (entryKeys.isEmpty()) {
-                    hikingApp.setMessage("No hiking diary entries yet.");
-                } else {
-                    Bundle bundle = new Bundle();
-                    bundle.putStringArrayList("key_names", entryKeys);
-                    bundle.putStringArrayList("key_descriptions", entryDescriptions);
+                    if (entryKeys.isEmpty()) {
+                        hikingApp.setMessage("No hiking diary entries yet.");
+                    } else {
+                        Bundle bundle = new Bundle();
+                        bundle.putStringArrayList("key_names", entryKeys);
+                        bundle.putStringArrayList("key_descriptions", entryDescriptions);
 
-                    Intent intent = new Intent(MainActivity.this, MenuActivity.class);
-                    intent.putExtras(bundle);
+                        Intent intent = new Intent(MainActivity.this, MenuActivity.class);
+                        intent.putExtras(bundle);
 
-                    menuActivityResultLauncher.launch(intent);
+                        menuActivityResultLauncher.launch(intent);
+                    }
                 }
+
             }
         });
 
@@ -198,14 +207,9 @@ public class MainActivity extends AppCompatActivity {
             public void permissionsDenied() {
                 Log.v(TAG, "checkPermissions: Permissions denied");
                 if (permissionsRequestor.isLocationAccessDenied() ||
-                        permissionsRequestor.isBackgroundLocationDenied()) {
-
-                    Context context = getApplicationContext();
-                    CharSequence text = "Cannot start app: Location permissions are needed";
-                    int duration = Toast.LENGTH_LONG;
-
-                    Toast toast = Toast.makeText(context, text, duration);
-                    toast.show();
+                        permissionsRequestor.isBackgroundLocationDenied() ||
+                        permissionsRequestor.isNotificationDenied()) {
+                    openAppSettingsDialog();
                 }
             }
         });
@@ -216,9 +220,37 @@ public class MainActivity extends AppCompatActivity {
         permissionsRequestor.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
+    private void openAppSettingsDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        builder.setPositiveButton("Open", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked OK button
+                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                Uri uri = Uri.fromParts("package", getPackageName(), null);
+                intent.setData(uri);
+                startActivity(intent);
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User cancelled the dialog.
+                dialog.cancel();
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        CharSequence title = "Open App Settings";
+        CharSequence message = "Cannot start app: Location permissions are needed";
+        dialog.setIcon(android.R.drawable.ic_menu_mylocation);
+        dialog.setTitle(title);
+        dialog.setMessage(message);
+
+        dialog.show();
+    }
+
     private void loadMapScene() {
         // Load a scene from the HERE SDK to render the map with a map scheme.
-        mapView.getMapScene().loadScene(MapScheme.NORMAL_DAY, new MapScene.LoadSceneCallback() {
+        mapView.getMapScene().loadScene(MapScheme.SATELLITE, new MapScene.LoadSceneCallback() {
             @Override
             public void onLoadScene(@Nullable MapError mapError) {
                 if (mapError == null) {
@@ -276,10 +308,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startHikeButtonClicked(View view) {
-        hikingApp.onStartHikingButtonClicked();
+        if (hikingApp != null) {
+            hikingApp.onStartHikingButtonClicked();
+        }
     }
 
     public void stopHikeButtonClicked(View view) {
-        hikingApp.onStopHikingButtonClicked();
+        if (hikingApp != null) {
+            hikingApp.onStopHikingButtonClicked();
+        }
     }
 }

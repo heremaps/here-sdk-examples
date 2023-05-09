@@ -251,7 +251,43 @@ class VenueServiceListenerImpl implements VenueServiceListener {
     if (result == VenueServiceInitStatus.onlineSuccess) {
       //Get List of venues info
       List<VenueInfo> venueInfo =
-      _venueEngineState!._venueEngine!.venueMap.getVenueInfoList();
+      _venueEngineState!._venueEngine!.venueMap.getVenueInfoListWithErrors((VenueErrorCode? venueLoadError) {
+        String errorMsg;
+        switch(venueLoadError) {
+          case VenueErrorCode.noNetwork:
+            errorMsg = "The device has no internet connectivity";
+            break;
+          case VenueErrorCode.noMetaDataFound:
+            errorMsg = "Meta data not present in platform collection catalog";
+            break;
+          case VenueErrorCode.hrnMissing:
+            errorMsg = "HRN not provided. Please insert HRN";
+            break;
+          case VenueErrorCode.hrnMismatch:
+            errorMsg = "HRN does not match with Auth key & secret";
+            break;
+          case VenueErrorCode.noDefaultCollection:
+            errorMsg = "Default collection missing from platform collection catalog";
+            break;
+          case VenueErrorCode.mapIdNotFound:
+            errorMsg = "Map ID requested is not part of the default collection";
+            break;
+          case VenueErrorCode.mapDataIncorrect:
+            errorMsg = "Map data in collection is wrong";
+            break;
+          case VenueErrorCode.internalServerError:
+            errorMsg = "Internal Server Error";
+            break;
+          case VenueErrorCode.serviceUnavailable:
+            errorMsg = "Requested service is not available currently. Please try after some time";
+            break;
+          case VenueErrorCode.noMapInCollection:
+            errorMsg = "No maps available in the collection";
+            break;
+          default:
+            errorMsg = "Unknown Error encountered";
+        }
+      });
       for (int i = 0; i < venueInfo.length; i++) {
         int venueId = venueInfo[i].venueId;
         var updatedVenueIdList = venueInfo[i].venueIdentifier.substring(venueInfo[i].venueIdentifier.length - 5);

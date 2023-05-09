@@ -322,6 +322,9 @@ public class EVRoutingExample {
             showDialog("Error", "Please add at least one route first.");
             return;
         }
+        
+        // Clear previously added polygon area, if any.
+        clearIsolines();
 
         // This finds the area that an electric vehicle can reach by consuming 400 Wh or less,
         // while trying to take the fastest possible route into any possible straight direction from start.
