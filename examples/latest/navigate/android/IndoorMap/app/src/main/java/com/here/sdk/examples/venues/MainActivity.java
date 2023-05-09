@@ -229,8 +229,8 @@ public class MainActivity extends AppCompatActivity {
         public void onInitializationCompleted(@NonNull VenueServiceInitStatus result) {
             if (result == VenueServiceInitStatus.ONLINE_SUCCESS) {
                 try{
-                    venueInfoListItems = new Integer[venueEngine.getVenueMap().getVenueInfoList().size()];
-                    List<VenueInfo> venueInfo = venueEngine.getVenueMap().getVenueInfoList();
+                    List<VenueInfo> venueInfo = venueEngine.getVenueMap().getVenueInfoList(MainActivity.this::onVenueLoadError);
+                    venueInfoListItems = new Integer[venueInfo.size()];
                     for (int i = 0; i< venueInfo.size(); i++) {
                         Log.d(TAG, "Venue Identifier: " + venueInfo.get(i).getVenueIdentifier() + " Venue Id: "+venueInfo.get(i).getVenueId() + " Venue Name: "+venueInfo.get(i).getVenueName());
                         venueInfoListItems[i] = venueInfo.get(i).getVenueId();
@@ -334,6 +334,9 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case SERVICE_UNAVAILABLE:
                 errorMsg = "Requested service is not available currently. Please try after some time";
+                break;
+            case NO_MAP_IN_COLLECTION:
+                errorMsg = "No maps available in the collection";
                 break;
             default:
                 errorMsg = "Unknown Error encountered";

@@ -55,7 +55,7 @@ public class GPXManager {
 
     private GPXDocument loadGPXDocument(String gpxDocumentFileName) {
         try {
-            GPXDocument gpxDocument = new GPXDocument(getGPXDocumentFilePath(gpxDocumentFileName), new GPXOptions());
+            GPXDocument gpxDocument = new GPXDocument(gpxDocumentFileName, new GPXOptions());
             return gpxDocument;
         } catch (Exception instantiationError) {
             System.out.println("It seems no GPXDocument was stored yet: " + instantiationError);
@@ -86,7 +86,7 @@ public class GPXManager {
 
         gpxDocument.addTrack(gpxTrack);
 
-        return gpxDocument.save(getGPXDocumentFilePath(gpxDocumentFileName));
+        return gpxDocument.save(gpxDocumentFileName);
     }
 
     public GPXTrack getGPXTrack(int index) {
@@ -106,7 +106,7 @@ public class GPXManager {
 
         // Replace the existing document with the updated tracks list.
         gpxDocument = new GPXDocument(gpxTracks);
-        return gpxDocument.save(getGPXDocumentFilePath(gpxDocumentFileName));
+        return gpxDocument.save(gpxDocumentFileName);
     }
 
     public List<GeoCoordinates> getGeoCoordinatesList(GPXTrack track) {
@@ -116,12 +116,6 @@ public class GPXManager {
             geoCoordinatesList.add(location.coordinates);
         }
         return geoCoordinatesList;
-    }
-
-    private String getGPXDocumentFilePath(String fileName) {
-        // Finds the document directory of the user on a device.
-        File documentsDirectory = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
-        return documentsDirectory.getPath() + "/" + fileName;
     }
 
     private String getCurrentDate() {

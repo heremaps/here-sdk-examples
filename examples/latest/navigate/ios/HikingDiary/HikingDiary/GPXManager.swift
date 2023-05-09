@@ -37,7 +37,7 @@ class GPXManager {
     // Returns the stored GPXDocument or nil if no document was stored yet.
     private func loadGPXDocument(_ gpxDocumentFileName: String) -> GPXDocument? {
         do {
-            let gpxDocument = try GPXDocument(gpxFilePath: getGPXDocumentFilePath(gpxDocumentFileName),
+            let gpxDocument = try GPXDocument(gpxFilePath: gpxDocumentFileName,
                                               options: GPXOptions())
             return gpxDocument
         } catch let instantiationError {
@@ -71,7 +71,7 @@ class GPXManager {
         
         gpxDocument.addTrack(trackToAdd: gpxTrack)
         
-        return gpxDocument.save(gpxFilePath: getGPXDocumentFilePath(gpxDocumentFileName))
+        return gpxDocument.save(gpxFilePath: gpxDocumentFileName)
     }
     
     // Gets an exsting track from the GPXDocument, if available at the given index.
@@ -94,7 +94,7 @@ class GPXManager {
                 
         // Replace the existing document with the updated tracks list.
         gpxDocument = GPXDocument(tracks: gpxTracks)
-        return gpxDocument.save(gpxFilePath: getGPXDocumentFilePath(gpxDocumentFileName))
+        return gpxDocument.save(gpxFilePath: gpxDocumentFileName)
     }
     
     public func getGeoCoordinatesList(track: GPXTrack) -> [GeoCoordinates] {
@@ -104,12 +104,6 @@ class GPXManager {
             geoCoordinatesList.append(location.coordinates)
         }
         return geoCoordinatesList
-    }
-    
-    private func getGPXDocumentFilePath(_ fileName: String) -> String {
-        // Finds the document directory of the user on a device.
-        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
-        return paths[0].path + "/" + fileName
     }
    
     private func getCurrentDate() -> String {

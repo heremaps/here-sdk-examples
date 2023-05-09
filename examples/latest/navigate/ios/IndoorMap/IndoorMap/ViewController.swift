@@ -198,6 +198,8 @@ class ViewController: UIViewController {
                 errorMessage = "Internal Server Error"
             case .serviceUnavailable:
                 errorMessage = "Requested service is not available currently. Please try after some time"
+            case .noMapInCollection:
+                errorMessage = "No maps available in the collection"
             default:
                 errorMessage = "Unknown Error encountered"
             }
@@ -241,7 +243,7 @@ extension ViewController: VenueServiceDelegate {
             var index: Int
             index = 0
             //Get List of venues info
-            let venueInfo:[VenueInfo]? = venueEngine?.venueMap.getVenueInfoList()
+            let venueInfo:[VenueInfo]? = venueEngine?.venueMap.getVenueInfoList(completion: self.onVenueLoadError)
             if let venueInfo = venueInfo {
               for venueInfo in venueInfo {
                   print("Venue Identifier: \(venueInfo.venueIdentifier)." + " Venue Id: \(venueInfo.venueId)." + " Venue Name: \(venueInfo.venueName).")

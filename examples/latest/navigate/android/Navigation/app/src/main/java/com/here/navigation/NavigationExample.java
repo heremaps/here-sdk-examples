@@ -376,7 +376,7 @@ public class NavigationExample {
                 // event as the route calculation happens asynchronously and takes also some time to
                 // complete.
                 // The deviation event is sent any time an off-route location is detected: It may make
-                // sense to await around 3 events before deciding on possible actions.   
+                // sense to await around 3 events before deciding on possible actions.
             }
         });
 
@@ -728,8 +728,8 @@ public class NavigationExample {
                             " distanceDifferenceInMeters: " + distanceDifferenceInMeters;
                     messageView.setText("DynamicRoutingEngine update: " + logMessage);
 
-                    // An implementation can decide to switch to the new route:
-                    // visualNavigator.setRoute(newRoute);
+                    // An implementation needs to decide when to switch to the new route based
+                    // on above criteria.
                 }
 
                 @Override
