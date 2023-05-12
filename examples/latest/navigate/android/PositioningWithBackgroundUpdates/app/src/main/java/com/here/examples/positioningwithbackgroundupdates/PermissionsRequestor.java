@@ -153,9 +153,10 @@ public class PermissionsRequestor {
                 final int grantResult = grantResults[i];
 
                 if ((permission.equals(Manifest.permission.ACCESS_FINE_LOCATION) ||
-                        permission.equals(Manifest.permission.ACCESS_COARSE_LOCATION)) &&
+                        permission.equals(Manifest.permission.ACCESS_COARSE_LOCATION) ||
+                        permission.equals(Manifest.permission.POST_NOTIFICATIONS)) &&
                         (grantResult == PackageManager.PERMISSION_DENIED)) {
-                    // Do not request background location if basic location access has been denied.
+                    // Do not request background location if basic location and notifications access has been denied.
                     requestBackgroundLocation = false;
                 }
 
@@ -199,20 +200,5 @@ public class PermissionsRequestor {
         } else {
             return false;
         }
-    }
-
-    public boolean isLocationAccessDenied() {
-        return ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_DENIED ||
-                ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_COARSE_LOCATION)
-                == PackageManager.PERMISSION_DENIED;
-    }
-
-    public boolean isBackgroundLocationDenied() {
-        if (requestBackgroundLocation) {
-            return false;
-        }
-        return ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-                == PackageManager.PERMISSION_DENIED;
     }
 }

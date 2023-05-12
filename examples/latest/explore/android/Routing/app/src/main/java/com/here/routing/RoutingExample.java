@@ -264,7 +264,7 @@ public class RoutingExample {
         mapPolylines.clear();
     }
 
-    // This renders the traffic flow on top of the route as multiple MapPolylines per span.
+    // This renders the traffic jam factor on top of the route as multiple MapPolylines per span.
     private void showTrafficOnRoute(Route route) {
         if (route.getLengthInMeters() / 1000 > 5000) {
             Log.d(TAG, "Skip showing traffic-on-route for longer routes.");

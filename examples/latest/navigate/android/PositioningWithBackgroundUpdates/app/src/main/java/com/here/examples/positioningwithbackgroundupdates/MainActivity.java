@@ -127,10 +127,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void permissionsDenied() {
                 Log.v(TAG, "checkPermissions: Permissions denied");
-                if (permissionsRequestor.isLocationAccessDenied() ||
-                        permissionsRequestor.isBackgroundLocationDenied()) {
-                    showDialog(R.string.error, R.string.dialog_msg_cannot_start_app_text);
-                }
+                showDialog(R.string.error, R.string.dialog_msg_cannot_start_app_text);
             }
         });
     }
