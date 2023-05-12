@@ -149,7 +149,7 @@ class RoutingExample {
     _showTrafficOnRoute(route);
   }
 
-  // This renders the traffic flow on top of the route as multiple MapPolylines per span.
+  // This renders the traffic jam factor on top of the route as multiple MapPolylines per span.
   _showTrafficOnRoute(here.Route route) {
     if (route.lengthInMeters / 1000 > 5000) {
       print("Skip showing traffic-on-route for longer routes.");
