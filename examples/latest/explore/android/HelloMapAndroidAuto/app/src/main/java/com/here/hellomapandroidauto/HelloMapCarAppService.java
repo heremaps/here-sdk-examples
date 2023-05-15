@@ -49,6 +49,7 @@ public final class HelloMapCarAppService extends CarAppService {
             @Override
             @NonNull
             public Screen onCreateScreen(@Nullable Intent intent) {
+                HereSDKInitializer.run(HelloMapCarAppService.this);
                 return new HelloMapScreen(getCarContext());
             }
         };

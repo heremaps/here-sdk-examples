@@ -47,8 +47,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
-        initializeHERESDK();
+        // Will perform actual initialization of HERE SDK only once during lifetime of application.
+        HereSDKInitializer.run(this);
 
         setContentView(R.layout.activity_main);
 
@@ -69,19 +69,6 @@ public class MainActivity extends AppCompatActivity {
         handleAndroidPermissions();
     }
 
-    private void initializeHERESDK() {
-        // Set your credentials for the HERE SDK.
-        String accessKeyID = "YOUR_ACCESS_KEY_ID";
-        String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
-        SDKOptions options = new SDKOptions(accessKeyID, accessKeySecret);
-        try {
-            Context context = this;
-            SDKNativeEngine.makeSharedInstance(context, options);
-        } catch (InstantiationErrorException e) {
-            throw new RuntimeException("Initialization of HERE SDK failed: " + e.error.name());
-        }
-    }
-
     private void handleAndroidPermissions() {
         permissionsRequestor = new PermissionsRequestor(this);
         permissionsRequestor.request(new ResultListener(){
@@ -100,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         permissionsRequestor.onRequestPermissionsResult(requestCode, grantResults);
     }
 
