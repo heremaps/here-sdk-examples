@@ -61,16 +61,28 @@ class _MyAppState extends State<MyApp> {
   HERE.VisualNavigator? _visualNavigator;
   HERE.LocationSimulator? _locationSimulator;
 
+  Future<bool> _handleBackPress() async {
+    // Handle the back press.
+    _visualNavigator?.stopRendering();
+    _locationSimulator?.stop();
+
+    // Return true to allow the back press.
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Navigation QS Example'),
-      ),
-      body: Stack(
-        children: [
-          HereMap(onMapCreated: _onMapCreated),
-        ],
+    return WillPopScope(
+      onWillPop: _handleBackPress,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Navigation QS Example'),
+        ),
+        body: Stack(
+          children: [
+            HereMap(onMapCreated: _onMapCreated),
+          ],
+        ),
       ),
     );
   }

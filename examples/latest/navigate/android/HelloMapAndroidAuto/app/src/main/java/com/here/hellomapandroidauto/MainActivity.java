@@ -19,7 +19,6 @@
 
 package com.here.hellomapandroidauto;
 
-import android.content.Context;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,9 +27,6 @@ import android.util.Log;
 
 import com.here.hellomapandroidauto.PermissionsRequestor.ResultListener;
 import com.here.sdk.core.GeoCoordinates;
-import com.here.sdk.core.engine.SDKNativeEngine;
-import com.here.sdk.core.engine.SDKOptions;
-import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.mapview.MapError;
 import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapScene;
@@ -47,8 +43,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
-        initializeHERESDK();
+        // Will perform actual initialization of HERE SDK only once during lifetime of application
+        // (if it is not already initialized via HelloMapCarAppService).
+        HERESDKLifecycle.start(this);
 
         setContentView(R.layout.activity_main);
 
@@ -69,19 +66,6 @@ public class MainActivity extends AppCompatActivity {
         handleAndroidPermissions();
     }
 
-    private void initializeHERESDK() {
-        // Set your credentials for the HERE SDK.
-        String accessKeyID = "YOUR_ACCESS_KEY_ID";
-        String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
-        SDKOptions options = new SDKOptions(accessKeyID, accessKeySecret);
-        try {
-            Context context = this;
-            SDKNativeEngine.makeSharedInstance(context, options);
-        } catch (InstantiationErrorException e) {
-            throw new RuntimeException("Initialization of HERE SDK failed: " + e.error.name());
-        }
-    }
-
     private void handleAndroidPermissions() {
         permissionsRequestor = new PermissionsRequestor(this);
         permissionsRequestor.request(new ResultListener(){
@@ -100,6 +84,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         permissionsRequestor.onRequestPermissionsResult(requestCode, grantResults);
     }
 
@@ -123,39 +108,26 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
-        mapView.onPause();
         super.onPause();
+        mapView.onPause();
     }
 
     @Override
     protected void onResume() {
-        mapView.onResume();
         super.onResume();
+        mapView.onResume();
     }
 
     @Override
     protected void onDestroy() {
-        mapView.onDestroy();
-        disposeHERESDK();
         super.onDestroy();
+        mapView.onDestroy();
+        HERESDKLifecycle.stop();
     }
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
-        mapView.onSaveInstanceState(outState);
         super.onSaveInstanceState(outState);
-    }
-    
-    private void disposeHERESDK() {
-        // Free HERE SDK resources before the application shuts down.
-        // Usually, this should be called only on application termination.
-        // Afterwards, the HERE SDK is no longer usable unless it is initialized again.
-        SDKNativeEngine sdkNativeEngine = SDKNativeEngine.getSharedInstance();
-        if (sdkNativeEngine != null) {
-            sdkNativeEngine.dispose();
-            // For safety reasons, we explicitly set the shared instance to null to avoid situations,
-            // where a disposed instance is accidentally reused.
-            SDKNativeEngine.setSharedInstance(null);
-        }
+        mapView.onSaveInstanceState(outState);
     }
 }

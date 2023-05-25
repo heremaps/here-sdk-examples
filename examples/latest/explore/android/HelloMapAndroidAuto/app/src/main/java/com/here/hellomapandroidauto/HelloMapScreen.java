@@ -51,6 +51,7 @@ import com.here.sdk.mapview.MapSurface;
  */
 public class HelloMapScreen extends Screen implements SurfaceCallback {
 
+    private static final String TAG = HelloMapScreen.class.getSimpleName();
     private MapSurface mapSurface;
     private CarContext carContext;
 
@@ -58,7 +59,7 @@ public class HelloMapScreen extends Screen implements SurfaceCallback {
         super(carContext);
         this.carContext = carContext;
 
-        Log.d("HelloMapScreen", "Register surface callback");
+        Log.d(TAG, "Register surface callback");
         carContext.getCarService(AppManager.class).setSurfaceCallback(this);
 
         // Since the MapSurface implements MapViewBase, it behaves like a MapView, except that it
@@ -99,7 +100,8 @@ public class HelloMapScreen extends Screen implements SurfaceCallback {
 
     @Override
     public void onSurfaceAvailable(@NonNull SurfaceContainer surfaceContainer) {
-        Log.d("HelloMapScreen", "Received a surface.");
+        Log.d(TAG, "Received a surface.");
+
         mapSurface.setSurface(
                 carContext,
                 surfaceContainer.getSurface(),
@@ -114,7 +116,7 @@ public class HelloMapScreen extends Screen implements SurfaceCallback {
                     MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
                     mapSurface.getCamera().lookAt(new GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
                 } else {
-                    Log.d("HelloMapScreen", "Loading map failed: mapError: " + mapError.name());
+                    Log.d(TAG, "Loading map failed: mapError: " + mapError.name());
                 }
             }
         });

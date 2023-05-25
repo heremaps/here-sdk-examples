@@ -22,8 +22,8 @@ public class DefaultEncoder implements EncoderInterface {
     // < -10 -> Left audio channel set to maximum and no right channel -> Left
     // > 10 -> Right audio channel set to maximum and no left channel -> Right
     public void setCurrentAzimuthDegrees(float nextAzimuthInDegrees) {
-        float leftGains;
-        float rightGains;
+        float leftGains = 1;
+        float rightGains = 1;
 
         if (nextAzimuthInDegrees < -10) { // Left
             leftGains = 1;
@@ -65,6 +65,6 @@ public class DefaultEncoder implements EncoderInterface {
 
     @Override
     public boolean isEncoderPlaying() {
-        return audioPlayerManager.isPlaying();
+        return audioPlayerManager.isMediaPlaying();
     }
 }

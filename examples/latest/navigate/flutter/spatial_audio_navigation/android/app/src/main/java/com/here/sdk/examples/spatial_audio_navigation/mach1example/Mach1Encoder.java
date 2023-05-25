@@ -53,7 +53,7 @@ public class Mach1Encoder implements EncoderInterface {
 
     @Override
     public boolean isEncoderPlaying() {
-        return audioPlayerManager.isPlaying();
+        return audioPlayerManager.isMediaPlaying();
     }
 
     // Sets the value of azimuth.

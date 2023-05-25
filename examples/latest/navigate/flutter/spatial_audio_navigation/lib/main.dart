@@ -56,7 +56,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  static const methodChannel  = MethodChannel('com.here.sdk.example/spatialAudioExample');
+  static const methodChannel = MethodChannel('com.here.sdk.example/spatialAudioExample');
   late HERE.SpatialManeuverAudioCuePanning audioCuePanning;
 
   HereMapController? _hereMapController;
@@ -70,18 +70,29 @@ class _MyAppState extends State<MyApp> {
     methodChannel.setMethodCallHandler(platformCallHandler);
   }
 
+  Future<bool> _handleBackPress() async {
+    // Handle the back press.
+    _visualNavigator?.stopRendering();
+    _locationSimulator?.stop();
+
+    // Return true to allow the back press.
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Spatial Navigation Example'),
-      ),
-      body: Stack(
-        children: [
-          HereMap(onMapCreated: _onMapCreated),
-        ],
-      ),
-    );
+    return WillPopScope(
+        onWillPop: _handleBackPress,
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text('Spatial Navigation Example'),
+          ),
+          body: Stack(
+            children: [
+              HereMap(onMapCreated: _onMapCreated),
+            ],
+          ),
+        ));
   }
 
   void _onMapCreated(HereMapController hereMapController) {
@@ -143,13 +154,15 @@ class _MyAppState extends State<MyApp> {
     _visualNavigator!.startRendering(_hereMapController!);
 
     // Hook in one of the many listeners. Here we set up a listener to get instructions on the spatial maneuvers to take while driving.
-    _visualNavigator!.spatialManeuverNotificationListener = HERE.SpatialManeuverNotificationListener((HERE.SpatialManeuver spatialManeuver, HERE.SpatialManeuverAudioCuePanning audioCuePanning) {
+    _visualNavigator!.spatialManeuverNotificationListener = HERE.SpatialManeuverNotificationListener(
+        (HERE.SpatialManeuver spatialManeuver, HERE.SpatialManeuverAudioCuePanning audioCuePanning) {
       String maneuverText = spatialManeuver.voiceText;
       print("SpatialManeuverNotification: $maneuverText");
       synthesizeAudioCueAndPlay(spatialManeuver, audioCuePanning);
     });
 
-    _visualNavigator!.spatialManeuverAzimuthListener = HERE.SpatialManeuverAzimuthListener((HERE.SpatialTrajectoryData spatialTrajectoryData) {
+    _visualNavigator!.spatialManeuverAzimuthListener =
+        HERE.SpatialManeuverAzimuthListener((HERE.SpatialTrajectoryData spatialTrajectoryData) {
       double azimuthInDegrees = spatialTrajectoryData.azimuthInDegrees;
       print("SpatialManeuverAzimuthNotification: $azimuthInDegrees");
       notifyAzimuth(spatialTrajectoryData);
@@ -211,14 +224,19 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  Future synthesizeAudioCueAndPlay(HERE.SpatialManeuver spatialManeuver, HERE.SpatialManeuverAudioCuePanning audioCuePanning) async {
+  Future synthesizeAudioCueAndPlay(
+      HERE.SpatialManeuver spatialManeuver, HERE.SpatialManeuverAudioCuePanning audioCuePanning) async {
     this.audioCuePanning = audioCuePanning;
 
-    await methodChannel.invokeMethod('synthesizeAudioCueAndPlay', {'audioCue': spatialManeuver.maneuver.text, 'initialAzimuth': spatialManeuver.initialAzimuthInDegrees});
+    await methodChannel.invokeMethod('synthesizeAudioCueAndPlay',
+        {'audioCue': spatialManeuver.maneuver.text, 'initialAzimuth': spatialManeuver.initialAzimuthInDegrees});
   }
 
   Future notifyAzimuth(HERE.SpatialTrajectoryData spatialTrajectoryData) async {
-    await methodChannel.invokeMethod('azimuthNotification', {'azimuth': spatialTrajectoryData.azimuthInDegrees, 'completedTrajectory': spatialTrajectoryData.completedSpatialTrajectory});
+    await methodChannel.invokeMethod('azimuthNotification', {
+      'azimuth': spatialTrajectoryData.azimuthInDegrees,
+      'completedTrajectory': spatialTrajectoryData.completedSpatialTrajectory
+    });
   }
 
   // Receive callbacks from native platform
@@ -226,7 +244,6 @@ class _MyAppState extends State<MyApp> {
     switch (call.method) {
       // Case called when synthesization of an audio cue has been completed
       case "onSynthesizatorDone":
-
         // Use the length obtained platform based in order to improve the audio cue duration estimation.
         final lengthMs = call.arguments as int;
         Duration duration = new Duration(milliseconds: lengthMs);

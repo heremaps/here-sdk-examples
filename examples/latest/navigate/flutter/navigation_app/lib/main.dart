@@ -79,42 +79,53 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   String _consentState = "Pending ...";
   String _messageState = "";
 
+  Future<bool> _handleBackPress() async {
+    // Handle the back press.
+    _appLogic?.detach();
+
+    // Return true to allow the back press.
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("HERE SDK - Navigation Example"),
-      ),
-      body: Stack(
-        children: [
-          HereMap(onMapCreated: _onMapCreated),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  button("Start Simulation", _startNavigationSimulationButtonClicked),
-                  button(_trackingState, toggleTrackingButtonClicked),
-                  button("Stop", _stopNavigationButtonClicked),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  button("Start with HERE Positioning", _startNavigationButtonClicked),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  multiLineButton(_consentState, _requestConsent),
-                ],
-              ),
-              messageStateWidget(_messageState),
-            ],
-          ),
-        ],
+    return WillPopScope(
+      onWillPop: _handleBackPress,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text("HERE SDK - Navigation Example"),
+        ),
+        body: Stack(
+          children: [
+            HereMap(onMapCreated: _onMapCreated),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    button("Start Simulation", _startNavigationSimulationButtonClicked),
+                    button(_trackingState, toggleTrackingButtonClicked),
+                    button("Stop", _stopNavigationButtonClicked),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    button("Start with HERE Positioning", _startNavigationButtonClicked),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    multiLineButton(_consentState, _requestConsent),
+                  ],
+                ),
+                messageStateWidget(_messageState),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

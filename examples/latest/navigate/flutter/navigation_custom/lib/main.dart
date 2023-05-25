@@ -74,26 +74,37 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
   bool _isDefaultLocationIndicator = true;
   HERE.Route? myRoute;
 
+  Future<bool> _handleBackPress() async {
+    // Handle the back press.
+    _visualNavigator?.stopRendering();
+    _locationSimulator?.stop();
+
+    // Return true to allow the back press.
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Custom Navigation'),
-      ),
-      body: Stack(
-        children: [
-          HereMap(onMapCreated: _onMapCreated),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    return WillPopScope(
+        onWillPop: _handleBackPress,
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text('Custom Navigation'),
+          ),
+          body: Stack(
             children: [
-              button('Start', _startButtonClicked),
-              button('Stop', _stopButtonClicked),
-              button('Toggle', _toggleButtonClicked),
+              HereMap(onMapCreated: _onMapCreated),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  button('Start', _startButtonClicked),
+                  button('Stop', _stopButtonClicked),
+                  button('Toggle', _toggleButtonClicked),
+                ],
+              ),
             ],
           ),
-        ],
-      ),
-    );
+        ));
   }
 
   void _onMapCreated(HereMapController hereMapController) {
@@ -341,18 +352,15 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
   }
 
   void _customizeVisualNavigatorColors() {
-    Color routeAheadColor =  Colors.blue;
+    Color routeAheadColor = Colors.blue;
     Color routeBehindColor = Colors.red;
     Color routeAheadOutlineColor = Colors.yellow;
     Color routeBehindOutlineColor = Colors.grey;
     Color maneuverArrowColor = Colors.green;
 
     VisualNavigatorColors visualNavigatorColors = VisualNavigatorColors.dayColors();
-    RouteProgressColors routeProgressColors = new RouteProgressColors(
-        routeAheadColor,
-        routeBehindColor,
-        routeAheadOutlineColor,
-        routeBehindOutlineColor);
+    RouteProgressColors routeProgressColors =
+        new RouteProgressColors(routeAheadColor, routeBehindColor, routeAheadOutlineColor, routeBehindOutlineColor);
 
     // Sets the color used to draw maneuver arrows.
     visualNavigatorColors.maneuverArrowColor = maneuverArrowColor;
