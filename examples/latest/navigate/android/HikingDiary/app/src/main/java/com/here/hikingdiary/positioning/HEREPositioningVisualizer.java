@@ -88,7 +88,7 @@ public class HEREPositioningVisualizer {
         mapView.getMapScene().addMapPolygon(mapPolygon);
         mapCircles.add(mapPolygon);
 
-        if (mapCircles.size() > 300) {
+        if (mapCircles.size() > 150) {
             // Drawing too many items on the map view may slow down rendering, so we remove the oldest circle.
             mapView.getMapScene().removeMapPolygon(mapCircles.get(0));
             mapCircles.remove(0);

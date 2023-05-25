@@ -17,11 +17,12 @@ public class AudioPlayerManager {
     public AudioPlayerManager() {
     }
 
-    public boolean isPlaying() {
+    public boolean isMediaPlaying() {
         try {
             return mediaPlayer != null && mediaPlayer.isPlaying();
         } catch (IllegalStateException ie) {
             //no-op.
+            ie.printStackTrace();
         }
         return false;
     }
@@ -38,14 +39,14 @@ public class AudioPlayerManager {
                     mp.start();
                 });
                 mediaPlayer.setOnErrorListener((mp, what, extra) -> {
-                    mp.release();
+                    mp.reset();
                     executorPlay.shutdown();
                     return true;
                 });
                 mediaPlayer.setOnCompletionListener(mp -> {
                     File audioFile = new File(uriToFile.getPath());
                     audioFile.deleteOnExit();
-                    mp.release();
+                    mp.reset();
                     executorPlay.shutdown();
                 });
 
@@ -68,9 +69,18 @@ public class AudioPlayerManager {
                 .build());
     }
 
-        // Set the volume of each of MediaPlayer's audio channels
+    // Set the volume of each of MediaPlayer's audio channels
     public void setVolumeMediaPlayer(float leftChannelGains, float rightChannelGains) {
-        mediaPlayer.setVolume(leftChannelGains, rightChannelGains);
+        if (mediaPlayer != null) {
+            Log.d(AudioPlayerManager.class.getSimpleName(), "Cannot set volume. Player is null.");
+            return;
+        }
+
+        try {
+            mediaPlayer.setVolume(leftChannelGains, rightChannelGains);
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+        }
     }
 
     // Initializes the executor
@@ -88,12 +98,11 @@ public class AudioPlayerManager {
 
     // Stops the current reproduction.
     public void stopPlaying() {
-        if (isPlaying()) {
+        if (isMediaPlaying()) {
             Log.d(AudioPlayerManager.class.getSimpleName(), "Stop playing");
             mediaPlayer.stop();
             mediaPlayer.release();
             mediaPlayer = null;
         }
     }
-
 }

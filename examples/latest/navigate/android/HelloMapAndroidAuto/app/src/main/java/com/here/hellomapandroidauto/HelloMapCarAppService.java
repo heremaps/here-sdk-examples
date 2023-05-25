@@ -28,6 +28,8 @@ import androidx.car.app.CarAppService;
 import androidx.car.app.Screen;
 import androidx.car.app.Session;
 import androidx.car.app.validation.HostValidator;
+import androidx.lifecycle.DefaultLifecycleObserver;
+import androidx.lifecycle.LifecycleOwner;
 
 /**
  * Entry point for Android Auto - when connected to a DHU or an in-car head unit.
@@ -45,13 +47,28 @@ public final class HelloMapCarAppService extends CarAppService {
     @Override
     @NonNull
     public Session onCreateSession() {
-        return new Session() {
+
+        Session session = new Session() {
             @Override
             @NonNull
             public Screen onCreateScreen(@Nullable Intent intent) {
                 return new HelloMapScreen(getCarContext());
             }
         };
+
+        session.getLifecycle().addObserver(new DefaultLifecycleObserver() {
+            @Override
+            public void onCreate(@NonNull LifecycleOwner owner) {
+                HERESDKLifecycle.start(HelloMapCarAppService.this);
+            }
+
+            @Override
+            public void onDestroy(@NonNull LifecycleOwner owner) {
+                HERESDKLifecycle.stop();
+            }
+        });
+
+        return session;
     }
 
     @NonNull

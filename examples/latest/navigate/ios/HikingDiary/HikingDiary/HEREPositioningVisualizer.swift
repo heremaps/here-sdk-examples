@@ -22,7 +22,7 @@ import UIKit
 
 // A class to visualize the incoming raw location signals on the map during a trip.
 class HEREPositioningVisualizer {
-    
+
     private var mapView: MapView
     private var locationIndicator = LocationIndicator()
     private var mapCircles = [MapPolygon]()
@@ -34,16 +34,16 @@ class HEREPositioningVisualizer {
         self.mapView = mapView
         setupMyLocationIndicator()
     }
-    
+
     func updateLocationIndicator(_ location: Location) {
         locationIndicator.updateLocation(location)
     }
-    
+
     // Renders the last n location signals and connects them with a polyline.
     // The accuracy of each location is indicated through a colored circle.
     func renderUnfilteredLocationSignals(_ location: Location) {
         print("Received location with accuracy \(String(describing: location.horizontalAccuracyInMeters)).")
-        
+
         // Black means that no accuracy information is available.
         var fillColor: UIColor = .black
         if let accuracy = location.horizontalAccuracyInMeters {
@@ -59,24 +59,24 @@ class HEREPositioningVisualizer {
                 fillColor = .red
             }
         }
-        
+
         addLocationCircle(center: location.coordinates,
                           radiusInMeters: 1,
                           fillColor: fillColor)
-        
+
         updateMapPolyline(location)
     }
-    
+
     func clearMap() {
         if mapPolyline != nil {
             mapView.mapScene.removeMapPolyline(mapPolyline!)
             mapPolyline = nil
         }
-        
+
         for circle in mapCircles {
             mapView.mapScene.removeMapPolygon(circle)
         }
-        
+
         geoCoordinatesList.removeAll()
     }
 
@@ -85,41 +85,41 @@ class HEREPositioningVisualizer {
         locationIndicator.locationIndicatorStyle = .pedestrian;
         mapView.addLifecycleDelegate(locationIndicator)
     }
-    
+
     private func addLocationCircle(center: GeoCoordinates, radiusInMeters: Double, fillColor: UIColor) {
         let geoCircle = GeoCircle(center: center, radiusInMeters: radiusInMeters)
         let geoPolygon = GeoPolygon(geoCircle: geoCircle)
         let mapPolygon = MapPolygon(geometry: geoPolygon, color: fillColor)
         mapView.mapScene.addMapPolygon(mapPolygon)
         mapCircles.append(mapPolygon)
-        
-        if mapCircles.count > 300 {
+
+        if mapCircles.count > 150 {
             // Drawing too many items on the map view may slow down rendering, so we remove the oldest circle.
             mapView.mapScene.removeMapPolygon(mapCircles.first!)
             mapCircles.removeFirst()
         }
     }
-    
+
     private func updateMapPolyline(_ location: Location) {
         geoCoordinatesList.append(location.coordinates)
-        
+
         if geoCoordinatesList.count < 2 {
             return
         }
-        
+
         // We are sure that the number of vertices is greater than 1 (see above), so it will not crash.
         let geoPolyline = try! GeoPolyline(vertices: geoCoordinatesList)
-        
+
         // Add polyline to the map, if instance is nil.
         guard let mapPolyline = mapPolyline else {
             addMapPolyline(geoPolyline)
             return
         }
-        
+
         // Update the polyline shape that connects the raw location signals.
         mapPolyline.geometry = geoPolyline
     }
-    
+
     private func addMapPolyline(_ geoPolyline: GeoPolyline) {
         mapPolyline = MapPolyline(geometry: geoPolyline,
                                   widthInPixels: 5,
