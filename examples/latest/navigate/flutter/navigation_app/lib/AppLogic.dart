@@ -56,7 +56,7 @@ class AppLogic {
   }
 
   void setTracking(bool isTracking) {
-    _navigationExample.setTracking(isTracking);
+    _navigationExample.followCurrentCarPosition(isTracking);
   }
 
   void stopNavigation() {

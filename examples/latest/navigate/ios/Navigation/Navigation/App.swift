@@ -51,8 +51,7 @@ class App : LongPressDelegate {
 
         routeCalculator = RouteCalculator()
 
-        navigationExample = NavigationExample(viewController: viewController,
-                                              mapView: mapView,
+        navigationExample = NavigationExample(mapView: mapView,
                                               messageTextView: messageTextView)
         navigationExample.startLocationProvider()
 
