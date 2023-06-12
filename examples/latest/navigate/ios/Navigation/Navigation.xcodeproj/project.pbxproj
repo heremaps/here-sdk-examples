@@ -21,6 +21,7 @@
 		C88C014F23CDE87E00043918 /* heresdk.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = C88C014D23CDE87E00043918 /* heresdk.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		C893BB6323845E7B00AFD30F /* NavigationExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = C893BB6223845E7B00AFD30F /* NavigationExample.swift */; };
 		C8979840252B90EE007391AD /* RouteCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C897983F252B90EE007391AD /* RouteCalculator.swift */; };
+		C8D904292A29D3F300F74BFF /* NavigationEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D904282A29D3F300F74BFF /* NavigationEventHandler.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -54,6 +55,7 @@
 		C893BB6223845E7B00AFD30F /* NavigationExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationExample.swift; sourceTree = "<group>"; };
 		C897983F252B90EE007391AD /* RouteCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteCalculator.swift; sourceTree = "<group>"; };
 		C8979841252DDC13007391AD /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
+		C8D904282A29D3F300F74BFF /* NavigationEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationEventHandler.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -93,6 +95,7 @@
 				C85F809321E5EDD800237ED0 /* ViewController.swift */,
 				C85F80A321E5FC7F00237ED0 /* App.swift */,
 				C893BB6223845E7B00AFD30F /* NavigationExample.swift */,
+				C8D904282A29D3F300F74BFF /* NavigationEventHandler.swift */,
 				C82B793F24578D5B00E6E383 /* VoiceAssistant.swift */,
 				C897983F252B90EE007391AD /* RouteCalculator.swift */,
 				C819AFB224D07B3E006C4213 /* HEREPositioningProvider.swift */,
@@ -193,6 +196,7 @@
 				C8979840252B90EE007391AD /* RouteCalculator.swift in Sources */,
 				C85F809221E5EDD800237ED0 /* AppDelegate.swift in Sources */,
 				C823BC6225C8A976008E7F28 /* HEREPositioningSimulator.swift in Sources */,
+				C8D904292A29D3F300F74BFF /* NavigationEventHandler.swift in Sources */,
 				C893BB6323845E7B00AFD30F /* NavigationExample.swift in Sources */,
 				C82B793A2456A44500E6E383 /* LanguageCodeConverter.swift in Sources */,
 				C85F80A421E5FC8000237ED0 /* App.swift in Sources */,

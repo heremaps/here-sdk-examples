@@ -49,7 +49,9 @@ class RoutingExample {
         startGeoCoordinates = createRandomGeoCoordinatesAroundMapCenter()
         destinationGeoCoordinates = createRandomGeoCoordinatesAroundMapCenter()
 
-        let carOptions = CarOptions()
+        var carOptions = CarOptions()
+        carOptions.routeOptions.enableTolls = true
+        
         routingEngine.calculateRoute(with: [Waypoint(coordinates: startGeoCoordinates!),
                                             Waypoint(coordinates: destinationGeoCoordinates!)],
                                      carOptions: carOptions) { (routingError, routes) in
@@ -65,6 +67,7 @@ class RoutingExample {
                                         self.showRouteOnMap(route: route!)
                                         self.logRouteSectionDetails(route: route!)
                                         self.logRouteViolations(route: route!)
+                                        self.logTollDetails(route: route!)
         }
     }
 
@@ -92,7 +95,35 @@ class RoutingExample {
         }
     }
 
+    private func logTollDetails(route: Route) {
+        for section in route.sections {
+            // The spans that make up the polyline along which tolls are required or
+            // where toll booths are located.
+            let spans = section.spans
+            let tolls = section.tolls
+            if !tolls.isEmpty {
+                print("Attention: This route may require tolls to be paid.")
+            }
+            for toll in tolls {
+                print("Toll information valid for this list of spans:")
+                print("Toll system: \(toll.tollSystem).")
+                print("Toll country code (ISO-3166-1 alpha-3): \(toll.countryCode).")
+                print("Toll fare information: ")
+                for tollFare in toll.fares {
+                    // A list of possible toll fares which may depend on time of day, payment method and
+                    // vehicle characteristics. For further details please consult the local
+                    // authorities.
+                    print("Toll price: \(tollFare.price) \(tollFare.currency).")
+                    for paymentMethod in tollFare.paymentMethods {
+                        print("Accepted payment methods for this price: \(paymentMethod).")
+                    }
+                }
+            }
+        }
+    }
+    
     private func showRouteDetails(route: Route) {
+        // estimatedTravelTimeInSeconds includes traffic delay.
         let estimatedTravelTimeInSeconds = route.duration
         let estimatedTrafficDelayInSeconds = route.trafficDelay
         let lengthInMeters = route.lengthInMeters

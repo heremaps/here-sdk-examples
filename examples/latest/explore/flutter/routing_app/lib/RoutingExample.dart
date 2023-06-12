@@ -60,7 +60,10 @@ class RoutingExample {
 
     List<Waypoint> waypoints = [startWaypoint, destinationWaypoint];
 
-    _routingEngine.calculateCarRoute(waypoints, CarOptions(),
+    CarOptions carOptions = CarOptions();
+    carOptions.routeOptions.enableTolls = true;
+
+    _routingEngine.calculateCarRoute(waypoints, carOptions,
         (RoutingError? routingError, List<here.Route>? routeList) async {
       if (routingError == null) {
         // When error is null, then the list guaranteed to be not null.
@@ -69,6 +72,7 @@ class RoutingExample {
         _showRouteOnMap(route);
         _logRouteSectionDetails(route);
         _logRouteViolations(route);
+        _logTollDetails(route);
         _animateToRoute(route);
       } else {
         var error = routingError.toString();
@@ -83,6 +87,33 @@ class RoutingExample {
     for (var section in route.sections) {
       for (var notice in section.sectionNotices) {
         print("This route contains the following warning: " + notice.code.toString());
+      }
+    }
+  }
+
+  void _logTollDetails(here.Route route) {
+    for (Section section in route.sections) {
+      // The spans that make up the polyline along which tolls are required or
+      // where toll booths are located.
+      List<Span> spans = section.spans;
+      List<Toll> tolls = section.tolls;
+      if (!tolls.isEmpty) {
+        print("Attention: This route may require tolls to be paid.");
+      }
+      for (Toll toll in tolls) {
+        print("Toll information valid for this list of spans:");
+        print("Toll system: " + toll.tollSystem);
+        print("Toll country code (ISO-3166-1 alpha-3): " + toll.countryCode);
+        print("Toll fare information: ");
+        for (TollFare tollFare in toll.fares) {
+          // A list of possible toll fares which may depend on time of day, payment method and
+          // vehicle characteristics. For further details please consult the local
+          // authorities.
+          print("Toll price: " + tollFare.price.toString() + " " + tollFare.currency);
+          for (PaymentMethod paymentMethod in tollFare.paymentMethods) {
+            print("Accepted payment methods for this price: " + paymentMethod.toString());
+          }
+        }
       }
     }
   }
@@ -109,6 +140,7 @@ class RoutingExample {
   }
 
   void _showRouteDetails(here.Route route) {
+    // estimatedTravelTimeInSeconds includes traffic delay.
     int estimatedTravelTimeInSeconds = route.duration.inSeconds;
     int estimatedTrafficDelayInSeconds = route.trafficDelay.inSeconds;
     int lengthInMeters = route.lengthInMeters;

@@ -30,7 +30,6 @@ import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.GeoPolyline;
 import com.here.sdk.core.Point2D;
 import com.here.sdk.core.errors.InstantiationErrorException;
-import com.here.sdk.core.threading.TaskHandle;
 import com.here.sdk.mapview.MapCamera;
 import com.here.sdk.mapview.MapImage;
 import com.here.sdk.mapview.MapImageFactory;
@@ -42,12 +41,15 @@ import com.here.sdk.routing.CalculateRouteCallback;
 import com.here.sdk.routing.CarOptions;
 import com.here.sdk.routing.Maneuver;
 import com.here.sdk.routing.ManeuverAction;
+import com.here.sdk.routing.PaymentMethod;
 import com.here.sdk.routing.Route;
 import com.here.sdk.routing.RoutingEngine;
 import com.here.sdk.routing.RoutingError;
 import com.here.sdk.routing.Section;
 import com.here.sdk.routing.SectionNotice;
 import com.here.sdk.routing.Span;
+import com.here.sdk.routing.Toll;
+import com.here.sdk.routing.TollFare;
 import com.here.sdk.routing.TrafficSpeed;
 import com.here.sdk.routing.Waypoint;
 
@@ -94,9 +96,12 @@ public class RoutingExample {
         List<Waypoint> waypoints =
                 new ArrayList<>(Arrays.asList(startWaypoint, destinationWaypoint));
 
+        CarOptions carOptions = new CarOptions();
+        carOptions.routeOptions.enableTolls = true;
+
         routingEngine.calculateRoute(
                 waypoints,
-                new CarOptions(),
+                carOptions,
                 new CalculateRouteCallback() {
                     @Override
                     public void onRouteCalculated(@Nullable RoutingError routingError, @Nullable List<Route> routes) {
@@ -106,6 +111,7 @@ public class RoutingExample {
                             showRouteOnMap(route);
                             logRouteSectionDetails(route);
                             logRouteViolations(route);
+                            logTollDetails(route);
                         } else {
                             showDialog("Error while calculating a route:", routingError.toString());
                         }
@@ -139,7 +145,35 @@ public class RoutingExample {
         }
     }
 
+    private void logTollDetails(Route route) {
+        for (Section section : route.getSections()) {
+            // The spans that make up the polyline along which tolls are required or
+            // where toll booths are located.
+            List<Span> spans = section.getSpans();
+            List<Toll> tolls = section.getTolls();
+            if (!tolls.isEmpty()) {
+                Log.d(TAG, "Attention: This route may require tolls to be paid.");
+            }
+            for (Toll toll : tolls) {
+                Log.d(TAG, "Toll information valid for this list of spans:");
+                Log.d(TAG, "Toll system: " + toll.tollSystem);
+                Log.d(TAG, "Toll country code (ISO-3166-1 alpha-3): " + toll.countryCode);
+                Log.d(TAG, "Toll fare information: ");
+                for (TollFare tollFare : toll.fares) {
+                    // A list of possible toll fares which may depend on time of day, payment method and
+                    // vehicle characteristics. For further details please consult the local
+                    // authorities.
+                    Log.d(TAG, "Toll price: " + tollFare.price + " " + tollFare.currency);
+                    for (PaymentMethod paymentMethod : tollFare.paymentMethods) {
+                        Log.d(TAG, "Accepted payment methods for this price: " + paymentMethod.name());
+                    }
+                }
+            }
+        }
+    }
+
     private void showRouteDetails(Route route) {
+        // estimatedTravelTimeInSeconds includes traffic delay.
         long estimatedTravelTimeInSeconds = route.getDuration().getSeconds();
         long estimatedTrafficDelayInSeconds = route.getTrafficDelay().getSeconds();
         int lengthInMeters = route.getLengthInMeters();
