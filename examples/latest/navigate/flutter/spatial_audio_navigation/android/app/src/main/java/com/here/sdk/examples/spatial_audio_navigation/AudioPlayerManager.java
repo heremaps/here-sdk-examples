@@ -71,7 +71,7 @@ public class AudioPlayerManager {
 
     // Set the volume of each of MediaPlayer's audio channels
     public void setVolumeMediaPlayer(float leftChannelGains, float rightChannelGains) {
-        if (mediaPlayer != null) {
+        if (mediaPlayer == null) {
             Log.d(AudioPlayerManager.class.getSimpleName(), "Cannot set volume. Player is null.");
             return;
         }
