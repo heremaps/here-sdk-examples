@@ -169,20 +169,28 @@ public class VenueSearchController {
         List<String> names = new ArrayList<>();
         for (VenueGeometry geometry : geometries) {
             StringBuilder name = new StringBuilder();
-            name.append(geometry.getName()).append(", ").append(geometry.getLevel().getName());
+            if ((searchType == VenueGeometryFilterType.NAME)
+                    && geometry.getName() != null)
+            {
+                name.append(geometry.getName()).append(", ").append(geometry.getLevel().getName());
+                names.add(name.toString());
+            }
             if ((searchType == VenueGeometryFilterType.ADDRESS
                     || searchType == VenueGeometryFilterType.NAME_OR_ADDRESS)
                     && geometry.getInternalAddress() != null)
             {
+                name.append(geometry.getName()).append(", ").append(geometry.getLevel().getName());
                 name.append("\n(Address: ").append(geometry.getInternalAddress().getAddress())
                         .append(")");
+                names.add(name.toString());
             }
             else if (searchType == VenueGeometryFilterType.ICON_NAME
                     && geometry.getLookupType() == VenueGeometry.LookupType.ICON)
             {
+                name.append(geometry.getName()).append(", ").append(geometry.getLevel().getName());
                 name.append("\n(Icon: ").append(geometry.getLabelName()).append(")");
+                names.add(name.toString());
             }
-            names.add(name.toString());
         }
         final StringArrayAdapter adapter =
                 new StringArrayAdapter(geometriesList.getContext(), names);

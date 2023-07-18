@@ -264,6 +264,7 @@ public class MainActivity extends AppCompatActivity {
             setGoButtonEnabled(true);
             Log.e(TAG, "Failed to load the venue: " + venueId);
         }
+        mapView.getCamera().zoomTo(18);
     };
 
     // Listener for the venue selection event.
