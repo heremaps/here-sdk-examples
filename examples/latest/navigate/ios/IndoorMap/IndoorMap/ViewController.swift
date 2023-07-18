@@ -273,6 +273,7 @@ extension ViewController: VenueDelegate {
             print("Loading of venue \(venueId) failed!")
             venueIdLoad?.isEnabled = true
         }
+        mapView.camera.zoomTo(zoomLevel: 18)
     }
 }
 

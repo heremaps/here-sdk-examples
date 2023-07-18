@@ -33,6 +33,7 @@ import 'package:indoor_map_app/venue_search_controller.dart';
 import 'package:indoor_map_app/venue_tap_controller.dart';
 import 'events.dart';
 import 'geometry_info.dart';
+import 'package:here_sdk/venue.style.dart';
 
 class VenueEngineWidget extends StatefulWidget {
   final VenueEngineState state;
@@ -54,6 +55,7 @@ class VenueEngineState extends State<VenueEngineWidget> {
   late VenueDrawingSelectionListener _drawingSelectionListener;
   late VenueLevelSelectionListener _levelSelectionListener;
   late VenueLifecycleListenerImpl _venueLifecycleListener;
+  late VenueListener _venueListener;
   VenueTapController? _venueTapController;
   VenueTapListenerImpl? _tapListener;
   final _drawingSwitcherState = DrawingSwitcherState();
@@ -177,6 +179,8 @@ class VenueEngineState extends State<VenueEngineWidget> {
     venueMap.addDrawingSelectionListener(_drawingSelectionListener);
     venueMap.addLevelSelectionListener(_levelSelectionListener);
     venueMap.addVenueLifecycleListener(_venueLifecycleListener);
+    _venueListener = VenueListenerImpl(this);
+    _venueEngine!.venueService.addVenueListener(_venueListener);
     // Create a venue tap controller.
     _venueTapController = VenueTapController(
         hereMapController: _hereMapController, venueMap: venueMap, geometryInfoState: _geometryInfoState);
@@ -304,6 +308,31 @@ class VenueServiceListenerImpl implements VenueServiceListener {
 
   @override
   onVenueServiceStopped() {}
+
+  @override
+  void release() {
+    // Deprecated. Nothing to to here.
+  }
+}
+
+// A listener for venue load completion.
+
+class VenueListenerImpl implements VenueListener {
+  late VenueEngineState _venueEngineState;
+  HereMapController? _hereMapController;
+
+  VenueListenerImpl(VenueEngineState venueEngineState) {
+    _venueEngineState = venueEngineState;
+    _hereMapController = venueEngineState._hereMapController;
+  }
+
+  @override
+  onGetVenueCompleted(int venueID, VenueModel? venueModel, bool online, VenueStyle? venueStyle) {
+    if(venueModel == null) {
+      print("Failed to load venue ID: " + venueID.toString());
+    }
+    _hereMapController!.camera.zoomTo(18);
+  }
 
   @override
   void release() {
