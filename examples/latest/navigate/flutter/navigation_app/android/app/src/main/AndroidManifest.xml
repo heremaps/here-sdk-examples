@@ -15,14 +15,6 @@
         android:label="Navigation"
         android:icon="@mipmap/ic_launcher">
 
-        <!-- Disable the InitProvider of the HERE SDK to prevent auto-initialization
-             until the InitProvider is removed with release 4.15.0. -->
-        <provider
-            android:name="com.here.sdk.engine.InitProvider"
-            android:authorities="com.here.sdk.engine.InitProvider"
-            android:exported="false"
-            tools:node="remove" />
-
         <activity
             android:name=".MainActivity"
             android:exported="true"
