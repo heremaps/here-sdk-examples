@@ -18,7 +18,7 @@ The [HERE SDK](https://developer.here.com/products/here-sdk) enables you to buil
 
 The HERE SDK consumes data from the [HERE Platform](https://www.here.com/products/platform) and follows modern design principles incorporating microservices and modularized components. Currently, the HERE SDK supports three platforms: Android, iOS and Flutter.
 
-For an overview of the existing features, please check the _Developer's Guide_ for the platform of your choice. Here you will also find numerous code snippets, detailed tutorials, the _API Reference_ and the latest _Release Notes_:
+For an overview of the existing features, please check the _Developer Guide_ for the platform of your choice. Here you will also find numerous code snippets, detailed tutorials, the _API Reference_ and the latest _Release Notes_:
 
 - Documentation for the HERE SDK for Android ([Lite Edition](https://developer.here.com/documentation/android-sdk/dev_guide/index.html), [Explore Edition](https://developer.here.com/documentation/android-sdk-explore), [Navigate Edition]( https://developer.here.com/documentation/android-sdk-navigate))
 - Documentation for the HERE SDK for iOS ([Lite Edition](https://developer.here.com/documentation/ios-sdk/dev_guide/index.html), [Explore Edition]( https://developer.here.com/documentation/ios-sdk-explore), [Navigate Edition]( https://developer.here.com/documentation/ios-sdk-navigate))
@@ -78,7 +78,7 @@ Above you can find the example app links for the _latest_ HERE SDK version. If y
 ## What You Need to Execute the Example Apps
 1. Acquire a set of credentials by registering yourself on [developer.here.com](https://developer.here.com/) - or ask your HERE representative.
 2. Download the latest HERE SDK artifacts for your desired platform. These can be found on [developer.here.com](https://developer.here.com/) unless otherwise noted.
-3. Please refer to the minimum requirements and supported devices as listed in our _Developer's Guide_.
+3. Please refer to the minimum requirements and supported devices as listed in our _Developer Guide_.
 
 ### Get Started for Android
 1. Copy the AAR file of the HERE SDK for Android to the example app's `app/libs` folder.
