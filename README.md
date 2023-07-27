@@ -18,7 +18,7 @@ The [HERE SDK](https://developer.here.com/products/here-sdk) enables you to buil
 
 The HERE SDK consumes data from the [HERE Platform](https://www.here.com/products/platform) and follows modern design principles incorporating microservices and modularized components. Currently, the HERE SDK supports three platforms: Android, iOS and Flutter.
 
-For an overview of the existing features, please check the _Developer's Guide_ for the platform of your choice. Here you will also find numerous code snippets, detailed tutorials, the _API Reference_ and the latest _Release Notes_:
+For an overview of the existing features, please check the _Developer Guide_ for the platform of your choice. Here you will also find numerous code snippets, detailed tutorials, the _API Reference_ and the latest _Release Notes_:
 
 - Documentation for the HERE SDK for Android ([Lite Edition](https://developer.here.com/documentation/android-sdk/dev_guide/index.html), [Explore Edition](https://developer.here.com/documentation/android-sdk-explore), [Navigate Edition]( https://developer.here.com/documentation/android-sdk-navigate))
 - Documentation for the HERE SDK for iOS ([Lite Edition](https://developer.here.com/documentation/ios-sdk/dev_guide/index.html), [Explore Edition]( https://developer.here.com/documentation/ios-sdk-explore), [Navigate Edition]( https://developer.here.com/documentation/ios-sdk-navigate))
@@ -41,21 +41,23 @@ For an overview of the existing features, please check the _Developer's Guide_ f
 - **OfflineMaps**: Shows how the HERE SDK can work fully offline and how offline map data can be downloaded for continents and countries. Exclusively available for the _Navigate Edition_.
 - **MapItems**: Shows how to add circles, polygons and polylines, native views, 2D and 3D map markers to locate POIs (and more) on the map. 3D map markers are exclusively available for the _Explore and Navigate Editions_.
 - **MultiDisplays**: Shows how a HERE SDK map can be shown on two separate displays using Android's Multi-Display API. Exclusively available for the _Explore Edition_ and the _Navigate Edition_.
-- **CartoPOIPicking**: Shows how to pick embedded map markers with extended place details. Embedded map markers are already visible on every map, by default. This app is exclusively available for the _Explore and Navigate Editions_.
+- **CartoPOIPicking**: Shows how to pick embedded map markers with extended place details. Embedded map markers are already visible on every map, by default. Exclusively available for the _Explore and Navigate Editions_.
 - **Routing**: Shows how to calculate routes and add them to the map.
 - **RoutingHybrid**: Shows how to calculate routes and add them to the map. Also shows how to calculate routes offline, when no internet connection is available. Exclusively available for the _Navigate Edition_.
 - **EVRouting**: Shows how to calculate routes for _electric vehicles_ and how to calculate the area of reach with _isoline routing_. Also shows how to search along a route.
-- **Public Transit**: Shows how to calculate routes for public transportation vehicles such as subways, trains, or busses.
+- **Public Transit**: Shows how to calculate routes for public transportation vehicles such as subways, trains, or buses.
 - **Search**: Shows how to search POIs and add them to the map. Shows also geocoding and reverse geocoding.
 - **SearchHybrid**: Shows how to search for places including auto suggestions, for the address that belongs to certain geographic coordinates (reverse geocoding) and for the geographic coordinates that belong to an address (geocoding). It also shows how to search offline, when no internet connection is available. Exclusively available for the _Navigate Edition_.
 - **NavigationQuickStart**: Shows how to get started with turn-by-turn navigation. Exclusively available for the _Navigate Edition_.
 - **Navigation**: Gives an overview of how to implement many of the available turn-by-turn navigation and tracking features. Exclusively available for the _Navigate Edition_.
 - **NavigationCustom**: Shows how the guidance view can be customized. Exclusively available for the _Navigate Edition_.
 - **SpatialAudioNavigation**: Shows how to make use of spatial audio notifications for TTS voices during guidance. Exclusively available for the _Navigate Edition_.
+- **Rerouting**: Shows how the HERE SDK can be used to handle rerouting during guidance. Exclusively available for the _Navigate Edition_ (Android and iOS only).
 - **Positioning**: Shows how to integrate HERE Positioning. Exclusively available for the _Navigate Edition_.
 - **PositioningWithBackgroundUpdates**: Shows how to integrate HERE Positioning with background location updates on Android using a foreground service. Exclusively available for the _Navigate Edition_.
 - **HikingDiary**: Shows how to record GPX traces with HERE Positioning. Exclusively available for the _Navigate Edition_ (Android and iOS only).
 - **Traffic**: Shows how to search for real-time traffic and how to visualize it on the map.
+- **TruckGuidance**: Shows how the HERE SDK can be used to calculate routes specific for trucks. In addition, it shows many more truck-related features. Exclusively available for the _Navigate Edition_ (Android only).
 - **StandAloneEngine**: Shows how to use an engine without a map view.
 - **IndoorMap**: Shows how to integrate private venues. Exclusively available for the _Navigate Edition_.
 - **UnitTesting**: Shows how to mock HERE SDK classes when writing unit tests (the example app is available for the _Explore Edition_ and the _Navigate Edition_).
@@ -76,7 +78,7 @@ Above you can find the example app links for the _latest_ HERE SDK version. If y
 ## What You Need to Execute the Example Apps
 1. Acquire a set of credentials by registering yourself on [developer.here.com](https://developer.here.com/) - or ask your HERE representative.
 2. Download the latest HERE SDK artifacts for your desired platform. These can be found on [developer.here.com](https://developer.here.com/) unless otherwise noted.
-3. Please refer to the minimum requirements and supported devices as listed in our _Developer's Guide_.
+3. Please refer to the minimum requirements and supported devices as listed in our _Developer Guide_.
 
 ### Get Started for Android
 1. Copy the AAR file of the HERE SDK for Android to the example app's `app/libs` folder.
