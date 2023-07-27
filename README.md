@@ -41,11 +41,12 @@ For an overview of the existing features, please check the _Developer's Guide_ f
 - **OfflineMaps**: Shows how the HERE SDK can work fully offline and how offline map data can be downloaded for continents and countries. Exclusively available for the _Navigate Edition_.
 - **MapItems**: Shows how to add circles, polygons and polylines, native views, 2D and 3D map markers to locate POIs (and more) on the map. 3D map markers are exclusively available for the _Explore and Navigate Editions_.
 - **MultiDisplays**: Shows how a HERE SDK map can be shown on two separate displays using Android's Multi-Display API. Exclusively available for the _Explore Edition_ and the _Navigate Edition_.
-- **CartoPOIPicking**: Shows how to pick embedded map markers with extended place details. Embedded map markers are already visible on every map, by default. This app is exclusively available for the _Explore and Navigate Editions_.
+- **CartoPOIPicking**: Shows how to pick embedded map markers with extended place details. Embedded map markers are already visible on every map, by default. Exclusively available for the _Explore and Navigate Editions_.
+- **Rerouting**: Shows how the HERE SDK can be used to handle rerouting during guidance. Exclusively available for the _Navigate Edition_ (Android and iOS only).
 - **Routing**: Shows how to calculate routes and add them to the map.
 - **RoutingHybrid**: Shows how to calculate routes and add them to the map. Also shows how to calculate routes offline, when no internet connection is available. Exclusively available for the _Navigate Edition_.
 - **EVRouting**: Shows how to calculate routes for _electric vehicles_ and how to calculate the area of reach with _isoline routing_. Also shows how to search along a route.
-- **Public Transit**: Shows how to calculate routes for public transportation vehicles such as subways, trains, or busses.
+- **Public Transit**: Shows how to calculate routes for public transportation vehicles such as subways, trains, or buses.
 - **Search**: Shows how to search POIs and add them to the map. Shows also geocoding and reverse geocoding.
 - **SearchHybrid**: Shows how to search for places including auto suggestions, for the address that belongs to certain geographic coordinates (reverse geocoding) and for the geographic coordinates that belong to an address (geocoding). It also shows how to search offline, when no internet connection is available. Exclusively available for the _Navigate Edition_.
 - **NavigationQuickStart**: Shows how to get started with turn-by-turn navigation. Exclusively available for the _Navigate Edition_.
@@ -56,11 +57,12 @@ For an overview of the existing features, please check the _Developer's Guide_ f
 - **PositioningWithBackgroundUpdates**: Shows how to integrate HERE Positioning with background location updates on Android using a foreground service. Exclusively available for the _Navigate Edition_.
 - **HikingDiary**: Shows how to record GPX traces with HERE Positioning. Exclusively available for the _Navigate Edition_ (Android and iOS only).
 - **Traffic**: Shows how to search for real-time traffic and how to visualize it on the map.
+- **TruckGuidance**: Shows how the HERE SDK can be used to calculate routes specific for trucks. The app has a lot more additional truck features. Exclusively available for the _Navigate Edition_ (Android only).
 - **StandAloneEngine**: Shows how to use an engine without a map view.
 - **IndoorMap**: Shows how to integrate private venues. Exclusively available for the _Navigate Edition_.
 - **UnitTesting**: Shows how to mock HERE SDK classes when writing unit tests (the example app is available for the _Explore Edition_ and the _Navigate Edition_).
 
-Most example apps contain a class named "XY-Example" where XY stands for the feature, which is in most cases equal to the name of the app. If you are looking for example code that shows how to use a certain HERE SDK feature, then please look for this class as it contains the most interesting parts. Note that the overall app architecture is kept as simple as possible to not shadow the parts in focus.
+Most example apps contain a class named "XY-Example" where XY stands for the feature, which is in most cases equal to the name of the app. If you are looking for an example code that shows how to use a certain HERE SDK feature, then please look for this class as it contains the most interesting parts. Note that the overall app architecture is kept as simple as possible to not shadow the parts in focus.
 
 > Not all examples are available for all editions and platforms.
 
