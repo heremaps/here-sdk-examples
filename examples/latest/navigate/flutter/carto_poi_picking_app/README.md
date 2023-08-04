@@ -9,4 +9,4 @@ Build instructions:
 
 3) Start an emulator or simulator and execute `flutter run` from the app's directory - or run the app from within your IDE.
 
-More information can be found in the _Get Started_ section of the _Developer's Guide_.
+More information can be found in the _Get Started_ section of the _Developer Guide_.

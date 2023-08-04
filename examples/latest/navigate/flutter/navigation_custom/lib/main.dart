@@ -70,7 +70,6 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
   LocationIndicator? _defaultLocationIndicator;
   LocationIndicator? _customLocationIndicator;
   Location? _lastKnownLocation;
-  bool _isVisualNavigatorRenderingStarted = false;
   bool _isDefaultLocationIndicator = true;
   HERE.Route? myRoute;
 
@@ -176,7 +175,7 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
 
   // Calculate a fixed route for testing and start guidance simulation along the route.
   void _startButtonClicked() {
-    if (_isVisualNavigatorRenderingStarted) {
+    if (_visualNavigator!.isRendering) {
       return;
     }
 
@@ -209,7 +208,7 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
     _isDefaultLocationIndicator = !_isDefaultLocationIndicator;
 
     // Select pedestrian or navigation assets.
-    if (_isVisualNavigatorRenderingStarted) {
+    if (_visualNavigator!.isRendering) {
       _switchToNavigationLocationIndicator();
     } else {
       _switchToPedestrianLocationIndicator();
@@ -313,7 +312,7 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
   }
 
   _startGuidance(HERE.Route route) {
-    if (_isVisualNavigatorRenderingStarted) {
+    if (_visualNavigator!.isRendering) {
       return;
     }
 
@@ -325,7 +324,6 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
 
     // This enables a navigation view and adds a LocationIndicator.
     _visualNavigator!.startRendering(_hereMapController!);
-    _isVisualNavigatorRenderingStarted = true;
 
     // Note: By default, when VisualNavigator starts rendering, a default LocationIndicator is added
     // by the HERE SDK automatically.
@@ -341,7 +339,6 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
 
   void _stopGuidance() {
     _visualNavigator?.stopRendering();
-    _isVisualNavigatorRenderingStarted = false;
 
     _locationSimulator?.stop();
 

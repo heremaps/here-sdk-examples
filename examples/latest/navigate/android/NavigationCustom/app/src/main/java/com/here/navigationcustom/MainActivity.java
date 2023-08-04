@@ -87,7 +87,6 @@ public class MainActivity extends AppCompatActivity {
     private LocationIndicator customLocationIndicator;
     private Location lastKnownLocation = null;
     private GeoCoordinates routeStartGeoCoordinates;
-    private boolean isVisualNavigatorRenderingStarted = false;
     private boolean isDefaultLocationIndicator = true;
 
     @Override
@@ -216,7 +215,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Calculate a fixed route for testing and start guidance simulation along the route.
     public void startButtonClicked(View view) {
-        if (isVisualNavigatorRenderingStarted) {
+        if (visualNavigator.isRendering()) {
             return;
         }
 
@@ -248,7 +247,7 @@ public class MainActivity extends AppCompatActivity {
         isDefaultLocationIndicator = !isDefaultLocationIndicator;
 
         // Select pedestrian or navigation assets.
-        if (isVisualNavigatorRenderingStarted) {
+        if (visualNavigator.isRendering()) {
             switchToNavigationLocationIndicator();
         } else {
             switchToPedestrianLocationIndicator();
@@ -352,7 +351,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startGuidance(Route route) {
-        if (isVisualNavigatorRenderingStarted) {
+        if (visualNavigator.isRendering()) {
             return;
         }
 
@@ -364,7 +363,6 @@ public class MainActivity extends AppCompatActivity {
 
         // This enables a navigation view and adds a LocationIndicator.
         visualNavigator.startRendering(mapView);
-        isVisualNavigatorRenderingStarted = true;
 
         // Note: By default, when VisualNavigator starts rendering, a default LocationIndicator is added
         // by the HERE SDK automatically.
@@ -380,7 +378,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void stopGuidance() {
         visualNavigator.stopRendering();
-        isVisualNavigatorRenderingStarted = false;
 
         if (locationSimulator != null) {
             locationSimulator.stop();

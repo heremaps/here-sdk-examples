@@ -33,7 +33,6 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
     private var defaultLocationIndicator: LocationIndicator?
     private var customLocationIndicator: LocationIndicator?
     private var lastKnownLocation: Location?
-    private var isVisualNavigatorRenderingStarted = false
     private var isDefaultLocationIndicator = true
     private var myRoute: Route?
 
@@ -133,7 +132,7 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
 
     // Calculate a fixed route for testing and start guidance simulation along the route.
     @IBAction func startButtonClicked(_ sender: Any) {
-        if isVisualNavigatorRenderingStarted {
+        if visualNavigator!.isRendering {
             return;
         }
 
@@ -166,7 +165,7 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
         isDefaultLocationIndicator = !isDefaultLocationIndicator
 
         // Select pedestrian or navigation assets.
-        if isVisualNavigatorRenderingStarted {
+        if visualNavigator!.isRendering {
             switchToNavigationLocationIndicator()
         } else {
             switchToPedestrianLocationIndicator()
@@ -276,7 +275,7 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
     }
 
     private func startGuidance(route: Route) {
-        if isVisualNavigatorRenderingStarted {
+        if visualNavigator!.isRendering {
             return
         }
         
@@ -288,7 +287,6 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
 
         // This enables a navigation view and adds a LocationIndicator.
         visualNavigator?.startRendering(mapView: mapView)
-        isVisualNavigatorRenderingStarted = true
 
         // Note: By default, when VisualNavigator starts rendering, a default LocationIndicator is added
         // by the HERE SDK automatically.
@@ -304,7 +302,6 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
 
     private func stopGuidance() {
         visualNavigator?.stopRendering()
-        isVisualNavigatorRenderingStarted = false
 
         locationSimulator?.stop()
 

@@ -28,6 +28,7 @@ import com.here.sdk.mapview.MapLayerVisibilityRange;
 import com.here.sdk.mapview.MapView;
 import com.here.sdk.mapview.datasource.RasterDataSource;
 import com.here.sdk.mapview.datasource.RasterDataSourceConfiguration;
+import com.here.sdk.mapview.datasource.TileUrlProviderFactory;
 import com.here.sdk.mapview.datasource.TilingScheme;
 
 import java.util.Arrays;
@@ -75,9 +76,10 @@ public class OutdoorRasterLayer {
         // The storage levels available for this data source. Supported range [0, 31].
         List<Integer> storageLevels = Arrays.asList(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
 
-        RasterDataSourceConfiguration.Provider rasterProviderConfig = new RasterDataSourceConfiguration.Provider(templateUrl,
+        RasterDataSourceConfiguration.Provider rasterProviderConfig = new RasterDataSourceConfiguration.Provider(
                 TilingScheme.QUAD_TREE_MERCATOR,
-                storageLevels);
+                storageLevels,
+                TileUrlProviderFactory.fromXyzUrlTemplate(templateUrl));
 
         // If you want to add transparent layers then set this to true.
         rasterProviderConfig.hasAlphaChannel = false;
