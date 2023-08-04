@@ -67,7 +67,8 @@ class CustomRasterLayersExample {
     // The storage levels available for this data source. Supported range [0, 31].
     List<int> storageLevels = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
     RasterDataSourceProviderConfiguration rasterProviderConfig =
-        RasterDataSourceProviderConfiguration.withDefaults(templateUrl, TilingScheme.quadTreeMercator, storageLevels);
+        RasterDataSourceProviderConfiguration.withUrlProviderAndDefaults(
+            TilingScheme.quadTreeMercator, storageLevels, TileUrlProviderFactory.fromXyzUrlTemplate(templateUrl));
 
     // If you want to add transparent layers then set this to true.
     rasterProviderConfig.hasAlphaChannel = false;

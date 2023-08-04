@@ -13,4 +13,4 @@ Build instructions:
 
 5) Enter your indoor map id once the app loads.
 
-More information can be found in the _Get Started_ section of the _Developer's Guide_.
+More information can be found in the _Get Started_ section of the _Developer Guide_.

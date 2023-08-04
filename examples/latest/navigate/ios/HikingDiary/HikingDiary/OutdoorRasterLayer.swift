@@ -62,10 +62,11 @@ class OutdoorRasterLayer {
         
         // The storage levels available for this data source. Supported range [0, 31].
         let storageLevels: [Int32] = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
-        var rasterProviderConfig = RasterDataSourceConfiguration.Provider(templateUrl: templateUrl,
-                                                                          tilingScheme: TilingScheme.quadTreeMercator,
-                                                                          storageLevels: storageLevels)
-
+        var rasterProviderConfig =
+            RasterDataSourceConfiguration.Provider(tilingScheme: TilingScheme.quadTreeMercator,
+                                                   storageLevels: storageLevels,
+                                                   urlProvider: TileUrlProviderFactory.fromXyzUrlTemplate(templateUrl))
+        
         // If you want to add transparent layers then set this to true.
         rasterProviderConfig.hasAlphaChannel = false
         

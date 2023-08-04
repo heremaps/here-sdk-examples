@@ -26,13 +26,14 @@ For an overview of the existing features, please check the _Developer Guide_ for
 
 > For now, the _Navigate Edition_ is only available upon request. Please contact your HERE representative to receive access including a set of evaluation credentials.
 
-## List of Available Example Apps (Version 4.15.1.0)
+## List of Available Example Apps (Version 4.15.2.0)
 
 - **HelloMap**: Shows the classic 'Hello World'.
 - **HelloMapKotlin**: Shows the classic 'Hello World' using Kotlin language (Android only).
 - **HelloMapWithStoryboard**: Shows the classic 'Hello World' using a Storyboard (iOS only).
 - **HelloMapAndroidAuto**: Shows how to integrate Android Auto into the _HelloMap_ app to show a map on an in-car head unit display (Android only). Exclusively available for the _Explore Edition_ and the _Navigate Edition_.
 - **HelloMapCarPlay**: Shows how CarPlay can be integrated into the _HelloMap_ app to display a map on an in-car head unit display (iOS only). Exclusively available for the _Explore Edition_ and the _Navigate Edition_.
+- **HelloMapSurface**: Shows how to use the MapSurface class to render low-level graphic elements with OpenGL ES on top of the map. (Android only). Exclusively available for the _Explore Edition_ and the _Navigate Edition_.
 - **Camera**: Shows how to change the target and the target anchor point and how to move to another location using custom map animations.
 - **CameraKeyframeTracks**: Shows how to do custom camera animations with keyframe tracks.
 - **CustomMapStyles**: Shows how to load custom map schemes made with the _HERE Style Editor_. Exclusively available for the _Explore Edition_ and the _Navigate Edition_.
