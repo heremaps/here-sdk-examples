@@ -118,7 +118,7 @@ public class PositioningExample {
         locationIndicator.setAccuracyVisualized(true);
         locationIndicator.setLocationIndicatorStyle(LocationIndicator.IndicatorStyle.PEDESTRIAN);
         locationIndicator.updateLocation(myLocation);
-        mapView.addLifecycleListener(locationIndicator);
+        locationIndicator.enable(mapView);
         //Update the map viewport to be centered on the location.
         MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, CAMERA_DISTANCE_IN_METERS);
         mapView.getCamera().lookAt(myLocation.coordinates, mapMeasureZoom);

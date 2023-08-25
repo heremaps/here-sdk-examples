@@ -68,6 +68,9 @@ import com.here.sdk.navigation.RouteDeviation;
 import com.here.sdk.navigation.RouteDeviationListener;
 import com.here.sdk.navigation.RouteProgress;
 import com.here.sdk.navigation.RouteProgressListener;
+import com.here.sdk.navigation.SchoolZoneWarning;
+import com.here.sdk.navigation.SchoolZoneWarningListener;
+import com.here.sdk.navigation.SchoolZoneWarningOptions;
 import com.here.sdk.navigation.SectionProgress;
 import com.here.sdk.navigation.SpeedLimit;
 import com.here.sdk.navigation.SpeedLimitListener;
@@ -93,6 +96,7 @@ import com.here.sdk.routing.Route;
 import com.here.sdk.trafficawarenavigation.DynamicRoutingEngine;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -481,6 +485,36 @@ public class NavigationEventHandler {
                 }
             }
         });
+
+        // Notifies on school zones ahead.
+        visualNavigator.setSchoolZoneWarningListener(new SchoolZoneWarningListener() {
+            @Override
+            public void onSchoolZoneWarningUpdated(@NonNull List<SchoolZoneWarning> list) {
+                // The list is guaranteed to be non-empty.
+                for (SchoolZoneWarning schoolZoneWarning : list) {
+                    if (schoolZoneWarning.distanceType == DistanceType.AHEAD) {
+                        Log.d(TAG, "A school zone ahead in: " + schoolZoneWarning.distanceToSchoolZoneInMeters + " meters.");
+                        // Note that this will be the same speed limit as indicated by SpeedLimitListener, unless
+                        // already a lower speed limit applies, for example, because of a heavy truck load.
+                        Log.d(TAG, "Speed limit restriction for this school zone: " + schoolZoneWarning.speedLimitInMetersPerSecond + " m/s.");
+                        if (schoolZoneWarning.timeRule != null && !schoolZoneWarning.timeRule.appliesTo(new Date())) {
+                            // For example, during night sometimes a school zone warning does not apply.
+                            // If schoolZoneWarning.timeRule is null, the warning applies at anytime.
+                            Log.d(TAG, "Note that this school zone warning currently does not apply.");
+                        }
+                    } else if (schoolZoneWarning.distanceType == DistanceType.REACHED) {
+                        Log.d(TAG, "A school zone has been reached.");
+                    } else if (schoolZoneWarning.distanceType == DistanceType.PASSED) {
+                        Log.d(TAG, "A school zone has been passed.");
+                    }
+                }
+            }
+        });
+
+        SchoolZoneWarningOptions schoolZoneWarningOptions = new SchoolZoneWarningOptions();
+        schoolZoneWarningOptions.filterOutInactiveTimeDependentWarnings = true;
+        schoolZoneWarningOptions.warningDistanceInMeters = 150;
+        visualNavigator.setSchoolZoneWarningOptions(schoolZoneWarningOptions);
 
         // Notifies whenever any textual attribute of the current road changes, i.e., the current road texts differ
         // from the previous one. This can be useful during tracking mode, when no maneuver information is provided.

@@ -196,16 +196,8 @@ class RoutingExample {
           // We skip rendering low traffic.
           continue;
         }
-        GeoPolyline spanGeoPolyline;
-        try {
-          // A polyline needs to have two or more coordinates.
-          spanGeoPolyline = GeoPolyline(span.polyline);
-        } on InstantiationException {
-          print("Error: Initialization of GeoPolyline failed.");
-          return;
-        }
         double widthInPixels = 10;
-        MapPolyline trafficSpanMapPolyline = new MapPolyline(spanGeoPolyline, widthInPixels, lineColor);
+        MapPolyline trafficSpanMapPolyline = new MapPolyline(span.geometry, widthInPixels, lineColor);
         _hereMapController.mapScene.addMapPolyline(trafficSpanMapPolyline);
         _mapPolylines.add(trafficSpanMapPolyline);
       }

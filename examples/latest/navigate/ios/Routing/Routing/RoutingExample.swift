@@ -244,12 +244,7 @@ class RoutingExample {
                     // Skip rendering low traffic.
                     continue
                 }
-                // A polyline needs to have two or more coordinates.
-                guard let spanGeoPolyline = try? GeoPolyline(vertices: span.polyline) else {
-                    print("Error: Initialization of GeoPolyline failed.")
-                    return
-                }
-                let trafficSpanMapPolyline = MapPolyline(geometry: spanGeoPolyline,
+                let trafficSpanMapPolyline = MapPolyline(geometry: span.geometry,
                                                          widthInPixels: 10,
                                                          color: lineColor)
                 mapView.mapScene.addMapPolyline(trafficSpanMapPolyline)

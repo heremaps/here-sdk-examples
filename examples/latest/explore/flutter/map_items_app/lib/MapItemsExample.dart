@@ -195,7 +195,8 @@ class MapItemsExample {
     _mapMarkerClusterList.clear();
 
     for (var locationIndicator in _locationIndicatorList) {
-      _hereMapController.removeLifecycleListener(locationIndicator);
+      // Remove the indicator from map view.
+      locationIndicator.disable();
     }
     _locationIndicatorList.clear();
   }
@@ -265,9 +266,9 @@ class MapItemsExample {
 
     locationIndicator.updateLocation(location);
 
-    // A LocationIndicator listens to the lifecycle of the map view,
-    // therefore, for example, it will get destroyed when the map view gets destroyed.
-    _hereMapController.addLifecycleListener(locationIndicator);
+    // Show the indicator on the map view.
+    locationIndicator.enable(_hereMapController);
+
     _locationIndicatorList.add(locationIndicator);
   }
 

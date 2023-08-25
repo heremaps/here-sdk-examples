@@ -78,7 +78,7 @@ public class HEREPositioningVisualizer {
     private void setupMyLocationIndicator() {
         locationIndicator.setAccuracyVisualized(true);
         locationIndicator.setLocationIndicatorStyle(LocationIndicator.IndicatorStyle.PEDESTRIAN);
-        mapView.addLifecycleListener(locationIndicator);
+        locationIndicator.enable(mapView);
     }
 
     private void addLocationCircle(GeoCoordinates center, double radiusInMeters, Color fillColor) {

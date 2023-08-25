@@ -163,6 +163,33 @@ class NavigationEventHandler {
       }
     });
 
+    // Notifies on school zones ahead.
+    _visualNavigator.schoolZoneWarningListener = SchoolZoneWarningListener((List<SchoolZoneWarning> list) {
+      // The list is guaranteed to be non-empty.
+      for (SchoolZoneWarning schoolZoneWarning in list) {
+        if (schoolZoneWarning.distanceType == DistanceType.ahead) {
+          print("A school zone ahead in: ${schoolZoneWarning.distanceToSchoolZoneInMeters} meters.");
+          // Note that this will be the same speed limit as indicated by SpeedLimitListener, unless
+          // already a lower speed limit applies, for example, because of a heavy truck load.
+          print("Speed limit restriction for this school zone: ${schoolZoneWarning.speedLimitInMetersPerSecond} m/s.");
+          if (schoolZoneWarning.timeRule != null && !schoolZoneWarning.timeRule!.appliesTo(DateTime.now())) {
+            // For example, during night sometimes a school zone warning does not apply.
+            // If schoolZoneWarning.timeRule is null, the warning applies at anytime.
+            print("Note that this school zone warning currently does not apply.");
+          }
+        } else if (schoolZoneWarning.distanceType == DistanceType.reached) {
+          print("A school zone has been reached.");
+        } else if (schoolZoneWarning.distanceType == DistanceType.passed) {
+          print("A school zone has been passed.");
+        }
+      }
+    });
+
+    SchoolZoneWarningOptions schoolZoneWarningOptions = SchoolZoneWarningOptions();
+    schoolZoneWarningOptions.filterOutInactiveTimeDependentWarnings = true;
+    schoolZoneWarningOptions.warningDistanceInMeters = 150;
+    _visualNavigator.schoolZoneWarningOptions = schoolZoneWarningOptions;
+
     // Notifies when the current speed limit is exceeded.
     _visualNavigator.speedWarningListener = SpeedWarningListener((SpeedWarningStatus speedWarningStatus) {
       // Handle results from onSpeedWarningStatusChanged().

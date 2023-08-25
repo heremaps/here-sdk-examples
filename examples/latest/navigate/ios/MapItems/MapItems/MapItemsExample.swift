@@ -87,7 +87,7 @@ class MapItemsExample: TapDelegate {
         counterStyle.fontSize = 40
         counterStyle.maxCountNumber = 9
         counterStyle.aboveMaxText = "+9"
-        
+
         let mapMarkerCluster = MapMarkerCluster(imageStyle: MapMarkerCluster.ImageStyle(image: clusterMapImage),
                                                 counterStyle: counterStyle)
         mapView.mapScene.addMapMarkerCluster(mapMarkerCluster)
@@ -112,11 +112,11 @@ class MapItemsExample: TapDelegate {
         let mapImage = MapImage(pixelData: imageData,
                                        imageFormat: ImageFormat.png)
         let mapMarker = MapMarker(at: geoCoordinates, image: mapImage)
-        
+
         let metadata = Metadata()
         metadata.setString(key: "key_cluster", value: metaDataText)
         mapMarker.metadata = metadata
-        
+
         return mapMarker
     }
 
@@ -251,7 +251,7 @@ class MapItemsExample: TapDelegate {
                                       style: LocationIndicator.IndicatorStyle) {
         let locationIndicator = LocationIndicator()
         locationIndicator.locationIndicatorStyle = style
-
+        
         // A LocationIndicator is intended to mark the user's current location,
         // including a bearing direction.
         var location = Location(coordinates: geoCoordinates)
@@ -260,9 +260,8 @@ class MapItemsExample: TapDelegate {
 
         locationIndicator.updateLocation(location)
 
-        // A LocationIndicator listens to the lifecycle of the map view,
-        // therefore, for example, it will get destroyed when the map view gets destroyed.
-        mapView.addLifecycleDelegate(locationIndicator)
+        locationIndicator.enable(for: mapView)
+        
         locationIndicators.append(locationIndicator)
     }
 
@@ -300,7 +299,7 @@ class MapItemsExample: TapDelegate {
                 print("Error: Image not found.")
                 return
         }
-        
+
         // The default scale factor of the map marker is 1.0. For a scale of 2, the map marker becomes 2x larger.
         // For a scale of 0.5, the map marker shrinks to half of its original size.
         let scaleFactor: Double = 0.5
@@ -360,7 +359,8 @@ class MapItemsExample: TapDelegate {
         mapMarkers3D.removeAll()
 
         for locationIndicator in locationIndicators {
-            mapView.removeLifecycleDelegate(locationIndicator)
+            // Remove indicator from map view.
+            locationIndicator.disable()
         }
         locationIndicators.removeAll()
 
@@ -426,7 +426,7 @@ class MapItemsExample: TapDelegate {
         }
         return "No metadata."
     }
-    
+
     private func createRandomGeoCoordinatesAroundMapCenter() -> GeoCoordinates {
         let scaleFactor = UIScreen.main.scale
         let mapViewWidthInPixels = Double(mapView.bounds.width * scaleFactor)

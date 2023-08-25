@@ -64,8 +64,8 @@ class PositioningExample: LocationDelegate, LocationStatusDelegate {
 
     private func startLocating() {
         // Enable background updates.
-        locationEngine.setBackgroundLocationAllowed(allowed: true)
-        locationEngine.setBackgroundLocationIndicatorVisible(visible: true)
+        _ = locationEngine.setBackgroundLocationAllowed(allowed: true)
+        _ = locationEngine.setBackgroundLocationIndicatorVisible(visible: true)
         
         // Set delegates and start location engine.
         locationEngine.addLocationStatusDelegate(locationStatusDelegate: self)
@@ -106,7 +106,7 @@ class PositioningExample: LocationDelegate, LocationStatusDelegate {
         locationIndicator.isAccuracyVisualized = true
         locationIndicator.locationIndicatorStyle = .pedestrian;
         locationIndicator.updateLocation(myLocation)
-        mapView.addLifecycleDelegate(locationIndicator)
+        locationIndicator.enable(for: mapView)
         // Point camera to current location.
         let distanceInMeters = MapMeasure(kind: .distance, value: PositioningExample.defaultCameraDistance)
         mapCamera.lookAt(point: myLocation.coordinates,

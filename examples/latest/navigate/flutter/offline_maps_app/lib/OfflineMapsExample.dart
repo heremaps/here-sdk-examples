@@ -233,7 +233,11 @@ class OfflineMapsExample {
   // Keep in mind that the OfflineSearchEngine can also search on cached map data.
   Future<void> onSearchPlaceClicked() async {
     String queryString = "restaurants";
-    GeoBox viewportGeoBox = _getMapViewGeoBox();
+    GeoBox? viewportGeoBox = _hereMapController.camera.boundingBox;
+    if (viewportGeoBox == null) {
+      _showDialog("GeoBox creation failed", "Is the map tilted or zoomed-out? Note that you cannot pick coordinates from the sky or the space when map is zoomed-out.");
+      return;
+    }
     TextQueryArea queryArea = TextQueryArea.withBox(viewportGeoBox);
     TextQuery query = TextQuery.withArea(queryString, queryArea);
 
@@ -270,13 +274,6 @@ class OfflineMapsExample {
     _showDialog("Note", "The app is radio-silence.");
   }
 
-  GeoBox _getMapViewGeoBox() {
-    GeoBox? geoBox = _hereMapController.camera.boundingBox;
-    if (geoBox == null) {
-      throw ("GeoBox creation failed, corners are null.");
-    }
-    return geoBox;
-  }
 
   void _checkForMapUpdates() {
     if (_mapUpdater == null) {

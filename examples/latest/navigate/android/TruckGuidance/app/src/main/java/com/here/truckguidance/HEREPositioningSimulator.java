@@ -19,9 +19,6 @@
 
 package com.here.truckguidance;
 
-import androidx.annotation.NonNull;
-
-import com.here.sdk.core.Location;
 import com.here.sdk.core.LocationListener;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.navigation.LocationSimulator;

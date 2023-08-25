@@ -37,6 +37,7 @@ class NavigationEventHandler : NavigableLocationDelegate,
                                RoadAttributesDelegate,                               
                                RoadSignWarningDelegate,
                                TruckRestrictionsWarningDelegate,
+                               SchoolZoneWarningDelegate,
                                RoadTextsDelegate,
                                RealisticViewWarningDelegate {
     
@@ -72,6 +73,7 @@ class NavigationEventHandler : NavigableLocationDelegate,
         visualNavigator.roadAttributesDelegate = self
         visualNavigator.roadSignWarningDelegate = self
         visualNavigator.truckRestrictionsWarningDelegate = self
+        visualNavigator.schoolZoneWarningDelegate = self
         visualNavigator.roadTextsDelegate = self
         visualNavigator.realisticViewWarningDelegate = self
         
@@ -79,6 +81,7 @@ class NavigationEventHandler : NavigableLocationDelegate,
         setupRoadSignWarnings()
         setupVoiceGuidance()
         setupRealisticViewWarnings()
+        setupSchoolZoneWarnings()
     }
         
     // Conform to RouteProgressDelegate.
@@ -318,8 +321,8 @@ class NavigationEventHandler : NavigableLocationDelegate,
         let laneNumber = 0
         for tollBoothLane in lanes {
             // Log which vehicles types are allowed on this lane that leads to the toll booth.
-            logLaneAccess(laneNumber, tollBoothLane.access);
-            let tollBooth = tollBoothLane.booth;
+            logLaneAccess(laneNumber, tollBoothLane.access)
+            let tollBooth = tollBoothLane.booth
             let tollCollectionMethods = tollBooth.tollCollectionMethods
             let paymentMethods = tollBooth.paymentMethods
             // The supported collection methods like ticket or automatic / electronic.
@@ -542,6 +545,31 @@ class NavigationEventHandler : NavigableLocationDelegate,
         }
     }
 
+    // Conform to SchoolZoneWarningDelegate.
+    // Notifies on school zones ahead.
+    func onSchoolZoneWarningUpdated(_ schoolZoneWarnings: [heresdk.SchoolZoneWarning]) {
+        // The list is guaranteed to be non-empty.
+        for schoolZoneWarning in schoolZoneWarnings {
+          if schoolZoneWarning.distanceType == DistanceType.ahead {
+            print("A school zone ahead in: \(schoolZoneWarning.distanceToSchoolZoneInMeters) meters.")
+            // Note that this will be the same speed limit as indicated by SpeedLimitDelegate, unless
+            // already a lower speed limit applies, for example, because of a heavy truck load.
+            print("Speed limit restriction for this school zone: \(schoolZoneWarning.speedLimitInMetersPerSecond) m/s.")
+              if let timeRule = schoolZoneWarning.timeRule {
+                  if timeRule.appliesTo(dateTime: Date()) {
+                  // For example, during night sometimes a school zone warning does not apply.
+                  // If schoolZoneWarning.timeRule is nil, the warning applies at anytime.
+                  print("Note that this school zone warning currently does not apply.")
+              }
+            }
+          } else if schoolZoneWarning.distanceType == DistanceType.reached {
+            print("A school zone has been reached.")
+          } else if schoolZoneWarning.distanceType == DistanceType.passed {
+            print("A school zone has been passed.")
+          }
+        }
+    }
+    
     // Conform to RealisticViewWarningDelegate.
     // Notifies on signposts together with complex junction views.
     // Signposts are shown as they appear along a road on a shield to indicate the upcoming directions and
@@ -609,6 +637,13 @@ class NavigationEventHandler : NavigableLocationDelegate,
         visualNavigator.realisticViewWarningOptions = realisticViewWarningOptions
     }
 
+    private func setupSchoolZoneWarnings() {
+        var schoolZoneWarningOptions = SchoolZoneWarningOptions()
+        schoolZoneWarningOptions.filterOutInactiveTimeDependentWarnings = true
+        schoolZoneWarningOptions.warningDistanceInMeters = 150
+        visualNavigator.schoolZoneWarningOptions = schoolZoneWarningOptions
+    }
+    
     private func setupVoiceGuidance() {
         let ttsLanguageCode = getLanguageCodeForDevice(supportedVoiceSkins: VisualNavigator.availableLanguagesForManeuverNotifications())
         visualNavigator.maneuverNotificationOptions = ManeuverNotificationOptions(language: ttsLanguageCode,
