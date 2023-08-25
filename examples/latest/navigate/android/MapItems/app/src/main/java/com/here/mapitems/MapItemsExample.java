@@ -200,7 +200,8 @@ public class MapItemsExample {
         mapMarker3DList.clear();
 
         for (LocationIndicator locationIndicator : locationIndicatorList) {
-            mapView.removeLifecycleListener(locationIndicator);
+            // Remove locationIndicator from map view.
+            locationIndicator.disable();
         }
         locationIndicatorList.clear();
 
@@ -258,9 +259,9 @@ public class MapItemsExample {
 
         locationIndicator.updateLocation(location);
 
-        // A LocationIndicator listens to the lifecycle of the map view,
-        // therefore, for example, it will get destroyed when the map view gets destroyed.
-        mapView.addLifecycleListener(locationIndicator);
+        // Show the indicator on the map view.
+        locationIndicator.enable(mapView);
+
         locationIndicatorList.add(locationIndicator);
     }
 

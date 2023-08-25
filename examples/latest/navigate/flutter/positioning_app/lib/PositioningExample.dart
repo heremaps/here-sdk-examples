@@ -304,13 +304,15 @@ class PositioningExample extends State<MyApp>
     _locationIndicator!.isAccuracyVisualized = true;
     _locationIndicator!.locationIndicatorStyle = LocationIndicatorIndicatorStyle.pedestrian;
     _locationIndicator!.updateLocation(myLocation);
-    _hereMapController!.addLifecycleListener(_locationIndicator!);
+    _locationIndicator!.enable(_hereMapController!);
+
     // Point camera at given location.
     MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, _cameraDistanceInMeters);
     _hereMapController!.camera.lookAtPointWithMeasure(
       myLocation.coordinates,
       mapMeasureZoom,
     );
+
     // Update state's location.
     setState(() {
       _location = myLocation;

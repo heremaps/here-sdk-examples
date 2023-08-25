@@ -82,8 +82,8 @@ class HEREPositioningVisualizer {
 
     private func setupMyLocationIndicator() {
         locationIndicator.isAccuracyVisualized = true
-        locationIndicator.locationIndicatorStyle = .pedestrian;
-        mapView.addLifecycleDelegate(locationIndicator)
+        locationIndicator.locationIndicatorStyle = .pedestrian
+        locationIndicator.enable(for: mapView)
     }
 
     private func addLocationCircle(center: GeoCoordinates, radiusInMeters: Double, fillColor: UIColor) {

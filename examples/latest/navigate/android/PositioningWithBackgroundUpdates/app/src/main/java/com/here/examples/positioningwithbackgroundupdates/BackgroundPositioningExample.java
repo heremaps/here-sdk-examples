@@ -83,7 +83,7 @@ public class BackgroundPositioningExample {
         //Create and setup location indicator.
         locationIndicator = new LocationIndicator();
         locationIndicator.setLocationIndicatorStyle(LocationIndicator.IndicatorStyle.PEDESTRIAN);
-        mapView.addLifecycleListener(locationIndicator);
+        locationIndicator.enable(mapView);
         //Update the map location.
         updateMyLocationOnMap(myLocation);
     }
