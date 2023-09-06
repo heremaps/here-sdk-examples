@@ -23,6 +23,7 @@ import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 
 import com.here.sdk.animation.EasingFunction;
@@ -33,6 +34,7 @@ import com.here.sdk.core.GeoCorridor;
 import com.here.sdk.core.GeoOrientationUpdate;
 import com.here.sdk.core.GeoPolyline;
 import com.here.sdk.core.LanguageCode;
+import com.here.sdk.core.PickedPlace;
 import com.here.sdk.core.Point2D;
 import com.here.sdk.core.Rectangle2D;
 import com.here.sdk.core.Size2D;
@@ -81,6 +83,7 @@ import com.here.sdk.routing.ZoneCategory;
 import com.here.sdk.search.CategoryQuery;
 import com.here.sdk.search.Place;
 import com.here.sdk.search.PlaceCategory;
+import com.here.sdk.search.PlaceIdSearchCallback;
 import com.here.sdk.search.SearchCallback;
 import com.here.sdk.search.SearchEngine;
 import com.here.sdk.search.SearchError;
@@ -153,7 +156,7 @@ public class TruckGuidanceExample {
         }
 
         try {
-            // Visual Navigator for a truck route.
+            // The Visual Navigator will be used for truck navigation.
             visualNavigator = new VisualNavigator();
         } catch (InstantiationErrorException e) {
             throw new RuntimeException("Initialization of VisualNavigator failed: " + e.error.name());
@@ -168,6 +171,7 @@ public class TruckGuidanceExample {
             throw new RuntimeException("Initialization of Navigator failed: " + e.error.name());
         }
 
+        // Create a TransportProfile instance.
         // This profile is currently only used to retrieve speed limits during tracking mode
         // when no route is set to the VisualNavigator instance.
         // This profile needs to be set only once during the lifetime of the VisualNavigator
@@ -279,12 +283,30 @@ public class TruckGuidanceExample {
             // Note that pick here only the top most icon and ignore others that may be underneath.
             if (cartoPOIList.size() > 0) {
                 PickMapContentResult.PoiResult topmostContent = cartoPOIList.get(0);
-                showDialog("Carto POI picked", topmostContent.name +
+                Log.d("Carto POI picked: ", topmostContent.name +
                         ", Place category: " + topmostContent.placeCategoryId);
-                // Optionally, you can now use the SearchEngine to retrieve more details by searching for this
-                // place.
-                // Alternatively, use the OfflineSearchEngine with the provided offlineSearchId, see CartoPOIPicking
-                // example app for an example.
+
+                // Optionally, you can now use the SearchEngine or the OfflineSearchEngine to retrieve more details.
+                PickedPlace pickedPlace =
+                        new PickedPlace(topmostContent.name, topmostContent.coordinates, topmostContent.placeCategoryId);
+                searchEngine.searchPickedPlace(pickedPlace, LanguageCode.EN_US, new PlaceIdSearchCallback() {
+                    @Override
+                    public void onPlaceIdSearchCompleted(@Nullable SearchError searchError, @Nullable Place place) {
+                        if (searchError == null) {
+                            String address = place.getAddress().addressText;
+                            String categories = "";
+                            for (PlaceCategory category : place.getDetails().categories) {
+                                String name = category.getName();
+                                if (name != null) {
+                                    categories += category.getName() + " ";
+                                }
+                            }
+                            showDialog("Carto POI", address + ". Categories: " + categories);
+                        } else {
+                            Log.e(TAG, "searchPickedPlace() resulted in an error: " + searchError.name());
+                        }
+                    }
+                });
             }
 
             if (trafficPOIList.size() > 0) {
@@ -380,8 +402,8 @@ public class TruckGuidanceExample {
                     // If the field is 'null' then the current restriction is valid regardless of trailer count.
                     if (truckRestrictionWarning.trailerCount != null && MyTruckSpecs.trailerCount != null) {
                         int min = truckRestrictionWarning.trailerCount.min;
-                        int max = truckRestrictionWarning.trailerCount.max;
-                        if (min > MyTruckSpecs.trailerCount || max < MyTruckSpecs.trailerCount) {
+                        Integer max = truckRestrictionWarning.trailerCount.max; // If not set, maximum is unbounded.
+                        if (min > MyTruckSpecs.trailerCount || (max != null && max < MyTruckSpecs.trailerCount)) {
                             // The restriction is not valid for this truck.
                             // Note: For this example, we do not skip any restriction.
                             // continue;
@@ -560,6 +582,7 @@ public class TruckGuidanceExample {
             GeoCoordinates geoCoordinates = mapView.viewToGeoCoordinates(touchPoint);
             if (geoCoordinates == null) {
                 showDialog("Note", "Invalid GeoCoordinates.");
+                return;
             }
             if (gestureState == GestureState.BEGIN) {
                 // Set new route start or destination geographic coordinates based on long press location.
@@ -723,7 +746,7 @@ public class TruckGuidanceExample {
             for (SectionNotice sectionNotice : section.getSectionNotices()) {
                 // For example, if code is VIOLATED_AVOID_FERRY, then the route contains a ferry, although it
                 // was requested to avoid ferries in RouteOptions.AvoidanceOptions.
-                Log.d("RouteViolations for section " + sectionNr,
+                Log.d("RouteViolations", "Section " + sectionNr + ": " +
                         "This route contains the following warning: " + sectionNotice.code);
 
                 // Get violated truck vehicle restrictions.
@@ -742,46 +765,46 @@ public class TruckGuidanceExample {
                     }
                     // The provided TruckSpecifications or TruckOptions are violated by the below values.
                     if (details.maxGrossWeightInKilograms != null) {
-                        Log.d("ViolatedRestriction for section " + sectionNr,
+                        Log.d("ViolatedRestriction", "Section " + sectionNr + ": " +
                                 "Exceeded maxGrossWeightInKilograms: " + details.maxGrossWeightInKilograms);
                     }
                     if (details.maxWeightPerAxleInKilograms != null) {
-                        Log.d("ViolatedRestriction for section " + sectionNr,
+                        Log.d("ViolatedRestriction", "Section " + sectionNr + ": " +
                                 "Exceeded maxWeightPerAxleInKilograms: " + details.maxWeightPerAxleInKilograms);
                     }
                     if (details.maxHeightInCentimeters != null) {
-                        Log.d("ViolatedRestriction for section " + sectionNr,
+                        Log.d("ViolatedRestriction", "Section " + sectionNr + ": " +
                                 "Exceeded maxHeightInCentimeters: " + details.maxHeightInCentimeters);
                     }
                     if (details.maxWidthInCentimeters != null) {
-                        Log.d("ViolatedRestriction for section " + sectionNr,
+                        Log.d("ViolatedRestriction", "Section " + sectionNr + ": " +
                                 "Exceeded maxWidthInCentimeters: " + details.maxWidthInCentimeters);
                     }
                     if (details.maxLengthInCentimeters != null) {
-                        Log.d("ViolatedRestriction for section " + sectionNr,
+                        Log.d("ViolatedRestriction", "Section " + sectionNr + ": " +
                                 "Exceeded maxLengthInCentimeters: " + details.maxLengthInCentimeters);
                     }
                     if (details.forbiddenAxleCount != null) {
-                        Log.d("ViolatedRestriction for section " + sectionNr,
+                        Log.d("ViolatedRestriction", "Section " + sectionNr + ": " +
                                 "Inside of forbiddenAxleCount range: " + details.forbiddenAxleCount.min
                                         + " - " + details.forbiddenAxleCount.max);
                     }
                     if (details.forbiddenTrailerCount != null) {
-                        Log.d("ViolatedRestriction for section " + sectionNr,
+                        Log.d("ViolatedRestriction", "Section " + sectionNr + ": " +
                                 "Inside of forbiddenTrailerCount range: " + details.forbiddenTrailerCount.min
                                         + " - " + details.forbiddenAxleCount.max);
                     }
                     if (details.maxTunnelCategory != null) {
-                        Log.d("ViolatedRestriction for section " + sectionNr,
+                        Log.d("ViolatedRestriction", "Section " + sectionNr + ": " +
                                 "Exceeded maxTunnelCategory: " + details.maxTunnelCategory.name());
                     }
                     if (details.forbiddenTruckType != null) {
-                        Log.d("ViolatedRestriction for section " + sectionNr,
-                                "A forbiddenTruckType is required: " + details.forbiddenTruckType.name());
+                        Log.d("ViolatedRestriction", "Section " + sectionNr + ": " +
+                                "ForbiddenTruckType is required: " + details.forbiddenTruckType.name());
                     }
 
                     for (HazardousMaterial hazardousMaterial : details.forbiddenHazardousGoods) {
-                        Log.d("ViolatedRestriction for section " + sectionNr,
+                        Log.d("ViolatedRestriction", "Section " + sectionNr + ": " +
                                 "Forbidden hazardousMaterial carried: " + hazardousMaterial.name());
                     }
                 }
@@ -885,7 +908,7 @@ public class TruckGuidanceExample {
     }
 
     private void animateToRoute(Route route) {
-        // We want to show the route fitting in the map view with an additional padding of 50 pixels
+        // We want to show the route fitting in the map view with an additional padding of 50 pixels.
         Point2D origin = new Point2D(50, 50);
         Size2D sizeInPixels = new Size2D(mapView.getWidth() - 100, mapView.getHeight() - 100);
         Rectangle2D mapViewport = new Rectangle2D(origin, sizeInPixels);

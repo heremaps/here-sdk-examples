@@ -198,6 +198,10 @@ public class MainActivity extends AppCompatActivity {
                 topmostCartoPOI.coordinates.longitude + ". " +
                 "See log for more place details.");
 
+        // Now you can use the SearchEngine (via PickedPlace) or the OfflineSearchEngine
+        // (via PickedPlace or offlineSearchId) to retrieve the Place object containing more details.
+        // Below we use the offlineSearchId. Alternatively, you can use the
+        // PickMapContentResult as data to create a PickedPlace object.
         fetchCartoPOIDetails(topmostCartoPOI.offlineSearchId);
     }
 
@@ -275,7 +279,7 @@ public class MainActivity extends AppCompatActivity {
         mapView.onSaveInstanceState(outState);
         super.onSaveInstanceState(outState);
     }
-    
+
     private void disposeHERESDK() {
         // Free HERE SDK resources before the application shuts down.
         // Usually, this should be called only on application termination.

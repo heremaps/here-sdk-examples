@@ -58,7 +58,7 @@ final class ViewController: UIViewController, UICallback {
         }
 
         // Start the example.
-        truckGuidance = TruckGuidanceExample(mapView: mapView)
+        truckGuidance = TruckGuidanceExample(viewController: self, mapView: mapView)
         setupUIComponents()
     }
     
