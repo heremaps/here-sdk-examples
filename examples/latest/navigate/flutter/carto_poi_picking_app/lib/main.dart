@@ -143,6 +143,10 @@ class _MyAppState extends State<MyApp> {
     var lon = topmostCartoPOI.coordinates.longitude;
     _showDialog("Carto POI picked", "Name: $name. Location: $lat, $lon. See log for more place details.");
 
+    // Now you can use the SearchEngine (via PickedPlace) or the OfflineSearchEngine
+    // (via PickedPlace or offlineSearchId) to retrieve the Place object containing more details.
+    // Below we use the offlineSearchId. Alternatively, you can use the
+    // PickMapContentResult as data to create a PickedPlace object.
     _fetchCartoPOIDetails(topmostCartoPOI.offlineSearchId);
   }
 

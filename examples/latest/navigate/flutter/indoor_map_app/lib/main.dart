@@ -20,6 +20,7 @@
 import 'package:flutter/material.dart';
 import 'package:here_sdk/core.errors.dart';
 import 'package:indoor_map_app/geometry_info.dart';
+import 'package:indoor_map_app/settings_page.dart';
 import 'package:indoor_map_app/venue_engine_widget.dart';
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/core.engine.dart';
@@ -60,6 +61,7 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => MainPage(),
+        '/settings': (context) => SettingsPage(),
       },
     );
   }
@@ -181,6 +183,18 @@ class _MainPageState extends State<MainPage> {
                 },
               ),
             ),
+            Container(
+              margin: EdgeInsets.all(4),
+              width: kMinInteractiveDimension,
+              child: TextButton(
+                style: TextButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.zero
+                ),
+                child: Icon(Icons.settings, color: Colors.black, size: kMinInteractiveDimension),
+                onPressed: () => Navigator.pushNamed(context, '/settings'),
+              ),
+            )
           ],
         ),
         Expanded(

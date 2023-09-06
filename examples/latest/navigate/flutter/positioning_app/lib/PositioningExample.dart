@@ -225,18 +225,6 @@ class PositioningExample extends State<MyApp>
   }
 
   void _onMapCreated(HereMapController hereMapController) {
-    try {
-      _locationEngine = LocationEngine();
-    } on InstantiationException {
-      throw ("Initialization of LocationEngine failed.");
-    }
-
-    try {
-      _consentEngine = ConsentEngine();
-    } on InstantiationException {
-      throw ("Initialization of ConsentEngine failed.");
-    }
-
     _hereMapController = hereMapController;
     hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) async {
       if (error == null) {
@@ -247,6 +235,18 @@ class PositioningExample extends State<MyApp>
           openAppSettings();
           SystemNavigator.pop();
           return;
+        }
+
+        try {
+          _locationEngine = LocationEngine();
+        } on InstantiationException {
+          throw ("Initialization of LocationEngine failed.");
+        }
+
+        try {
+          _consentEngine = ConsentEngine();
+        } on InstantiationException {
+          throw ("Initialization of ConsentEngine failed.");
         }
 
         // Once permissions are granted, we request the user's consent decision which is required for HERE Positioning.

@@ -27,7 +27,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 
-import com.here.sdk.camera.PermissionsRequestor.ResultListener;
 import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.core.engine.SDKOptions;
 import com.here.sdk.core.errors.InstantiationErrorException;
@@ -74,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void handleAndroidPermissions() {
         permissionsRequestor = new PermissionsRequestor(this);
-        permissionsRequestor.request(new ResultListener(){
+        permissionsRequestor.request(new PermissionsRequestor.ResultListener(){
 
             @Override
             public void permissionsGranted() {
