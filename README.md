@@ -91,11 +91,13 @@ Above you can find the example app links for the _latest_ HERE SDK version. If y
 2. To run the app, you need to add your HERE SDK credentials to the `Info.plist` file.
 
 ### Get Started for Flutter
-1. Unzip the HERE SDK for Flutter plugin to the `plugins` folder that can be found inside the example app project. Renname the folder to 'here_sdk': hello_map/plugins/here_sdk
-2. Set your HERE SDK credentials to
+1. Unzip the downloaded HERE SDK for Flutter _package_. This folder contains various files including documentation assets.
+2. Inside you will also find a TAR file that contains the HERE SDK for Flutter _plugin_. It contains the iOS and Android native frameworks.
+3. Now unzip the TAR file and rename the folder to 'here_sdk' and place it to the `plugins` folder inside the example app's directory. The folder structure should look like this: `hello_map/plugins/here_sdk`.
+4. Set your HERE SDK credentials to
   - `hello_map/android/app/src/main/AndroidManifest.xml`
   - `hello_map/ios/Runner/Info.plist`
-3. Start an Android emulator or an iOS simulator and execute `flutter run` from the app's directory - or run the app from within your IDE.
+5. Start an Android emulator or an iOS simulator and execute `flutter run` from the app's directory - or run the app from within your IDE.
 
 ## Get in Touch
 - If you have more questions, please check [stackoverflow.com/questions/tagged/here-api](http://stackoverflow.com/questions/tagged/here-api).
