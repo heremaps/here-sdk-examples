@@ -21,6 +21,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:here_sdk/core.dart';
+import 'package:here_sdk/gestures.dart';
 import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/routing.dart' as HERE;
 import 'package:navigation_app/RouteCalculator.dart';
@@ -34,25 +35,64 @@ class AppLogic {
   final NavigationExample _navigationExample;
   final RouteCalculator _routeCalculator;
   final ValueChanged<String> _updateMessageState;
+  final Function _showDialogCallback;
+  final List<MapMarker> _mapMarkerList = [];
+  final List<MapPolyline> _mapPolylines = [];
 
-  AppLogic(HereMapController hereMapController, ValueChanged<String> updateMessageState)
+  HERE.Waypoint? _startWaypoint;
+  HERE.Waypoint? _destinationWaypoint;
+  bool _setLongPressDestination = false;
+
+  AppLogic(HereMapController hereMapController, ValueChanged<String> updateMessageState, Function showDialogCallback)
       : _hereMapController = hereMapController,
         _updateMessageState = updateMessageState,
+        _showDialogCallback = showDialogCallback,
         _navigationExample = NavigationExample(hereMapController, updateMessageState),
-        _routeCalculator = RouteCalculator();
+        _routeCalculator = RouteCalculator() {
+    _setLongPressGestureHandler();
+    _updateMessageState("Long press to set start/destination or use random ones.");
+  }
 
+  _setLongPressGestureHandler() {
+    _hereMapController.gestures.longPressListener = LongPressListener((gestureState, touchPoint) {
+      GeoCoordinates? geoCoordinates = _hereMapController.viewToGeoCoordinates(touchPoint);
+      if (geoCoordinates == null) {
+        return;
+      }
+
+      if (gestureState == GestureState.begin) {
+        if (_setLongPressDestination) {
+          _destinationWaypoint = HERE.Waypoint(geoCoordinates);
+          _addCircleMapMarker(_destinationWaypoint!.coordinates, "assets/green_dot.png");
+          _updateMessageState("New long press destination set.");
+        } else {
+          _startWaypoint = HERE.Waypoint(geoCoordinates);
+          _addCircleMapMarker(_startWaypoint!.coordinates, "assets/green_dot.png");
+          _updateMessageState("New long press starting point set.");
+        }
+        _setLongPressDestination = !_setLongPressDestination;
+      }
+    });
+  }
+
+  // Calculate a route and start navigation using a location simulator.
+  // Start is map center and destination location is set random within viewport,
+  // unless a destination is set via long press.
   // Shows navigation simulation along a route.
   void startNavigationSimulation() {
     // Once route is calculated navigation is started.
     bool isSimulated = true;
-    _calculateRouteFromCurrentLocation(isSimulated);
+    _calculateRoute(isSimulated);
   }
 
+  // Calculate a route and start navigation using locations from device.
+  // Start is current location and destination is set random within viewport,
+  // unless a destination is set via long press.
   // Shows navigation with real location data.
   void startNavigation() {
     // Once route is calculated navigation is started.
     bool isSimulated = false;
-    _calculateRouteFromCurrentLocation(isSimulated);
+    _calculateRoute(isSimulated);
   }
 
   void setTracking(bool isTracking) {
@@ -61,45 +101,65 @@ class AppLogic {
 
   void stopNavigation() {
     _navigationExample.stopNavigation();
+    _clearMap();
   }
 
   void detach() {
     _navigationExample.detach();
   }
 
-  Future<void> _calculateRouteFromCurrentLocation(bool isSimulated) async {
+  Future<void> _calculateRoute(bool isSimulated) async {
+    _clearMap();
     var currentLocation = _navigationExample.getLastKnownLocation();
     if (currentLocation == null) {
       _updateMessageState("Error: No current location found.");
       return;
     }
 
-    double distanceToEarthInMeters = 10000;
-    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
-    _hereMapController.camera.lookAtPointWithMeasure(
-      currentLocation.coordinates,
-      mapMeasureZoom,
-    );
+    if (!_determineRouteWaypoints(isSimulated)) {
+      return;
+    }
 
-    var startWaypoint = HERE.Waypoint.withDefaults(currentLocation.coordinates);
-
-    // If a driver is moving, the bearing value can help to improve the route calculation.
-    startWaypoint.headingInDegrees = currentLocation.bearingInDegrees;
-
-    var destinationWaypoint = HERE.Waypoint.withDefaults(_createRandomGeoCoordinatesAroundMapCenter());
-
-    _routeCalculator.calculateCarRoute(startWaypoint, destinationWaypoint,
+    _routeCalculator.calculateCarRoute(_startWaypoint!, _destinationWaypoint!,
         (HERE.RoutingError? routingError, List<HERE.Route>? routeList) async {
       if (routingError == null) {
         // When error is null, it is guaranteed that the routeList is not empty.
         HERE.Route _calculatedRoute = routeList!.first;
         _showRouteOnMap(_calculatedRoute);
-        _startNavigationOnRoute(isSimulated, _calculatedRoute);
+        _showRouteDetails(_calculatedRoute, isSimulated);
       } else {
         final error = routingError.toString();
         _updateMessageState("Error while calculating a route: $error");
       }
     });
+  }
+
+  void _showRouteDetails(HERE.Route route, bool isSimulated) {
+    var estimatedTravelTimeInSeconds = route.duration.inSeconds;
+    int lengthInMeters = route.lengthInMeters;
+
+    String routeDetails =
+        "Travel Time: " + _formatTime(estimatedTravelTimeInSeconds) + ", Length: " + _formatLength(lengthInMeters);
+
+    _showDialogCallback("Route Details", routeDetails);
+    _startNavigationOnRoute(isSimulated, route);
+  }
+
+  String _formatTime(num sec) {
+    int hours = (sec ~/ 3600);
+    int minutes = ((sec % 3600) ~/ 60);
+    String formattedTime = '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}';
+
+    return formattedTime;
+  }
+
+  String _formatLength(int meters) {
+    int kilometers = (meters ~/ 1000);
+    int remainingMeters = (meters % 1000);
+    String formattedDistance =
+        '${kilometers.toString().padLeft(2, '0')}.${remainingMeters.toString().padLeft(2, '0')} km';
+
+    return formattedDistance;
   }
 
   void _startNavigationOnRoute(bool isSimulated, HERE.Route route) {
@@ -131,6 +191,69 @@ class AppLogic {
 
     _calculatedRouteMapPolyline = routeMapPolyline;
     _hereMapController.mapScene.addMapPolyline(_calculatedRouteMapPolyline!);
+  }
+
+  bool _determineRouteWaypoints(bool isSimulated) {
+    // When using real GPS locations, we always start from the current location of user.
+    if (!isSimulated) {
+      Location? location = _navigationExample.getLastKnownLocation();
+      if (location == null) {
+        _showDialogCallback("Error", "No GPS location found.");
+        return false;
+      }
+
+      _startWaypoint = HERE.Waypoint(location!.coordinates);
+      // If a driver is moving, the bearing value can help to improve the route calculation.
+      _startWaypoint!.headingInDegrees = location!.bearingInDegrees;
+      _hereMapController.camera.lookAtPoint(location!.coordinates);
+    } 
+
+    if (_startWaypoint == null) {
+      _startWaypoint = HERE.Waypoint(_createRandomGeoCoordinatesAroundMapCenter());
+    }
+
+    if (_destinationWaypoint == null) {
+      _destinationWaypoint = HERE.Waypoint(_createRandomGeoCoordinatesAroundMapCenter());
+    }
+
+    return true;
+  }
+
+  void _clearMap() {
+    _clearWaypointMapMarker();
+    _clearRoute();
+
+    _navigationExample.stopNavigation();
+  }
+
+  void _clearWaypointMapMarker() {
+    for (MapMarker mapMarker in _mapMarkerList) {
+      _hereMapController.mapScene.removeMapMarker(mapMarker);
+    }
+    _mapMarkerList.clear();
+  }
+
+  void _clearRoute() {
+    for (MapPolyline mapPolyline in _mapPolylines) {
+      _hereMapController.mapScene.removeMapPolyline(mapPolyline);
+    }
+    _mapPolylines.clear();
+
+    if (_calculatedRouteMapPolyline != null) {
+      _hereMapController.mapScene.removeMapPolyline(_calculatedRouteMapPolyline!);
+    }
+  }
+
+  void _addCircleMapMarker(GeoCoordinates geoCoordinates, String imageName) {
+    // For this app, we only add images of size 60x60 pixels.
+    int imageWidth = 60;
+    int imageHeight = 60;
+    // Note that you can reuse the same mapImage instance for other MapMarker instances
+    // to save resources.
+    MapImage mapImage = MapImage.withFilePathAndWidthAndHeight(imageName, imageWidth, imageHeight);
+    MapMarker mapMarker = MapMarker(geoCoordinates, mapImage);
+    _hereMapController.mapScene.addMapMarker(mapMarker);
+    _mapMarkerList.add(mapMarker);
   }
 
   GeoCoordinates _createRandomGeoCoordinatesAroundMapCenter() {

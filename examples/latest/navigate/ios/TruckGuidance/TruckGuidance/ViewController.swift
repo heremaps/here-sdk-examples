@@ -59,7 +59,10 @@ final class ViewController: UIViewController, UICallback {
 
         // Start the example.
         truckGuidance = TruckGuidanceExample(viewController: self, mapView: mapView)
+        truckGuidance.setUICallback(callback: self)
         setupUIComponents()
+        
+        showSpeedViews()
     }
     
     func setupUIComponents() {
@@ -67,35 +70,35 @@ final class ViewController: UIViewController, UICallback {
         // Here we position the panel below the second button row.
         // For this example, as parent view we use the map view.
         let margin: CGFloat = 8
-        let panelWidth = mapView!.bounds.width - margin * 2
-        let panelHeight: CGFloat = 80
-        let xPosition: CGFloat = margin
-        let yPosition: CGFloat = 46 + 30 + margin
+        let hostViewHeight = mapView!.bounds.height
         
         // A view to show the current truck speed limit during guidance or tracking.
-        truckSpeedLimitView.frame = CGRect(x: xPosition, y: yPosition,
-                                    width: panelWidth, height: panelHeight)
+        truckSpeedLimitView.x = margin
+        truckSpeedLimitView.y = hostViewHeight - truckSpeedLimitView.h - margin
+        truckSpeedLimitView.frame = CGRect(x: truckSpeedLimitView.x, y: truckSpeedLimitView.y,
+                                           width: truckSpeedLimitView.w, height: truckSpeedLimitView.h)
         truckSpeedLimitView.setNeedsDisplay()
-        truckSpeedLimitView.setLabel(label: "Truck")
-        truckSpeedLimitView.setSpeedLimit(speedLimit: "n/a")
-        
+        truckSpeedLimitView.labelText = "Truck"
+
         // A view to show the current car speed limit during guidance or tracking.
-        carSpeedLimitView.frame = CGRect(x: xPosition, y: yPosition,
-                                    width: panelWidth, height: panelHeight)
+        carSpeedLimitView.x = margin + truckSpeedLimitView.w + margin
+        carSpeedLimitView.y = hostViewHeight - carSpeedLimitView.h - margin
+        carSpeedLimitView.frame = CGRect(x: carSpeedLimitView.x, y: carSpeedLimitView.y,
+                                         width: carSpeedLimitView.w, height: carSpeedLimitView.h)
         carSpeedLimitView.setNeedsDisplay()
-        carSpeedLimitView.setLabel(label: "Car")
-        carSpeedLimitView.setSpeedLimit(speedLimit: "n/a")
+        carSpeedLimitView.labelText = "Car"
         
         // Another view to show the current driving speed.
-        drivingSpeedView.frame = CGRect(x: xPosition, y: yPosition,
-                                    width: panelWidth, height: panelHeight)
+        drivingSpeedView.x = margin + truckSpeedLimitView.w + margin + carSpeedLimitView.w + margin
+        drivingSpeedView.y = hostViewHeight - drivingSpeedView.h - margin
+        drivingSpeedView.frame = CGRect(x: drivingSpeedView.x, y: drivingSpeedView.y,
+                                        width: drivingSpeedView.w, height: drivingSpeedView.h)
         drivingSpeedView.setNeedsDisplay()
         drivingSpeedView.circleColor = UIColor.white
-        drivingSpeedView.setSpeedLimit(speedLimit: "n/a")
-        
+
         // A view to show TruckRestrictionWarnings.
-        truckRestrictionView.frame = CGRect(x: xPosition, y: yPosition,
-                                    width: panelWidth, height: panelHeight)
+        truckRestrictionView.frame = CGRect(x: truckRestrictionView.x, y: truckRestrictionView.y,
+                                            width: truckRestrictionView.w, height: truckRestrictionView.h)
         truckRestrictionView.setNeedsDisplay()
     }
     
@@ -144,17 +147,17 @@ final class ViewController: UIViewController, UICallback {
     
     // Confrom to UICallback protocol.
     func onTruckSpeedLimit(speedLimit: String) {
-        truckSpeedLimitView.setSpeedLimit(speedLimit: speedLimit)
+        truckSpeedLimitView.speedText = speedLimit
     }
     
     // Confrom to UICallback protocol.
     func onCarSpeedLimit(speedLimit: String) {
-        carSpeedLimitView.setSpeedLimit(speedLimit: speedLimit)
+        carSpeedLimitView.speedText = speedLimit
     }
     
     // Confrom to UICallback protocol.
     func onDrivingSpeed(drivingSpeed: String) {
-        drivingSpeedView.setSpeedLimit(speedLimit: drivingSpeed)
+        drivingSpeedView.speedText = drivingSpeed
     }
     
     // Confrom to UICallback protocol.

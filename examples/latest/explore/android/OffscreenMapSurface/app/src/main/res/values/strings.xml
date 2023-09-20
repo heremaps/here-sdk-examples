@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Offscreen Map Example</string>
+    <string name="redraw">Redraw</string>
+</resources>

@@ -17,7 +17,7 @@
  * License-Filename: LICENSE
  */
 
-package com.here.hellomap;
+package com.here.unittesting;
 
 import android.Manifest;
 import android.app.Activity;

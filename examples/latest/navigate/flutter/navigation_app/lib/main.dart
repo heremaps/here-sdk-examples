@@ -158,7 +158,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
         // 3. User has granted required permissions and made a consent decision.
         _updateMessageState("MapView loaded");
-        _appLogic = AppLogic(hereMapController, _updateMessageState);
+        _appLogic = AppLogic(hereMapController, _updateMessageState, _showDialog);
         _updateTrackingState();
       } else {
         print("Map scene not loaded. MapError: " + error.toString());
@@ -218,7 +218,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       _trackingState = _isTracking ? _trackingOn : _trackingOff;
     });
 
-    _appLogic.setTracking(_isTracking);
+    if (_appLogic != null) {
+      _appLogic.setTracking(_isTracking);
+    }
   }
 
   // Update the message text state and show selected log messages.
@@ -230,11 +232,15 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   void _startNavigationSimulationButtonClicked() {
-    _appLogic.startNavigationSimulation();
+    if (_appLogic != null) {
+      _appLogic.startNavigationSimulation();
+    }
   }
 
   void _startNavigationButtonClicked() {
-    _appLogic.startNavigation();
+    if (_appLogic != null) {
+      _appLogic.startNavigation();
+    }
   }
 
   void toggleTrackingButtonClicked() {
@@ -243,7 +249,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   void _stopNavigationButtonClicked() {
-    _appLogic.stopNavigation();
+    if (_appLogic != null) {
+      _appLogic.stopNavigation();
+    }
   }
 
   @override
@@ -265,7 +273,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.detached) {
+    if (state == AppLifecycleState.detached && _appLogic != null) {
       _appLogic.detach();
     }
   }
