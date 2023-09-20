@@ -19,9 +19,17 @@
 
 import UIKit
 
+// A simple view to show the next TruckRestrictionWarning event.
 class TruckRestrictionView: UIView {
     
+    // The dimensions of the rectangle that holds all content.
+    // (xy set by the hosting view.)
+    var x: CGFloat = 0
+    var y: CGFloat = 0
+    let w: CGFloat = 180
+    let h: CGFloat = 60
+    
     func onTruckRestrictionWarning(description: String) {
-        
+        // Not implemented yet.
     }
 }

@@ -43,6 +43,8 @@ class TruckGuidanceExample: TapDelegate,
     private var changeDestination = true
     private let visualNavigator: VisualNavigator
     private let navigator: Navigator
+    private var visualNavigatorDelegate: VisualNavigatorSpeedLimitDelegate?
+    private var navigatorDelegate: NavigatorSpeedLimitDelegate?
     private var activeTruckRestrictionWarnings: [String] = []
     private let herePositioningSimulator: HEREPositioningSimulator
     private var simulationSpeedFactor: Double = 1
@@ -51,7 +53,7 @@ class TruckGuidanceExample: TapDelegate,
     private var isTracking = false
 
     // Reference to the UICallback delegate.
-    weak var uiCallback: UICallback?
+    private weak var uiCallback: UICallback?
     
     init(viewController: UIViewController, mapView: MapView) {
         self.viewController = viewController
@@ -265,13 +267,29 @@ class TruckGuidanceExample: TapDelegate,
         }
     }
     
+    private func setupListeners() {
+        // Set the SpeedLimitDelegate for Navigator (to receive car speed limits)
+        // and VisualNavigator (to receive truck Speed Limits).
+        visualNavigatorDelegate = VisualNavigatorSpeedLimitDelegate(self)
+        navigatorDelegate = NavigatorSpeedLimitDelegate(self)
+        visualNavigator.speedLimitDelegate = visualNavigatorDelegate
+        navigator.speedLimitDelegate = navigatorDelegate
+
+        visualNavigator.navigableLocationDelegate = self
+        visualNavigator.truckRestrictionsWarningDelegate = self
+        visualNavigator.environmentalZoneWarningListenerDelegate = self
+
+        // For more warners and events during guidance, please check the Navigation example app, available on GitHub.
+    }
+    
     // Receive speed limits for trucks.
     class VisualNavigatorSpeedLimitDelegate: SpeedLimitDelegate {
         private let truckGuidanceExample: TruckGuidanceExample
         init(_ truckGuidanceExample: TruckGuidanceExample) {
             self.truckGuidanceExample = truckGuidanceExample
         }
-        
+         
+        // Conform to SpeedLimitDelegate protocol.
         func onSpeedLimitUpdated(_ speedLimit: heresdk.SpeedLimit) {
             // For simplicity, we use here the effective legal speed limit. More differentiated speed values,
             // for example, due to weather conditions or school zones are also available.
@@ -293,7 +311,7 @@ class TruckGuidanceExample: TapDelegate,
         }
         
     }
-
+   
     // A headless navigator delegate to receive car speed limits based on the truck route navigated by VisualNavigator.
     class NavigatorSpeedLimitDelegate: SpeedLimitDelegate {
         private let truckGuidanceExample: TruckGuidanceExample
@@ -301,6 +319,7 @@ class TruckGuidanceExample: TapDelegate,
             self.truckGuidanceExample = truckGuidanceExample
         }
         
+        // Conform to SpeedLimitDelegate protocol.
         func onSpeedLimitUpdated(_ speedLimit: heresdk.SpeedLimit) {
             if let currentSpeedLimit = speedLimit.effectiveSpeedLimitInMetersPerSecond() {
                 if currentSpeedLimit == 0 {
@@ -414,22 +433,7 @@ class TruckGuidanceExample: TapDelegate,
             print("environmentalZoneWarning: websiteUrl: \(websiteUrl ?? "N/A")")
         }
     }
-    
-    private func setupListeners() {
-        // Set the SpeedLimitDelegate for Navigator (to receive car speed limits)
-        // and VisualNavigator (to receive truck Speed Limits).
-        let visualNavigatorDelegate = VisualNavigatorSpeedLimitDelegate(self)
-        let navigatorDelegate = NavigatorSpeedLimitDelegate(self)
-        visualNavigator.speedLimitDelegate = visualNavigatorDelegate
-        navigator.speedLimitDelegate = navigatorDelegate
-
-        visualNavigator.navigableLocationDelegate = self
-        visualNavigator.truckRestrictionsWarningDelegate = self
-        visualNavigator.environmentalZoneWarningListenerDelegate = self
-
-        // For more warners and events during guidance, please check the Navigation example app, available on GitHub.
-    }
-    
+        
     private func handleWeightTruckWarning(weightRestriction: WeightRestriction, distanceType: DistanceType) {
         let type = weightRestriction.type
         let value = weightRestriction.valueInKilograms
