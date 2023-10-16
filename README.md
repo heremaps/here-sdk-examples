@@ -57,7 +57,7 @@ For an overview of the existing features, please check the _Developer Guide_ for
 - **Rerouting**: Shows how the HERE SDK can be used to handle rerouting during guidance. Exclusively available for the _Navigate Edition_ (Android and iOS only).
 - **Positioning**: Shows how to integrate HERE Positioning. Exclusively available for the _Navigate Edition_.
 - **PositioningWithBackgroundUpdates**: Shows how to integrate HERE Positioning with background location updates on Android using a foreground service. Exclusively available for the _Navigate Edition_.
-- **HikingDiary**: Shows how to record GPX traces with HERE Positioning. Exclusively available for the _Navigate Edition_ (Android and iOS only).
+- **HikingDiary**: Shows how to record GPX traces with HERE Positioning. Exclusively available for the _Navigate Edition_.
 - **Traffic**: Shows how to search for real-time traffic and how to visualize it on the map.
 - **TruckGuidance**: Shows how the HERE SDK can be used to calculate routes specific for trucks. In addition, it shows many more truck-related features. Exclusively available for the _Navigate Edition_ (Android only).
 - **StandAloneEngine**: Shows how to use an engine without a map view.
