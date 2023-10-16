@@ -109,15 +109,13 @@ class App : LongPressDelegate {
     }
 
     private func determineRouteWaypoints(isSimulated: Bool) -> Bool {
-        if !isSimulated && navigationExample.getLastKnownLocation() == nil {
-            showDialog(title: "Error", message: "No location found.")
-            return false
-        }
-
-        if isSimulated {
-            startingWaypoint = Waypoint(coordinates: getMapViewCenter())
-        } else {
-            let location = navigationExample.getLastKnownLocation()!
+        // When using real GPS locations, we always start from the current location of user.
+        if !isSimulated {
+            guard let location = navigationExample.getLastKnownLocation() else {
+                showDialog(title: "Error", message: "No location found.")
+                return false
+            }
+            
             startingWaypoint = Waypoint(coordinates: location.coordinates)
 
             // If a driver is moving, the bearing value can help to improve the route calculation.
@@ -126,13 +124,13 @@ class App : LongPressDelegate {
             mapView.camera.lookAt(point: location.coordinates)
         }
 
-        if !isLongpressDestination {
-            destinationWaypoint = Waypoint(coordinates: createRandomGeoCoordinatesAroundMapCenter())
+        if (startingWaypoint == nil) {
+            startingWaypoint = Waypoint(coordinates: createRandomGeoCoordinatesAroundMapCenter())
         }
 
-        // Add circles to indicate start and destination of route.
-        addCircleMapMarker(geoCoordinates: startingWaypoint!.coordinates, imageName: "green_dot.png")
-        addCircleMapMarker(geoCoordinates: destinationWaypoint!.coordinates, imageName: "green_dot.png")
+        if (destinationWaypoint == nil) {
+            destinationWaypoint = Waypoint(coordinates: createRandomGeoCoordinatesAroundMapCenter())
+        }
 
         return true
     }
@@ -210,12 +208,16 @@ class App : LongPressDelegate {
         }
 
         if state == GestureState.begin {
-            clearWaypointMapMarker()
-            clearRoute()
-            destinationWaypoint = Waypoint(coordinates: geoCoordinates)
-            addCircleMapMarker(geoCoordinates: destinationWaypoint!.coordinates, imageName: "green_dot.png")
-            isLongpressDestination = true
-            showMessage("New long press destination set.")
+            if (isLongpressDestination) {
+                destinationWaypoint = Waypoint(coordinates: geoCoordinates);
+                addCircleMapMarker(geoCoordinates: destinationWaypoint!.coordinates, imageName: "green_dot.png")
+                showMessage("New long press destination set.")
+            } else {
+                startingWaypoint = Waypoint(coordinates: geoCoordinates)
+                addCircleMapMarker(geoCoordinates: startingWaypoint!.coordinates, imageName: "green_dot.png")
+                showMessage("New long press starting point set.")
+            }
+            isLongpressDestination = !isLongpressDestination;
         }
     }
 

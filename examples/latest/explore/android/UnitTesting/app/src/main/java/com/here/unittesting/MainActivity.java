@@ -17,7 +17,7 @@
  * License-Filename: LICENSE
  */
 
-package com.here.hellomap;
+package com.here.unittesting;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -26,7 +26,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 
-import com.here.hellomap.PermissionsRequestor.ResultListener;
+import com.here.unittesting.PermissionsRequestor.ResultListener;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.core.engine.SDKOptions;

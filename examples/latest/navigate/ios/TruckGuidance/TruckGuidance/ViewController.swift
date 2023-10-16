@@ -97,6 +97,8 @@ final class ViewController: UIViewController, UICallback {
         drivingSpeedView.circleColor = UIColor.white
 
         // A view to show TruckRestrictionWarnings.
+        truckRestrictionView.x = margin
+        truckRestrictionView.y = hostViewHeight - truckSpeedLimitView.h - margin - truckRestrictionView.h - margin * 2
         truckRestrictionView.frame = CGRect(x: truckRestrictionView.x, y: truckRestrictionView.y,
                                             width: truckRestrictionView.w, height: truckRestrictionView.h)
         truckRestrictionView.setNeedsDisplay()
@@ -163,7 +165,7 @@ final class ViewController: UIViewController, UICallback {
     // Confrom to UICallback protocol.
     func onTruckRestrictionWarning(description: String) {
         showTruckRestrictionView()
-        truckRestrictionView.onTruckRestrictionWarning(description: description)
+        truckRestrictionView.restrictionDescription = description
     }
     
     // Confrom to UICallback protocol.
