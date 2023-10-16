@@ -92,7 +92,9 @@ public class BackgroundPositioningExample {
         //Update the location indicator's location.
         locationIndicator.updateLocation(myLocation);
         //Update the map viewport to be centered on the location with zoom level.
-        mapView.getCamera().lookAt(myLocation.coordinates, mapMeasureZoom);
+        if (mapView.isValid()) {
+            mapView.getCamera().lookAt(myLocation.coordinates, mapMeasureZoom);
+        }
     }
 
     private final ServiceConnection connection = new ServiceConnection() {

@@ -43,10 +43,9 @@ class NavigationEventHandler {
       : _visualNavigator = visualNavigator,
         _dynamicRoutingEngine = dynamicRoutingEngine,
         _updateMessageState = updateMessageState {
-    _setupListeners();
   }
 
-  void _setupListeners() {
+  void setupListeners() {
     _setupSpeedWarnings();
     _setupVoiceTextMessages();
     _setupRealisticViewWarnings();

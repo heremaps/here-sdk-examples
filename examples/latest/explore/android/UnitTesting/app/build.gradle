@@ -20,7 +20,7 @@ android {
         sourceCompatibility 1.8
         targetCompatibility 1.8
     }
-    namespace 'com.here.hellomap'
+    namespace 'com.here.unittesting'
 }
 
 def getHereSdkArtefactName() {

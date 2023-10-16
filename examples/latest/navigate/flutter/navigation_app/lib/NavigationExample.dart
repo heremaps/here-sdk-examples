@@ -32,6 +32,7 @@ import 'package:here_sdk/trafficawarenavigation.dart';
 
 import 'HEREPositioningProvider.dart';
 import 'HEREPositioningSimulator.dart';
+import 'NavigationEventHandler.dart';
 
 // Shows how to start and stop turn-by-turn navigation along a route.
 class NavigationExample {
@@ -41,6 +42,7 @@ class NavigationExample {
   HEREPositioningProvider _herePositioningProvider;
   late DynamicRoutingEngine _dynamicRoutingEngine;
   final ValueChanged<String> _updateMessageState;
+  late NavigationEventHandler _navigationEventHandler;
   RoutePrefetcher _routePrefetcher;
 
   NavigationExample(HereMapController hereMapController, ValueChanged<String> updateMessageState)
@@ -73,6 +75,10 @@ class NavigationExample {
 
     // An engine to find better routes during guidance.
     _createDynamicRoutingEngine();
+
+    // A class to handle various kinds of guidance events.
+    _navigationEventHandler = NavigationEventHandler(_visualNavigator, _dynamicRoutingEngine, _updateMessageState);
+    _navigationEventHandler.setupListeners();
   }
 
   void prefetchMapData(GeoCoordinates currentGeoCoordinates) {
