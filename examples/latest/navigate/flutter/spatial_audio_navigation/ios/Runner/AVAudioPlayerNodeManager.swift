@@ -38,6 +38,7 @@ public final class AVAudioPlayerNodeManager: NSObject{
     private let monoOutputFormat : AVAudioFormat
     private var locale = Locale(identifier: "en-US")
     private var bufferList = [AVAudioPCMBuffer]()
+    private let preferredAudioFormat: AVAudioCommonFormat
     
     // Notifies when the buffer has been completely buffered and it is ready to be played
     public var bufferCompletionDelegate: BufferCompletionDelegate?
@@ -62,8 +63,15 @@ public final class AVAudioPlayerNodeManager: NSObject{
     }
     
     init?(_: Void) {
+        /// Since iOS 17 AVAudioPCMBuffer supports only the Float32 format.
+        if #available(iOS 17.0, *) {
+            preferredAudioFormat = AVAudioCommonFormat.pcmFormatFloat32
+        } else {
+            preferredAudioFormat = AVAudioCommonFormat.pcmFormatInt16
+        }
+
         // init Mono Converter and outputFormat
-        guard let fromAudioFormat = AVAudioFormat(commonFormat: AVAudioCommonFormat.pcmFormatInt16, sampleRate: SAMPLE_RATE, channels: channels.mono.rawValue, interleaved: true),
+        guard let fromAudioFormat = AVAudioFormat(commonFormat: preferredAudioFormat, sampleRate: SAMPLE_RATE, channels: channels.mono.rawValue, interleaved: true),
             let toAudioFormat = AVAudioFormat(commonFormat: AVAudioCommonFormat.pcmFormatFloat32, sampleRate: SAMPLE_RATE, channels: channels.mono.rawValue, interleaved: false),
             let monoConverter = AVAudioConverter(from: fromAudioFormat, to: toAudioFormat) else {
             print("Error while initializing AVAudioPlayerNodeManager.m_fromAudioFormat")

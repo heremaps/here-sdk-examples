@@ -35,6 +35,7 @@ public final class AVAudioPlayerNodeManager: NSObject{
     private var locale = Locale(identifier: "en-US")
     private var bufferList = [AVAudioPCMBuffer]()
     private var audioCuePanning: SpatialManeuverAudioCuePanning?
+    private let preferredAudioFormat: AVAudioCommonFormat
     
     fileprivate let cd = AudioComponentDescription(
         componentType: kAudioUnitType_Effect,
@@ -58,8 +59,15 @@ public final class AVAudioPlayerNodeManager: NSObject{
     }
     
     init?(_: Void) {
+        /// Since iOS 17 AVAudioPCMBuffer supports only the Float32 format.
+        if #available(iOS 17.0, *) {
+            preferredAudioFormat = AVAudioCommonFormat.pcmFormatFloat32
+        } else {
+            preferredAudioFormat = AVAudioCommonFormat.pcmFormatInt16
+        }
+
         // init Mono Converter and outputFormat
-        guard let fromAudioFormat = AVAudioFormat(commonFormat: AVAudioCommonFormat.pcmFormatInt16, sampleRate: SAMPLE_RATE, channels: channels.mono.rawValue, interleaved: true),
+        guard let fromAudioFormat = AVAudioFormat(commonFormat: preferredAudioFormat, sampleRate: SAMPLE_RATE, channels: channels.mono.rawValue, interleaved: true),
             let toAudioFormat = AVAudioFormat(commonFormat: AVAudioCommonFormat.pcmFormatFloat32, sampleRate: SAMPLE_RATE, channels: channels.mono.rawValue, interleaved: false),
             let monoConverter = AVAudioConverter(from: fromAudioFormat, to: toAudioFormat) else {
             print("Error while initializing AVAudioPlayerNodeManager.m_fromAudioFormat")
@@ -179,9 +187,9 @@ public final class AVAudioPlayerNodeManager: NSObject{
     func startAudioEngineAndPlay(bufferLengthInMs: Double) {
         // Start audio engine
         do {
-            try engine.start()
-            play()
-            startAngularPanning(bufferLengthInMs: bufferLengthInMs)
+                try engine.start()
+                play()
+                startAngularPanning(bufferLengthInMs: bufferLengthInMs)
         } catch let error {
             AudioSessionManager.shared.setAudioSessionState(activated: false)
             print("An error has occurred while starting the engine. \(error.localizedDescription)")
@@ -196,9 +204,9 @@ public final class AVAudioPlayerNodeManager: NSObject{
     
     func startAngularPanning(bufferLengthInMs: Double) {
         var nextCustomPanningData = CustomPanningData()
-        nextCustomPanningData.estimatedAudioCueDuration = bufferLengthInMs
+        var test: Double = 2.62
+        nextCustomPanningData.estimatedAudioCueDuration = test
         print("Next buffer length \(bufferLengthInMs)")
-        
         audioCuePanning?.startPanning(nextCustomPanningData: nextCustomPanningData)
     }
 }
