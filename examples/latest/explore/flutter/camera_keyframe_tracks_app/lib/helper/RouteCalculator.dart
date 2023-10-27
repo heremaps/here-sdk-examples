@@ -56,9 +56,12 @@ class RouteCalculator {
   void _showRouteOnMap(routes.Route route) {
     // Show route as polyline.
     GeoPolyline routeGeoPolyline = route.geometry;
-    double widthInPixels = 20;
-    MapPolyline routeMapPolyline =
-    MapPolyline(routeGeoPolyline, widthInPixels, const Color.fromARGB(160, 0, 144, 138)); // RGBA
+    double widthInPixels = 20.0;
+    Color polylineColor = const Color.fromARGB(160, 0, 144, 138);
+    MapPolyline routeMapPolyline = MapPolyline.withRepresentation(routeGeoPolyline, MapPolylineSolidRepresentation(
+        MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
+        polylineColor,
+        LineCap.round));
     _hereMapController.mapScene.addMapPolyline(routeMapPolyline);
   }
 }

@@ -811,18 +811,26 @@ class TruckGuidanceExample: TapDelegate,
 
     private func showRouteOnMap(route: Route, color: UIColor, widthInPixels: Double) {
         let routeGeoPolyline = route.geometry
-        let routeMapPolyline = MapPolyline(geometry: routeGeoPolyline,
-                                           widthInPixels: widthInPixels,
-                                           color: color)
-        
+        do {
+            let routeMapPolyline =  try MapPolyline(geometry: routeGeoPolyline,
+                                                    representation: MapPolyline.SolidRepresentation(
+                                                        lineWidth: MapMeasureDependentRenderSize(
+                                                            sizeUnit: RenderSize.Unit.pixels,
+                                                            size: widthInPixels),
+                                                        color: color,
+                                                        capShape: LineCap.round))
+            
+            mapView.mapScene.addMapPolyline(routeMapPolyline)
+            mapPolylines.append(routeMapPolyline)
+        } catch let error {
+            fatalError("Failed to render MapPolyline. Cause: \(error)")
+        }
         
         // Optionally, hide irrelevant icons from the vehicle restriction layer that cross our route.
         // If needed, you can block specific map content categories to customize the map view.
         // For example, to hide vehicle restriction icons, you can uncomment the following line:
         // routeMapPolyline.mapContentCategoriesToBlock = Set([MapContentCategory.vehicleRestrictionIcons])
         
-        mapView.mapScene.addMapPolyline(routeMapPolyline)
-        mapPolylines.append(routeMapPolyline)
         animateToRoute(route)
     }
 

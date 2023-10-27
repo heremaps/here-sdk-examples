@@ -22,6 +22,7 @@ package com.here.hikingdiary;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.GradientDrawable;
+import android.util.Log;
 import android.view.Gravity;
 import android.widget.FrameLayout;
 import android.widget.TextView;
@@ -43,13 +44,17 @@ import com.here.sdk.core.Point2D;
 import com.here.sdk.core.Rectangle2D;
 import com.here.sdk.core.Size2D;
 import com.here.sdk.core.errors.InstantiationErrorException;
+import com.here.sdk.mapview.LineCap;
 import com.here.sdk.mapview.MapCameraAnimation;
 import com.here.sdk.mapview.MapCameraAnimationFactory;
 import com.here.sdk.mapview.MapCameraUpdate;
 import com.here.sdk.mapview.MapCameraUpdateFactory;
 import com.here.sdk.mapview.MapMeasure;
+import com.here.sdk.mapview.MapMeasureDependentRenderSize;
 import com.here.sdk.mapview.MapPolyline;
+import com.here.sdk.mapview.MapPolyline.SolidRepresentation;
 import com.here.sdk.mapview.MapView;
+import com.here.sdk.mapview.RenderSize;
 import com.here.sdk.navigation.GPXTrack;
 import com.here.sdk.navigation.GPXTrackWriter;
 import com.here.time.Duration;
@@ -58,7 +63,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HikingApp {
-
     public HEREBackgroundPositioningServiceProvider hereBackgroundPositioningServiceProvider;
     private MapView mapView;
     private Context context;
@@ -164,11 +168,21 @@ public class HikingApp {
         }
         return length;
     }
+
     private void addMapPolyline(GeoPolyline geoPolyline) {
         clearMap();
-        myPathMapPolyline = new MapPolyline(geoPolyline,
-                20,
-                new Color(0, (float) 0.56, (float) 0.54, (float) 0.63));
+        try {
+            float widthInPixels = 20;
+            Color polylineColor = new Color(0, (float) 0.56, (float) 0.54, (float) 0.63);
+            myPathMapPolyline = new MapPolyline(geoPolyline, new MapPolyline.SolidRepresentation(
+                    new MapMeasureDependentRenderSize(RenderSize.Unit.PIXELS, widthInPixels),
+                    polylineColor,
+                    LineCap.ROUND));
+        } catch (MapPolyline.Representation.InstantiationException e) {
+            Log.e("MapPolyline Representation Exception:", e.error.name());
+        } catch (MapMeasureDependentRenderSize.InstantiationException e) {
+            Log.e("MapMeasureDependentRenderSize Exception:", e.error.name());
+        }
         mapView.getMapScene().addMapPolyline(myPathMapPolyline);
     }
 

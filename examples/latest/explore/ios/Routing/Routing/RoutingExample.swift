@@ -155,14 +155,22 @@ class RoutingExample {
 
         // Show route as polyline.
         let routeGeoPolyline = route.geometry
-        let routeMapPolyline = MapPolyline(geometry: routeGeoPolyline,
-                                           widthInPixels: 20,
-                                           color: UIColor(red: 0,
-                                                          green: 0.56,
-                                                          blue: 0.54,
-                                                          alpha: 0.63))
-        mapView.mapScene.addMapPolyline(routeMapPolyline)
-        mapPolylineList.append(routeMapPolyline)
+        let widthInPixels = 20.0
+        let polylineColor = UIColor(red: 0, green: 0.56, blue: 0.54, alpha: 0.63)
+        do {
+            let routeMapPolyline =  try MapPolyline(geometry: routeGeoPolyline,
+                                                    representation: MapPolyline.SolidRepresentation(
+                                                        lineWidth: MapMeasureDependentRenderSize(
+                                                            sizeUnit: RenderSize.Unit.pixels,
+                                                            size: widthInPixels),
+                                                        color: polylineColor,
+                                                        capShape: LineCap.round))
+            
+            mapView.mapScene.addMapPolyline(routeMapPolyline)
+            mapPolylineList.append(routeMapPolyline)
+        } catch let error {
+            fatalError("Failed to render MapPolyline. Cause: \(error)")
+        }
 
         // Optionally, render traffic on route.
         showTrafficOnRoute(route)
@@ -233,10 +241,10 @@ class RoutingExample {
     // This renders the traffic jam factor on top of the route as multiple MapPolylines per span.
     private func showTrafficOnRoute(_ route: Route) {
         if route.lengthInMeters / 1000 > 5000 {
-          print("Skip showing traffic-on-route for longer routes.");
-          return
+            print("Skip showing traffic-on-route for longer routes.");
+            return
         }
-
+        
         for section in route.sections {
             for span in section.spans {
                 let trafficSpeed = span.trafficSpeed
@@ -244,13 +252,24 @@ class RoutingExample {
                     // Skip rendering low traffic.
                     continue
                 }
-                let trafficSpanMapPolyline = MapPolyline(geometry: span.geometry,
-                                                         widthInPixels: 10,
-                                                         color: lineColor)
-                mapView.mapScene.addMapPolyline(trafficSpanMapPolyline)
-                mapPolylineList.append(trafficSpanMapPolyline)
+                let widthInPixels = 10.0
+                let polylineColor = UIColor(red: 0, green: 0.56, blue: 0.54, alpha: 0.63)
+                do {
+                    let trafficSpanMapPolyline =  try MapPolyline(geometry: span.geometry,
+                                                                  representation: MapPolyline.SolidRepresentation(
+                                                                    lineWidth: MapMeasureDependentRenderSize(
+                                                                        sizeUnit: RenderSize.Unit.pixels,
+                                                                        size: widthInPixels),
+                                                                    color: polylineColor,
+                                                                    capShape: LineCap.round))
+                    
+                    mapView.mapScene.addMapPolyline(trafficSpanMapPolyline)
+                    mapPolylineList.append(trafficSpanMapPolyline)
+                } catch let error {
+                    fatalError("Failed to render MapPolyline. Cause: \(error)")
+                }
+            }
         }
-      }
     }
 
     // Define a traffic color scheme based on the route's jam factor.

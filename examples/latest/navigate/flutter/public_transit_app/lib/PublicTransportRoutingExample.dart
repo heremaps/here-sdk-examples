@@ -135,7 +135,13 @@ class PublicTransportRoutingExample {
     // Show route as polyline.
     GeoPolyline routeGeoPolyline = route.geometry;
     double widthInPixels = 20;
-    MapPolyline routeMapPolyline = MapPolyline(routeGeoPolyline, widthInPixels, Color.fromARGB(160, 0, 144, 138));
+    Color polylineColor = const Color.fromARGB(160, 0, 144, 138);
+    MapPolyline routeMapPolyline = MapPolyline.withRepresentation(
+        routeGeoPolyline,
+        MapPolylineSolidRepresentation(
+            MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
+            polylineColor,
+            LineCap.round));
     _hereMapController.mapScene.addMapPolyline(routeMapPolyline);
     _mapPolylines.add(routeMapPolyline);
   }
@@ -172,13 +178,13 @@ class PublicTransportRoutingExample {
     double tilt = 0;
     // We want to show the route fitting in the map view with an additional padding of 50 pixels.
     Point2D origin = Point2D(50, 50);
-    Size2D sizeInPixels = Size2D(_hereMapController.viewportSize.width - 100, _hereMapController.viewportSize.height - 100);
+    Size2D sizeInPixels =
+        Size2D(_hereMapController.viewportSize.width - 100, _hereMapController.viewportSize.height - 100);
     Rectangle2D mapViewport = Rectangle2D(origin, sizeInPixels);
 
     // Animate to the route within a duration of 3 seconds.
-    MapCameraUpdate update = MapCameraUpdateFactory.lookAtAreaWithGeoOrientationAndViewRectangle(route!.boundingBox,
-        GeoOrientationUpdate(bearing, tilt),
-        mapViewport);
+    MapCameraUpdate update = MapCameraUpdateFactory.lookAtAreaWithGeoOrientationAndViewRectangle(
+        route!.boundingBox, GeoOrientationUpdate(bearing, tilt), mapViewport);
     MapCameraAnimation animation = MapCameraAnimationFactory.createAnimationFromUpdate(
         update, const Duration(milliseconds: 3000), EasingFunction.inCubic);
     _hereMapController.camera.startAnimation(animation);

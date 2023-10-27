@@ -109,8 +109,8 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
       alignment: Alignment.topCenter,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          primary: Colors.lightBlueAccent,
-          onPrimary: Colors.white,
+          foregroundColor: Colors.white, 
+          backgroundColor: Colors.lightBlueAccent,
         ),
         onPressed: () => callbackFunction(),
         child: Text(buttonLabel, style: TextStyle(fontSize: 20)),

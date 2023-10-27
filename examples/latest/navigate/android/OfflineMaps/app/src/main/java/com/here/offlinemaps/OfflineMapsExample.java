@@ -25,10 +25,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.android.material.snackbar.Snackbar;
-import com.here.sdk.BuildConfig;
 import com.here.sdk.core.GeoBox;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.LanguageCode;
+import com.here.sdk.core.engine.SDKBuildInformation;
 import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.maploader.CatalogUpdateInfo;
@@ -495,7 +495,7 @@ public class OfflineMapsExample {
     }
 
     private void logHERESDKVersion() {
-        Log.d("HERE SDK version: ", BuildConfig.VERSION_NAME);
+        Log.d("HERE SDK version: ", SDKBuildInformation.sdkVersion().versionName);
     }
 
     private void logCurrentMapVersion() {

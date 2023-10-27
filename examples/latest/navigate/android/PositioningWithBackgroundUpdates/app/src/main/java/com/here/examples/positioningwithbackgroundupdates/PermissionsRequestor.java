@@ -45,6 +45,7 @@ public class PermissionsRequestor {
     private ResultListener resultListener;
     private final Activity activity;
     private static boolean requestBackgroundLocation = false;
+    private boolean backgroundLocationRequestInProgress = false;
 
     public PermissionsRequestor(Activity activity) {
         this.activity = activity;
@@ -163,9 +164,13 @@ public class PermissionsRequestor {
                 result &= grantResult == PackageManager.PERMISSION_GRANTED;
             }
 
-            if (requestBackgroundLocationAccess()) {
-                // Signal that not all permissions have been granted yet.
-                result = false;
+            if (!backgroundLocationRequestInProgress) {
+                if (requestBackgroundLocationAccess()) {
+                    // Signal that not all permissions have been granted yet.
+                    result = false;
+                }
+            } else {
+                backgroundLocationRequestInProgress = false;
             }
 
             if (result) {
@@ -194,11 +199,39 @@ public class PermissionsRequestor {
                     requestBackgroundLocation = false;
                 }
             });
+            backgroundLocationRequestInProgress = true;
             AlertDialog dialog = builder.create();
             dialog.show();
             return true;
         } else {
             return false;
         }
+    }
+
+    public boolean isBackgroundLocationAccessInProgress() {
+        return backgroundLocationRequestInProgress;
+    }
+
+    public boolean isBackgroundLocationAccessDenied() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            return ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                    == PackageManager.PERMISSION_DENIED;
+        }
+        return false;
+    }
+
+    public boolean isPostNotificationsAccessDenied() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            return ContextCompat.checkSelfPermission(activity, Manifest.permission.POST_NOTIFICATIONS)
+                    == PackageManager.PERMISSION_DENIED;
+        }
+        return false;
+    }
+
+    public boolean isLocationAccessDenied() {
+        return ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_DENIED ||
+                ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_COARSE_LOCATION)
+                        == PackageManager.PERMISSION_DENIED;
     }
 }

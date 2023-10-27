@@ -183,12 +183,11 @@ class AppLogic {
     // Show route as polyline.
     GeoPolyline routeGeoPolyline = route.geometry;
     double widthInPixels = 20;
-    MapPolyline routeMapPolyline = MapPolyline(
-      routeGeoPolyline,
-      widthInPixels,
-      Color.fromARGB(160, 0, 144, 138),
-    );
-
+    Color polylineColor = const Color.fromARGB(160, 0, 144, 138);
+    MapPolyline routeMapPolyline = MapPolyline.withRepresentation(routeGeoPolyline, MapPolylineSolidRepresentation(
+        MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
+        polylineColor,
+        LineCap.round));
     _calculatedRouteMapPolyline = routeMapPolyline;
     _hereMapController.mapScene.addMapPolyline(_calculatedRouteMapPolyline!);
   }

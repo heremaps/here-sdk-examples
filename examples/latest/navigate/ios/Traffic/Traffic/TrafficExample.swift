@@ -141,14 +141,22 @@ class TrafficExample: TapDelegate {
 
     private func addTrafficIncidentsMapPolyline(geoPolyline: GeoPolyline) {
         // Show traffic incident as polyline.
-        let mapPolyline = MapPolyline(geometry: geoPolyline,
-                                      widthInPixels: 20,
-                                      color: UIColor(red: 0,
-                                                     green: 0,
-                                                     blue: 0,
-                                                     alpha: 0.5))
-        mapView.mapScene.addMapPolyline(mapPolyline)
-        mapPolylineList.append(mapPolyline)
+        let widthInPixels = 20.0
+        let polylineColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.5)
+        do {
+            let mapPolyline =  try MapPolyline(geometry: geoPolyline,
+                                               representation: MapPolyline.SolidRepresentation(
+                                                lineWidth: MapMeasureDependentRenderSize(
+                                                    sizeUnit: RenderSize.Unit.pixels,
+                                                    size: widthInPixels),
+                                                color: polylineColor,
+                                                capShape: LineCap.round))
+            
+            mapView.mapScene.addMapPolyline(mapPolyline)
+            mapPolylineList.append(mapPolyline)
+        } catch let error {
+            fatalError("Failed to render MapPolyline. Cause: \(error)")
+        }
     }
 
     private func queryForIncidents(centerCoords: GeoCoordinates) {

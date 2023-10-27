@@ -264,11 +264,22 @@ class ReroutingExample: LongPressDelegate,
     
     private func showRouteOnMap(route: Route, color: UIColor, widthInPixels: Double) {
         let routeGeoPolyline = route.geometry
-        let routeMapPolyline = MapPolyline(geometry: routeGeoPolyline,
-                                           widthInPixels: widthInPixels,
-                                           color: color)
-        mapView.mapScene.addMapPolyline(routeMapPolyline)
-        mapPolylines.append(routeMapPolyline)
+        
+        do {
+            let routeMapPolyline =  try MapPolyline(geometry: routeGeoPolyline,
+                                                    representation: MapPolyline.SolidRepresentation(
+                                                        lineWidth: MapMeasureDependentRenderSize(
+                                                            sizeUnit: RenderSize.Unit.pixels,
+                                                            size: widthInPixels),
+                                                        color: color,
+                                                        capShape: LineCap.round))
+            
+            mapView.mapScene.addMapPolyline(routeMapPolyline)
+            mapPolylines.append(routeMapPolyline)
+        } catch let error {
+            fatalError("Failed to render MapPolyline. Cause: \(error)")
+        }
+        
         animateToRoute(route: route)
     }
     

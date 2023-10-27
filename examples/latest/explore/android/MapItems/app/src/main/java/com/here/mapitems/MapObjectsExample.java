@@ -19,6 +19,8 @@
 
 package com.here.mapitems;
 
+import android.util.Log;
+
 import com.here.sdk.core.Color;
 import com.here.sdk.core.GeoCircle;
 import com.here.sdk.core.GeoCoordinates;
@@ -26,15 +28,18 @@ import com.here.sdk.core.GeoCoordinatesUpdate;
 import com.here.sdk.core.GeoPolygon;
 import com.here.sdk.core.GeoPolyline;
 import com.here.sdk.core.errors.InstantiationErrorException;
+import com.here.sdk.mapview.LineCap;
 import com.here.sdk.mapview.MapArrow;
 import com.here.sdk.mapview.MapCamera;
 import com.here.sdk.mapview.MapCameraAnimation;
 import com.here.sdk.mapview.MapCameraAnimationFactory;
 import com.here.sdk.mapview.MapMeasure;
+import com.here.sdk.mapview.MapMeasureDependentRenderSize;
 import com.here.sdk.mapview.MapPolygon;
 import com.here.sdk.mapview.MapPolyline;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapView;
+import com.here.sdk.mapview.RenderSize;
 import com.here.time.Duration;
 
 import java.util.ArrayList;
@@ -111,8 +116,18 @@ public class MapObjectsExample {
         }
 
         float widthInPixels = 20;
-        Color lineColor = Color.valueOf(0, 0.56f, 0.54f, 0.63f); // RGBA
-        MapPolyline mapPolyline = new MapPolyline(geoPolyline, widthInPixels, lineColor);
+        Color lineColor = new Color(0, (float) 0.56, (float) 0.54, (float) 0.63);
+        MapPolyline mapPolyline = null;
+        try {
+            mapPolyline = new MapPolyline(geoPolyline, new MapPolyline.SolidRepresentation(
+                    new MapMeasureDependentRenderSize(RenderSize.Unit.PIXELS, widthInPixels),
+                    lineColor,
+                    LineCap.ROUND));
+        } catch (MapPolyline.Representation.InstantiationException e) {
+            Log.e("MapPolyline Representation Exception:", e.error.name());
+        } catch (MapMeasureDependentRenderSize.InstantiationException e) {
+            Log.e("MapMeasureDependentRenderSize Exception:", e.error.name());
+        }
 
         return mapPolyline;
     }

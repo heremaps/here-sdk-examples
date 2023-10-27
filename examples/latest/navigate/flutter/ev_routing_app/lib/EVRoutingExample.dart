@@ -339,7 +339,13 @@ class EVRoutingExample {
     // Show route as polyline.
     GeoPolyline routeGeoPolyline = route.geometry;
     double widthInPixels = 20;
-    MapPolyline routeMapPolyline = MapPolyline(routeGeoPolyline, widthInPixels, Color.fromARGB(160, 0, 144, 138));
+    Color polylineColor = const Color.fromARGB(160, 0, 144, 138);
+    MapPolyline routeMapPolyline = MapPolyline.withRepresentation(
+        routeGeoPolyline,
+        MapPolylineSolidRepresentation(
+            MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
+            polylineColor,
+            LineCap.round));
     _hereMapController.mapScene.addMapPolyline(routeMapPolyline);
     _mapPolylines.add(routeMapPolyline);
 
