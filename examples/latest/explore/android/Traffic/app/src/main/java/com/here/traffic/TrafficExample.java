@@ -33,14 +33,17 @@ import com.here.sdk.core.Point2D;
 import com.here.sdk.core.Rectangle2D;
 import com.here.sdk.core.Size2D;
 import com.here.sdk.core.errors.InstantiationErrorException;
+import com.here.sdk.mapview.LineCap;
 import com.here.sdk.mapview.MapCamera;
 import com.here.sdk.mapview.MapFeatureModes;
 import com.here.sdk.mapview.MapFeatures;
 import com.here.sdk.mapview.MapMeasure;
+import com.here.sdk.mapview.MapMeasureDependentRenderSize;
 import com.here.sdk.mapview.MapPolyline;
 import com.here.sdk.mapview.MapView;
 import com.here.sdk.mapview.MapViewBase;
 import com.here.sdk.mapview.PickMapContentResult;
+import com.here.sdk.mapview.RenderSize;
 import com.here.sdk.traffic.TrafficEngine;
 import com.here.sdk.traffic.TrafficIncident;
 import com.here.sdk.traffic.TrafficIncidentLookupCallback;
@@ -182,9 +185,18 @@ public class TrafficExample {
     private void addTrafficIncidentsMapPolyline(GeoPolyline geoPolyline) {
         // Show traffic incident as polyline.
         float widthInPixels = 20;
-        MapPolyline routeMapPolyline = new MapPolyline(geoPolyline,
-                widthInPixels,
-                Color.valueOf(0, 0, 0, 0.5f)); // RGBA
+        Color polylineColor = Color.valueOf(0, 0, 0, 0.5f);
+        MapPolyline routeMapPolyline = null;
+        try {
+            routeMapPolyline = new MapPolyline(geoPolyline, new MapPolyline.SolidRepresentation(
+                    new MapMeasureDependentRenderSize(RenderSize.Unit.PIXELS, widthInPixels),
+                    polylineColor,
+                    LineCap.ROUND));
+        } catch (MapPolyline.Representation.InstantiationException e) {
+            Log.e("MapPolyline Representation Exception:", e.error.name());
+        } catch (MapMeasureDependentRenderSize.InstantiationException e) {
+            Log.e("MapMeasureDependentRenderSize Exception:", e.error.name());
+        }
 
         mapView.getMapScene().addMapPolyline(routeMapPolyline);
         mapPolylines.add(routeMapPolyline);

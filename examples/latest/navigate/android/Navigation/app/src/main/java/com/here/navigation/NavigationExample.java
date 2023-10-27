@@ -98,7 +98,8 @@ public class NavigationExample {
     private void prefetchMapData(GeoCoordinates currentGeoCoordinates) {
         // Prefetches map data around the provided location with a radius of 2 km into the map cache.
         // For the best experience, prefetchAroundLocation() should be called as early as possible.
-        routePrefetcher.prefetchAroundLocation(currentGeoCoordinates);
+        double radiusInMeters = 10.0;
+        routePrefetcher.prefetchAroundLocationWithRadius(currentGeoCoordinates, radiusInMeters);
         // Prefetches map data within a corridor along the route that is currently set to the provided Navigator instance.
         // This happens continuously in discrete intervals.
         // If no route is set, no data will be prefetched.

@@ -148,10 +148,21 @@ class HikingApp: LocationDelegate {
 
     private func addMapPolyline(_ geoPolyline: GeoPolyline) {
         clearMap()
-        myPathMapPolyline = MapPolyline(geometry: geoPolyline,
-                                        widthInPixels: 20,
-                                        color: UIColor(red: 0, green: 0.56, blue: 0.54, alpha: 0.63))
-        mapView.mapScene.addMapPolyline(myPathMapPolyline!)
+        let widthInPixels = 20.0
+        let polylineColor = UIColor(red: 0, green: 0.56, blue: 0.54, alpha: 0.63)
+        do {
+            myPathMapPolyline =  try MapPolyline(geometry: geoPolyline,
+                                                    representation: MapPolyline.SolidRepresentation(
+                                                        lineWidth: MapMeasureDependentRenderSize(
+                                                            sizeUnit: RenderSize.Unit.pixels,
+                                                            size: widthInPixels),
+                                                        color: polylineColor,
+                                                        capShape: LineCap.round))
+            
+            mapView.mapScene.addMapPolyline(myPathMapPolyline!)
+        } catch let error {
+            fatalError("Failed to render MapPolyline. Cause: \(error)")
+        }
     }
 
     private func clearMap() {

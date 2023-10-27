@@ -41,6 +41,7 @@ import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.gestures.GestureState;
 import com.here.sdk.mapview.IconProvider;
 import com.here.sdk.mapview.IconProviderError;
+import com.here.sdk.mapview.LineCap;
 import com.here.sdk.mapview.MapCamera;
 import com.here.sdk.mapview.MapCameraAnimation;
 import com.here.sdk.mapview.MapCameraAnimationFactory;
@@ -50,9 +51,11 @@ import com.here.sdk.mapview.MapImage;
 import com.here.sdk.mapview.MapImageFactory;
 import com.here.sdk.mapview.MapMarker;
 import com.here.sdk.mapview.MapMeasure;
+import com.here.sdk.mapview.MapMeasureDependentRenderSize;
 import com.here.sdk.mapview.MapPolyline;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
+import com.here.sdk.mapview.RenderSize;
 import com.here.sdk.mapview.RoadShieldIconProperties;
 import com.here.sdk.navigation.DestinationReachedListener;
 import com.here.sdk.navigation.ManeuverProgress;
@@ -704,7 +707,17 @@ public class ReroutingExample {
 
     private void showRouteOnMap(Route route, Color color, int widthInPixels) {
         GeoPolyline routeGeoPolyline = route.getGeometry();
-        MapPolyline routeMapPolyline = new MapPolyline(routeGeoPolyline, widthInPixels, color);
+        MapPolyline routeMapPolyline = null;
+        try {
+            routeMapPolyline = new MapPolyline(routeGeoPolyline, new MapPolyline.SolidRepresentation(
+                    new MapMeasureDependentRenderSize(RenderSize.Unit.PIXELS, widthInPixels),
+                    color,
+                    LineCap.ROUND));
+        } catch (MapPolyline.Representation.InstantiationException e) {
+            Log.e("MapPolyline Representation Exception:", e.error.name());
+        } catch (MapMeasureDependentRenderSize.InstantiationException e) {
+            Log.e("MapMeasureDependentRenderSize Exception:", e.error.name());
+        }
         mapView.getMapScene().addMapPolyline(routeMapPolyline);
         mapPolylines.add(routeMapPolyline);
         animateToRoute(route);

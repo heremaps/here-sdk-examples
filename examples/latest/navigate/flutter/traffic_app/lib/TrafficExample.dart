@@ -80,14 +80,14 @@ class TrafficExample {
 
   void _setTapGestureHandler() {
     _hereMapController.gestures.tapListener = TapListener((Point2D touchPoint) {
-      GeoCoordinates? touchGeoCoords = _hereMapController.viewToGeoCoordinates(touchPoint);
+      GeoCoordinates? touchGeoCoordinates = _hereMapController.viewToGeoCoordinates(touchPoint);
       // Can be null when the map was tilted and the sky was tapped.
-      if (touchGeoCoords != null) {
+      if (touchGeoCoordinates != null) {
         // Pick incidents that are shown in MapSceneLayers.trafficIncidents.
         _pickTrafficIncident(touchPoint);
 
         // Query for incidents independent of MapSceneLayers.trafficIncidents.
-        _queryForIncidents(touchGeoCoords);
+        _queryForIncidents(touchGeoCoordinates);
       }
     });
   }
@@ -125,8 +125,7 @@ class TrafficExample {
     // Optionally, specify a language:
     // the language of the country where the incident occurs is used.
     // trafficIncidentsLookupOptions.languageCode = LanguageCode.EN_US;
-    _trafficEngine.lookupIncident(originalId, trafficIncidentsLookupOptions,
-        (trafficQueryError, trafficIncident) {
+    _trafficEngine.lookupIncident(originalId, trafficIncidentsLookupOptions, (trafficQueryError, trafficIncident) {
       if (trafficQueryError == null) {
         print("Fetched TrafficIncident from lookup request." + " Description: " + trafficIncident!.description.text);
         _addTrafficIncidentsMapPolyline(trafficIncident.location.polyline);
@@ -139,15 +138,21 @@ class TrafficExample {
   void _addTrafficIncidentsMapPolyline(GeoPolyline geoPolyline) {
     // Show traffic incident as polyline.
     double widthInPixels = 20;
-    MapPolyline routeMapPolyline = MapPolyline(geoPolyline, widthInPixels, Color.fromARGB(120, 0, 0, 0));
+    Color polylineColor = const Color.fromARGB(120, 0, 0, 0);
+    MapPolyline routeMapPolyline = MapPolyline.withRepresentation(
+        geoPolyline,
+        MapPolylineSolidRepresentation(
+            MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
+            polylineColor,
+            LineCap.round));
 
     _hereMapController.mapScene.addMapPolyline(routeMapPolyline);
     _mapPolylineList.add(routeMapPolyline);
   }
 
-  void _queryForIncidents(GeoCoordinates centerCoords) {
+  void _queryForIncidents(GeoCoordinates centerCoordinates) {
     double radiusInMeters = 1000;
-    GeoCircle geoCircle = GeoCircle(centerCoords, radiusInMeters);
+    GeoCircle geoCircle = GeoCircle(centerCoordinates, radiusInMeters);
     TrafficIncidentsQueryOptions trafficIncidentsQueryOptions = TrafficIncidentsQueryOptions();
     // Optionally, specify a language:
     // the language of the country where the incident occurs is used.
@@ -161,7 +166,7 @@ class TrafficExample {
 
       // If error is null, list is guaranteed to be not empty.
       String trafficMessage = "Found ${trafficIncidentsList!.length} result(s).";
-      TrafficIncident? nearestIncident = _getNearestTrafficIncident(centerCoords, trafficIncidentsList);
+      TrafficIncident? nearestIncident = _getNearestTrafficIncident(centerCoordinates, trafficIncidentsList);
       if (nearestIncident != null) {
         trafficMessage += " Nearest incident: " + nearestIncident.description.text;
       }
@@ -175,7 +180,7 @@ class TrafficExample {
   }
 
   TrafficIncident? _getNearestTrafficIncident(
-      GeoCoordinates currentGeoCoords, List<TrafficIncident> trafficIncidentsList) {
+      GeoCoordinates currentGeoCoordinates, List<TrafficIncident> trafficIncidentsList) {
     if (trafficIncidentsList.length == 0) {
       return null;
     }
@@ -184,10 +189,10 @@ class TrafficExample {
     double nearestDistance = double.maxFinite;
     TrafficIncident? nearestTrafficIncident;
     for (TrafficIncident trafficIncident in trafficIncidentsList) {
-      // In case lengthInMeters == 0 then the polyline consistes of two equal coordinates.
+      // In case lengthInMeters == 0 then the polyline consists of two equal coordinates.
       // It is guaranteed that each incident has a valid polyline.
-      for (GeoCoordinates geoCoords in trafficIncident.location.polyline.vertices) {
-        double currentDistance = currentGeoCoords.distanceTo(geoCoords);
+      for (GeoCoordinates geoCoordinates in trafficIncident.location.polyline.vertices) {
+        double currentDistance = currentGeoCoordinates.distanceTo(geoCoordinates);
         if (currentDistance < nearestDistance) {
           nearestDistance = currentDistance;
           nearestTrafficIncident = trafficIncident;

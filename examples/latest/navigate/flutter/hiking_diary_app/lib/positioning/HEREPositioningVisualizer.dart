@@ -97,10 +97,14 @@ class HerePositioningVisualizer {
   }
 
   void _addMapPolyline(GeoPolyline geoPolyline) {
-    mapPolyline = MapPolyline(
+    double widthInPixels = 5.0;
+    Color polylineColor = const Color.fromARGB(0, 56, 54, 63);
+    mapPolyline = MapPolyline.withRepresentation(
         geoPolyline,
-        5, // widthInPixels
-        Colors.black);
+        MapPolylineSolidRepresentation(
+            MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.densityIndependentPixels, widthInPixels),
+            polylineColor,
+            LineCap.round));
     mapView.mapScene.addMapPolyline(mapPolyline!);
   }
 

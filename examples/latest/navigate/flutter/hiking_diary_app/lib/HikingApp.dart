@@ -212,14 +212,26 @@ class HikingApp implements LocationListener, LocationStatusListener {
 
   void _addMapPolyline(GeoPolyline geoPolyline) {
     clearMap();
-    myPathMapPolyline = MapPolyline(geoPolyline, 20, Color.fromARGB(0, 56, 54, 63));
+    double widthInPixels = 20.0;
+    Color polylineColor = const Color.fromARGB(0, 56, 54, 63);
+    MapPolyline myPathMapPolyline = MapPolyline.withRepresentation(
+        geoPolyline,
+        MapPolylineSolidRepresentation(
+            MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
+            polylineColor,
+            LineCap.round));
     mapView.mapScene.addMapPolyline(myPathMapPolyline!);
   }
 
   MapPolyline _updateTravelledPath() {
     List<GeoCoordinates> geoCoordinatesList = gpxManager.getGeoCoordinatesList(gpxTrackWriter.track);
     if (geoCoordinatesList.length < 2) {
-      return MapPolyline(GeoPolyline([]), 0, Colors.transparent);
+      return MapPolyline.withRepresentation(
+          GeoPolyline([]),
+          MapPolylineSolidRepresentation(
+              MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, 0),
+              Colors.transparent,
+              LineCap.round));
     }
     GeoPolyline geoPolyline;
     try {

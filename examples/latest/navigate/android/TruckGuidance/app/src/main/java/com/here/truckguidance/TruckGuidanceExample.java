@@ -41,6 +41,7 @@ import com.here.sdk.core.Size2D;
 import com.here.sdk.core.TransportProfile;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.gestures.GestureState;
+import com.here.sdk.mapview.LineCap;
 import com.here.sdk.mapview.MapCamera;
 import com.here.sdk.mapview.MapCameraAnimation;
 import com.here.sdk.mapview.MapCameraAnimationFactory;
@@ -52,9 +53,11 @@ import com.here.sdk.mapview.MapImage;
 import com.here.sdk.mapview.MapImageFactory;
 import com.here.sdk.mapview.MapMarker;
 import com.here.sdk.mapview.MapMeasure;
+import com.here.sdk.mapview.MapMeasureDependentRenderSize;
 import com.here.sdk.mapview.MapPolyline;
 import com.here.sdk.mapview.MapView;
 import com.here.sdk.mapview.PickMapContentResult;
+import com.here.sdk.mapview.RenderSize;
 import com.here.sdk.navigation.DimensionRestriction;
 import com.here.sdk.navigation.DimensionRestrictionType;
 import com.here.sdk.navigation.DistanceType;
@@ -893,7 +896,17 @@ public class TruckGuidanceExample {
     private void showRouteOnMap(Route route, Color color, int widthInPixels) {
         // Show route as polyline.
         GeoPolyline routeGeoPolyline = route.getGeometry();
-        MapPolyline routeMapPolyline = new MapPolyline(routeGeoPolyline, widthInPixels, color);
+        MapPolyline routeMapPolyline = null;
+        try {
+            routeMapPolyline = new MapPolyline(routeGeoPolyline, new MapPolyline.SolidRepresentation(
+                    new MapMeasureDependentRenderSize(RenderSize.Unit.PIXELS, widthInPixels),
+                    color,
+                    LineCap.ROUND));
+        } catch (MapPolyline.Representation.InstantiationException e) {
+            Log.e("MapPolyline Representation Exception:", e.error.name());
+        } catch (MapMeasureDependentRenderSize.InstantiationException e) {
+            Log.e("MapMeasureDependentRenderSize Exception:", e.error.name());
+        }
 
         // Optionally, hide irrelevant icons from the vehicle restriction layer that cross our route. If the route crosses
         // such icons, then they are not applicable based on the provided TruckSpecifications.

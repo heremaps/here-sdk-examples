@@ -112,7 +112,12 @@ class MapObjectsExample {
 
     double widthInPixels = 20;
     Color lineColor = Color.fromARGB(160, 0, 144, 138);
-    MapPolyline mapPolyline = MapPolyline(geoPolyline, widthInPixels, lineColor);
+    MapPolyline mapPolyline = MapPolyline.withRepresentation(
+        geoPolyline,
+        MapPolylineSolidRepresentation(
+            MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
+            lineColor,
+            LineCap.round));
 
     return mapPolyline;
   }

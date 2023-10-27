@@ -32,14 +32,17 @@ import com.here.sdk.core.GeoPolygon;
 import com.here.sdk.core.GeoPolyline;
 import com.here.sdk.core.LanguageCode;
 import com.here.sdk.core.errors.InstantiationErrorException;
+import com.here.sdk.mapview.LineCap;
 import com.here.sdk.mapview.MapCamera;
 import com.here.sdk.mapview.MapImage;
 import com.here.sdk.mapview.MapImageFactory;
 import com.here.sdk.mapview.MapMarker;
 import com.here.sdk.mapview.MapMeasure;
+import com.here.sdk.mapview.MapMeasureDependentRenderSize;
 import com.here.sdk.mapview.MapPolygon;
 import com.here.sdk.mapview.MapPolyline;
 import com.here.sdk.mapview.MapView;
+import com.here.sdk.mapview.RenderSize;
 import com.here.sdk.routing.AvoidanceOptions;
 import com.here.sdk.routing.CalculateIsolineCallback;
 import com.here.sdk.routing.CalculateRouteCallback;
@@ -256,9 +259,18 @@ public class EVRoutingExample {
         // Show route as polyline.
         GeoPolyline routeGeoPolyline = route.getGeometry();
         float widthInPixels = 20;
-        MapPolyline routeMapPolyline = new MapPolyline(routeGeoPolyline,
-                widthInPixels,
-                Color.valueOf(0, 0.56f, 0.54f, 0.63f)); // RGBA
+        Color polylineColor = Color.valueOf(0, 0.56f, 0.54f, 0.63f);
+        MapPolyline routeMapPolyline = null; // RGBA
+        try {
+            routeMapPolyline = new MapPolyline(routeGeoPolyline, new MapPolyline.SolidRepresentation(
+                    new MapMeasureDependentRenderSize(RenderSize.Unit.PIXELS, widthInPixels),
+                    polylineColor,
+                    LineCap.ROUND));
+        } catch (MapPolyline.Representation.InstantiationException e) {
+            Log.e("MapPolyline Representation Exception:", e.error.name());
+        } catch (MapMeasureDependentRenderSize.InstantiationException e) {
+            Log.e("MapMeasureDependentRenderSize Exception:", e.error.name());
+        }
 
         mapView.getMapScene().addMapPolyline(routeMapPolyline);
         mapPolylines.add(routeMapPolyline);

@@ -54,6 +54,7 @@ class SpatialNavigationExample: SpatialManeuverNotificationDelegate, SpatialMane
         }
     }
     
+    // Method to be called once navigation has finished or it is desired to finish it.
     public func stopNavigation() {
         if(spatialAudioExample?.isNavigating() == true) {
             spatialAudioExample?.stopNavigation()

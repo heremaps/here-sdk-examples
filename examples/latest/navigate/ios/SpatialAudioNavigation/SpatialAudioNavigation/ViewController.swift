@@ -34,6 +34,8 @@ class ViewController: UIViewController {
         // Init SpatialNavigationExample class.
         spatialNavigationExample = SpatialNavigationExample()
         spatialNavigationExample?.setMapView(mapView: mapView)
+        // Start Navigation
+        spatialNavigationExample?.calculateRoute()
     }
     
     private func onLoadScene(mapError: MapError?) {
@@ -60,16 +62,4 @@ class ViewController: UIViewController {
         present(alertController, animated: true, completion: nil)
     }
     
-    // Starts navigation logging the data related to Spatial Audio
-    @IBAction func onClickStartSpatialAudioGuidanceClicked(_ sender: Any) {
-        showDialog(title: "Spatial Audio Navigation",
-                   message: "This app routes to the HERE office in Berlin. Audio cues are played following spatial audio trajectories")
-        
-        // We start by calculating a car route.
-        spatialNavigationExample!.calculateRoute()
-    }
-    
-    @IBAction func onClickStopNavigationClicked(_ sender: Any) {
-        spatialNavigationExample!.stopNavigation()
-    }
 }

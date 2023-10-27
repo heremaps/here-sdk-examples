@@ -25,6 +25,9 @@
     <string name="dialog_msg_cannot_start_app_text">Cannot start app: Location service and permissions are needed for this app.</string>
 
     <string name="background_access_dialog_title">Enable background location</string>
-    <string name="background_access_dialog_text">Please enable \'(%1$s)\' location access.</string>
+    <string name="background_access_dialog_text">This app collects location data to visualize your current location on a map even when the app is not in use. Please enable \'(%1$s)\' location access.</string>
     <string name="background_access_button_settings">Settings</string>
+    <string name="background_access_missing_text">Background location permission is missing. Please enable it from app settings.</string>
+
+    <string name="post_notifications_access_missing_text">Notifications permission is missing. Please enable it from app settings.</string>
 </resources>

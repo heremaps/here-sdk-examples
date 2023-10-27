@@ -121,9 +121,20 @@ class HEREPositioningVisualizer {
     }
 
     private func addMapPolyline(_ geoPolyline: GeoPolyline) {
-        mapPolyline = MapPolyline(geometry: geoPolyline,
-                                  widthInPixels: 5,
-                                  color: .black)
-        mapView.mapScene.addMapPolyline(mapPolyline!)
+        let widthInPixels = 5.0
+        let polylineColor: UIColor = .black
+        do {
+            mapPolyline =  try MapPolyline(geometry: geoPolyline,
+                                                    representation: MapPolyline.SolidRepresentation(
+                                                        lineWidth: MapMeasureDependentRenderSize(
+                                                            sizeUnit: RenderSize.Unit.pixels,
+                                                            size: widthInPixels),
+                                                        color: polylineColor,
+                                                        capShape: LineCap.round))
+            
+            mapView.mapScene.addMapPolyline(mapPolyline!)
+        } catch let error {
+            fatalError("Failed to render MapPolyline. Cause: \(error)")
+        }
     }
 }

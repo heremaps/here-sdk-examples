@@ -10,10 +10,13 @@ import com.here.sdk.core.GeoPolygon;
 import com.here.sdk.core.GeoPolyline;
 import com.here.sdk.core.Location;
 import com.here.sdk.core.errors.InstantiationErrorException;
+import com.here.sdk.mapview.LineCap;
 import com.here.sdk.mapview.LocationIndicator;
+import com.here.sdk.mapview.MapMeasureDependentRenderSize;
 import com.here.sdk.mapview.MapPolygon;
 import com.here.sdk.mapview.MapPolyline;
 import com.here.sdk.mapview.MapView;
+import com.here.sdk.mapview.RenderSize;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -122,9 +125,16 @@ public class HEREPositioningVisualizer {
     }
 
     private void addMapPolyline(GeoPolyline geoPolyline) {
-        mapPolyline = new MapPolyline(geoPolyline,
-                5, // widthInPixels
-                Color.valueOf(android.graphics.Color.BLACK));
+        try {
+            mapPolyline = new MapPolyline(geoPolyline, new MapPolyline.SolidRepresentation(
+                    new MapMeasureDependentRenderSize(RenderSize.Unit.METERS, 5),
+                    Color.valueOf(android.graphics.Color.BLACK),
+                    LineCap.ROUND));
+        } catch (MapPolyline.Representation.InstantiationException e) {
+            Log.e("MapPolyline Representation Exception:", e.error.name());
+        } catch (MapMeasureDependentRenderSize.InstantiationException e) {
+            Log.e("MapMeasureDependentRenderSize Exception:", e.error.name());
+        }
         mapView.getMapScene().addMapPolyline(mapPolyline);
     }
 

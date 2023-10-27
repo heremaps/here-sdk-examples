@@ -190,14 +190,22 @@ class RoutingExample {
 
         // Show route as polyline.
         let routeGeoPolyline = route.geometry
-        let routeMapPolyline = MapPolyline(geometry: routeGeoPolyline,
-                                           widthInPixels: 20,
-                                           color: UIColor(red: 0,
-                                                          green: 0.56,
-                                                          blue: 0.54,
-                                                          alpha: 0.63))
-        mapView.mapScene.addMapPolyline(routeMapPolyline)
-        mapPolylineList.append(routeMapPolyline)
+        let widthInPixels = 20.0
+        let polylineColor = UIColor(red: 0, green: 0.56, blue: 0.54, alpha: 0.63)
+        do {
+            let routeMapPolyline =  try MapPolyline(geometry: routeGeoPolyline,
+                                                    representation: MapPolyline.SolidRepresentation(
+                                                        lineWidth: MapMeasureDependentRenderSize(
+                                                            sizeUnit: RenderSize.Unit.pixels,
+                                                            size: widthInPixels),
+                                                        color: polylineColor,
+                                                        capShape: LineCap.round))
+            
+            mapView.mapScene.addMapPolyline(routeMapPolyline)
+            mapPolylineList.append(routeMapPolyline)
+        } catch let error {
+            fatalError("Failed to render MapPolyline. Cause: \(error)")
+        }
 
         let startPoint = route.sections.first!.departurePlace.mapMatchedCoordinates
         let destination = route.sections.last!.arrivalPlace.mapMatchedCoordinates
