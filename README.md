@@ -20,9 +20,9 @@ The HERE SDK consumes data from the [HERE Platform](https://www.here.com/product
 
 For an overview of the existing features, please check the _Developer Guide_ for the platform of your choice. Here you will also find numerous code snippets, detailed tutorials, the _API Reference_ and the latest _Release Notes_:
 
-- Documentation for the HERE SDK for Android ([Lite Edition](https://developer.here.com/documentation/android-sdk/dev_guide/index.html), [Explore Edition](https://developer.here.com/documentation/android-sdk-explore), [Navigate Edition]( https://developer.here.com/documentation/android-sdk-navigate))
-- Documentation for the HERE SDK for iOS ([Lite Edition](https://developer.here.com/documentation/ios-sdk/dev_guide/index.html), [Explore Edition]( https://developer.here.com/documentation/ios-sdk-explore), [Navigate Edition]( https://developer.here.com/documentation/ios-sdk-navigate))
-- Documentation for the HERE SDK for Flutter ([Explore Edition](https://developer.here.com/documentation/flutter-sdk-explore), [Navigate Edition](https://developer.here.com/documentation/flutter-sdk-navigate))
+- Documentation for the HERE SDK for Android ([Lite Edition](https://www.here.com/docs/bundle/sdk-for-android-lite-developer-guide/page/README.html), [Explore Edition](https://www.here.com/docs/bundle/sdk-for-android-explore-developer-guide/page/README.html), [Navigate Edition](https://www.here.com/docs/bundle/sdk-for-android-navigate-developer-guide/page/README.html))
+- Documentation for the HERE SDK for iOS ([Explore Edition](https://www.here.com/docs/bundle/sdk-for-ios-explore-developer-guide/page/README.html), [Navigate Edition](https://www.here.com/docs/bundle/sdk-for-ios-navigate-developer-guide/page/README.html))
+- Documentation for the HERE SDK for Flutter ([Explore Edition](https://www.here.com/docs/bundle/sdk-for-flutter-explore-developer-guide/page/README.html), [Navigate Edition](https://www.here.com/docs/bundle/sdk-for-flutter-navigate-developer-guide/page/README.html))
 
 > For now, the _Navigate Edition_ is only available upon request. Please contact your HERE representative to receive access including a set of evaluation credentials.
 
@@ -78,9 +78,9 @@ Find the [latest examples](examples/latest) for the edition and platform of your
 Above you can find the example app links for the _latest_ HERE SDK version. If you are looking for an older version, please check our [release page](https://github.com/heremaps/here-sdk-examples/releases) where you can download tagged older releases.
 
 ## What You Need to Execute the Example Apps
-1. Acquire a set of credentials: Follow the steps from the [_Developer Guide_](https://developer.here.com/) for your HERE SDK edition.
-2. Download the latest HERE SDK package for your desired platform as shown in the [_Developer Guide_](https://developer.here.com/).
-3. Please refer to the minimum requirements and supported devices as listed in our [_Developer Guide_](https://developer.here.com/).
+1. Acquire a set of credentials: Follow the steps from the [_Developer Guide_](https://www.here.com/docs/category/here-sdk) for your HERE SDK edition.
+2. Download the latest HERE SDK package for your desired platform as shown in the [_Developer Guide_](https://www.here.com/docs/category/here-sdk).
+3. Please refer to the minimum requirements and supported devices as listed in our [_Developer Guide_](https://www.here.com/docs/category/here-sdk).
 
 ### Get Started for Android
 1. Copy the AAR file of the HERE SDK for Android to the example app's `app/libs` folder.
