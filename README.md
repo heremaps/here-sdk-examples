@@ -78,9 +78,9 @@ Find the [latest examples](examples/latest) for the edition and platform of your
 Above you can find the example app links for the _latest_ HERE SDK version. If you are looking for an older version, please check our [release page](https://github.com/heremaps/here-sdk-examples/releases) where you can download tagged older releases.
 
 ## What You Need to Execute the Example Apps
-1. Acquire a set of credentials by registering yourself on [developer.here.com](https://developer.here.com/) - or ask your HERE representative.
-2. Download the latest HERE SDK artefact for your desired platform. These can be found on [developer.here.com](https://developer.here.com/) unless otherwise noted.
-3. Please refer to the minimum requirements and supported devices as listed in our _Developer Guide_.
+1. Acquire a set of credentials: Follow the steps from the [_Developer Guide_](https://developer.here.com/) for your HERE SDK edition.
+2. Download the latest HERE SDK package for your desired platform as shown in the [_Developer Guide_](https://developer.here.com/).
+3. Please refer to the minimum requirements and supported devices as listed in our [_Developer Guide_](https://developer.here.com/).
 
 ### Get Started for Android
 1. Copy the AAR file of the HERE SDK for Android to the example app's `app/libs` folder.
