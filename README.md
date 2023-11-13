@@ -79,25 +79,22 @@ Above you can find the example app links for the _latest_ HERE SDK version. If y
 
 ## What You Need to Execute the Example Apps
 1. Acquire a set of credentials by registering yourself on [developer.here.com](https://developer.here.com/) - or ask your HERE representative.
-2. Download the latest HERE SDK artifacts for your desired platform. These can be found on [developer.here.com](https://developer.here.com/) unless otherwise noted.
+2. Download the latest HERE SDK artefact for your desired platform. These can be found on [developer.here.com](https://developer.here.com/) unless otherwise noted.
 3. Please refer to the minimum requirements and supported devices as listed in our _Developer Guide_.
 
 ### Get Started for Android
 1. Copy the AAR file of the HERE SDK for Android to the example app's `app/libs` folder.
 2. Open _Android Studio_ and sync the project.
-3. To run the app, you need to add your HERE SDK credentials to the `AndroidManifest.xml` file.
+3. To run the app, insert your HERE credentials (Access_Key_Id and Access_Key_Secret) in the `MainActivity.java` file.
 
 ### Get Started for iOS
 1. Copy the `heresdk.framework` file of the HERE SDK for iOS to the example app's root folder.
-2. To run the app, you need to add your HERE SDK credentials to the `Info.plist` file.
-
+2. To run the app, you need to add your HERE credentials (Access_Key_Id and Access_Key_Secret) to the `AppDelegate.swift` file of the project.
 ### Get Started for Flutter
 1. Unzip the downloaded HERE SDK for Flutter _package_. This folder contains various files including documentation assets.
 2. Inside you will also find a TAR file that contains the HERE SDK for Flutter _plugin_. It contains the iOS and Android native frameworks.
 3. Now unzip the TAR file and rename the folder to 'here_sdk' and place it to the `plugins` folder inside the example app's directory. The folder structure should look like this: `hello_map/plugins/here_sdk`.
-4. Set your HERE SDK credentials to
-  - `hello_map/android/app/src/main/AndroidManifest.xml`
-  - `hello_map/ios/Runner/Info.plist`
+4. Set your HERE SDK credentials (Access_Key_Id and Access_Key_Secret) to the `main.dart` file of the project.
 5. Start an Android emulator or an iOS simulator and execute `flutter run` from the app's directory - or run the app from within your IDE.
 
 ## Get in Touch
