@@ -71,25 +71,25 @@ Most example apps contain a class named "XY-Example" where XY stands for the fea
 Find the [latest examples](examples/latest) for the edition and platform of your choice:
 
 - Examples for the HERE SDK for Android ([Lite Edition](examples/latest/lite/android/), [Explore Edition](examples/latest/explore/android/), [Navigate Edition](examples/latest/navigate/android/))
-- Examples for the HERE SDK for iOS ([Lite Edition](examples/latest/lite/ios/), [Explore Edition](examples/latest/explore/ios/), [Navigate Edition](examples/latest/navigate/ios/))
+- Examples for the HERE SDK for iOS ([Explore Edition](examples/latest/explore/ios/), [Navigate Edition](examples/latest/navigate/ios/))
 - Examples for the HERE SDK for Flutter ([Explore Edition](examples/latest/explore/flutter/), [Navigate Edition](examples/latest/navigate/flutter/))
 
 ## Example Apps for Older Versions
 Above you can find the example app links for the _latest_ HERE SDK version. If you are looking for an older version, please check our [release page](https://github.com/heremaps/here-sdk-examples/releases) where you can download tagged older releases.
 
 ## What You Need to Execute the Example Apps
-1. Acquire a set of credentials: Follow the steps from the [_Developer Guide_](https://www.here.com/docs/category/here-sdk) for your HERE SDK edition.
-2. Download the latest HERE SDK package for your desired platform as shown in the [_Developer Guide_](https://www.here.com/docs/category/here-sdk).
-3. Please refer to the minimum requirements and supported devices as listed in our [_Developer Guide_](https://www.here.com/docs/category/here-sdk).
+1. Acquire a set of credentials: Follow the steps from the [Developer Guide](https://www.here.com/docs/category/here-sdk) for your HERE SDK edition.
+2. Download the latest HERE SDK package for your desired platform as shown in the _Developer Guide_.
+3. Please refer to the minimum requirements and supported devices as listed in our _Developer Guide_.
 
 ### Get Started for Android
 1. Copy the AAR file of the HERE SDK for Android to the example app's `app/libs` folder.
 2. Open _Android Studio_ and sync the project.
-3. To run the app, insert your HERE credentials (accessKeyId and accessKeySecret) in the `MainActivity.java` file.
+3. To run the app, insert your HERE credentials (`accessKeyId` and `accessKeySecret`) in the `MainActivity.java` file.
 
 ### Get Started for iOS
 1. Copy the `heresdk.framework` file of the HERE SDK for iOS to the example app's root folder.
-2. To run the app, you need to add your HERE credentials (accessKeyId and accessKeySecret) to the `AppDelegate.swift` file of the project.
+2. To run the app, you need to add your HERE credentials (`accessKeyId` and `accessKeySecret`) to the `AppDelegate.swift` file of the project.
 ### Get Started for Flutter
 1. Unzip the downloaded HERE SDK for Flutter _package_. This folder contains various files including documentation assets.
 2. Inside you will also find a TAR file that contains the HERE SDK for Flutter _plugin_. It contains the iOS and Android native frameworks.
