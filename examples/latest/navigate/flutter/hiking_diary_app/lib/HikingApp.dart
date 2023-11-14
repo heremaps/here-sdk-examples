@@ -214,13 +214,22 @@ class HikingApp implements LocationListener, LocationStatusListener {
     clearMap();
     double widthInPixels = 20.0;
     Color polylineColor = const Color.fromARGB(0, 56, 54, 63);
-    MapPolyline myPathMapPolyline = MapPolyline.withRepresentation(
-        geoPolyline,
-        MapPolylineSolidRepresentation(
-            MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
-            polylineColor,
-            LineCap.round));
-    mapView.mapScene.addMapPolyline(myPathMapPolyline!);
+    MapPolyline myPathMapPolyline;
+    try {
+      myPathMapPolyline = MapPolyline.withRepresentation(
+          geoPolyline,
+          MapPolylineSolidRepresentation(
+              MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
+              polylineColor,
+              LineCap.round));
+      mapView.mapScene.addMapPolyline(myPathMapPolyline!);
+    } on MapPolylineRepresentationInstantiationException catch (e) {
+      print("MapPolylineRepresentation Exception:" + e.error.name);
+      return;
+    } on MapMeasureDependentRenderSizeInstantiationException catch (e) {
+      print("MapMeasureDependentRenderSize Exception:" + e.error.name);
+      return;
+    }
   }
 
   MapPolyline _updateTravelledPath() {

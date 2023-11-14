@@ -73,6 +73,7 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
     }
 
     private func performUpdateChecks() {
+        logCurrentSDKVersion()
         logCurrentMapVersion()
 
         // Checks if map updates are available for any of the already downloaded maps.
@@ -207,6 +208,10 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
         }
         showMessage("Cancelled \(mapDownloaderTasks.count) download tasks in list.")
         mapDownloaderTasks.removeAll()
+    }
+
+    private func logCurrentSDKVersion() {
+        print("HERE SDK version: " + SDKBuildInformation.sdkVersion().versionName)
     }
 
     private func logCurrentMapVersion() {
