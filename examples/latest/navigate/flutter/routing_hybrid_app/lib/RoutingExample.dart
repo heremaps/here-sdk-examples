@@ -205,14 +205,23 @@ class RoutingExample {
     GeoPolyline routeGeoPolyline = route.geometry;
     double widthInPixels = 20;
     Color polylineColor = const Color.fromARGB(160, 0, 144, 138);
-    MapPolyline routeMapPolyline = MapPolyline.withRepresentation(
-        routeGeoPolyline,
-        MapPolylineSolidRepresentation(
-            MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
-            polylineColor,
-            LineCap.round));
-    _hereMapController.mapScene.addMapPolyline(routeMapPolyline);
-    _mapPolylines.add(routeMapPolyline);
+    MapPolyline routeMapPolyline;
+    try {
+      routeMapPolyline = MapPolyline.withRepresentation(
+          routeGeoPolyline,
+          MapPolylineSolidRepresentation(
+              MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
+              polylineColor,
+              LineCap.round));
+      _hereMapController.mapScene.addMapPolyline(routeMapPolyline);
+      _mapPolylines.add(routeMapPolyline);
+    } on MapPolylineRepresentationInstantiationException catch (e) {
+      print("MapPolylineRepresentation Exception:" + e.error.name);
+      return;
+    } on MapMeasureDependentRenderSizeInstantiationException catch (e) {
+      print("MapMeasureDependentRenderSize Exception:" + e.error.name);
+      return;
+    }
 
     GeoCoordinates startGeoCoordinates = route.geometry.vertices.first;
     GeoCoordinates destinationGeoCoordinates = route.geometry.vertices.last;

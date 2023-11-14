@@ -139,15 +139,23 @@ class TrafficExample {
     // Show traffic incident as polyline.
     double widthInPixels = 20;
     Color polylineColor = const Color.fromARGB(120, 0, 0, 0);
-    MapPolyline routeMapPolyline = MapPolyline.withRepresentation(
-        geoPolyline,
-        MapPolylineSolidRepresentation(
-            MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
-            polylineColor,
-            LineCap.round));
-
-    _hereMapController.mapScene.addMapPolyline(routeMapPolyline);
-    _mapPolylineList.add(routeMapPolyline);
+    MapPolyline routeMapPolyline;
+    try {
+      routeMapPolyline = MapPolyline.withRepresentation(
+          geoPolyline,
+          MapPolylineSolidRepresentation(
+              MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
+              polylineColor,
+              LineCap.round));
+      _hereMapController.mapScene.addMapPolyline(routeMapPolyline);
+      _mapPolylineList.add(routeMapPolyline);
+    } on MapPolylineRepresentationInstantiationException catch (e) {
+      print("MapPolylineRepresentation Exception:" + e.error.name);
+      return;
+    } on MapMeasureDependentRenderSizeInstantiationException catch (e) {
+      print("MapMeasureDependentRenderSize Exception:" + e.error.name);
+      return;
+    }
   }
 
   void _queryForIncidents(GeoCoordinates centerCoordinates) {
