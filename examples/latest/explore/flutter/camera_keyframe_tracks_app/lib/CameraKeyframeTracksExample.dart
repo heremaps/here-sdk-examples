@@ -40,7 +40,7 @@ class CameraKeyframeTracksExample {
     try {
       mapCameraAnimation = MapCameraAnimationFactory.createAnimationFromKeyframeTracks(mapCameraKeyframeTracks!);
     } on MapCameraKeyframeTrackInstantiationException catch (e) {
-    print(_tag + "Error occured: " + e.error.name);
+    print(_tag + "Error occurred: " + e.error.name);
     return;
     }
 

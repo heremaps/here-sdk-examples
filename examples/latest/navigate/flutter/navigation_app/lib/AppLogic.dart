@@ -184,12 +184,21 @@ class AppLogic {
     GeoPolyline routeGeoPolyline = route.geometry;
     double widthInPixels = 20;
     Color polylineColor = const Color.fromARGB(160, 0, 144, 138);
-    MapPolyline routeMapPolyline = MapPolyline.withRepresentation(routeGeoPolyline, MapPolylineSolidRepresentation(
-        MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
-        polylineColor,
-        LineCap.round));
-    _calculatedRouteMapPolyline = routeMapPolyline;
-    _hereMapController.mapScene.addMapPolyline(_calculatedRouteMapPolyline!);
+    MapPolyline routeMapPolyline;
+    try {
+      routeMapPolyline = MapPolyline.withRepresentation(routeGeoPolyline, MapPolylineSolidRepresentation(
+          MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
+          polylineColor,
+          LineCap.round));
+      _calculatedRouteMapPolyline = routeMapPolyline;
+      _hereMapController.mapScene.addMapPolyline(_calculatedRouteMapPolyline!);
+    } on MapPolylineRepresentationInstantiationException catch (e) {
+      print("MapPolylineRepresentation Exception:" + e.error.name);
+      return;
+    } on MapMeasureDependentRenderSizeInstantiationException catch (e) {
+      print("MapMeasureDependentRenderSize Exception:" + e.error.name);
+      return;
+    }
   }
 
   bool _determineRouteWaypoints(bool isSimulated) {

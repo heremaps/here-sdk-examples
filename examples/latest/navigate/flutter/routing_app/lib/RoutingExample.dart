@@ -174,14 +174,23 @@ class RoutingExample {
     GeoPolyline routeGeoPolyline = route.geometry;
     double widthInPixels = 20;
     Color polylineColor = const Color.fromARGB(160, 0, 144, 138);
-    MapPolyline routeMapPolyline = MapPolyline.withRepresentation(
-        routeGeoPolyline,
-        MapPolylineSolidRepresentation(
-            MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
-            polylineColor,
-            LineCap.round));
-    _hereMapController.mapScene.addMapPolyline(routeMapPolyline);
-    _mapPolylines.add(routeMapPolyline);
+    MapPolyline routeMapPolyline;
+    try {
+      routeMapPolyline = MapPolyline.withRepresentation(
+          routeGeoPolyline,
+          MapPolylineSolidRepresentation(
+              MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
+              polylineColor,
+              LineCap.round));
+      _hereMapController.mapScene.addMapPolyline(routeMapPolyline);
+      _mapPolylines.add(routeMapPolyline);
+    } on MapPolylineRepresentationInstantiationException catch (e) {
+      print("MapPolylineRepresentation Exception:" + e.error.name);
+      return;
+    } on MapMeasureDependentRenderSizeInstantiationException catch (e) {
+      print("MapMeasureDependentRenderSize Exception:" + e.error.name);
+      return;
+    }
 
     // Optionally, render traffic on route.
     _showTrafficOnRoute(route);
@@ -203,15 +212,23 @@ class RoutingExample {
           continue;
         }
         double widthInPixels = 10;
-        MapPolyline trafficSpanMapPolyline = new MapPolyline.withRepresentation(
-            span.geometry,
-            MapPolylineSolidRepresentation(
-                MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
-                lineColor,
-                LineCap.round));
-
-        _hereMapController.mapScene.addMapPolyline(trafficSpanMapPolyline);
-        _mapPolylines.add(trafficSpanMapPolyline);
+        MapPolyline trafficSpanMapPolyline;
+        try {
+          trafficSpanMapPolyline = new MapPolyline.withRepresentation(
+              span.geometry,
+              MapPolylineSolidRepresentation(
+                  MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
+                  lineColor,
+                  LineCap.round));
+          _hereMapController.mapScene.addMapPolyline(trafficSpanMapPolyline);
+          _mapPolylines.add(trafficSpanMapPolyline);
+        } on MapPolylineRepresentationInstantiationException catch (e) {
+          print("MapPolylineRepresentation Exception:" + e.error.name);
+          return;
+        } on MapMeasureDependentRenderSizeInstantiationException catch (e) {
+          print("MapMeasureDependentRenderSize Exception:" + e.error.name);
+          return;
+        }
       }
     }
   }

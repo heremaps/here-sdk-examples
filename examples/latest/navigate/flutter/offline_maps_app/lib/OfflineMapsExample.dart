@@ -77,6 +77,7 @@ class OfflineMapsExample {
   }
 
   void _performUpdateChecks() {
+    _logCurrentSDKVersion();
     _logCurrentMapVersion();
 
     // Checks if map updates are available for any of the already downloaded maps.
@@ -382,6 +383,10 @@ class OfflineMapsExample {
         print("RepairPersistentMap: Repair operation failed: " + persistentMapRepairError.toString());
       });
     }
+  }
+
+  _logCurrentSDKVersion() {
+    print("HERE SDK version: " + SDKBuildInformation.sdkVersion().versionName);
   }
 
   _logCurrentMapVersion() {

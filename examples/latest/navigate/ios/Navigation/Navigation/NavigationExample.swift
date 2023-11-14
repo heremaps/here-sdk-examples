@@ -76,7 +76,8 @@ class NavigationExample : DynamicRoutingDelegate {
 
     private func prefetchMapData(currentGeoCoordinates: GeoCoordinates) {
         // Prefetches map data around the provided location with a radius of 2 km into the map cache.
-        routePrefetcher.prefetchAroundLocationWithRadius(currentLocation: currentGeoCoordinates, radiusInMeters: 20.0)
+        // For the best experience, prefetchAroundLocationWithRadius() should be called as early as possible.
+        routePrefetcher.prefetchAroundLocationWithRadius(currentLocation: currentGeoCoordinates, radiusInMeters: 2000.0)
         // Prefetches map data within a corridor along the route that is currently set to the provided Navigator instance.
         // This happens continuously in discrete intervals.
         // If no route is set, no data will be prefetched.
