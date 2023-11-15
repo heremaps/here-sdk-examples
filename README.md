@@ -98,7 +98,6 @@ Above you can find the example app links for the _latest_ HERE SDK version. If y
 5. Start an Android emulator or an iOS simulator and execute `flutter run` from the app's directory - or run the app from within your IDE.
 
 ## Get in Touch
-- If you have more questions, please check [stackoverflow.com/questions/tagged/here-api](http://stackoverflow.com/questions/tagged/here-api).
 - Information on how to contribute to this project can be found [here](CONTRIBUTING.md).
 - If you have questions about billing, your account, or anything else [Contact Us](https://developer.here.com/help).
 
