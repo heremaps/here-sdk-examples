@@ -32,6 +32,9 @@ import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.LanguageCode;
 import com.here.sdk.core.UnitSystem;
 import com.here.sdk.navigation.AspectRatio;
+import com.here.sdk.navigation.BorderCrossingWarning;
+import com.here.sdk.navigation.BorderCrossingWarningListener;
+import com.here.sdk.navigation.BorderCrossingWarningOptions;
 import com.here.sdk.navigation.DestinationReachedListener;
 import com.here.sdk.navigation.DimensionRestrictionType;
 import com.here.sdk.navigation.DistanceType;
@@ -94,6 +97,7 @@ import com.here.sdk.routing.RoadTexts;
 import com.here.sdk.routing.RoadType;
 import com.here.sdk.routing.Route;
 import com.here.sdk.trafficawarenavigation.DynamicRoutingEngine;
+import com.here.sdk.transport.GeneralVehicleSpeedLimits;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -515,6 +519,47 @@ public class NavigationEventHandler {
         schoolZoneWarningOptions.filterOutInactiveTimeDependentWarnings = true;
         schoolZoneWarningOptions.warningDistanceInMeters = 150;
         visualNavigator.setSchoolZoneWarningOptions(schoolZoneWarningOptions);
+
+        // Notifies whenever a border is crossed of a country and optionally, by default, also when a state
+        // border of a country is crossed.
+        visualNavigator.setBorderCrossingWarningListener(new BorderCrossingWarningListener() {
+            @Override
+            public void onBorderCrossingWarningUpdated(@NonNull BorderCrossingWarning borderCrossingWarning) {
+                // Since the border crossing warning is given relative to a single location,
+                // the DistanceType.REACHED will never be given for this warning.
+                if (borderCrossingWarning.distanceType == DistanceType.AHEAD) {
+                    Log.d(TAG, "BorderCrossing: A border is ahead in: " + borderCrossingWarning.distanceToBorderCrossingInMeters + " meters.");
+                    Log.d(TAG, "BorderCrossing: Type (such as country or state): " + borderCrossingWarning.type.name());
+                    Log.d(TAG, "BorderCrossing: Country code: " + borderCrossingWarning.countryCode.name());
+
+                    // The state code after the border crossing. It represents the state / province code.
+                    // It is a 1 to 3 upper-case characters string that follows the ISO 3166-2 standard,
+                    // but without the preceding country code (e.g. for Texas, the state code will be TX).
+                    // It will be null for countries without states or countries in which the states have very
+                    // similar regulations (e.g. for Germany there will be no state borders).
+                    if (borderCrossingWarning.stateCode != null) {
+                        Log.d(TAG, "BorderCrossing: State code: " + borderCrossingWarning.stateCode);
+                    }
+
+                    // The general speed limits that apply in the country / state after border crossing.
+                    GeneralVehicleSpeedLimits generalVehicleSpeedLimits = borderCrossingWarning.speedLimits;
+                    Log.d(TAG, "BorderCrossing: Speed limit in cities (m/s): " + generalVehicleSpeedLimits.maxSpeedUrbanInMetersPerSecond);
+                    Log.d(TAG, "BorderCrossing: Speed limit outside cities (m/s): " + generalVehicleSpeedLimits.maxSpeedRuralInMetersPerSecond);
+                    Log.d(TAG, "BorderCrossing: Speed limit on highways (m/s): " + generalVehicleSpeedLimits.maxSpeedHighwaysInMetersPerSecond);
+                } else if (borderCrossingWarning.distanceType == DistanceType.PASSED) {
+                    Log.d(TAG, "BorderCrossing: A border has been passed.");
+                }
+            }
+        });
+
+        BorderCrossingWarningOptions borderCrossingWarningOptions = new BorderCrossingWarningOptions();
+        // If set to true, all the state border crossing notifications will not be given.
+        // If the value is false, all border crossing notifications will be given for both
+        // country borders and state borders. Defaults to false.
+        borderCrossingWarningOptions.filterOutStateBorderWarnings = true;
+        // Warning distance setting for urban, in meters. Defaults to 500 meters.
+        borderCrossingWarningOptions.urbanWarningDistanceInMeters = 400;
+        visualNavigator.setBorderCrossingWarningOptions(borderCrossingWarningOptions);
 
         // Notifies whenever any textual attribute of the current road changes, i.e., the current road texts differ
         // from the previous one. This can be useful during tracking mode, when no maneuver information is provided.
