@@ -33,6 +33,9 @@ import com.here.sdk.location.LocationAccuracy;
 import com.here.sdk.location.LocationEngine;
 import com.here.sdk.location.LocationEngineStatus;
 import com.here.sdk.location.LocationFeature;
+import com.here.sdk.location.LocationIssueListener;
+import com.here.sdk.location.LocationIssueType;
+import com.here.sdk.location.LocationOptions;
 import com.here.sdk.location.LocationStatusListener;
 import com.here.sdk.mapview.LocationIndicator;
 import com.here.sdk.mapview.MapMeasure;
@@ -61,6 +64,7 @@ public class PositioningExample {
     private final LocationStatusListener locationStatusListener = new LocationStatusListener() {
         @Override
         public void onStatusChanged(@NonNull LocationEngineStatus locationEngineStatus) {
+            Log.d(TAG, "Location onStatusChanged: " + locationEngineStatus.name());
             if(locationEngineStatus == LocationEngineStatus.ENGINE_STOPPED) {
                 locationEngine.removeLocationListener(locationListener);
                 locationEngine.removeLocationStatusListener(locationStatusListener);
@@ -70,7 +74,16 @@ public class PositioningExample {
         @Override
         public void onFeaturesNotAvailable(@NonNull List<LocationFeature> features) {
             for (LocationFeature feature : features) {
-                Log.d(TAG, "Feature not available: " + feature.name());
+                Log.d(TAG, "Location Feature not available: " + feature.name());
+            }
+        }
+    };
+
+    private final LocationIssueListener locationIssueListener = new LocationIssueListener() {
+        @Override
+        public void onLocationIssueChanged(@NonNull List<LocationIssueType> list) {
+            for (LocationIssueType issue : list) {
+                Log.d(TAG, "Location Issue: " + issue.name());
             }
         }
     };
@@ -103,8 +116,17 @@ public class PositioningExample {
 
     private void startLocating() {
         locationEngine.addLocationStatusListener(locationStatusListener);
+        locationEngine.addLocationIssueListener(locationIssueListener);
         locationEngine.addLocationListener(locationListener);
-        locationEngine.start(LocationAccuracy.BEST_AVAILABLE);
+
+        LocationOptions locationOptions = new LocationOptions();
+        locationOptions.wifiPositioningOptions.enabled = false;
+        locationOptions.satellitePositioningOptions.enabled = true;
+        locationOptions.sensorOptions.enabled = false;
+        locationOptions.cellularPositioningOptions.enabled = false;
+
+        Log.d(TAG, "location engine start");
+        locationEngine.start(locationOptions);
     }
 
     public void stopLocating() {
