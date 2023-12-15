@@ -277,7 +277,7 @@ class HikingApp implements LocationListener, LocationStatusListener {
     // Create animation.
     Duration durationInSeconds = Duration(seconds: 3);
     MapCameraAnimation mapCameraAnimation =
-        MapCameraAnimationFactory.createAnimationFromUpdate(mapCameraUpdate, durationInSeconds, EasingFunction.inCubic);
+        MapCameraAnimationFactory.createAnimationFromUpdateWithEasing(mapCameraUpdate, durationInSeconds, Easing(EasingFunction.inCubic));
 
     mapView.camera.startAnimation(mapCameraAnimation);
   }

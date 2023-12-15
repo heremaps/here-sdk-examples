@@ -35,6 +35,9 @@ import com.here.sdk.navigation.AspectRatio;
 import com.here.sdk.navigation.BorderCrossingWarning;
 import com.here.sdk.navigation.BorderCrossingWarningListener;
 import com.here.sdk.navigation.BorderCrossingWarningOptions;
+import com.here.sdk.navigation.DangerZoneWarning;
+import com.here.sdk.navigation.DangerZoneWarningListener;
+import com.here.sdk.navigation.DangerZoneWarningOptions;
 import com.here.sdk.navigation.DestinationReachedListener;
 import com.here.sdk.navigation.DimensionRestrictionType;
 import com.here.sdk.navigation.DistanceType;
@@ -560,6 +563,36 @@ public class NavigationEventHandler {
         // Warning distance setting for urban, in meters. Defaults to 500 meters.
         borderCrossingWarningOptions.urbanWarningDistanceInMeters = 400;
         visualNavigator.setBorderCrossingWarningOptions(borderCrossingWarningOptions);
+
+        // Notifies on danger zones.
+        // A danger zone refers to areas where there is an increased risk of traffic incidents.
+        // These zones are designated to alert drivers to potential hazards and encourage safer driving behaviors.
+        // The HERE SDK warns when approaching the danger zone, as well as when leaving such a zone.
+        // A danger zone may or may not have one or more speed cameras in it. The exact location of such speed cameras
+        // is not provided. Note that danger zones are only available in selected countries, such as France.
+        visualNavigator.setDangerZoneWarningListener(new DangerZoneWarningListener() {
+            @Override
+            public void onDangerZoneWarningsUpdated(@NonNull DangerZoneWarning dangerZoneWarning) {
+                if (dangerZoneWarning.distanceType == DistanceType.AHEAD) {
+                    Log.d(TAG, "A danger zone ahead in: " + dangerZoneWarning.distanceInMeters + " meters.");
+                    // isZoneStart indicates if we enter the danger zone from the start.
+                    // It is false, when the danger zone is entered from a side street.
+                    // Based on the route path, the HERE SDK anticipates from where the danger zone will be entered.
+                    // In tracking mode, the most probable path will be used to anticipate from where
+                    // the danger zone is entered.
+                    Log.d(TAG, "isZoneStart: " + dangerZoneWarning.isZoneStart);
+                } else if (dangerZoneWarning.distanceType == DistanceType.REACHED) {
+                    Log.d(TAG, "A danger zone has been reached. isZoneStart: " + dangerZoneWarning.isZoneStart);
+                } else if (dangerZoneWarning.distanceType == DistanceType.PASSED) {
+                    Log.d(TAG, "A danger zone has been passed.");
+                }
+            }
+        });
+
+        DangerZoneWarningOptions dangerZoneWarningOptions = new DangerZoneWarningOptions();
+        // Distance setting for urban, in meters. Defaults to 500 meters.
+        dangerZoneWarningOptions.urbanWarningDistanceInMeters = 400;
+        visualNavigator.setDangerZoneWarningOptions(dangerZoneWarningOptions);
 
         // Notifies whenever any textual attribute of the current road changes, i.e., the current road texts differ
         // from the previous one. This can be useful during tracking mode, when no maneuver information is provided.

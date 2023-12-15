@@ -25,8 +25,8 @@ import 'package:here_sdk/mapview.datasource.dart';
 
 class CustomRasterLayersExample {
   HereMapController _hereMapController;
-  MapLayer? _rasterMapLayerTonerStyle;
-  RasterDataSource? _rasterDataSourceTonerStyle;
+  MapLayer? _rasterMapLayerStyle;
+  RasterDataSource? _rasterDataSourceStyle;
   MapImage? _poiMapImage;
 
   CustomRasterLayersExample(HereMapController this._hereMapController) {
@@ -35,11 +35,11 @@ class CustomRasterLayersExample {
     _hereMapController.camera.lookAtPointWithMeasure(GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
 
     String dataSourceName = "myRasterDataSourceTonerStyle";
-    _rasterDataSourceTonerStyle = _createRasterDataSource(dataSourceName);
-    _rasterMapLayerTonerStyle = _createMapLayer(dataSourceName);
+    _rasterDataSourceStyle = _createRasterDataSource(dataSourceName);
+    _rasterMapLayerStyle = _createMapLayer(dataSourceName);
 
     // We want to start with the default map style.
-    _rasterMapLayerTonerStyle?.setEnabled(false);
+    _rasterMapLayerStyle?.setEnabled(false);
 
     // Add a POI marker
     _addPOIMapMarker(GeoCoordinates(52.530932, 13.384915), 1);
@@ -50,31 +50,36 @@ class CustomRasterLayersExample {
   }
 
   void enableButtonClicked() {
-    _rasterMapLayerTonerStyle?.setEnabled(true);
+    _rasterMapLayerStyle?.setEnabled(true);
   }
 
   void disableButtonClicked() {
-    _rasterMapLayerTonerStyle?.setEnabled(false);
+    _rasterMapLayerStyle?.setEnabled(false);
   }
 
-  // Note: Map tile data source by Stamen Design (http://stamen.com),
-  // under CC BY 3.0 (http://creativecommons.org/licenses/by/3.0).
-  // Data by OpenStreetMap, under ODbL (http://www.openstreetmap.org/copyright):
-  // For more details, check: http://maps.stamen.com/#watercolor/12/37.7706/-122.3782.
   RasterDataSource _createRasterDataSource(String dataSourceName) {
-    // The URL template that is used to download tiles from the device or a backend data source.
-    String templateUrl = "https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png";
+    // Note: As an example, below is an URL template of an outdoor layer from thunderforest.com.
+    // On their web page you can register a key. Without setting a valid API key, the tiles will
+    // show a watermark.
+    // More details on the terms of usage can be found here: https://www.thunderforest.com/terms/
+    // For example, your application must have working links to https://www.thunderforest.com
+    // and https://www.osm.org/copyright.
+    // For the below template URL, please pay attention to the following attribution:
+    // Maps © www.thunderforest.com, Data © www.osm.org/copyright.
+    // Alternatively, choose another tile provider or use the (customizable) map styles provided by HERE.
+    String templateUrl = "https://tile.thunderforest.com/outdoors/{z}/{x}/{y}.png";
+
     // The storage levels available for this data source. Supported range [0, 31].
     List<int> storageLevels = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
     RasterDataSourceProviderConfiguration rasterProviderConfig =
-        RasterDataSourceProviderConfiguration.withUrlProviderAndDefaults(
-            TilingScheme.quadTreeMercator, storageLevels, TileUrlProviderFactory.fromXyzUrlTemplate(templateUrl));
+        RasterDataSourceProviderConfiguration.withDefaults(
+            TileUrlProviderFactory.fromXyzUrlTemplate(templateUrl)!, TilingScheme.quadTreeMercator, storageLevels);
 
     // If you want to add transparent layers then set this to true.
     rasterProviderConfig.hasAlphaChannel = false;
 
     // Raster tiles are stored in a separate cache on the device.
-    String path = "cache/raster/toner";
+    String path = "cache/raster/mycustomlayer";
     int maxDiskSizeInBytes = 1024 * 1024 * 128; // 128 MB
     RasterDataSourceCacheConfiguration cacheConfig = RasterDataSourceCacheConfiguration(path, maxDiskSizeInBytes);
 
@@ -105,8 +110,8 @@ class CustomRasterLayersExample {
   }
 
   void onDestroy() {
-    _rasterMapLayerTonerStyle?.destroy();
-    _rasterDataSourceTonerStyle?.destroy();
+    _rasterMapLayerStyle?.destroy();
+    _rasterDataSourceStyle?.destroy();
   }
 
   Future<void> _addPOIMapMarker(GeoCoordinates geoCoordinates, int drawOrder) async {

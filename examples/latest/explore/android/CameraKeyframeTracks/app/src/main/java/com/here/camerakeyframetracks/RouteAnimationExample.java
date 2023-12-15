@@ -21,6 +21,7 @@ package com.here.camerakeyframetracks;
 
 import android.util.Log;
 
+import com.here.sdk.animation.Easing;
 import com.here.sdk.animation.EasingFunction;
 import com.here.sdk.core.GeoOrientationUpdate;
 import com.here.sdk.core.Point2D;
@@ -75,7 +76,7 @@ public class RouteAnimationExample {
                 new GeoOrientationUpdate(bearing, tilt),
                 mapViewport);
         MapCameraAnimation animation =
-                MapCameraAnimationFactory.createAnimation(update, Duration.ofMillis(3000), EasingFunction.IN_CUBIC);
+                MapCameraAnimationFactory.createAnimation(update, Duration.ofMillis(3000), new Easing(EasingFunction.IN_CUBIC));
         mapView.getCamera().startAnimation(animation);
     }
 }

@@ -74,9 +74,9 @@ class CameraKeyframeTracksExample {
     List<GeoOrientationKeyframe> geoOrientationKeyframes = _createGeoOrientationKeyframes();
 
     try {
-      geoCoordinatesMapCameraKeyframeTrack = MapCameraKeyframeTrack.lookAtTarget(geoCoordinatesKeyframes, EasingFunction.linear, KeyframeInterpolationMode.linear);
-      scalarMapCameraKeyframeTrack = MapCameraKeyframeTrack.lookAtDistance(scalarKeyframes, EasingFunction.linear, KeyframeInterpolationMode.linear);
-      geoOrientationMapCameraKeyframeTrack = MapCameraKeyframeTrack.lookAtOrientation(geoOrientationKeyframes, EasingFunction.linear, KeyframeInterpolationMode.linear);
+      geoCoordinatesMapCameraKeyframeTrack = MapCameraKeyframeTrack.lookAtTargetWithEasing(geoCoordinatesKeyframes, Easing(EasingFunction.linear), KeyframeInterpolationMode.linear);
+      scalarMapCameraKeyframeTrack = MapCameraKeyframeTrack.lookAtDistanceWithEasing(scalarKeyframes, Easing(EasingFunction.linear), KeyframeInterpolationMode.linear);
+      geoOrientationMapCameraKeyframeTrack = MapCameraKeyframeTrack.lookAtOrientationWithEasing(geoOrientationKeyframes, Easing(EasingFunction.linear), KeyframeInterpolationMode.linear);
     } on MapCameraKeyframeTrackInstantiationException catch (e) {
     // Throws an error if keyframes are empty or the duration of keyframes is invalid.
     print(_tag + e.toString());

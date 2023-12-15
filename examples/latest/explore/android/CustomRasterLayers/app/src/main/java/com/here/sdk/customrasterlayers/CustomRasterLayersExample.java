@@ -48,8 +48,8 @@
      private static final float DEFAULT_DISTANCE_TO_EARTH_IN_METERS = 60 * 1000;
 
      private MapView mapView;
-     private MapLayer rasterMapLayerTonerStyle;
-     private RasterDataSource rasterDataSourceTonerStyle;
+     private MapLayer rasterMapLayerStyle;
+     private RasterDataSource rasterDataSourceStyle;
      private Context context;
 
      public void onMapSceneLoaded(MapView mapView, Context context) {
@@ -60,12 +60,12 @@
          MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, DEFAULT_DISTANCE_TO_EARTH_IN_METERS);
          camera.lookAt(new GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
 
-         String dataSourceName = "myRasterDataSourceTonerStyle";
-         rasterDataSourceTonerStyle = createRasterDataSource(dataSourceName);
-         rasterMapLayerTonerStyle = createMapLayer(dataSourceName);
+         String dataSourceName = "myRasterDataSourceStyle";
+         rasterDataSourceStyle = createRasterDataSource(dataSourceName);
+         rasterMapLayerStyle = createMapLayer(dataSourceName);
 
          // We want to start with the default map style.
-         rasterMapLayerTonerStyle.setEnabled(false);
+         rasterMapLayerStyle.setEnabled(false);
 
          // Add a POI marker
          addPOIMapMarker(new GeoCoordinates(52.530932, 13.384915));
@@ -76,32 +76,37 @@
      }
 
      public void enableButtonClicked() {
-         rasterMapLayerTonerStyle.setEnabled(true);
+         rasterMapLayerStyle.setEnabled(true);
      }
 
      public void disableButtonClicked() {
-         rasterMapLayerTonerStyle.setEnabled(false);
+         rasterMapLayerStyle.setEnabled(false);
      }
 
-     // Note: Map tile data source by Stamen Design (http://stamen.com),
-     // under CC BY 3.0 (http://creativecommons.org/licenses/by/3.0).
-     // Data by OpenStreetMap, under ODbL (http://www.openstreetmap.org/copyright):
-     // For more details, check: http://maps.stamen.com/#watercolor/12/37.7706/-122.3782.
      private RasterDataSource createRasterDataSource(String dataSourceName) {
-         // The URL template that is used to download tiles from the device or a backend data source.
-         String templateUrl = "https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png";
+         // Note: As an example, below is an URL template of an outdoor layer from thunderforest.com.
+         // On their web page you can register a key. Without setting a valid API key, the tiles will
+         // show a watermark.
+         // More details on the terms of usage can be found here: https://www.thunderforest.com/terms/
+         // For example, your application must have working links to https://www.thunderforest.com
+         // and https://www.osm.org/copyright.
+         // For the below template URL, please pay attention to the following attribution:
+         // Maps © www.thunderforest.com, Data © www.osm.org/copyright.
+         // Alternatively, choose another tile provider or use the (customizable) map styles provided by HERE.
+         String templateUrl = "https://tile.thunderforest.com/outdoors/{z}/{x}/{y}.png";
+
          // The storage levels available for this data source. Supported range [0, 31].
          List<Integer> storageLevels = Arrays.asList(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
          RasterDataSourceConfiguration.Provider rasterProviderConfig = new RasterDataSourceConfiguration.Provider(
+                 TileUrlProviderFactory.fromXyzUrlTemplate(templateUrl),
                  TilingScheme.QUAD_TREE_MERCATOR,
-                 storageLevels,
-                 TileUrlProviderFactory.fromXyzUrlTemplate(templateUrl));
+                 storageLevels);
 
          // If you want to add transparent layers then set this to true.
          rasterProviderConfig.hasAlphaChannel = false;
 
          // Raster tiles are stored in a separate cache on the device.
-         String path = "cache/raster/toner";
+         String path = "cache/raster/mycustomlayer";
          long maxDiskSizeInBytes = 1024 * 1024 * 128; // 128
          RasterDataSourceConfiguration.Cache cacheConfig = new RasterDataSourceConfiguration.Cache(path, maxDiskSizeInBytes);
 
@@ -132,8 +137,8 @@
      }
 
      public void onDestroy() {
-         rasterMapLayerTonerStyle.destroy();
-         rasterDataSourceTonerStyle.destroy();
+         rasterMapLayerStyle.destroy();
+         rasterDataSourceStyle.destroy();
      }
 
      private void addPOIMapMarker(GeoCoordinates geoCoordinates) {

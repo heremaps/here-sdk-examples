@@ -59,8 +59,8 @@ class RouteAnimationExample {
     MapCameraUpdate update = MapCameraUpdateFactory.lookAtAreaWithGeoOrientationAndViewRectangle(route!.boundingBox,
         GeoOrientationUpdate(bearing, tilt),
         mapViewport);
-    MapCameraAnimation animation = MapCameraAnimationFactory.createAnimationFromUpdate(
-        update, const Duration(milliseconds: 3000), EasingFunction.inCubic);
+    MapCameraAnimation animation = MapCameraAnimationFactory.createAnimationFromUpdateWithEasing(
+        update, const Duration(milliseconds: 3000), Easing(EasingFunction.inCubic));
     _hereMapController.camera.startAnimation(animation);
   }
 }

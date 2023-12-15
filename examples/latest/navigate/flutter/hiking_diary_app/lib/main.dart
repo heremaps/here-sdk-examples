@@ -264,6 +264,12 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
         // 3. User has granted required permissions and made a consent decision.
         _updateMessageState("MapView loaded");
+        
+        String message = "For this example app, an outdoor layer from thunderforest.com is used. " +
+            "Without setting a valid API key, these raster tiles will show a watermark (terms of usage: https://www.thunderforest.com/terms/)." +
+            "\n Attribution for the outdoor layer: \n Maps © www.thunderforest.com, \n Data © www.osm.org/copyright.";
+
+        _showDialog("Note", message);
 
         hikingApp = HikingApp(context, hereMapController, widget.messageNotifier);
 
@@ -340,8 +346,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       alignment: Alignment.topCenter,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          primary: Colors.lightBlueAccent,
-          onPrimary: Colors.white,
+          foregroundColor: Colors.white,
+          backgroundColor: Colors.lightBlueAccent,
         ),
         onPressed: callbackFunction,
         child: Container(

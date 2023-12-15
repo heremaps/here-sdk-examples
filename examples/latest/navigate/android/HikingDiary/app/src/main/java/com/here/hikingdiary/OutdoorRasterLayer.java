@@ -62,30 +62,30 @@ public class OutdoorRasterLayer {
     }
 
     private RasterDataSource createRasterDataSource(String dataSourceName) {
-
-        // The URL template that is used to download tiles from the device or a backend data source.
-        String templateUrl = "https://tile.thunderforest.com/outdoors/{z}/{x}/{y}.png";
-
-        // ******************************************************************************************************
-        // Note: As an example, above we've set an outdoor layer from thunderforest.com. On their web page you
-        // can register a key for personal use. Without setting a valid API key, the tiles will show a watermark.
+        // Note: As an example, below is an URL template of an outdoor layer from thunderforest.com.
+        // On their web page you can register a key. Without setting a valid API key, the tiles will
+        // show a watermark.
         // More details on the terms of usage can be found here: https://www.thunderforest.com/terms/
-        // Alternatively, choose another tile provider or use one of the default map styles provided by HERE.
-        // ******************************************************************************************************
+        // For example, your application must have working links to https://www.thunderforest.com
+        // and https://www.osm.org/copyright.
+        // For the below template URL, please pay attention to the following attribution:
+        // Maps © www.thunderforest.com, Data © www.osm.org/copyright.
+        // Alternatively, choose another tile provider or use the (customizable) map styles provided by HERE.
+        String templateUrl = "https://tile.thunderforest.com/outdoors/{z}/{x}/{y}.png";
 
         // The storage levels available for this data source. Supported range [0, 31].
         List<Integer> storageLevels = Arrays.asList(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
 
         RasterDataSourceConfiguration.Provider rasterProviderConfig = new RasterDataSourceConfiguration.Provider(
+                TileUrlProviderFactory.fromXyzUrlTemplate(templateUrl),
                 TilingScheme.QUAD_TREE_MERCATOR,
-                storageLevels,
-                TileUrlProviderFactory.fromXyzUrlTemplate(templateUrl));
+                storageLevels);
 
         // If you want to add transparent layers then set this to true.
         rasterProviderConfig.hasAlphaChannel = false;
 
         // Raster tiles are stored in a separate cache on the device.
-        String path = "cache/raster/custom";
+        String path = "cache/raster/mycustomlayer";
         long maxDiskSizeInBytes = 1024L * 1024L * 128L; // 128 MB
         RasterDataSourceConfiguration.Cache cacheConfig = new RasterDataSourceConfiguration.Cache(path,
                 maxDiskSizeInBytes);

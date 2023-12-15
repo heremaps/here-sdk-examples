@@ -26,6 +26,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 
+import com.here.sdk.animation.Easing;
 import com.here.sdk.animation.EasingFunction;
 import com.here.sdk.core.Anchor2D;
 import com.here.sdk.core.Color;
@@ -933,7 +934,7 @@ public class TruckGuidanceExample {
                 new GeoOrientationUpdate(0.0, 0.0),
                 mapViewport);
         MapCameraAnimation animation =
-                MapCameraAnimationFactory.createAnimation(update, Duration.ofMillis(2000), EasingFunction.OUT_SINE);
+                MapCameraAnimationFactory.createAnimation(update, Duration.ofMillis(2000), new Easing(EasingFunction.OUT_SINE));
         mapView.getCamera().startAnimation(animation);
     }
 
