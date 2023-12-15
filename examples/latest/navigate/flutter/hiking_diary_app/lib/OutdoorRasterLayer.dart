@@ -44,20 +44,28 @@ class OutdoorRasterLayer {
   }
 
   RasterDataSource createRasterDataSource(String dataSourceName) {
-    // The URL template that is used to download tiles from the device or a backend data source.
+    // Note: As an example, below is an URL template of an outdoor layer from thunderforest.com.
+    // On their web page you can register a key. Without setting a valid API key, the tiles will
+    // show a watermark.
+    // More details on the terms of usage can be found here: https://www.thunderforest.com/terms/
+    // For example, your application must have working links to https://www.thunderforest.com
+    // and https://www.osm.org/copyright.
+    // For the below template URL, please pay attention to the following attribution:
+    // Maps © www.thunderforest.com, Data © www.osm.org/copyright.
+    // Alternatively, choose another tile provider or use the (customizable) map styles provided by HERE.
     final templateUrl = 'https://tile.thunderforest.com/outdoors/{z}/{x}/{y}.png';
 
     // The storage levels available for this data source. Supported range [0, 31].
     final storageLevels = <int>[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
 
-    var rasterProviderConfig = RasterDataSourceProviderConfiguration.withUrlProviderAndDefaults(
-        TilingScheme.quadTreeMercator, storageLevels, TileUrlProviderFactory.fromXyzUrlTemplate(templateUrl));
+    var rasterProviderConfig = RasterDataSourceProviderConfiguration.withDefaults(
+        TileUrlProviderFactory.fromXyzUrlTemplate(templateUrl)!, TilingScheme.quadTreeMercator, storageLevels);
 
     // If you want to add transparent layers then set this to true.
     rasterProviderConfig.hasAlphaChannel = false;
 
     // Raster tiles are stored in a separate cache on the device.
-    final path = 'cache/raster/custom';
+    final path = 'cache/raster/mycustomlayer';
     final maxDiskSizeInBytes = 1024 * 1024 * 128; // 128 MB
     final cacheConfig = RasterDataSourceCacheConfiguration(path, maxDiskSizeInBytes);
 

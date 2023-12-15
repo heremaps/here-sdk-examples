@@ -763,7 +763,7 @@ class ReroutingExample: LongPressDelegate,
 
         // Animate to the route within a duration of 3 seconds.
         let update:MapCameraUpdate = MapCameraUpdateFactory.lookAt(area: route.boundingBox, orientation: GeoOrientationUpdate(GeoOrientation(bearing: bearing, tilt: tilt)), viewRectangle: mapViewport)
-        let animation: MapCameraAnimation = MapCameraAnimationFactory.createAnimation(from: update, duration: TimeInterval(3), easingFunction: EasingFunction.inCubic)
+        let animation: MapCameraAnimation = MapCameraAnimationFactory.createAnimation(from: update, duration: TimeInterval(3), easing: Easing(EasingFunction.inCubic))
         mapView.camera.startAnimation(animation)
     }
     

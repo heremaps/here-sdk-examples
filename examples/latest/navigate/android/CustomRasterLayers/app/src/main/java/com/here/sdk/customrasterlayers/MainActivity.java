@@ -23,6 +23,7 @@ import android.content.Context;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -57,6 +58,12 @@ public class MainActivity extends AppCompatActivity {
         mapView.onCreate(savedInstanceState);
 
         handleAndroidPermissions();
+
+        String message = "For this example app, an outdoor layer from thunderforest.com is used. " +
+                "Without setting a valid API key, these raster tiles will show a watermark (terms of usage: https://www.thunderforest.com/terms/)." +
+                "\n Attribution for the outdoor layer: \n Maps © www.thunderforest.com, \n Data © www.osm.org/copyright.";
+
+        showDialog("Note", message);
     }
 
     private void initializeHERESDK() {
@@ -109,6 +116,14 @@ public class MainActivity extends AppCompatActivity {
 
     public void disableButtonClicked(View view) {
         customRasterLayersExample.disableButtonClicked();
+    }
+
+    private void showDialog(String title, String message) {
+        new AlertDialog.Builder(this)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("OK", null)
+                .show();
     }
 
     @Override

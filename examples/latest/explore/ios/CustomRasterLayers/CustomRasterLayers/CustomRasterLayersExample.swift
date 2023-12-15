@@ -23,8 +23,8 @@ import UIKit
 class CustomRasterLayersExample {
 
     private let mapView: MapView
-    private var rasterMapLayerTonerStyle: MapLayer!
-    private var rasterDataSourceTonerStyle: RasterDataSource!
+    private var rasterMapLayerStyle: MapLayer!
+    private var rasterDataSourceStyle: RasterDataSource!
 
     init(mapView: MapView) {
         self.mapView = mapView
@@ -34,12 +34,12 @@ class CustomRasterLayersExample {
         camera.lookAt(point: GeoCoordinates(latitude: 52.518043, longitude: 13.405991),
                       zoom: distanceInMeters)
 
-        let dataSourceName = "myRasterDataSourceTonerStyle"
-        rasterDataSourceTonerStyle = createRasterDataSource(dataSourceName: dataSourceName)
-        rasterMapLayerTonerStyle = createMapLayer(dataSourceName: dataSourceName)
+        let dataSourceName = "myRasterDataSourceStyle"
+        rasterDataSourceStyle = createRasterDataSource(dataSourceName: dataSourceName)
+        rasterMapLayerStyle = createMapLayer(dataSourceName: dataSourceName)
 
         // We want to start with the default map style.
-        rasterMapLayerTonerStyle.setEnabled(false)
+        rasterMapLayerStyle.setEnabled(false)
         
         // Add a POI marker
         addPOIMapMarker(geoCoordinates: GeoCoordinates(latitude: 52.530932, longitude: 13.384915))
@@ -50,32 +50,37 @@ class CustomRasterLayersExample {
     }
 
     func onEnableButtonClicked() {
-        rasterMapLayerTonerStyle.setEnabled(true)
+        rasterMapLayerStyle.setEnabled(true)
     }
 
     func onDisableButtonClicked() {
-        rasterMapLayerTonerStyle.setEnabled(false)
+        rasterMapLayerStyle.setEnabled(false)
     }
 
-    // Note: Map tile data source by Stamen Design (http://stamen.com),
-    // under CC BY 3.0 (http://creativecommons.org/licenses/by/3.0).
-    // Data by OpenStreetMap, under ODbL (http://www.openstreetmap.org/copyright):
-    // For more details, check: http://maps.stamen.com/#watercolor/12/37.7706/-122.3782.
     private func createRasterDataSource(dataSourceName: String) -> RasterDataSource {
-        // The URL template that is used to download tiles from the device or a backend data source.
-        let templateUrl = "https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png"
+        // Note: As an example, below is an URL template of an outdoor layer from thunderforest.com.
+        // On their web page you can register a key. Without setting a valid API key, the tiles will
+        // show a watermark.
+        // More details on the terms of usage can be found here: https://www.thunderforest.com/terms/
+        // For example, your application must have working links to https://www.thunderforest.com
+        // and https://www.osm.org/copyright.
+        // For the below template URL, please pay attention to the following attribution:
+        // Maps © www.thunderforest.com, Data © www.osm.org/copyright.
+        // Alternatively, choose another tile provider or use the (customizable) map styles provided by HERE.
+        let templateUrl = "https://tile.thunderforest.com/outdoors/{z}/{x}/{y}.png"
+        
         // The storage levels available for this data source. Supported range [0, 31].
         let storageLevels: [Int32] = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
-        var rasterProviderConfig =
-            RasterDataSourceConfiguration.Provider(tilingScheme: TilingScheme.quadTreeMercator,
-                                                   storageLevels: storageLevels,
-                                                   urlProvider: TileUrlProviderFactory.fromXyzUrlTemplate(templateUrl))
+        var rasterProviderConfig = RasterDataSourceConfiguration.Provider(
+            urlProvider: TileUrlProviderFactory.fromXyzUrlTemplate(templateUrl)!,
+            tilingScheme: TilingScheme.quadTreeMercator,
+            storageLevels: storageLevels)            
         
         // If you want to add transparent layers then set this to true.
         rasterProviderConfig.hasAlphaChannel = false
         
         // Raster tiles are stored in a separate cache on the device.
-        let path = "cache/raster/toner"
+        let path = "cache/raster/mycustomlayer"
         let maxDiskSizeInBytes: Int64 = 1024 * 1024 * 128 // 128 MB
         let cacheConfig = RasterDataSourceConfiguration.Cache(path: path,
                                                               diskSize: maxDiskSizeInBytes)

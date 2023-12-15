@@ -261,7 +261,7 @@ class HikingApp: LocationDelegate {
         let durationInSeconds = TimeInterval(3)
         let mapCameraAnimation = MapCameraAnimationFactory.createAnimation(from: mapCameraUpdate,
                                                                            duration: durationInSeconds,
-                                                                           easingFunction: EasingFunction.inCubic)
+                                                                           easing: Easing(EasingFunction.inCubic))
         mapView.camera.startAnimation(mapCameraAnimation)
     }
 

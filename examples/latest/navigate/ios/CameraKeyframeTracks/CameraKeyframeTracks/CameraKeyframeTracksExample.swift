@@ -81,9 +81,9 @@ public class CameraKeyframeTracksExample: AnimationDelegate {
         let geoOrientationKeyframes: [GeoOrientationKeyframe] = createGeoOrientationKeyframes()
 
         do {
-            geoCoordinatesMapCameraKeyframeTrack = try MapCameraKeyframeTrack.lookAtTarget(keyframes: geoCoordinatesKeyframes, easingFunction: EasingFunction.linear, interpolationMode: KeyframeInterpolationMode.linear)
-            scalarMapCameraKeyframeTrack = try MapCameraKeyframeTrack.lookAtDistance(keyframes: scalarKeyframes, easingFunction: EasingFunction.linear, interpolationMode: KeyframeInterpolationMode.linear)
-            geoOrientationMapCameraKeyframeTrack = try MapCameraKeyframeTrack.lookAtOrientation(keyframes: geoOrientationKeyframes, easingFunction: EasingFunction.linear, interpolationMode: KeyframeInterpolationMode.linear)
+            geoCoordinatesMapCameraKeyframeTrack = try MapCameraKeyframeTrack.lookAtTarget(keyframes: geoCoordinatesKeyframes, easing: Easing(EasingFunction.linear), interpolationMode: KeyframeInterpolationMode.linear)
+            scalarMapCameraKeyframeTrack = try MapCameraKeyframeTrack.lookAtDistance(keyframes: scalarKeyframes, easing: Easing(EasingFunction.linear), interpolationMode: KeyframeInterpolationMode.linear)
+            geoOrientationMapCameraKeyframeTrack = try MapCameraKeyframeTrack.lookAtOrientation(keyframes: geoOrientationKeyframes, easing: Easing(EasingFunction.linear), interpolationMode: KeyframeInterpolationMode.linear)
         } catch let mapCameraKeyframeTrackException {
         // Throws an error if keyframes are empty or the duration of keyframes is invalid.
             print(tag + mapCameraKeyframeTrackException.localizedDescription)

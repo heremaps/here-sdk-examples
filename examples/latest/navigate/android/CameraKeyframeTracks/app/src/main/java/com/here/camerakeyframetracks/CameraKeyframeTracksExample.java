@@ -26,6 +26,7 @@ import androidx.annotation.Nullable;
 
 import com.here.sdk.animation.AnimationListener;
 import com.here.sdk.animation.AnimationState;
+import com.here.sdk.animation.Easing;
 import com.here.sdk.animation.EasingFunction;
 import com.here.sdk.animation.GeoCoordinatesKeyframe;
 import com.here.sdk.animation.GeoOrientationKeyframe;
@@ -99,9 +100,9 @@ public class CameraKeyframeTracksExample {
         List<GeoOrientationKeyframe> geoOrientationKeyframes = createGeoOrientationKeyframes();
 
         try {
-            geoCoordinatesMapCameraKeyframeTrack = MapCameraKeyframeTrack.lookAtTarget(geoCoordinatesKeyframes, EasingFunction.LINEAR, KeyframeInterpolationMode.LINEAR);
-            scalarMapCameraKeyframeTrack = MapCameraKeyframeTrack.lookAtDistance(scalarKeyframes, EasingFunction.LINEAR, KeyframeInterpolationMode.LINEAR);
-            geoOrientationMapCameraKeyframeTrack = MapCameraKeyframeTrack.lookAtOrientation(geoOrientationKeyframes, EasingFunction.LINEAR, KeyframeInterpolationMode.LINEAR);
+            geoCoordinatesMapCameraKeyframeTrack = MapCameraKeyframeTrack.lookAtTarget(geoCoordinatesKeyframes, new Easing(EasingFunction.LINEAR), KeyframeInterpolationMode.LINEAR);
+            scalarMapCameraKeyframeTrack = MapCameraKeyframeTrack.lookAtDistance(scalarKeyframes, new Easing(EasingFunction.LINEAR), KeyframeInterpolationMode.LINEAR);
+            geoOrientationMapCameraKeyframeTrack = MapCameraKeyframeTrack.lookAtOrientation(geoOrientationKeyframes, new Easing(EasingFunction.LINEAR), KeyframeInterpolationMode.LINEAR);
         } catch (MapCameraKeyframeTrack.InstantiationException e) {
             // Throws an error if keyframes are empty or the duration of keyframes is invalid.
             Log.e(TAG, e.toString());

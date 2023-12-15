@@ -32,6 +32,13 @@ class ViewController: UIViewController {
         mapView.mapScene.loadScene(mapScheme: MapScheme.satellite, completion: onLoadScene)
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        let message = "For this example app, an outdoor layer from thunderforest.com is used. Without setting a valid API key, these raster tiles will show a watermark (terms of usage: https://www.thunderforest.com/terms/).\n Attribution for the outdoor layer: \n Maps © www.thunderforest.com, \n Data © www.osm.org/copyright."
+        showDialog(title: "Note", message: message)
+    }
+    
     // Completion handler when loading a map scene.
     private func onLoadScene(mapError: MapError?) {
         if let error = mapError {
@@ -89,6 +96,14 @@ class ViewController: UIViewController {
         }
     }
     
+    func showDialog(title: String, message: String) {
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+
+        alertController.addAction(UIAlertAction(title: "Ok", style: .cancel, handler: nil))
+
+        present(alertController, animated: true, completion: nil)
+    }
+
     // Close the menu.
     @IBAction func unwindToViewController(_ unwindSegue: UIStoryboardSegue) {}
 }

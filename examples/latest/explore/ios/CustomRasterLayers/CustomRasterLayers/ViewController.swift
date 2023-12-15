@@ -32,6 +32,13 @@ final class ViewController: UIViewController {
         // Load the map scene using a map style to render the map with.
         mapView.mapScene.loadScene(mapScheme: .normalDay, completion: onLoadScene)
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+
+        let message = "For this example app, an outdoor layer from thunderforest.com is used. Without setting a valid API key, these raster tiles will show a watermark (terms of usage: https://www.thunderforest.com/terms/).\n Attribution for the outdoor layer: \n Maps © www.thunderforest.com, \n Data © www.osm.org/copyright."
+        showDialog(title: "Note", message: message)
+    }
 
     private func onLoadScene(mapError: MapError?) {
         guard mapError == nil else {
@@ -54,6 +61,14 @@ final class ViewController: UIViewController {
         if isMapSceneLoaded {
             customRasterLayersExample.onDisableButtonClicked()
         }
+    }
+    
+    func showDialog(title: String, message: String) {
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+
+        alertController.addAction(UIAlertAction(title: "Ok", style: .cancel, handler: nil))
+
+        present(alertController, animated: true, completion: nil)
     }
 
     override func didReceiveMemoryWarning() {

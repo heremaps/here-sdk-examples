@@ -153,6 +153,12 @@ public class MainActivity extends AppCompatActivity {
         });
 
         handleAndroidPermissions();
+        
+        String message = "For this example app, an outdoor layer from thunderforest.com is used. " +
+                "Without setting a valid API key, these raster tiles will show a watermark (terms of usage: https://www.thunderforest.com/terms/)." +
+                "\n Attribution for the outdoor layer: \n Maps © www.thunderforest.com, \n Data © www.osm.org/copyright.";
+
+        showDialog("Note", message);
     }
 
     @Override
@@ -264,6 +270,14 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void showDialog(String title, String message) {
+        new AlertDialog.Builder(this)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("OK", null)
+                .show();
     }
 
     @Override

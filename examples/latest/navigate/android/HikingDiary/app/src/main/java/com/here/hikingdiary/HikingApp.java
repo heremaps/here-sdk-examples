@@ -32,6 +32,7 @@ import androidx.annotation.NonNull;
 import com.here.hikingdiary.locationfilter.DistanceAccuracyLocationFilter;
 import com.here.hikingdiary.locationfilter.LocationFilterInterface;
 import com.here.hikingdiary.positioning.HEREPositioningVisualizer;
+import com.here.sdk.animation.Easing;
 import com.here.sdk.animation.EasingFunction;
 import com.here.sdk.core.Color;
 import com.here.sdk.core.GeoCoordinates;
@@ -287,7 +288,7 @@ public class HikingApp {
         Duration durationInSeconds = Duration.ofSeconds(3);
         MapCameraAnimation mapCameraAnimation = MapCameraAnimationFactory.createAnimation(mapCameraUpdate,
                 durationInSeconds,
-                EasingFunction.IN_CUBIC);
+                new Easing(EasingFunction.IN_CUBIC));
         mapView.getCamera().startAnimation(mapCameraAnimation);
     }
 
