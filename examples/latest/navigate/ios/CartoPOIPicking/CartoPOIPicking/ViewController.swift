@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 HERE Europe B.V.
+ * Copyright (C) 2019-2024 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,12 +85,12 @@ class ViewController: UIViewController, TapDelegate {
             return
         }
 
-        handlePickedCartoPOIs(pickedMapContent.pois)
+        handlePickedCartoPOIs(pickedMapContent.pickedPlaces)
         handlePickedTrafficIncidents(pickedMapContent.trafficIncidents)
         handlePickedVehicleRestrictions(pickedMapContent.vehicleRestrictions)
     }
 
-    private func handlePickedCartoPOIs(_ cartoPOIList: [PickMapContentResult.PoiResult]) {
+    private func handlePickedCartoPOIs(_ cartoPOIList: [PickedPlace]) {
         if cartoPOIList.count == 0 {
             // No results found at pick location.
             return
@@ -103,10 +103,9 @@ class ViewController: UIViewController, TapDelegate {
         showDialog(title: "Carto POI picked",
                    message: "Name: \(name). Location: \(lat), \(lon). See log for more place details.")
 
-        // Now you can use the SearchEngine (via PickedPlace) or the OfflineSearchEngine
-        // (via PickedPlace or offlineSearchId) to retrieve the Place object containing more details.
-        // Below we use the offlineSearchId. Alternatively, you can use the
-        // PickMapContentResult as data to create a PickedPlace object.
+        // Now you can use the SearchEngine or the OfflineSearchEngine (if available for your edition)
+        // to retrieve the Place object containing more details.
+        // Below we use the offlineSearchId.
         fetchCartoPOIDetails(topmostCartoPOI.offlineSearchId);
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 HERE Europe B.V.
+ * Copyright (C) 2019-2024 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -201,7 +201,7 @@ class TruckGuidanceExample: TapDelegate,
                 return
             }
 
-            let cartoPOIList = pickMapContentResult.pois
+            let cartoPOIList = pickMapContentResult.pickedPlaces
             let trafficPOIList = pickMapContentResult.trafficIncidents
             let vehicleRestrictionResultList = pickMapContentResult.vehicleRestrictions
 
@@ -210,10 +210,8 @@ class TruckGuidanceExample: TapDelegate,
                 let topmostContent = cartoPOIList[0]
                 print("Carto POI picked: \(topmostContent.name), Place category: \(topmostContent.placeCategoryId)")
 
-                // Optionally, you can now use a search engine to retrieve more details.
-                let pickedPlace = PickedPlace(name: topmostContent.name, coordinates: topmostContent.coordinates, placeCategoryId: topmostContent.placeCategoryId)
-                
-                self.searchEngine.searchPickedPlace(pickedPlace: pickedPlace, languageCode: .enUs) { searchError, place in
+                // Use the search engine to retrieve more details.
+                self.searchEngine.searchPickedPlace(pickedPlace: topmostContent, languageCode: .enUs) { searchError, place in
                     if let searchError = searchError {
                         print("searchPickedPlace() resulted in an error: \(searchError)")
                         return

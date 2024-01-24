@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 HERE Europe B.V.
+ * Copyright (C) 2019-2024 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,21 +21,41 @@ package com.here.sdk.examples.venues;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.here.sdk.core.Anchor2D;
 import com.here.sdk.core.GeoCoordinates;
+import com.here.sdk.core.Point2D;
 import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.core.engine.SDKOptions;
 import com.here.sdk.core.errors.InstantiationErrorException;
@@ -50,12 +70,15 @@ import com.here.sdk.venue.control.Venue;
 import com.here.sdk.venue.control.VenueErrorCode;
 import com.here.sdk.venue.control.VenueMap;
 import com.here.sdk.venue.control.VenueSelectionListener;
+import com.here.sdk.venue.data.VenueGeometry;
 import com.here.sdk.venue.data.VenueGeometryFilterType;
 import com.here.sdk.venue.data.VenueInfo;
+import com.here.sdk.venue.data.VenueModel;
 import com.here.sdk.venue.service.VenueListener;
 import com.here.sdk.venue.service.VenueService;
 import com.here.sdk.venue.service.VenueServiceInitStatus;
 import com.here.sdk.venue.service.VenueServiceListener;
+import com.here.sdk.venue.style.VenueStyle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,14 +90,27 @@ public class MainActivity extends AppCompatActivity {
     private PermissionsRequestor permissionsRequestor;
     private MapView mapView;
     private VenueEngine venueEngine;
-    private Button goButton;
     private DrawingSwitcher drawingSwitcher;
     private LevelSwitcher levelSwitcher;
     private VenueTapController venueTapController;
-    private VenueSearchController venueSearchController;
-    private Spinner venueInfoListSpinner;
     private Integer[] venueInfoListItems;
     private int selectedVenueId;
+
+    private RecyclerView recyclerView;
+    private LinearLayout bottomSheet;
+    private BottomSheetBehavior sheetBehavior;
+    private EditText venue_search;
+    private List<VenueInfo> venueInfo = new ArrayList<>();
+    private List<VenueGeometry> geometryList;
+    private Boolean mapLoadDone = false;
+    private ImageButton drawingButton;
+    private ListView drawingList;
+    private LinearLayout header;
+    private ImageButton backButton;
+    private ImageView cancle_text;
+    private TextView venueName;
+    private ProgressBar progressBar, progressBarBottom;
+    private ToggleButton topologyButton;
 
     // Set value for hrn with your platform catalog HRN value if you wan    t to load non default collection.
     private String HRN = "YOUR_CATALOG_HRN";
@@ -96,14 +132,106 @@ public class MainActivity extends AppCompatActivity {
         mapView.onCreate(savedInstanceState);
 
         // Get UI elements for selection venue by id.
-        venueInfoListSpinner = findViewById(R.id.VenueInfoList);
-        goButton = findViewById(R.id.goButton);
+        progressBar = findViewById(R.id.progress_bar);
+        progressBarBottom = findViewById(R.id.progress_bar_bottom);
+        drawingButton = findViewById(R.id.drawing_switcher_button);
+        drawingList = findViewById(R.id.drawingList);
+        drawingSwitcher = new DrawingSwitcher(this, drawingButton, drawingList);
 
         // Get drawing and level UI switchers.
-        drawingSwitcher = findViewById(R.id.drawing_switcher);
         levelSwitcher = findViewById(R.id.level_switcher);
 
         handleAndroidPermissions();
+
+        recyclerView = findViewById(R.id.VenueListView);
+        bottomSheet = findViewById(R.id.bottomSheet);
+        sheetBehavior = BottomSheetBehavior.from(bottomSheet);
+        venue_search = findViewById(R.id.SearchBar);
+        cancle_text = findViewById(R.id.cancleText);
+        cancle_text.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                venue_search.setText("");
+                cancle_text.setVisibility(View.GONE);
+            }
+        });
+        venue_search.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence c, int i, int i1, int i2) {
+                if(sheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED)
+                    sheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                cancle_text.setVisibility(View.VISIBLE);
+                String s = c != null? c.toString() : "";
+                s = s.trim();
+                if(mapLoadDone == false)
+                    filterVenues(s);
+                else
+                    filterSpaces(s);
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+        header = findViewById(R.id.header);
+        backButton = findViewById(R.id.backButton);
+        venueName = findViewById(R.id.VenueName);
+        header.setVisibility(View.GONE);
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(mapLoadDone) {
+                    removeVenue();
+                }
+            }
+        });
+        recyclerView.setVisibility(View.GONE);
+        progressBarBottom.setVisibility(View.VISIBLE);
+        topologyButton = findViewById(R.id.topologyButton);
+        topologyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                    if (topologyButton.isChecked()) {
+                        venueEngine.getVenueMap().getSelectedVenue().setTopologyVisible(true);
+                    } else {
+                        venueEngine.getVenueMap().getSelectedVenue().setTopologyVisible(false);
+                    }
+            }
+        });
+    }
+
+    private void filterSpaces(String s) {
+        recyclerView.setAdapter(null);
+        List<VenueGeometry> list = new ArrayList<>();
+        Log.d(TAG, "Geometries size: " + geometryList.size());
+        for(VenueGeometry geometry : geometryList) {
+            if(geometry.getName().toLowerCase().contains(s.toLowerCase()) || geometry.getLevel().getName().toLowerCase().contains(s.toLowerCase())
+            || (geometry.getInternalAddress() != null ? geometry.getInternalAddress().getAddress() : "").toLowerCase().contains(s.toLowerCase())) {
+                list.add(geometry);
+            }
+        }
+        if(!list.isEmpty()) {
+            recyclerView.setAdapter(new SpaceAdapter(getApplicationContext(), list, this));
+        }
+    }
+
+    private void filterVenues(String s) {
+        recyclerView.setAdapter(null);
+        List<VenueInfo> list = new ArrayList<>();
+        for (VenueInfo venue : venueInfo) {
+            if(venue.getVenueName().toLowerCase().contains(s.toLowerCase()) || (Integer.toString(venue.getVenueId())).contains(s)) {
+                list.add(venue);
+            }
+        }
+        if(!list.isEmpty()) {
+            recyclerView.setAdapter(new VenueAdapter(getApplicationContext(), list, this));
+        }
     }
 
     private void initializeHERESDK() {
@@ -144,6 +272,9 @@ public class MainActivity extends AppCompatActivity {
         // Load a scene from the HERE SDK to render the map with a map scheme.
         mapView.getMapScene().loadScene(MapScheme.NORMAL_DAY, mapError -> {
             if (mapError == null) {
+                Anchor2D anchor = new Anchor2D(0,0);
+                Point2D offset = new Point2D(0, 1800);
+                mapView.setWatermarkLocation(anchor, offset);
                 double distanceInMeters = 1000 * 10;
                 MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
                 mapView.getCamera().lookAt(
@@ -192,11 +323,8 @@ public class MainActivity extends AppCompatActivity {
         venueMap.add(venueSelectionListener);
 
         // Create a venue tap controller and connect VenueMap to it.
-        venueTapController = new VenueTapController(venueEngine, mapView, this);
+        venueTapController = new VenueTapController(venueEngine, mapView, this, sheetBehavior, recyclerView);
         venueTapController.setVenueMap(venueMap);
-
-        venueSearchController = new VenueSearchController(venueMap, venueTapController,
-                findViewById(R.id.venueSearchLayout), findViewById(R.id.searchButton));
 
         // Set a tap listener.
         mapView.getGestures().setTapListener(tapListener);
@@ -221,6 +349,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Set label text preference
         service.setLabeltextPreference(labelPref);
+        service.loadTopologies();
     }
 
     // Listener for the VenueService event.
@@ -229,18 +358,11 @@ public class MainActivity extends AppCompatActivity {
         public void onInitializationCompleted(@NonNull VenueServiceInitStatus result) {
             if (result == VenueServiceInitStatus.ONLINE_SUCCESS) {
                 try{
-                    List<VenueInfo> venueInfo = venueEngine.getVenueMap().getVenueInfoList(MainActivity.this::onVenueLoadError);
-                    venueInfoListItems = new Integer[venueInfo.size()];
-                    for (int i = 0; i< venueInfo.size(); i++) {
-                        Log.d(TAG, "Venue Identifier: " + venueInfo.get(i).getVenueIdentifier() + " Venue Id: "+venueInfo.get(i).getVenueId() + " Venue Name: "+venueInfo.get(i).getVenueName());
-                        venueInfoListItems[i] = venueInfo.get(i).getVenueId();
-                    }
-
-                    ArrayAdapter<Integer> adapter = new ArrayAdapter<>(MainActivity.this,
-                            android.R.layout.simple_spinner_dropdown_item, venueInfoListItems);
-                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                    venueInfoListSpinner.setAdapter(adapter);
-                    venueInfoListSpinner.setOnItemSelectedListener(onVenueInfoListSelectedListener);
+                    venueInfo = venueEngine.getVenueMap().getVenueInfoList(MainActivity.this::onVenueLoadError);
+                    recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+                    recyclerView.setAdapter(new VenueAdapter(MainActivity.this, venueInfo, MainActivity.this));
+                    recyclerView.setVisibility(View.VISIBLE);
+                    progressBarBottom.setVisibility(View.GONE);
                 }
                 catch (Exception e) {
                     Log.d(TAG, e.toString());
@@ -248,7 +370,6 @@ public class MainActivity extends AppCompatActivity {
 
                 // Enable button for venue selection. From this moment the venue loading
                 // is available.
-                setGoButtonClickListener();
             } else {
                 Log.e(TAG, "Failed to initialize venue service.");
             }
@@ -259,12 +380,28 @@ public class MainActivity extends AppCompatActivity {
     };
 
     // Listener for the venue loading event.
-    private final VenueListener venueListener = (venueId, venueModel, online, venueStyle) -> {
-        if (venueModel == null) {
-            setGoButtonEnabled(true);
-            Log.e(TAG, "Failed to load the venue: " + venueId);
+    private final VenueListener venueListener = new VenueListener() {
+        @Override
+        public void onGetVenueCompleted(int venueId, @Nullable VenueModel venueModel, boolean b, @Nullable VenueStyle venueStyle) {
+            progressBar.setVisibility(View.GONE);
+            if (venueModel == null) {
+                Log.e(TAG, "Failed to load the venue: " + venueId);
+            } else {
+                mapLoadDone = true;
+                mapView.getCamera().zoomTo(18);
+                geometryList = venueModel.getGeometriesByName();
+                venueTapController.setGeometries(geometryList);
+                recyclerView.setAdapter(new SpaceAdapter(getApplicationContext(), geometryList, MainActivity.this));
+                venue_search.setHint("Search for Spaces");
+                String venue_name = "";
+                for(VenueInfo venue : venueInfo) {
+                    if(venue.getVenueId() == venueId)
+                        venue_name = venue.getVenueName();
+                }
+                venueName.setText(venue_name);
+                header.setVisibility(View.VISIBLE);
+            }
         }
-        mapView.getCamera().zoomTo(18);
     };
 
     // Listener for the venue selection event.
@@ -281,32 +418,13 @@ public class MainActivity extends AppCompatActivity {
 
                     // Venue selection is done, enable back the button for the venue selection
                     // to be able to select another venue.
-                    setGoButtonEnabled(true);
+                    progressBar.setVisibility(View.GONE);
+                    mapLoadDone = true;
+                    header.setVisibility(View.VISIBLE);
                 }
             };
 
-    // Listener for the button which selects venues by id.
-    private void setGoButtonClickListener() {
-        goButton.setOnClickListener(v -> {
-            try {
-                // Try to parse a venue id.
-                final int venueId = selectedVenueId;
-                VenueMap venueMap = venueEngine.getVenueMap();
-                Venue selectedVenue = venueMap.getSelectedVenue();
-                if (selectedVenue == null || selectedVenue.getVenueModel().getId() != venueId) {
-                    // Disable the button while a venue loading and selection is in progress.
-                    setGoButtonEnabled(false);
-                    // Select a venue by id.
-                    venueMap.selectVenueAsync(venueId, this ::onVenueLoadError);
-                }
-            } catch (Exception e) {
-                Log.d(TAG, "No Maps Found. " + e.toString());
-            }
-            hideKeyboard();
-        });
-    }
-
-    private void onVenueLoadError(VenueErrorCode venueLoadError) {
+    public void onVenueLoadError(VenueErrorCode venueLoadError) {
         String errorMsg;
         switch (venueLoadError) {
             case NO_NETWORK:
@@ -343,18 +461,9 @@ public class MainActivity extends AppCompatActivity {
                 errorMsg = "Unknown Error encountered";
         }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(errorMsg)
-                .setCancelable(true)
-                .setTitle("Attention")
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-        AlertDialog alert = builder.create();
-        alert.setCanceledOnTouchOutside(true);
+        AlertHandler alert = new AlertHandler(this, errorMsg);
+        alert.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        alert.getWindow().setGravity(Gravity.TOP);
         alert.show();
     }
 
@@ -369,16 +478,6 @@ public class MainActivity extends AppCompatActivity {
             }
         } catch (Exception e) {
             Log.d(TAG, e.toString());
-        }
-    }
-
-    private void setGoButtonEnabled(boolean value) {
-        if (value) {
-            goButton.setEnabled(true);
-            goButton.setText(R.string.go);
-        } else {
-            goButton.setEnabled(false);
-            goButton.setText(R.string.loading);
         }
     }
 
@@ -411,6 +510,7 @@ public class MainActivity extends AppCompatActivity {
         }
         mapView.onDestroy();
         disposeHERESDK();
+        mapLoadDone = false;
         super.onDestroy();
     }
 
@@ -431,5 +531,56 @@ public class MainActivity extends AppCompatActivity {
             // where a disposed instance is accidentally reused.
             SDKNativeEngine.setSharedInstance(null);
         }
+        mapLoadDone = false;
+    }
+
+    private void removeVenue() {
+        recyclerView.setAdapter(new VenueAdapter(getApplicationContext(), venueInfo, this));
+        mapLoadDone = false;
+        venue_search.setHint("Search for Venues");
+        loadMapScene();
+        header.setVisibility(View.GONE);
+        levelSwitcher.setVisible(false);
+        drawingSwitcher.setVisible(false);
+        VenueMap venueMap = venueEngine.getVenueMap();
+        venueMap.removeVenue(venueMap.getSelectedVenue());
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(sheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
+            sheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        }
+        else if(mapLoadDone == true) {
+            removeVenue();
+        }
+        else {
+            super.onBackPressed();
+        }
+    }
+
+    public void onVenueItemClicked(VenueInfo venueInfo) {
+        progressBar.setVisibility(View.VISIBLE);
+        try {
+            // Try to parse a venue id.
+            final int venueId = venueInfo.getVenueId();
+            VenueMap venueMap = venueEngine.getVenueMap();
+            Venue selectedVenue = venueMap.getSelectedVenue();
+            hideKeyboard();
+            if (selectedVenue == null || selectedVenue.getVenueModel().getId() != venueId) {
+                // Select a venue by id.
+                venueMap.selectVenueAsync(venueId, this ::onVenueLoadError);
+            }
+            if(sheetBehavior.getState() != BottomSheetBehavior.STATE_COLLAPSED)
+                sheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        } catch (Exception e) {
+            Log.d(TAG, "No Maps Found. " + e.toString());
+        }
+    }
+
+    public void onSpaceItemClicked(VenueGeometry venueGeometry) {
+        venueTapController.selectGeometry(venueGeometry, venueGeometry.getCenter(), true);
+        if(sheetBehavior.getState() != BottomSheetBehavior.STATE_COLLAPSED)
+            sheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 HERE Europe B.V.
+ * Copyright (C) 2019-2024 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -280,19 +280,17 @@ public class TruckGuidanceExample {
                 return;
             }
 
-            List<PickMapContentResult.PoiResult> cartoPOIList = pickMapContentResult.getPois();
+            List<PickedPlace> cartoPOIList = pickMapContentResult.getPickedPlaces();
             List<PickMapContentResult.TrafficIncidentResult> trafficPOIList = pickMapContentResult.getTrafficIncidents();
             List<PickMapContentResult.VehicleRestrictionResult> vehicleRestrictionResultList = pickMapContentResult.getVehicleRestrictions();
 
             // Note that pick here only the top most icon and ignore others that may be underneath.
             if (cartoPOIList.size() > 0) {
-                PickMapContentResult.PoiResult topmostContent = cartoPOIList.get(0);
-                Log.d("Carto POI picked: ", topmostContent.name +
-                        ", Place category: " + topmostContent.placeCategoryId);
+                PickedPlace pickedPlace = cartoPOIList.get(0);
+                Log.d("Carto POI picked: ", pickedPlace.name +
+                        ", Place category: " + pickedPlace.placeCategoryId);
 
                 // Optionally, you can now use the SearchEngine or the OfflineSearchEngine to retrieve more details.
-                PickedPlace pickedPlace =
-                        new PickedPlace(topmostContent.name, topmostContent.coordinates, topmostContent.placeCategoryId);
                 searchEngine.searchPickedPlace(pickedPlace, LanguageCode.EN_US, new PlaceIdSearchCallback() {
                     @Override
                     public void onPlaceIdSearchCompleted(@Nullable SearchError searchError, @Nullable Place place) {

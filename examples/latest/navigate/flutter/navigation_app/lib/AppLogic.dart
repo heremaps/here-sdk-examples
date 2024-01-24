@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 HERE Europe B.V.
+ * Copyright (C) 2019-2024 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,10 @@ class AppLogic {
         _routeCalculator = RouteCalculator() {
     _setLongPressGestureHandler();
     _updateMessageState("Long press to set start/destination or use random ones.");
+
+    // Enable traffic flow and 3D landmarks, by default.
+    hereMapController.mapScene.enableFeatures({MapFeatures.trafficFlow: MapFeatureModes.trafficFlowWithFreeFlow});
+    hereMapController.mapScene.enableFeatures({MapFeatures.landmarks: MapFeatureModes.landmarksTextured});
   }
 
   _setLongPressGestureHandler() {

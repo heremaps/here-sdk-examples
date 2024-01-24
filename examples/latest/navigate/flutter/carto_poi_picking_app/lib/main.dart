@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 HERE Europe B.V.
+ * Copyright (C) 2019-2024 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -125,29 +125,28 @@ class _MyAppState extends State<MyApp> {
         return;
       }
 
-      _handlePickedCartoPOIs(pickMapContentResult.pois);
+      _handlePickedCartoPOIs(pickMapContentResult.pickedPlaces);
       _handlePickedTrafficIncidents(pickMapContentResult.trafficIncidents);
       _handlePickedVehicleRestrictions(pickMapContentResult.vehicleRestrictions);
     });
   }
 
-  void _handlePickedCartoPOIs(List<PickPoiResult> cartoPOIList) {
+  void _handlePickedCartoPOIs(List<PickedPlace> cartoPOIList) {
     int listSize = cartoPOIList.length;
     if (listSize == 0) {
       return;
     }
 
-    PickPoiResult topmostCartoPOI = cartoPOIList.first;
-    var name = topmostCartoPOI.name;
-    var lat = topmostCartoPOI.coordinates.latitude;
-    var lon = topmostCartoPOI.coordinates.longitude;
+    PickedPlace topmostPickedPlace = cartoPOIList.first;
+    var name = topmostPickedPlace.name;
+    var lat = topmostPickedPlace.coordinates.latitude;
+    var lon = topmostPickedPlace.coordinates.longitude;
     _showDialog("Carto POI picked", "Name: $name. Location: $lat, $lon. See log for more place details.");
 
     // Now you can use the SearchEngine (via PickedPlace) or the OfflineSearchEngine
     // (via PickedPlace or offlineSearchId) to retrieve the Place object containing more details.
-    // Below we use the offlineSearchId. Alternatively, you can use the
-    // PickMapContentResult as data to create a PickedPlace object.
-    _fetchCartoPOIDetails(topmostCartoPOI.offlineSearchId);
+    // Below we use the offlineSearchId.
+    _fetchCartoPOIDetails(topmostPickedPlace.offlineSearchId);
   }
 
   // The ID is only given for cached or downloaded maps data.

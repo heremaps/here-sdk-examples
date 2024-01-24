@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 HERE Europe B.V.
+ * Copyright (C) 2019-2024 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,16 @@ package com.here.sdk.examples.venues;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.RecyclerView;
+
+import android.content.Context;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.here.sdk.core.Anchor2D;
 import com.here.sdk.core.Color;
 import com.here.sdk.core.GeoCoordinates;
@@ -44,6 +51,47 @@ import com.here.sdk.venue.style.VenueLabelStyle;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+
+class SpaceSelectionHolder extends RecyclerView.ViewHolder{
+
+    public TextView spaceName, spaceAddress;
+
+    public SpaceSelectionHolder(@NonNull View itemView) {
+        super(itemView);
+        spaceName = itemView.findViewById(R.id.SpaceName);
+        spaceAddress = itemView.findViewById(R.id.SpaceAddress);
+    }
+}
+
+class SpaceSelectionAdapter extends RecyclerView.Adapter<SpaceSelectionHolder> {
+    private Context context;
+    private VenueGeometry geometry;
+
+    public SpaceSelectionAdapter(Context context, VenueGeometry item){
+        this.context = context;
+        this.geometry = item;
+    }
+    @NonNull
+    @Override
+    public SpaceSelectionHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        return new SpaceSelectionHolder(LayoutInflater.from(context).inflate(R.layout.space_selection, parent, false));
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull SpaceSelectionHolder holder, int position) {
+        String spaceName, spaceAddress;
+        spaceName = geometry.getName() + ", " + geometry.getLevel().getName();
+        spaceAddress = geometry.getInternalAddress() != null? geometry.getInternalAddress().getAddress() : "";
+        holder.spaceName.setText(spaceName);
+        holder.spaceAddress.setText(spaceAddress);
+    }
+
+    @Override
+    public int getItemCount() {
+        return 1;
+    }
+}
 
 public class VenueTapController {
     private static Color SELECTED_COLOR = Color.valueOf(0.282f, 0.733f, 0.96f);
@@ -59,25 +107,26 @@ public class VenueTapController {
     private MapMarker marker = null;
     private Venue selectedVenue = null;
     private VenueGeometry selectedGeometry = null;
+    private BottomSheetBehavior sheetBehavior;
+    private RecyclerView recyclerView;
 
     // Create geometry and label styles for the selected geometry.
     private final VenueGeometryStyle geometryStyle = new VenueGeometryStyle(
             SELECTED_COLOR, SELECTED_OUTLINE_COLOR, 1);
     private final VenueLabelStyle labelStyle = new VenueLabelStyle(
             SELECTED_TEXT_COLOR, SELECTED_TEXT_OUTLINE_COLOR, 1, 28);
+    private Context context;
+    private List<VenueGeometry> geometryList;
 
-    private View geometryInfo;
-    private TextView geometryNameText;
-
-    VenueTapController(VenueEngine venueEngine, MapView mapView, AppCompatActivity activity) {
+    VenueTapController(VenueEngine venueEngine, MapView mapView, AppCompatActivity activity, BottomSheetBehavior sheetBehav, RecyclerView RvView) {
         this.venueEngine = venueEngine;
         this.mapView = mapView;
+        this.sheetBehavior = sheetBehav;
+        this.recyclerView = RvView;
+        this.context = activity;
 
         // Get an image for MapMarker.
         markerImage = MapImageFactory.fromResource(activity.getResources(), R.drawable.marker);
-
-        geometryInfo = activity.findViewById(R.id.geometry_info);
-        geometryNameText = activity.findViewById(R.id.geometry_name);
     }
 
     @Override
@@ -128,9 +177,9 @@ public class VenueTapController {
             mapView.getMapScene().addMapMarker(marker);
         }
 
-        // Set a geometry name to the text view and show it.
-        geometryNameText.setText(geometry.getName());
-        geometryInfo.setVisibility(View.VISIBLE);
+        recyclerView.setAdapter(new SpaceSelectionAdapter(context, geometry));
+
+        sheetBehavior.setPeekHeight(500);
 
         // Set a selected style for the geometry.
         ArrayList<VenueGeometry> geometries =
@@ -143,7 +192,7 @@ public class VenueTapController {
     }
 
     private void deselectGeometry() {
-        geometryInfo.setVisibility(View.GONE);
+        sheetBehavior.setPeekHeight(300);
 
         // If the map marker is already on the screen, remove it.
         if (marker != null) {
@@ -156,6 +205,12 @@ public class VenueTapController {
                     new ArrayList<>(Collections.singletonList(selectedGeometry));
             selectedVenue.setCustomStyle(geometries, null, null);
         }
+        if (geometryList != null)
+            recyclerView.setAdapter(new SpaceAdapter(context, geometryList, (MainActivity) context));
+    }
+
+    public void setGeometries(List<VenueGeometry> list) {
+        geometryList = list;
     }
 
     // Tap listener for MapView

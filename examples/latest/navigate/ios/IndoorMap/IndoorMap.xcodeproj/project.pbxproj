@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AC8E71EC2A8CF2A6004C3538 /* CustomCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC8E71EA2A8CF2A6004C3538 /* CustomCell.swift */; };
+		AC8E71F32A93CE1A004C3538 /* CustomCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = AC8E71F12A93CE1A004C3538 /* CustomCell.xib */; };
 		B02A918A24B60CF900571C9D /* VenuesManager.xib in Resources */ = {isa = PBXBuildFile; fileRef = B02A918824B60CF900571C9D /* VenuesManager.xib */; };
 		B02A919424B62C7700571C9D /* VenueTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B02A919224B62C7700571C9D /* VenueTableViewCell.xib */; };
 		B02A919624B70C0400571C9D /* VenueTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B02A919524B70C0400571C9D /* VenueTableViewCell.swift */; };
@@ -43,6 +45,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		AC8E71EA2A8CF2A6004C3538 /* CustomCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomCell.swift; sourceTree = "<group>"; };
+		AC8E71EB2A8CF2A6004C3538 /* CustomCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CustomCell.xib; sourceTree = "<group>"; };
+		AC8E71F22A93CE1A004C3538 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/CustomCell.xib; sourceTree = "<group>"; };
 		B02A918924B60CF900571C9D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/VenuesManager.xib; sourceTree = "<group>"; };
 		B02A919324B62C7700571C9D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/VenueTableViewCell.xib; sourceTree = "<group>"; };
 		B02A919524B70C0400571C9D /* VenueTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VenueTableViewCell.swift; sourceTree = "<group>"; };
@@ -111,6 +116,9 @@
 				B058833324695ED800DEF143 /* Info.plist */,
 				C865242420B7E70F00392D48 /* AppDelegate.swift */,
 				C865242620B7E70F00392D48 /* ViewController.swift */,
+				AC8E71F12A93CE1A004C3538 /* CustomCell.xib */,
+				AC8E71EA2A8CF2A6004C3538 /* CustomCell.swift */,
+				AC8E71EB2A8CF2A6004C3538 /* CustomCell.xib */,
 				C865242820B7E70F00392D48 /* Main.storyboard */,
 				C865242B20B7E71200392D48 /* Assets.xcassets */,
 				B02A918824B60CF900571C9D /* VenuesManager.xib */,
@@ -193,7 +201,9 @@
 				C865242C20B7E71200392D48 /* Assets.xcassets in Resources */,
 				B02A918A24B60CF900571C9D /* VenuesManager.xib in Resources */,
 				B0479B9A24B5D16600EDEEEA /* VenueSearch.xib in Resources */,
+				AC8E71F32A93CE1A004C3538 /* CustomCell.xib in Resources */,
 				B02A919424B62C7700571C9D /* VenueTableViewCell.xib in Resources */,
+				AC8E71ED2A8CF2A6004C3538 /* CustomCell.xib in Resources */,
 				B058835224696D2600DEF143 /* LaunchScreen.storyboard in Resources */,
 				B05883442469624E00DEF143 /* LevelSwitcher.xib in Resources */,
 			);
@@ -208,6 +218,7 @@
 			files = (
 				C865242720B7E70F00392D48 /* ViewController.swift in Sources */,
 				B058833D2469623700DEF143 /* LevelSwitcher.swift in Sources */,
+				AC8E71EC2A8CF2A6004C3538 /* CustomCell.swift in Sources */,
 				B058833A2469623700DEF143 /* DrawingSwitcher.swift in Sources */,
 				B02A919624B70C0400571C9D /* VenueTableViewCell.swift in Sources */,
 				B058833B2469623700DEF143 /* LevelSwitcherDelegate.swift in Sources */,
@@ -221,6 +232,14 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
+		AC8E71F12A93CE1A004C3538 /* CustomCell.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				AC8E71F22A93CE1A004C3538 /* Base */,
+			);
+			name = CustomCell.xib;
+			sourceTree = "<group>";
+		};
 		B02A918824B60CF900571C9D /* VenuesManager.xib */ = {
 			isa = PBXVariantGroup;
 			children = (

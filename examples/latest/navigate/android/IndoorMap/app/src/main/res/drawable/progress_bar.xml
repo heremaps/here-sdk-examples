@@ -1,0 +1,22 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <size android:width="180dp" android:height="180dp"/>
+        <solid android:color="@android:color/white"/>
+        <corners android:radius="8dp"/>
+        </shape>
+    </item>
+    <item
+        android:top="30dp"
+        android:left="30dp"
+        android:right="30dp"
+        android:bottom="30dp">
+        <rotate
+            android:pivotX="50%"
+            android:pivotY="50%"
+            android:fromDegrees="0"
+            android:toDegrees="360"
+            android:drawable="@drawable/progress_icon">
+        </rotate>
+    </item>
+</layer-list>

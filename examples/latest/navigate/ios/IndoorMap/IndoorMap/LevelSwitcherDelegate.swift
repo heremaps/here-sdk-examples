@@ -22,9 +22,14 @@ import UIKit
 
 class LevelSwitcherDelegate: VenueSelectionDelegate, VenueDrawingSelectionDelegate, VenueLevelSelectionDelegate {
     private(set) weak var levelSwitcher: LevelSwitcher?
+    var viewController: ViewController?
 
     init(levelSwitcher: LevelSwitcher) {
         self.levelSwitcher = levelSwitcher
+    }
+    
+    init(viewController: ViewController) {
+        self.viewController = viewController
     }
 
     func updateLevelSwitcherVenue(_ venue: Venue?) {
