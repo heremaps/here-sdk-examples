@@ -25,7 +25,8 @@ public class LevelSwitcher: UIView {
     @IBOutlet private var view: UIView!
     @IBOutlet private weak var tableView: UITableView!
 
-    private static let maxHeightConstraintValue: Int32 = 250
+    var viewController: ViewController?
+    private static let maxHeightConstraintValue: Int32 = 145
     private weak var venueMap: VenueMap?
     private weak var venueMapDelegate: LevelSwitcherDelegate?
      // Array of level names
@@ -61,15 +62,21 @@ public class LevelSwitcher: UIView {
         frameworkBundle.loadNibNamed("LevelSwitcher", owner: self, options: nil)
         addSubview(view)
         view.frame = bounds
+        view.layer.cornerRadius = view.frame.size.width / 2
+        
+        tableView.layer.cornerRadius = 20.0
+        tableView.layer.masksToBounds = true
 
         // Set up a table view with level names.
         tableView.dataSource = self
         tableView.delegate = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "LevelSwitcherCellID")
         tableView.layer.borderWidth = 1.0
-        tableView.layer.borderColor = UIColor.gray.cgColor
+        tableView.layer.borderColor = UIColor.clear.cgColor
         tableView.separatorInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
         view.isHidden = true
+        
+        tableView.separatorStyle = .none
 
         levels = []
         currentLevelIndex = -1
@@ -112,8 +119,39 @@ public class LevelSwitcher: UIView {
         heightConstraint?.constant
             = min(tableView.contentSize.height, CGFloat(LevelSwitcher.maxHeightConstraintValue))
         currentLevelIndex = (venue?.selectedLevelIndex) ?? -1
-        view.isHidden = currentLevelIndex == -1 || self.levels.count < 2
+        view.isHidden = currentLevelIndex == -1
+        viewController?.levelSwitcherStackView.isHidden = view.isHidden
         setCurrentLevel(currentLevelIndex)
+    }
+    
+    func handleUpArrowTap() {
+        // Ensure that the currentLevelIndex is within bounds
+        if currentLevelIndex < levels.count - 1 {
+            // Calculate the next index to select
+            let nextIndexPathForLevelIndex = Int32(levels.count) - self.currentLevelIndex - 2
+
+            // Ensure that the next index is within bounds
+            if nextIndexPathForLevelIndex >= 0 {
+                let nextSelectedIndexPath = IndexPath(row: Int(nextIndexPathForLevelIndex), section: 0)
+                tableView.scrollToRow(at: nextSelectedIndexPath, at: .top, animated: true)
+                currentLevelIndex += 1 // Update the currentLevelIndex to reflect the new selected row
+            }
+        }
+    }
+    
+    func handleDownArrowTap() {
+        // Ensure that the currentLevelIndex is within bounds
+        if currentLevelIndex > 0 {
+            // Calculate the previous index to select (move down by one row)
+            let previousIndexPathForLevelIndex = Int32(levels.count) - self.currentLevelIndex
+
+            // Ensure that the previous index is within bounds
+            if previousIndexPathForLevelIndex < Int32(levels.count) {
+                let previousSelectedIndexPath = IndexPath(row: Int(previousIndexPathForLevelIndex), section: 0)
+                tableView.scrollToRow(at: previousSelectedIndexPath, at: .top, animated: true)
+                currentLevelIndex -= 1 // Update the currentLevelIndex to reflect the new selected row (move down)
+            }
+        }
     }
 
     func getVenueMap() -> VenueMap? {
@@ -161,7 +199,7 @@ extension LevelSwitcher: UITableViewDataSource {
         cell.textLabel?.text = levels[indexPath.row] as? String
 
         let bgColorView = UIView()
-        bgColorView.backgroundColor = UIColor.gray
+        bgColorView.backgroundColor = UIColor(red: 0.069, green: 0.43, blue: 0.971, alpha: 0.05)
         cell.selectedBackgroundView = bgColorView
         return cell
     }

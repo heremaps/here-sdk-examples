@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 HERE Europe B.V.
+ * Copyright (C) 2019-2024 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,17 +19,21 @@
 
 package com.here.sdk.examples.venues;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.drawable.GradientDrawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import com.here.sdk.venue.control.VenueDrawingSelectionListener;
@@ -45,71 +49,21 @@ import java.util.List;
 import java.util.Map;
 
 // Allows to select a drawing inside a venue trough UI.
-public class DrawingSwitcher
-        extends LinearLayout implements View.OnClickListener, AdapterView.OnItemClickListener {
-
-    private final Context context;
+public class DrawingSwitcher implements View.OnClickListener, AdapterView.OnItemClickListener {
+    private Context context;
     private VenueMap venueMap;
     private Venue venue;
-    private Button titleView;
+    private ImageButton titleView;
     private ListView listView;
     private boolean collapsed;
-    private final int listTextSize;
-    private final int listTextColor;
 
-    public DrawingSwitcher(Context context, AttributeSet attrs) {
-        super(context, attrs);
+    public DrawingSwitcher(Context context, ImageButton imageButton, ListView listView) {
 
         this.context = context;
-
-        // Set up a visual style of DrawingSwitcher
-        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.DrawingSwitcher, 0, 0);
-        int borderWidth = a.getDimensionPixelSize(R.styleable.DrawingSwitcher_borderWidth, 2);
-        int borderColor =
-                a.getDimensionPixelSize(R.styleable.DrawingSwitcher_borderColor, 0xFF888888);
-        int titleHeight = a.getDimensionPixelSize(R.styleable.DrawingSwitcher_titleHeight, 35);
-        int titleBackground =
-                a.getDimensionPixelSize(R.styleable.DrawingSwitcher_titleTextColor, 0xCCFFFFFF);
-        int titleTextSize = a.getDimensionPixelSize(R.styleable.DrawingSwitcher_titleTextSize, 15);
-        int titleTextColor =
-                a.getDimensionPixelSize(R.styleable.DrawingSwitcher_titleTextColor, 0xFF444444);
-        int listHeight = a.getDimensionPixelSize(R.styleable.DrawingSwitcher_listHeight, 140);
-        int listBackground =
-                a.getDimensionPixelSize(R.styleable.DrawingSwitcher_titleTextColor, 0xDDFFFFFF);
-        listTextSize = a.getDimensionPixelSize(R.styleable.DrawingSwitcher_listTextSize, 14);
-        listTextColor =
-                a.getDimensionPixelSize(R.styleable.DrawingSwitcher_titleTextColor, 0xFF444444);
-        a.recycle();
-
-        setOrientation(LinearLayout.VERTICAL);
-        setGravity(Gravity.TOP);
-
-        // Set up a visual style of title, which contains information about the selected drawing.
-        LayoutInflater.from(context).inflate(R.layout.drawing_switcher, this, true);
-        titleView = findViewById(R.id.drawing_title_button);
+        this.titleView = imageButton;
+        this.listView = listView;
         titleView.setVisibility(View.GONE);
-        ViewGroup.LayoutParams titleViewParams = titleView.getLayoutParams();
-        titleViewParams.height = titleHeight;
-        titleView.setLayoutParams(titleViewParams);
-        GradientDrawable titleDrawable = new GradientDrawable();
-        titleDrawable.setColor(titleBackground);
-        titleDrawable.setStroke(borderWidth, borderColor);
-        titleView.setBackground(titleDrawable);
-        titleView.setTextSize(titleTextSize);
-        titleView.setTextColor(titleTextColor);
-
-        // Set up a visual style of list with all drawings.
-        listView = findViewById(R.id.drawing_list);
         listView.setVisibility(View.GONE);
-        ViewGroup.LayoutParams listViewParams = listView.getLayoutParams();
-        listViewParams.height = listHeight;
-        listView.setLayoutParams(listViewParams);
-        GradientDrawable listDrawable = new GradientDrawable();
-        listDrawable.setColor(listBackground);
-        listDrawable.setStroke(borderWidth, borderColor);
-        listView.setBackground(listDrawable);
-
-        // Set listeners for title and list's items clicks.
         titleView.setOnClickListener(this);
         listView.setOnItemClickListener(this);
 
@@ -132,10 +86,6 @@ public class DrawingSwitcher
              selectedController) ->
                     // Update DrawingSwitcher with a new selected drawing.
                     DrawingSwitcher.this.onDrawingSelected(selectedController);
-
-    public DrawingSwitcher(Context context) {
-        this(context, null);
-    }
 
     @Override
     protected void finalize() throws Throwable {
@@ -167,7 +117,6 @@ public class DrawingSwitcher
 
     @Override
     public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
-        titleView.setText((String) listView.getAdapter().getItem(position));
         VenueModel venueModel = venue.getVenueModel();
         // Set the selected drawing when a user clicks on the item in the list.
         venue.setSelectedDrawing(venueModel.getDrawings().get(position));
@@ -190,6 +139,8 @@ public class DrawingSwitcher
     private void setVenue(Venue venue) {
         this.venue = venue;
         int count = 0;
+        int height = 0;
+        ListAdapter listAdapter;
         if (this.venue != null) {
             // Get names of drawings.
             VenueModel venueModel = this.venue.getVenueModel();
@@ -202,16 +153,26 @@ public class DrawingSwitcher
 
             // Set a name of the selected drawings
             String selectedDrawingName = getDrawingName(this.venue.getSelectedDrawing());
-            titleView.setText(selectedDrawingName);
 
             // Set a new adapter with the new list of drawing's names.
             final StringArrayAdapter adapter =
-                    new StringArrayAdapter(context, drawingNames, listTextSize, listTextColor);
+                    new StringArrayAdapter(context, drawingNames);
+            ViewGroup.MarginLayoutParams margin = (ViewGroup.MarginLayoutParams) listView.getLayoutParams();
             listView.setAdapter(adapter);
+            listAdapter = listView.getAdapter();
+            for(int i=0; i<count; i++){
+                View childView = listAdapter.getView(i, null, listView);
+                childView.measure(View.MeasureSpec.makeMeasureSpec(0,
+                        View.MeasureSpec.UNSPECIFIED), View.MeasureSpec
+                        .makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+                height += childView.getMeasuredHeight();
+            }
+            Log.d("DrawingSwitcher", "marginTop:" + margin.topMargin + "height: " + height);
+            margin.setMargins(margin.leftMargin, 1500 - height, margin.rightMargin, margin.bottomMargin);
+            setCollapsed(true);
+            setVisible(true);
         }
-        setCollapsed(true);
-        // Make DrawingSwitcher visible only in there is more then one drawing in the venue.
-        setVisible(count > 1);
+
     }
 
     // Updates the title with a new selected drawing.
@@ -220,10 +181,9 @@ public class DrawingSwitcher
             return;
         }
         String selectedDrawingName = getDrawingName(selectedDrawing);
-        titleView.setText(selectedDrawingName);
     }
 
-    private void setVisible(boolean visible) {
+    public void setVisible(boolean visible) {
         titleView.setVisibility(visible ? View.VISIBLE : View.GONE);
         if (!collapsed) {
             listView.setVisibility(visible ? View.VISIBLE : View.GONE);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 HERE Europe B.V.
+ * Copyright (C) 2023-2024 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 import 'dart:core';
 
 import 'package:flutter/material.dart';
-import 'package:here_sdk/animation.dart';
+import 'package:here_sdk/animation.dart' as here;
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/core.errors.dart';
 import 'package:here_sdk/location.dart';
@@ -222,7 +222,7 @@ class HikingApp implements LocationListener, LocationStatusListener {
               MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
               polylineColor,
               LineCap.round));
-      mapView.mapScene.addMapPolyline(myPathMapPolyline!);
+      mapView.mapScene.addMapPolyline(myPathMapPolyline);
     } on MapPolylineRepresentationInstantiationException catch (e) {
       print("MapPolylineRepresentation Exception:" + e.error.name);
       return;
@@ -277,7 +277,7 @@ class HikingApp implements LocationListener, LocationStatusListener {
     // Create animation.
     Duration durationInSeconds = Duration(seconds: 3);
     MapCameraAnimation mapCameraAnimation =
-        MapCameraAnimationFactory.createAnimationFromUpdateWithEasing(mapCameraUpdate, durationInSeconds, Easing(EasingFunction.inCubic));
+        MapCameraAnimationFactory.createAnimationFromUpdateWithEasing(mapCameraUpdate, durationInSeconds, here.Easing(here.EasingFunction.inCubic));
 
     mapView.camera.startAnimation(mapCameraAnimation);
   }

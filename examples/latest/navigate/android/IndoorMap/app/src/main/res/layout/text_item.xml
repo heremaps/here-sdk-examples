@@ -7,11 +7,12 @@
 
     <TextView
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:gravity="center"
+        android:layout_height="48dp"
+        android:gravity="left"
         android:text="New Text"
         android:id="@+id/itemText"
         android:layout_margin="5dp"
         android:textSize="14sp"
+        android:paddingTop="17dp"
         android:textColor="@android:color/black" />
 </LinearLayout>

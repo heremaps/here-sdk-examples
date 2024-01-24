@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 HERE Europe B.V.
+ * Copyright (C) 2019-2024 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -166,9 +166,10 @@ public class MainActivity extends AppCompatActivity {
                     // Start the app that contains the logic to calculate routes & start TBT guidance.
                     app = new App(MainActivity.this, mapView, messageView);
 
-                    // Enable traffic flows by default.
+                    // Enable traffic flows and 3D landmarks, by default.
                     Map<String, String> mapFeatures = new HashMap<>();
                     mapFeatures.put(MapFeatures.TRAFFIC_FLOW, MapFeatureModes.TRAFFIC_FLOW_WITH_FREE_FLOW);
+                    mapFeatures.put(MapFeatures.LANDMARKS, MapFeatureModes.LANDMARKS_TEXTURED);
                     mapView.getMapScene().enableFeatures(mapFeatures);
                 } else {
                     Log.d(TAG, "Loading map failed: " + mapError.name());

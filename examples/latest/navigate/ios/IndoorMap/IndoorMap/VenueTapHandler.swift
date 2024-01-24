@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2020-2023 HERE Europe B.V.
+* Copyright (C) 2020-2024 HERE Europe B.V.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ public class VenueTapHandler {
     var marker: MapMarker?
     var selectedVenue: Venue?
     var selectedGeometry: VenueGeometry?
+    var isGeometryTapped: Bool = false
 
     let selectedColor = UIColor(red: 0.282, green: 0.733, blue: 0.96, alpha: 1.0)
     let selectedOutlineColor = UIColor(red: 0.117, green: 0.666, blue: 0.921, alpha: 1.0)
@@ -71,8 +72,12 @@ public class VenueTapHandler {
             // Otherwise try to select an another venue, if the tap point was on top of one of them.
             if let selectedVenue = venueMap.selectedVenue, let geometry = venueMap.getGeometry(position: position) {
                 selectGeometry(venue: selectedVenue, geometry: geometry, center: false)
+                isGeometryTapped = true
             } else if let venue = venueMap.getVenue(position: position) {
                 venueMap.selectedVenue = venue
+                isGeometryTapped = false
+            } else {
+                isGeometryTapped = false
             }
         }
     }

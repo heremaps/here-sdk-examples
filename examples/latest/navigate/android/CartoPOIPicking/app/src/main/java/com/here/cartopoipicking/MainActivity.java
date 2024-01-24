@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 HERE Europe B.V.
+ * Copyright (C) 2019-2024 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.here.cartopoipicking.PermissionsRequestor.ResultListener;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.LanguageCode;
+import com.here.sdk.core.PickedPlace;
 import com.here.sdk.core.Point2D;
 import com.here.sdk.core.Rectangle2D;
 import com.here.sdk.core.Size2D;
@@ -179,30 +180,29 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
 
-                handlePickedCartoPOIs(pickMapContentResult.getPois());
+                handlePickedCartoPOIs(pickMapContentResult.getPickedPlaces());
                 handlePickedTrafficIncidents(pickMapContentResult.getTrafficIncidents());
                 handlePickedVehicleRestrictions(pickMapContentResult.getVehicleRestrictions());
             }
         });
     }
 
-    private void handlePickedCartoPOIs(List<PickMapContentResult.PoiResult> cartoPOIList) {
+    private void handlePickedCartoPOIs(List<PickedPlace> cartoPOIList) {
         int listSize = cartoPOIList.size();
         if (listSize == 0) {
             return;
         }
 
-        PickMapContentResult.PoiResult topmostCartoPOI = cartoPOIList.get(0);
-        showDialog("Carto POI picked:", topmostCartoPOI.name + ", Location: " +
-                topmostCartoPOI.coordinates.latitude + ", " +
-                topmostCartoPOI.coordinates.longitude + ". " +
+        PickedPlace topmostPickedPlace = cartoPOIList.get(0);
+        showDialog("Carto POI picked:", topmostPickedPlace.name + ", Location: " +
+                topmostPickedPlace.coordinates.latitude + ", " +
+                topmostPickedPlace.coordinates.longitude + ". " +
                 "See log for more place details.");
 
-        // Now you can use the SearchEngine (via PickedPlace) or the OfflineSearchEngine
+        // Now you can use the SearchEngine (via PickedPlace) or the OfflineSearchEngine, when available for your edition,
         // (via PickedPlace or offlineSearchId) to retrieve the Place object containing more details.
-        // Below we use the offlineSearchId. Alternatively, you can use the
-        // PickMapContentResult as data to create a PickedPlace object.
-        fetchCartoPOIDetails(topmostCartoPOI.offlineSearchId);
+        // Below we use the offlineSearchId.
+        fetchCartoPOIDetails(topmostPickedPlace.offlineSearchId);
     }
 
     // The ID is only given for cached or downloaded maps data.

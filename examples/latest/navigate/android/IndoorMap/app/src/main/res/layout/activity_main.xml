@@ -1,138 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.here.sdk.examples.venues.MainActivity">
+    <ProgressBar
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:id="@+id/progress_bar"
+        android:layout_gravity="center"
+        android:elevation="10dp"
+        android:indeterminateDrawable="@drawable/progress_bar"
+        android:visibility="gone"/>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical" >
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:gravity="start"
-            android:orientation="horizontal" >
-            <Spinner
-                android:id="@+id/VenueInfoList"
-                android:layout_width="108dp"
-                android:layout_height="match_parent"
-                android:layout_alignParentTop="true"
-                android:layout_marginStart="5dp"
-                android:visibility="visible" />
-            <Button
-                android:id="@+id/goButton"
-                android:backgroundTint="@color/colorPrimary"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_alignParentTop="true"
-                android:layout_gravity="start"
-                android:layout_marginStart="5dp"
-                android:layout_toEndOf="@+id/VenueInfoList"
-                android:text="@string/go"
-                android:textColor="@android:color/white"/>
-            <ImageView
-                android:id="@+id/searchButton"
-                android:layout_width="40dp"
-                android:layout_height="match_parent"
-                android:layout_alignParentTop="true"
-                android:layout_gravity="start"
-                android:layout_marginStart="5dp"
-                android:layout_marginTop="5dp"
-                android:layout_marginBottom="5dp"
-                android:layout_toEndOf="@+id/goButton"
-                android:background="@color/colorPrimary"
-                android:scaleType="fitCenter"
-                android:src="@drawable/baseline_search_black_36"
-                android:tint="@android:color/white"
-                android:contentDescription="@string/venue_search_button" />
-        </RelativeLayout>
-        <LinearLayout android:layout_width="match_parent"
-            android:id="@+id/venueSearchLayout"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:visibility="gone">
-            <LinearLayout android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-                <EditText
-                    android:id="@+id/venueSearch"
-                    android:layout_width="200dp"
-                    android:layout_height="50dp"
-                    android:layout_gravity="start"
-                    android:layout_marginStart="10dp"
-                    android:importantForAutofill="no"
-                    android:inputType="text"
-                    android:hint="@string/venue_search"/>
-                <Spinner
-                    android:id="@+id/searchTypeSpinner"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"/>
-            </LinearLayout>
-            <ListView
-                android:id="@+id/searchResultList"
-                android:background="@android:color/white"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-        </LinearLayout>
-        <LinearLayout android:layout_width="match_parent"
-            android:id="@+id/venuesLayout"
+            android:layout_height="55dp"
+            android:id="@+id/header"
+            android:gravity="center"
             android:background="@android:color/white"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:visibility="gone">
-            <ListView
-                android:id="@+id/venuesList"
+            android:elevation="3dp">
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/backButton"
+                android:src="@drawable/back_button"
                 android:background="@android:color/white"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_marginLeft="5dp"
+                android:layout_weight="10"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/VenueName"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
+                android:layout_marginLeft="10dp"
+                android:layout_weight="80" />
+            <ToggleButton
+                android:layout_width="30dp"
+                android:layout_height="35dp"
+                android:id="@+id/topologyButton"
+                android:layout_marginRight="10dp"
+                android:textOn=""
+                android:textOff=""
+                android:background="@drawable/topology_state"
+                android:layout_weight="10"
+                />
         </LinearLayout>
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:gravity="center">
             <com.here.sdk.mapview.MapView
                 android:id="@+id/map_view"
                 android:layout_height="match_parent"
                 android:layout_width="match_parent">
             </com.here.sdk.mapview.MapView>
-            <com.here.sdk.examples.venues.DrawingSwitcher
-                xmlns:custom="http://schemas.android.com/apk/res-auto"
-                android:id="@+id/drawing_switcher"
-                android:paddingTop="5dp"
-                android:paddingStart="5dp"
-                android:paddingEnd="5dp"
-                android:layout_alignParentTop="true"
+            <ImageButton
+                android:id="@+id/drawing_switcher_button"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginTop="510dp"
+                android:elevation="3dp"
                 android:layout_alignParentEnd="true"
-                android:layout_width="200dp"
+                android:background="@drawable/drawing_selector"
+                android:src="@drawable/structure_building"/>
+            <ListView
+                android:id="@+id/drawingList"
+                android:layout_width="180dp"
                 android:layout_height="wrap_content"
-                custom:titleHeight="40dp"
-                custom:listHeight="140dp"/>
+                android:layout_marginRight="58dp"
+                android:layout_alignParentEnd="true"
+                android:divider="@null"
+                android:dividerHeight="0dp"
+                android:elevation="3dp"
+                android:background="@drawable/drawing_listview_background"/>
             <com.here.sdk.examples.venues.LevelSwitcher
                 xmlns:custom="http://schemas.android.com/apk/res-auto"
                 android:id="@+id/level_switcher"
-                android:layout_centerInParent="true"
+                android:layout_marginTop="290dp"
                 android:layout_alignParentEnd="true"
                 android:layout_marginEnd="10dp"
                 android:layout_width="40dp"
-                android:layout_height="200dp" />
-            <RelativeLayout
-                android:id="@+id/geometry_info"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_alignParentBottom="true"
-                android:visibility="gone">
-                <TextView
-                    android:id="@+id/geometry_name"
-                    android:background="@color/colorPrimary"
-                    android:textColor="@android:color/white"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="8dp"
-                    android:gravity="center|start"
-                    android:textSize="18sp"/>
-            </RelativeLayout>
+                android:layout_height="wrap_content"
+                android:background="@drawable/level_list_view_border"
+                android:orientation="vertical"
+                android:elevation="3dp"
+                />
         </RelativeLayout>
     </LinearLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <include layout="@layout/bottom_sheet"/>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
 

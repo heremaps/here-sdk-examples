@@ -21,9 +21,14 @@ import heresdk
 
 class DrawingSwitcherDelegate: VenueSelectionDelegate, VenueDrawingSelectionDelegate {
     private weak var drawingSwitcher: DrawingSwitcher?
+    private weak var viewController: ViewController?
 
     init(drawingSwitcher: DrawingSwitcher) {
         self.drawingSwitcher = drawingSwitcher
+    }
+    
+    init(viewController: ViewController) {
+        self.viewController = viewController
     }
 
     func onDrawingSelected(venue: Venue, deselectedDrawing: VenueDrawing?, selectedDrawing: VenueDrawing) {

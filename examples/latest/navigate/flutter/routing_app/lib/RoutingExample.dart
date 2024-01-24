@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 HERE Europe B.V.
+ * Copyright (C) 2019-2024 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:here_sdk/animation.dart';
+import 'package:here_sdk/animation.dart' as here;
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/core.errors.dart';
 import 'package:here_sdk/mapview.dart';
@@ -97,7 +97,7 @@ class RoutingExample {
       // where toll booths are located.
       List<Span> spans = section.spans;
       List<Toll> tolls = section.tolls;
-      if (!tolls.isEmpty) {
+      if (tolls.isNotEmpty) {
         print("Attention: This route may require tolls to be paid.");
       }
       for (Toll toll in tolls) {
@@ -288,9 +288,9 @@ class RoutingExample {
 
     // Animate to the route within a duration of 3 seconds.
     MapCameraUpdate update = MapCameraUpdateFactory.lookAtAreaWithGeoOrientationAndViewRectangle(
-        route!.boundingBox, GeoOrientationUpdate(bearing, tilt), mapViewport);
+        route.boundingBox, GeoOrientationUpdate(bearing, tilt), mapViewport);
     MapCameraAnimation animation = MapCameraAnimationFactory.createAnimationFromUpdateWithEasing(
-        update, const Duration(milliseconds: 3000), Easing(EasingFunction.inCubic));
+        update, const Duration(milliseconds: 3000), here.Easing(here.EasingFunction.inCubic));
     _hereMapController.camera.startAnimation(animation);
   }
 }
