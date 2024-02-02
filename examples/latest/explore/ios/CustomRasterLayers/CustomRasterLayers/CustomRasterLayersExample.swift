@@ -93,8 +93,8 @@ class CustomRasterLayersExample {
     }
     
     private func createMapLayer(dataSourceName: String) -> MapLayer {
-        // The layer should be rendered on top of other layers.
-        let priority = MapLayerPriorityBuilder().renderedLast().build()
+        // The layer should be rendered on top of other layers except the labels layer so that we don't overlap raster layer over POI markers.
+        let priority = MapLayerPriorityBuilder().renderedLast().renderedBeforeLayer(named: "labels").build()
         // And it should be visible for all zoom levels.
         let range = MapLayerVisibilityRange(minimumZoomLevel: 0, maximumZoomLevel: 22 + 1)
 

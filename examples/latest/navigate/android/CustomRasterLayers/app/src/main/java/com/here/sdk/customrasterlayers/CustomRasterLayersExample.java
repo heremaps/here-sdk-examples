@@ -116,8 +116,8 @@
      }
 
      private MapLayer createMapLayer(String dataSourceName) {
-         // The layer should be rendered on top of other layers.
-         MapLayerPriority priority = new MapLayerPriorityBuilder().renderedLast().build();
+         // The layer should be rendered on top of other layers except the labels layer so that we don't overlap raster layer over POI markers.
+         MapLayerPriority priority = new MapLayerPriorityBuilder().renderedLast().renderedBeforeLayer("labels").build();
          // And it should be visible for all zoom levels.
          MapLayerVisibilityRange range = new MapLayerVisibilityRange(0, 22 + 1);
 

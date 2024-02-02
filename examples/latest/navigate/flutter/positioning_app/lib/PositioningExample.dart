@@ -34,7 +34,7 @@ import 'main.dart';
 
 class PositioningExample extends State<MyApp>
     with WidgetsBindingObserver
-    implements LocationListener, LocationStatusListener {
+    implements LocationListener, LocationStatusListener, LocationIssueListener {
   static const String _notAvailable = "--";
   static const double _spacing = 8;
   static const double _padding = 20;
@@ -50,6 +50,7 @@ class PositioningExample extends State<MyApp>
   LocationIndicator? _locationIndicator;
   Location? _location;
   LocationEngineStatus? _status;
+  List<LocationIssueType> _issues = <LocationIssueType>[];
 
   // When using HERE Positioning in your app, it is required to request and to show the user's consent decision.
   // In addition, users must be able to change their consent decision at any time.
@@ -148,6 +149,10 @@ class PositioningExample extends State<MyApp>
                             _buildLabelValue(
                               'SinceBoot:',
                               _getTimestampSinceBootString(),
+                            ),
+                            _buildLabelValue(
+                              'Issues:',
+                              _issues.map((issue) => issue.toString().split('.').last).join(', '),
                             ),
                             const SizedBox(height: _padding),
                             _buildLabelValue(
@@ -285,10 +290,12 @@ class PositioningExample extends State<MyApp>
     // Set delegates and start location engine.
     _locationEngine!.addLocationListener(this);
     _locationEngine!.addLocationStatusListener(this);
+    _locationEngine!.addLocationIssueListener(this);
     _locationEngine!.startWithLocationAccuracy(LocationAccuracy.bestAvailable);
   }
 
   void _stopLocating() {
+    _locationEngine!.removeLocationIssueListener(this);
     _locationEngine!.removeLocationStatusListener(this);
     _locationEngine!.removeLocationListener(this);
     _locationEngine!.stop();
@@ -355,6 +362,11 @@ class PositioningExample extends State<MyApp>
     setState(() {
       _status = locationEngineStatus;
     });
+  }
+
+  @override
+  void onLocationIssueChanged(List<LocationIssueType> issues) {
+    setState(() => _issues = issues);
   }
 
   Widget _buildLabelValue(String text, String value) {
