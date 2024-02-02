@@ -33,6 +33,8 @@ import com.here.sdk.location.LocationAccuracy;
 import com.here.sdk.location.LocationEngine;
 import com.here.sdk.location.LocationEngineStatus;
 import com.here.sdk.location.LocationFeature;
+import com.here.sdk.location.LocationIssueListener;
+import com.here.sdk.location.LocationIssueType;
 import com.here.sdk.location.LocationStatusListener;
 import com.here.sdk.mapview.LocationIndicator;
 import com.here.sdk.mapview.MapMeasure;
@@ -75,6 +77,15 @@ public class PositioningExample {
         }
     };
 
+    private final LocationIssueListener locationIssueListener = new LocationIssueListener() {
+        @Override
+        public void onLocationIssueChanged(@NonNull List<LocationIssueType> issues) {
+            for (LocationIssueType issue : issues) {
+                Log.d(TAG, "Location issue: " + issue.name());
+            }
+        }
+    };
+
     public void onMapSceneLoaded(MapView mapView) {
         this.mapView = mapView;
 
@@ -103,11 +114,13 @@ public class PositioningExample {
 
     private void startLocating() {
         locationEngine.addLocationStatusListener(locationStatusListener);
+        locationEngine.addLocationIssueListener(locationIssueListener);
         locationEngine.addLocationListener(locationListener);
         locationEngine.start(LocationAccuracy.BEST_AVAILABLE);
     }
 
     public void stopLocating() {
+        locationEngine.removeLocationIssueListener(locationIssueListener);
         locationEngine.stop();
     }
 

@@ -17,7 +17,6 @@
  * License-Filename: LICENSE
  */
 
-import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/mapview.dart';
@@ -29,7 +28,7 @@ class CustomRasterLayersExample {
   RasterDataSource? _rasterDataSourceStyle;
   MapImage? _poiMapImage;
 
-  CustomRasterLayersExample(HereMapController this._hereMapController) {
+  CustomRasterLayersExample(this._hereMapController) {
     double distanceToEarthInMeters = 60 * 1000;
     MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
     _hereMapController.camera.lookAtPointWithMeasure(GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
@@ -89,8 +88,8 @@ class CustomRasterLayersExample {
   }
 
   MapLayer _createMapLayer(String dataSourceName) {
-    // The layer should be rendered on top of other layers.
-    MapLayerPriority priority = MapLayerPriorityBuilder().renderedLast().build();
+    // The layer should be rendered on top of other layers except the labels layer so that we don't overlap raster layer over POI markers.
+    MapLayerPriority priority = MapLayerPriorityBuilder().renderedLast().renderedBeforeLayer("labels").build();
     // And it should be visible for all zoom levels.
     MapLayerVisibilityRange range = MapLayerVisibilityRange(0, 22 + 1);
 
