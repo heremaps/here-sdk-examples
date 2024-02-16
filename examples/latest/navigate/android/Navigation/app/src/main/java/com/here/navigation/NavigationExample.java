@@ -128,7 +128,7 @@ public class NavigationExample {
         }
     }
 
-    public void startNavigation(Route route, boolean isSimulated) {
+    public void startNavigation(Route route, boolean isSimulated, boolean isCameraTrackingEnabled) {
         GeoCoordinates startGeoCoordinates = route.getGeometry().vertices.get(0);
         prefetchMapData(startGeoCoordinates);
 
@@ -147,6 +147,9 @@ public class NavigationExample {
         }
 
         startDynamicSearchForBetterRoutes(route);
+
+        // Synchronize with the toggle button state.
+        updateCameraTracking(isCameraTrackingEnabled);
     }
 
     private void startDynamicSearchForBetterRoutes(Route route) {
@@ -179,8 +182,10 @@ public class NavigationExample {
         }
     }
 
-    public void stopNavigation() {
+    public void stopNavigation(boolean isCameraTrackingEnabled) {
         // Switches to tracking mode when a route was set before, otherwise tracking mode is kept.
+        // Note that tracking mode means that the visual navigator will continue to run, but without
+        // turn-by-turn instructions - this can be done with or without camera tracking.
         // Without a route the navigator will only notify on the current map-matched location
         // including info such as speed and current street name.
         visualNavigator.setRoute(null);
@@ -191,6 +196,17 @@ public class NavigationExample {
 
         dynamicRoutingEngine.stop();
         routePrefetcher.stopPrefetchAroundRoute();
+
+        // Synchronize with the toggle button state.
+        updateCameraTracking(isCameraTrackingEnabled);
+    }
+
+    private void updateCameraTracking(boolean isCameraTrackingEnabled) {
+        if (isCameraTrackingEnabled) {
+            startCameraTracking();
+        } else {
+            stopCameraTracking();
+        }
     }
 
     // Provides simulated location updates based on the given route.

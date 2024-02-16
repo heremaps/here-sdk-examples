@@ -63,6 +63,7 @@ public class App {
     private final RouteCalculator routeCalculator;
     private final NavigationExample navigationExample;
     private final TextView messageView;
+    private boolean isCameraTrackingEnabled = true;
 
     public App(Context context, MapView mapView, TextView messageView) {
         this.context = context;
@@ -102,10 +103,12 @@ public class App {
     public void toggleTrackingButtonOnClicked() {
         // By default, this is enabled.
         navigationExample.startCameraTracking();
+        isCameraTrackingEnabled = true;
     }
 
     public void toggleTrackingButtonOffClicked() {
         navigationExample.stopCameraTracking();
+        isCameraTrackingEnabled = false;
     }
 
     private void calculateRoute(boolean isSimulated) {
@@ -203,7 +206,7 @@ public class App {
         clearWaypointMapMarker();
         clearRoute();
 
-        navigationExample.stopNavigation();
+        navigationExample.stopNavigation(isCameraTrackingEnabled);
     }
 
     private void clearWaypointMapMarker() {
@@ -279,14 +282,14 @@ public class App {
                .setMessage(message)
                .setNeutralButton(buttonText,
                        (dialog, which) -> {
-                           navigationExample.startNavigation(route, isSimulated);
+                           navigationExample.startNavigation(route, isSimulated, isCameraTrackingEnabled);
                        })
                .show();
     }
 
     public void detach() {
         // Disables TBT guidance (if running) and enters tracking mode.
-        navigationExample.stopNavigation();
+        navigationExample.stopNavigation(isCameraTrackingEnabled);
         // Disables positioning.
         navigationExample.stopLocating();
         // Disables rendering.
