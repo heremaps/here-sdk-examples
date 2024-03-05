@@ -40,13 +40,9 @@ class CustomRasterLayersExample {
 
         // We want to start with the default map style.
         rasterMapLayerStyle.setEnabled(false)
-        
+
         // Add a POI marker
         addPOIMapMarker(geoCoordinates: GeoCoordinates(latitude: 52.530932, longitude: 13.384915))
-        
-        // Users of the Navigate Edition can set the visibility for all the POI categories to hidden.
-        // let categoryIds: [String] = []
-        // MapScene.setPoiVisibility(categoryIds: categoryIds, visibility: VisibilityState.hidden)
     }
 
     func onEnableButtonClicked() {
@@ -68,17 +64,17 @@ class CustomRasterLayersExample {
         // Maps © www.thunderforest.com, Data © www.osm.org/copyright.
         // Alternatively, choose another tile provider or use the (customizable) map styles provided by HERE.
         let templateUrl = "https://tile.thunderforest.com/outdoors/{z}/{x}/{y}.png"
-        
+
         // The storage levels available for this data source. Supported range [0, 31].
         let storageLevels: [Int32] = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
         var rasterProviderConfig = RasterDataSourceConfiguration.Provider(
             urlProvider: TileUrlProviderFactory.fromXyzUrlTemplate(templateUrl)!,
             tilingScheme: TilingScheme.quadTreeMercator,
-            storageLevels: storageLevels)            
-        
+            storageLevels: storageLevels)
+
         // If you want to add transparent layers then set this to true.
         rasterProviderConfig.hasAlphaChannel = false
-        
+
         // Raster tiles are stored in a separate cache on the device.
         let path = "cache/raster/mycustomlayer"
         let maxDiskSizeInBytes: Int64 = 1024 * 1024 * 128 // 128 MB
@@ -91,10 +87,12 @@ class CustomRasterLayersExample {
                                                                              provider: rasterProviderConfig,
                                                                              cache: cacheConfig))
     }
-    
+
     private func createMapLayer(dataSourceName: String) -> MapLayer {
-        // The layer should be rendered on top of other layers except the labels layer so that we don't overlap raster layer over POI markers.
-        let priority = MapLayerPriorityBuilder().renderedLast().renderedBeforeLayer(named: "labels").build()
+        // The layer should be rendered on top of other layers except for the "labels" layer
+        // so that we don't overlap the raster layer over POI markers.
+        let priority = MapLayerPriorityBuilder().renderedBeforeLayer(named: "labels").build()
+        
         // And it should be visible for all zoom levels.
         let range = MapLayerVisibilityRange(minimumZoomLevel: 0, maximumZoomLevel: 22 + 1)
 
@@ -115,7 +113,7 @@ class CustomRasterLayersExample {
             fatalError("MapLayer creation failed Cause: \(InstantiationException)")
         }
     }
-    
+
     private func addPOIMapMarker(geoCoordinates: GeoCoordinates) {
         guard
             let image = UIImage(named: "poi.png"),

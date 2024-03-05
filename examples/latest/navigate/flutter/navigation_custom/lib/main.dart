@@ -113,6 +113,10 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
         print('Map scene not loaded. MapError: ${error.toString()}');
         return;
       }
+
+      // Optionally, enable textured 3D landmarks.
+      hereMapController.mapScene.enableFeatures({MapFeatures.landmarks: MapFeatureModes.landmarksTextured});
+      
       MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, _distanceInMeters);
       _hereMapController!.camera.lookAtPointWithMeasure(_routeStartGeoCoordinates, mapMeasureZoom);
       _startAppLogic();

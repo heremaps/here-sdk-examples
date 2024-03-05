@@ -56,8 +56,8 @@ class ManeuverIconProvider {
         maneuverIconFileNames[.leftFork] = "left-fork.svg"
         maneuverIconFileNames[.middleFork] = "middle-fork.svg"
         maneuverIconFileNames[.rightFork] = "right-fork.svg"
-        maneuverIconFileNames[.enterHighwayFromLeft] = "enter-highway-left.svg"
-        maneuverIconFileNames[.enterHighwayFromRight] = "enter-highway-right.svg"
+        maneuverIconFileNames[.enterHighwayFromLeft] = "enter-highway-right.svg"
+        maneuverIconFileNames[.enterHighwayFromRight] = "enter-highway-left.svg"
         maneuverIconFileNames[.leftRoundaboutEnter] = "left-roundabout-enter.svg"
         maneuverIconFileNames[.rightRoundaboutEnter] = "right-roundabout-enter.svg"
 

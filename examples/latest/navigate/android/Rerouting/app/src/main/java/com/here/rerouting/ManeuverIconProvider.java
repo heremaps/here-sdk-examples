@@ -21,10 +21,11 @@ import java.util.concurrent.Executors;
 
 // This class loads all supported maneuver icons from the HERE Icon Library to support quick testing of the HERE SDK features.
 //
-// Note: In a real application it is strongly recommended to predownload all assets
+// Note: In an application used in production it is recommended to pre-download all assets
 // and store them in your application's asset bundle. Asset names and folders in the HERE Icon library may change any time and
 // there is no guarantee that the links will be stable. On top, in a real application you do want to save unnecessary
-// bandwidth from your users.
+// bandwidth from your users. However, this class provides a convenient way to always access the latest resources from the
+// HERE Icon Library.
 public class ManeuverIconProvider {
 
     private static final String TAG = ManeuverIconProvider.class.getName();
@@ -60,8 +61,8 @@ public class ManeuverIconProvider {
         maneuverURLs.put(ManeuverAction.LEFT_FORK, iconLibrary + "left-fork" + fileType);
         maneuverURLs.put(ManeuverAction.MIDDLE_FORK, iconLibrary + "middle-fork" + fileType);
         maneuverURLs.put(ManeuverAction.RIGHT_FORK, iconLibrary + "right-fork" + fileType);
-        maneuverURLs.put(ManeuverAction.ENTER_HIGHWAY_FROM_LEFT, iconLibrary + "enter-highway-left" + fileType);
-        maneuverURLs.put(ManeuverAction.ENTER_HIGHWAY_FROM_RIGHT, iconLibrary + "enter-highway-right" + fileType);
+        maneuverURLs.put(ManeuverAction.ENTER_HIGHWAY_FROM_LEFT, iconLibrary + "enter-highway-right" + fileType);
+        maneuverURLs.put(ManeuverAction.ENTER_HIGHWAY_FROM_RIGHT, iconLibrary + "enter-highway-left" + fileType);
         maneuverURLs.put(ManeuverAction.LEFT_ROUNDABOUT_ENTER, iconLibrary + "left-roundabout-enter" + fileType);
         maneuverURLs.put(ManeuverAction.RIGHT_ROUNDABOUT_ENTER, iconLibrary + "right-roundabout-enter" + fileType);
 
@@ -131,7 +132,8 @@ public class ManeuverIconProvider {
     private void loadManeuverIcons(String imageUrl) {
         Bitmap bitmap = downloadBitmapFromUrl(imageUrl);
         if (bitmap == null) {
-            Log.e(TAG, "Error when trying to download icon.");
+            Log.e(TAG, "Error when trying to download icon: " + imageUrl);
+            return;
         }
         bitmap = convertBlackLinesToWhite(bitmap);
         ManeuverAction maneuverAction = getKeyForValue(maneuverURLs, imageUrl);
@@ -164,11 +166,13 @@ public class ManeuverIconProvider {
             e.printStackTrace();
         }
 
-        InputStream inputStream = null;
+        InputStream inputStream;
         try {
             inputStream = connection.getInputStream();
         } catch (IOException e) {
             e.printStackTrace();
+            // Probably, file not found.
+            return null;
         }
 
         Bitmap bitmap = BitmapFactory.decodeStream(inputStream);

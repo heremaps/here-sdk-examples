@@ -151,6 +151,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onLoadScene(@Nullable MapError mapError) {
                 if (mapError == null) {
+                    // Optionally, enable textured 3D landmarks.
+                    Map<String, String> mapFeatures = new HashMap<>();
+                    mapFeatures.put(MapFeatures.LANDMARKS, MapFeatureModes.LANDMARKS_TEXTURED);
+                    mapView.getMapScene().enableFeatures(mapFeatures);
+
                     MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, DISTANCE_IN_METERS);
                     mapView.getCamera().lookAt(
                             routeStartGeoCoordinates, mapMeasureZoom);

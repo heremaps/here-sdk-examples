@@ -20,7 +20,7 @@
 import heresdk
 import UIKit
 
-class ViewController: UIViewController, ManeuverNotificationDelegate {
+class ViewController: UIViewController, EventTextDelegate {
 
     @IBOutlet var mapView: MapView!
    
@@ -93,7 +93,7 @@ class ViewController: UIViewController, ManeuverNotificationDelegate {
 
         // Hook in one of the many listeners. Here we set up a listener to get instructions on the maneuvers to take while driving.
         // For more details, please check the "Navigation" example app and the Developer's Guide.
-        visualNavigator!.maneuverNotificationDelegate = self
+        visualNavigator!.eventTextDelegate = self
 
         // Set a route to follow. This leaves tracking mode.
         visualNavigator!.route = route
@@ -103,9 +103,9 @@ class ViewController: UIViewController, ManeuverNotificationDelegate {
         setupLocationSource(locationDelegate: visualNavigator!, route: route)
     }
 
-    // Conform to ManeuverNotificationDelegate.
-    func onManeuverNotification(_ text: String) {
-        print("ManeuverNotifications: \(text)")
+    // Conform to EventTextDelegate.
+    func onEventTextUpdated(_ eventText: heresdk.EventText) {
+        print("Voice maneuver text: \(eventText.text)")
     }
     
     private func setupLocationSource(locationDelegate: LocationDelegate, route: Route) {

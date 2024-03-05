@@ -272,9 +272,7 @@ public class MainActivity extends AppCompatActivity {
         // Load a scene from the HERE SDK to render the map with a map scheme.
         mapView.getMapScene().loadScene(MapScheme.NORMAL_DAY, mapError -> {
             if (mapError == null) {
-                Anchor2D anchor = new Anchor2D(0,0);
-                Point2D offset = new Point2D(0, 1800);
-                mapView.setWatermarkLocation(anchor, offset);
+                setWatermark(1800);
                 double distanceInMeters = 1000 * 10;
                 MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
                 mapView.getCamera().lookAt(
@@ -389,6 +387,7 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 mapLoadDone = true;
                 mapView.getCamera().zoomTo(18);
+                setWatermark(1600);
                 geometryList = venueModel.getGeometriesByName();
                 venueTapController.setGeometries(geometryList);
                 recyclerView.setAdapter(new SpaceAdapter(getApplicationContext(), geometryList, MainActivity.this));
@@ -415,12 +414,17 @@ public class MainActivity extends AppCompatActivity {
                     mapView.getCamera().lookAt(
                             new GeoCoordinates(venueCenter.latitude, venueCenter.longitude),
                             mapMeasureZoom);
+                    setWatermark(1600);
 
                     // Venue selection is done, enable back the button for the venue selection
                     // to be able to select another venue.
                     progressBar.setVisibility(View.GONE);
                     mapLoadDone = true;
                     header.setVisibility(View.VISIBLE);
+                    if(!selectedVenue.getVenueModel().getTopologies().isEmpty())
+                        topologyButton.setVisibility(View.VISIBLE);
+                    else
+                        topologyButton.setVisibility((View.GONE));
                 }
             };
 
@@ -465,6 +469,13 @@ public class MainActivity extends AppCompatActivity {
         alert.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         alert.getWindow().setGravity(Gravity.TOP);
         alert.show();
+    }
+
+    void setWatermark(int off)
+    {
+        Anchor2D anchor = new Anchor2D(0,0);
+        Point2D offset = new Point2D(0, off);
+        mapView.setWatermarkLocation(anchor, offset);
     }
 
     // Hide a keyboard.
@@ -540,6 +551,7 @@ public class MainActivity extends AppCompatActivity {
         venue_search.setHint("Search for Venues");
         loadMapScene();
         header.setVisibility(View.GONE);
+        topologyButton.setVisibility(View.GONE);
         levelSwitcher.setVisible(false);
         drawingSwitcher.setVisible(false);
         VenueMap venueMap = venueEngine.getVenueMap();
