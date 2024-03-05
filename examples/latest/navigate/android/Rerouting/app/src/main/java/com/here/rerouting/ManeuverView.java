@@ -14,6 +14,9 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 // A simple view to show the next maneuver event.
 public class ManeuverView extends View  {
 
@@ -81,23 +84,55 @@ public class ManeuverView extends View  {
         invalidate();
     }
 
-    public void onManeuverEvent(Bitmap maneuverIcon, String maneuverIconText, String message1, String message2) {
+    /**
+     * Handles a maneuver event by updating the UI component with the provided maneuver icon, text, distance to the maneuver, and road name.
+     * If the maneuver icon is not provided (i.e., it is {@code null}), the maneuver icon text is used as a fallback to indicate the maneuver.
+     * This method also marks the view for redrawing to reflect the new maneuver information.
+     *
+     * @param maneuverIcon The bitmap of the maneuver icon. Can be {@code null} if no icon is provided. In such cases, {@code maneuverIconText} is used.
+     * @param maneuverIconText The text that describes the maneuver. It is used when {@code maneuverIcon} is not provided. Must not be {@code null}.
+     * @param distanceText The text describing the distance to the maneuver. Must not be {@code null}.
+     * @param roadName The name of the road on which the maneuver occurs. Must not be {@code null}.
+     */
+    public void onManeuverEvent(@Nullable Bitmap maneuverIcon,
+                                @NonNull String maneuverIconText,
+                                @NonNull String distanceText,
+                                @NonNull String roadName) {
         this.maneuverBitmap = maneuverIcon;
         this.maneuverIconText = maneuverIconText;
-        this.distanceText = message1;
-        this.roadName = message2;
+        this.distanceText = distanceText;
+        this.roadName = roadName;
         hideView = false;
         redraw();
     }
 
-    public void onRoadShieldEvent(Bitmap roadShieldBitmap) {
+    /**
+     * Updates the road shield icon displayed on the UI. This method allows for dynamically changing the road shield
+     * based on events such as changes in the road or navigation instructions. If a {@code null} value is passed,
+     * it effectively hides the road shield icon, similar to calling {@code onHideRoadShieldIcon()}.
+     * Triggers a redraw of the UI to apply this change.
+     *
+     * @param roadShieldBitmap The bitmap of the road shield icon to be displayed. Passing {@code null} will remove
+     *                         any currently displayed road shield icon, effectively hiding it.
+     */
+    public void onRoadShieldEvent(@Nullable Bitmap roadShieldBitmap) {
         this.roadShieldBitmap = roadShieldBitmap;
+        redraw();
     }
 
+    /**
+     * Hides the road shield icon currently displayed on the view - if it was shown. Otherwise, this
+     * does nothing. Triggers a redraw of the UI to apply this change.
+     */
     public void onHideRoadShieldIcon() {
         roadShieldBitmap = null;
+        redraw();
     }
 
+    /**
+     * Hides the maneuver panel from the view. This method sets a flag to indicate that the maneuver
+     * panel should not be displayed and triggers a redraw of the UI to apply this change.
+     */
     public void onHideManeuverPanel() {
         hideView = true;
         redraw();

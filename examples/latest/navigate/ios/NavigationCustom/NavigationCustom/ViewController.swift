@@ -55,6 +55,9 @@ class ViewController: UIViewController, AnimationDelegate, LocationDelegate {
         camera.lookAt(point: routeStartGeoCoordinates,
                       zoom: MapMeasure(kind: .distance, value: distanceToEarthInMeters))
 
+        // Optionally, enable textured 3D landmarks.
+        mapView.mapScene.enableFeatures([MapFeatures.landmarks : MapFeatureModes.landmarksTextured])
+        
         startAppLogic()
     }
 

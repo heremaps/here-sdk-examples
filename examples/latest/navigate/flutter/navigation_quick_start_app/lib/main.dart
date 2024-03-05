@@ -147,8 +147,8 @@ class _MyAppState extends State<MyApp> {
 
     // Hook in one of the many listeners. Here we set up a listener to get instructions on the maneuvers to take while driving.
     // For more details, please check the "navigation_app" example and the Developer's Guide.
-    _visualNavigator!.maneuverNotificationListener = HERE.ManeuverNotificationListener((String maneuverText) {
-      print("ManeuverNotifications: $maneuverText");
+    _visualNavigator!.eventTextListener = HERE.EventTextListener((HERE.EventText eventText) {
+      print("Voice maneuver text: ${eventText.text}");
     });
 
     // Set a route to follow. This leaves tracking mode.

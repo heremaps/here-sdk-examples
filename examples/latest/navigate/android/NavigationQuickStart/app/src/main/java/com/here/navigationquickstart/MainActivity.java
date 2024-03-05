@@ -21,11 +21,12 @@ package com.here.navigationquickstart;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import android.util.Log;
 
 import com.here.navigationquickstart.PermissionsRequestor.ResultListener;
 import com.here.sdk.core.GeoCoordinates;
@@ -181,9 +182,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Hook in one of the many listeners. Here we set up a listener to get instructions on the maneuvers to take while driving.
         // For more details, please check the "Navigation" example app and the Developer's Guide.
-        visualNavigator.setManeuverNotificationListener(maneuverText -> {
-            Log.d("ManeuverNotifications", maneuverText);
-        });
+        visualNavigator.setEventTextListener(eventText -> Log.d("Voice maneuver text", eventText.text));
 
         // Set a route to follow. This leaves tracking mode.
         visualNavigator.setRoute(route);

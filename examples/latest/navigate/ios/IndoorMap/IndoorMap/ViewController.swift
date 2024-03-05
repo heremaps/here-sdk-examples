@@ -176,9 +176,13 @@ class StructureSwitcherAlertController: UIViewController {
         contentView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -150).isActive = true
         contentView.widthAnchor.constraint(equalToConstant: maxWidth + padding + 20).isActive = true
 
+        let screenSize = UIScreen.main.bounds.size
+        let allowMultiline = maxWidth > screenSize.width || contentView.frame.height > screenSize.height
+
         for (index, name) in structureNames.enumerated() {
             let button = UIButton(type: .system)
             button.contentEdgeInsets = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 20)
+            button.titleLabel?.numberOfLines = allowMultiline ? 0 : 1
             button.setTitle(name, for: .normal)
             button.contentHorizontalAlignment = .left
             button.titleLabel?.adjustsFontSizeToFitWidth = true
@@ -203,6 +207,9 @@ class StructureSwitcherAlertController: UIViewController {
                 button.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10).isActive = true
             }
         }
+        
+        contentView.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 20).isActive = true
+        contentView.topAnchor.constraint(greaterThanOrEqualTo: view.topAnchor, constant: 20).isActive = true
 
         isModalInPopover = false
     }

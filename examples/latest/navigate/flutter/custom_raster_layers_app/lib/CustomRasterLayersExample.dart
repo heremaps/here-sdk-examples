@@ -42,10 +42,6 @@ class CustomRasterLayersExample {
 
     // Add a POI marker
     _addPOIMapMarker(GeoCoordinates(52.530932, 13.384915), 1);
-
-    // Users of the Navigate Edition can set the visibility for all the POI categories to hidden.
-    // List<String> categoryIds = [];
-    // MapScene.setPoiVisibility(categoryIds, VisibilityState.hidden);
   }
 
   void enableButtonClicked() {
@@ -88,8 +84,10 @@ class CustomRasterLayersExample {
   }
 
   MapLayer _createMapLayer(String dataSourceName) {
-    // The layer should be rendered on top of other layers except the labels layer so that we don't overlap raster layer over POI markers.
-    MapLayerPriority priority = MapLayerPriorityBuilder().renderedLast().renderedBeforeLayer("labels").build();
+    // The layer should be rendered on top of other layers except for the "labels" layer
+    // so that we don't overlap the raster layer over POI markers.
+    MapLayerPriority priority = MapLayerPriorityBuilder().renderedBeforeLayer("labels").build();
+
     // And it should be visible for all zoom levels.
     MapLayerVisibilityRange range = MapLayerVisibilityRange(0, 22 + 1);
 

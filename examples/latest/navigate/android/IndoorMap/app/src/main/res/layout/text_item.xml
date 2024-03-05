@@ -7,12 +7,15 @@
 
     <TextView
         android:layout_width="fill_parent"
-        android:layout_height="48dp"
-        android:gravity="left"
+        android:layout_height="wrap_content"
+        android:gravity="left|center_vertical"
         android:text="New Text"
         android:id="@+id/itemText"
         android:layout_margin="5dp"
         android:textSize="14sp"
-        android:paddingTop="17dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:paddingBottom="5dp"
+        android:paddingTop="5dp"
         android:textColor="@android:color/black" />
 </LinearLayout>
