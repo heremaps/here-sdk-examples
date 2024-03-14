@@ -64,7 +64,11 @@ For an overview of the existing features, please check the _Developer Guide_ for
 - **IndoorMap**: Shows how to integrate private venues. Exclusively available for the _Navigate Edition_.
 - **UnitTesting**: Shows how to mock HERE SDK classes when writing unit tests (the example app is available for the _Explore Edition_ and the _Navigate Edition_).
 
-Most example apps contain a class named "XY-Example" where XY stands for the feature, which is in most cases equal to the name of the app. If you are looking for example code that shows how to use a certain HERE SDK feature, then please look for this class as it contains the most interesting parts. Note that the overall app architecture is kept as simple as possible to not shadow the parts in focus.
+Most example apps contain a class named "XY-Example" where XY stands for the feature, which is in most cases equal to the name of the app. If you are looking for example code that shows how to use a certain HERE SDK feature, then please look for this class as it contains the most interesting parts. 
+
+Note that the overall app architecture is kept as simple as possible to not shadow the parts in focus.
+
+UI elements are mostly left out or kept minimal to not shadow the important parts of the code. Note that the HERE SDK itself does offer most APIs headless without UI.
 
 > Not all examples are available for all editions and platforms.
 
@@ -90,12 +94,18 @@ Above you can find the example app links for the _latest_ HERE SDK version. If y
 ### Get Started for iOS
 1. Copy the `heresdk.framework` file of the HERE SDK for iOS to the example app's root folder.
 2. To run the app, you need to add your HERE credentials (`accessKeyId` and `accessKeySecret`) to the `AppDelegate.swift` file of the project.
+
 ### Get Started for Flutter
 1. Unzip the downloaded HERE SDK for Flutter _package_. This folder contains various files including documentation assets.
 2. Inside you will also find a TAR file that contains the HERE SDK for Flutter _plugin_. It contains the iOS and Android native frameworks.
 3. Now unzip the TAR file and rename the folder to 'here_sdk' and place it to the `plugins` folder inside the example app's directory. The folder structure should look like this: `hello_map/plugins/here_sdk`.
 4. Set your HERE SDK credentials (accessKeyId and accessKeySecret) to the `main.dart` file of the project.
 5. Start an Android emulator or an iOS simulator and execute `flutter run` from the app's directory - or run the app from within your IDE.
+
+## More Resources
+
+- If you are interested to see a demo of the features the HERE SDK has to offer - or if you simply want to see all features in action, check the [HERE WeGo](https://www.here.com/products/wego) application. This app uses the same technology stack that empowers the HERE SDK.
+- Alternatively, you can build and run the _Reference Application_ (available only for Flutter) which you can find as an [open-source project on GitHub](https://github.com/heremaps/here-sdk-ref-app-flutter). This app shows most features of the _Navigate Edition_ including the features from the _Explore Edition_ in an release-ready app with easy-to-understand UX flows and reusable UI assets.
 
 ## Get in Touch
 - Information on how to contribute to this project can be found [here](CONTRIBUTING.md).
