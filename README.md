@@ -109,7 +109,7 @@ Above you can find the example app links for the _latest_ HERE SDK version. If y
 
 ## Get in Touch
 - Information on how to contribute to this project can be found [here](CONTRIBUTING.md).
-- If you have questions about billing, your account, or anything else [Contact Us](https://developer.here.com/help).
+- If you have questions about billing, your account, or anything else [Contact Us](https://www.here.com/contact).
 
 Thank you for using the HERE SDK.
 
