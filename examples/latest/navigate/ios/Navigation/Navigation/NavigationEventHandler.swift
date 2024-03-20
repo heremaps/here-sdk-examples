@@ -519,6 +519,13 @@ class NavigationEventHandler : NavigableLocationDelegate,
         for truckRestrictionWarning in restrictions {
             if truckRestrictionWarning.distanceType == DistanceType.ahead {
                 print("TruckRestrictionWarning ahead in \(truckRestrictionWarning.distanceInMeters) meters.")
+                if let timeRule = truckRestrictionWarning.timeRule {
+                    if !timeRule.appliesTo(dateTime: Date()) {
+                    // For example, during a specific time period of a day, some truck restriction warnings do not apply.
+                    // If truckRestrictionWarning.timeRule is nil, the warning applies at anytime.
+                    print("Note that this truck restriction warning currently does not apply.")
+                }
+              }
             } else if truckRestrictionWarning.distanceType == DistanceType.reached {
                 print("A restriction has been reached.")
             } else if truckRestrictionWarning.distanceType == DistanceType.passed {
@@ -556,7 +563,7 @@ class NavigationEventHandler : NavigableLocationDelegate,
             // already a lower speed limit applies, for example, because of a heavy truck load.
             print("Speed limit restriction for this school zone: \(schoolZoneWarning.speedLimitInMetersPerSecond) m/s.")
               if let timeRule = schoolZoneWarning.timeRule {
-                  if timeRule.appliesTo(dateTime: Date()) {
+                  if !timeRule.appliesTo(dateTime: Date()) {
                   // For example, during night sometimes a school zone warning does not apply.
                   // If schoolZoneWarning.timeRule is nil, the warning applies at anytime.
                   print("Note that this school zone warning currently does not apply.")

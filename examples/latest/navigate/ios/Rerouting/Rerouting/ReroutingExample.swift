@@ -518,7 +518,7 @@ class ReroutingExample: LongPressDelegate,
         let action = nextManeuver.action
         let roadName = getRoadName(maneuver: nextManeuver)
         let distanceText = convertDistance(meters: maneuverProgress.remainingDistanceInMeters)
-        let maneuverText = "Action: \(action.rawValue) on \(roadName) in \(distanceText)"
+        let maneuverText = "Action: \(String(describing: action)) on \(roadName) in \(distanceText)"
 
         // Notify UI to show the next maneuver data.
         uiCallback?.onManeuverEvent(action: action,
