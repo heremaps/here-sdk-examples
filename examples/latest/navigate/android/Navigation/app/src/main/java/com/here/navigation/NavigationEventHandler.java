@@ -466,6 +466,11 @@ public class NavigationEventHandler {
                 for (TruckRestrictionWarning truckRestrictionWarning : list) {
                     if (truckRestrictionWarning.distanceType == DistanceType.AHEAD) {
                         Log.d(TAG, "TruckRestrictionWarning ahead in: "+ truckRestrictionWarning.distanceInMeters + " meters.");
+                        if (truckRestrictionWarning.timeRule != null && !truckRestrictionWarning.timeRule.appliesTo(new Date())) {
+                            // For example, during a specific time period of a day, some truck restriction warnings do not apply.
+                            // If truckRestrictionWarning.timeRule is null, the warning applies at anytime.
+                            Log.d(TAG, "Note that this truck restriction warning currently does not apply.");
+                        }
                     } else if (truckRestrictionWarning.distanceType == DistanceType.REACHED) {
                         Log.d(TAG, "A restriction has been reached.");
                     } else if (truckRestrictionWarning.distanceType == DistanceType.PASSED) {

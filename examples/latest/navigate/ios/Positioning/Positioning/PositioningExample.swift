@@ -70,8 +70,10 @@ class PositioningExample: LocationDelegate, LocationStatusDelegate {
         // Set delegates and start location engine.
         locationEngine.addLocationStatusDelegate(locationStatusDelegate: self)
         locationEngine.addLocationDelegate(locationDelegate: self)
-        if locationEngine.start(locationAccuracy: .bestAvailable) == .missingPermissions {
-            locationAuthorization.requestLocationAuthorization()
+        DispatchQueue.global().async {
+            if self.locationEngine.start(locationAccuracy: .bestAvailable) == .missingPermissions {
+                self.locationAuthorization.requestLocationAuthorization()
+            }
         }
     }
 

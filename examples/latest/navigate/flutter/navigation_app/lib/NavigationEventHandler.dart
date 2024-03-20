@@ -42,8 +42,7 @@ class NavigationEventHandler {
       ValueChanged<String> updateMessageState)
       : _visualNavigator = visualNavigator,
         _dynamicRoutingEngine = dynamicRoutingEngine,
-        _updateMessageState = updateMessageState {
-  }
+        _updateMessageState = updateMessageState {}
 
   void setupListeners() {
     _setupSpeedWarnings();
@@ -377,6 +376,12 @@ class NavigationEventHandler {
       for (TruckRestrictionWarning truckRestrictionWarning in list) {
         if (truckRestrictionWarning.distanceType == DistanceType.ahead) {
           print("TruckRestrictionWarning ahead in: ${truckRestrictionWarning.distanceInMeters} meters.");
+          if (truckRestrictionWarning.timeRule != null &&
+              !truckRestrictionWarning.timeRule!.appliesTo(DateTime.now())) {
+            // For example, during a specific time period of a day, some truck restriction warnings do not apply.
+            // If truckRestrictionWarning.timeRule is null, the warning applies at anytime.
+            print("Note that this truck restriction warning currently does not apply.");
+          }
         } else if (truckRestrictionWarning.distanceType == DistanceType.reached) {
           print("A restriction has been reached.");
         } else if (truckRestrictionWarning.distanceType == DistanceType.passed) {

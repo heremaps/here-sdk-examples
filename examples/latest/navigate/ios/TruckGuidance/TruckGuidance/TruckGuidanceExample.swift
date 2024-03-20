@@ -360,9 +360,11 @@ class TruckGuidanceExample: TapDelegate,
         for truckRestrictionWarning in restrictions {
             if let timeRule = truckRestrictionWarning.timeRule,
                !timeRule.appliesTo(dateTime: Date()) {
-                // The restriction is time-dependent and does not currently apply.
+                // For example, during a specific time period of a day, some truck restriction warnings do not apply.
+                // If truckRestrictionWarning.timeRule is nil, the warning applies at anytime.
                 // Note: For this example, we do not skip any restriction.
                 // continue
+                print("Note that this truck restriction warning currently does not apply.")
             }
 
             // The trailer count for which the current restriction applies.

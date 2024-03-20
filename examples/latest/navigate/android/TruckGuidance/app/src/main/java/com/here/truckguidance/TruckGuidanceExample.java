@@ -395,9 +395,11 @@ public class TruckGuidanceExample {
                 // The list is guaranteed to be non-empty.
                 for (TruckRestrictionWarning truckRestrictionWarning : list) {
                     if (truckRestrictionWarning.timeRule != null && !truckRestrictionWarning.timeRule.appliesTo(new Date())) {
-                        // The restriction is time-dependent and does currently not apply.
+                        // For example, during a specific time period of a day, some truck restriction warnings do not apply.
+                        // If truckRestrictionWarning.timeRule is null, the warning applies at anytime.
                         // Note: For this example, we do not skip any restriction.
                         // continue;
+                        Log.d(TAG, "Note that this truck restriction warning currently does not apply.");
                     }
 
                     // The trailer count for which the current restriction applies.
