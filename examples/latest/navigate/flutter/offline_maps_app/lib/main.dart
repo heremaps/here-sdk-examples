@@ -145,8 +145,8 @@ class _MyAppState extends State<MyApp> {
       alignment: Alignment.topCenter,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          primary: Colors.lightBlueAccent,
-          onPrimary: Colors.white,
+          backgroundColor: Colors.lightBlueAccent,
+          foregroundColor: Colors.white,
         ),
         onPressed: () => callbackFunction(),
         child: Text(buttonLabel, style: TextStyle(fontSize: 20)),

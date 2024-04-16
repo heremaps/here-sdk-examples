@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="22155" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="GvB-Kr-bxT">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="32700.99.1234" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="GvB-Kr-bxT">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22131"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22684"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -208,7 +208,6 @@
                             <constraint firstItem="5TV-8O-Ydb" firstAttribute="top" secondItem="QLo-5r-4HP" secondAttribute="top" constant="60" id="Sj8-Yl-tsg"/>
                             <constraint firstItem="qM0-bI-HEc" firstAttribute="trailing" secondItem="saS-Zp-3W4" secondAttribute="trailing" id="Vyq-XX-QUn"/>
                             <constraint firstItem="JlG-Yb-z9E" firstAttribute="top" secondItem="QLo-5r-4HP" secondAttribute="top" id="WD4-OZ-kOb"/>
-                            <constraint firstItem="p4k-WB-y0b" firstAttribute="top" secondItem="v0H-FV-rQo" secondAttribute="bottom" constant="280" id="XZS-sy-OgU" userLabel="Level Switcher Stack View.top = Drawing Switcher.bottom + 270"/>
                             <constraint firstItem="5TV-8O-Ydb" firstAttribute="trailing" secondItem="QLo-5r-4HP" secondAttribute="trailing" id="Xyq-Hd-Qkq"/>
                             <constraint firstItem="qM0-bI-HEc" firstAttribute="top" secondItem="5TV-8O-Ydb" secondAttribute="top" id="YlG-aP-LSH"/>
                             <constraint firstItem="QLo-5r-4HP" firstAttribute="trailing" secondItem="p4k-WB-y0b" secondAttribute="trailing" constant="15" id="chm-In-HTj"/>
@@ -227,7 +226,6 @@
                         <outlet property="handleView" destination="qGB-aU-UoP" id="UFa-aD-W5I"/>
                         <outlet property="levelSwitcher" destination="5nR-zg-bYc" id="Pdx-yi-t0D"/>
                         <outlet property="levelSwitcherStackView" destination="p4k-WB-y0b" id="LMb-BN-12y"/>
-                        <outlet property="searchDisplayController" destination="4d0-Ys-pPm" id="BwQ-f8-dg4"/>
                         <outlet property="spinnerImg" destination="SCA-5Y-Uc8" id="wJr-gp-x99"/>
                         <outlet property="spinnerView" destination="Otn-XF-Dl2" id="w8E-LL-eL6"/>
                         <outlet property="structureSwitcher" destination="7v8-c9-VzD" id="chx-0N-LGH"/>
@@ -243,14 +241,6 @@
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Tfu-Pq-bAb" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <searchDisplayController id="4d0-Ys-pPm">
-                    <connections>
-                        <outlet property="delegate" destination="GvB-Kr-bxT" id="vyT-rF-nM3"/>
-                        <outlet property="searchContentsController" destination="GvB-Kr-bxT" id="PSJ-qN-OFm"/>
-                        <outlet property="searchResultsDataSource" destination="GvB-Kr-bxT" id="DeE-kz-J18"/>
-                        <outlet property="searchResultsDelegate" destination="GvB-Kr-bxT" id="lEj-jD-VIg"/>
-                    </connections>
-                </searchDisplayController>
             </objects>
             <point key="canvasLocation" x="39.130434782608695" y="19.419642857142858"/>
         </scene>
