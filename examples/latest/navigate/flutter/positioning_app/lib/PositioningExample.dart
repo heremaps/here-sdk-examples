@@ -400,8 +400,8 @@ class PositioningExample extends State<MyApp>
       alignment: Alignment.topCenter,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          primary: Colors.lightBlueAccent,
-          onPrimary: Colors.white,
+          backgroundColor: Colors.lightBlueAccent,
+          foregroundColor: Colors.white,
         ),
         onPressed: () => callbackFunction(),
         child: Container(width: 250, child: Text(buttonLabel, style: TextStyle(fontSize: 15))),

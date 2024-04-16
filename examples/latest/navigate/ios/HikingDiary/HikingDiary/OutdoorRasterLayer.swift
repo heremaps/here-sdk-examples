@@ -85,7 +85,7 @@ class OutdoorRasterLayer {
 
     private func createMapLayer(dataSourceName: String) -> MapLayer {
         // The layer should be rendered on top of other layers except the layers showing the location indicator and polylines/polygons.
-        let priority = MapLayerPriorityBuilder().renderedLast()
+        let priority = MapLayerPriorityBuilder()
             .renderedBeforeLayer(named: "&location_indicator_layer")
             .renderedBeforeLayer(named: "&polyline_layer")
             .build()

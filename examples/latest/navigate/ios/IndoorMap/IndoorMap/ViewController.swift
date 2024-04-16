@@ -173,7 +173,7 @@ class StructureSwitcherAlertController: UIViewController {
         let padding: CGFloat = 20
 
         contentView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -85).isActive = true
-        contentView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -150).isActive = true
+        contentView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -300).isActive = true
         contentView.widthAnchor.constraint(equalToConstant: maxWidth + padding + 20).isActive = true
 
         let screenSize = UIScreen.main.bounds.size
@@ -210,8 +210,6 @@ class StructureSwitcherAlertController: UIViewController {
         
         contentView.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 20).isActive = true
         contentView.topAnchor.constraint(greaterThanOrEqualTo: view.topAnchor, constant: 20).isActive = true
-
-        isModalInPopover = false
     }
 
     @objc private func optionSelected(_ sender: UIButton) {
@@ -322,6 +320,17 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 
         bottomDrawerView.backgroundColor = .white
         view.addSubview(bottomDrawerView)
+        
+        levelSwitcherStackView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(levelSwitcherStackView)
+        NSLayoutConstraint.activate([levelSwitcherStackView.centerYAnchor.constraint(equalTo: view.centerYAnchor),])
+        
+        structureSwitcher.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(structureSwitcher)
+        NSLayoutConstraint.activate([
+            structureSwitcher.topAnchor.constraint(equalTo: levelSwitcherStackView.bottomAnchor, constant: 20),
+            structureSwitcher.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ])
 
         // Set constraints for the bottom drawer view
         bottomDrawerView.translatesAutoresizingMaskIntoConstraints = false
@@ -438,7 +447,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
         searchResult.removeAll()
         structureNames.removeAll()
         searchName = venueNamesList
-        customSearchBar.text = "Search for venues"
+        customSearchBar.placeholder = "Search for venues"
         levelSwitcher.viewController?.levelSwitcherStackView.isHidden = true
         structureSwitcher.isHidden = true
         topPannelView.isHidden = true
@@ -522,10 +531,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
                 customSearchBar.resignFirstResponder()
 
                 if venueLoaded {
-                    customSearchBar.text = "Search for spaces"
+                    customSearchBar.placeholder = "Search for spaces"
                 }
                 else {
-                    customSearchBar.text = "Search for venues"
+                    customSearchBar.placeholder = "Search for venues"
                 }
             }
 
@@ -805,7 +814,7 @@ extension ViewController: VenueSelectionDelegate {
                 if let selectedVenue = venueEngine?.venueMap.selectedVenue {
                     searchResult = selectedVenue.venueModel.geometriesByName
                     venueLoaded = true
-                    customSearchBar.text = " Search for Spaces"
+                    customSearchBar.placeholder = " Search for Spaces"
                     structureSwitcher.isHidden = false
                     levelSwitcherStackView.isHidden = false;
                     topPannelView.isHidden = false
@@ -1036,7 +1045,7 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
                 venueTapHandler?.selectGeometry(venue: venue!, geometry: geometry, center: true)
                 customSearchBar.resignFirstResponder()
                 bottomDrawerHeightConstraint.constant = 105
-                customSearchBar.text = "Search for spaces"
+                customSearchBar.placeholder = "Search for spaces"
             } else {
                 if searching {
                     if let index = venueNamesList.firstIndex(of: searchName[indexPath.row]) {
@@ -1107,7 +1116,7 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
                 }
                 
                 bottomDrawerHeightConstraint.constant = 105
-                customSearchBar.text = "Search for venues"
+                customSearchBar.placeholder = "Search for venues"
             }
         }
     }

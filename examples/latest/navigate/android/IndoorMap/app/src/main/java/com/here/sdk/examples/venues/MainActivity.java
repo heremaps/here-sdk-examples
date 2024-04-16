@@ -168,6 +168,9 @@ public class MainActivity extends AppCompatActivity {
                 cancle_text.setVisibility(View.VISIBLE);
                 String s = c != null? c.toString() : "";
                 s = s.trim();
+                if(s.isEmpty()) {
+                    cancle_text.setVisibility(View.GONE);
+                }
                 if(mapLoadDone == false)
                     filterVenues(s);
                 else

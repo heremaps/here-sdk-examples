@@ -284,8 +284,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       alignment: Alignment.topCenter,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          primary: Colors.lightBlueAccent,
-          onPrimary: Colors.white,
+          backgroundColor: Colors.lightBlueAccent,
+          foregroundColor: Colors.white,
         ),
         onPressed: callbackFunction,
         child: Text(buttonLabel, style: TextStyle(fontSize: 15)),
@@ -299,8 +299,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       alignment: Alignment.topCenter,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          primary: Colors.lightBlueAccent,
-          onPrimary: Colors.white,
+          backgroundColor: Colors.lightBlueAccent,
+          foregroundColor: Colors.white,
         ),
         onPressed: callbackFunction,
         child: Container(
