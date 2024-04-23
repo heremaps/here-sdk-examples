@@ -8,10 +8,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
 import com.here.sdk.navigation.CustomPanningData;
+import com.here.sdk.navigation.SpatialAudioCuePanning;
 import com.here.sdk.navigation.SpatialManeuverAudioCuePanning;
 import com.here.sdk.navigation.SpatialTrajectoryData;
 import com.here.spatialaudionavigation.defaultexample.DefaultEncoder;
@@ -62,7 +64,7 @@ public class SpatialAudioExample {
     }
 
     // Synthesise the audio cue triggered by the SDK into an audio file.
-    public void synthesizeStringToAudioFile(@NotNull final String audioCue, float initialAzimuthInDegrees, @NonNull SpatialManeuverAudioCuePanning spatialManeuverAudioCuePanning, Context context) {
+    public void synthesizeStringToAudioFile(@NotNull final String audioCue, float initialAzimuthInDegrees, @NonNull SpatialAudioCuePanning spatialAudioCuePanning, Context context) {
         executorSynthesization.execute(() -> {
             final File outputDir = context.getCacheDir();
             try {
@@ -77,7 +79,7 @@ public class SpatialAudioExample {
 
                     // Synthesize the audio cue (string) into an audio file.
                     voiceAssistant.getTextToSpeech().synthesizeToFile(audioCue, bundle, outputFile, outputFile.getName());
-                    setSpatialUtteranceProgressListener(uriToFile, initialAzimuthInDegrees, spatialManeuverAudioCuePanning, context);
+                    setSpatialUtteranceProgressListener(uriToFile, initialAzimuthInDegrees, spatialAudioCuePanning, context);
                 }
 
             } catch (IOException e) {
@@ -89,7 +91,7 @@ public class SpatialAudioExample {
     }
 
     // Set utterance listener to call methods when synthesization has finished.
-    private void setSpatialUtteranceProgressListener(Uri uriToFile, float initialAzimuthInDegrees, @NonNull SpatialManeuverAudioCuePanning spatialManeuverAudioCuePanning, Context context) {
+    private void setSpatialUtteranceProgressListener(Uri uriToFile, float initialAzimuthInDegrees, @NonNull SpatialAudioCuePanning spatialAudioCuePanning, Context context) {
         voiceAssistant.getTextToSpeech().setOnUtteranceProgressListener(new UtteranceProgressListener() {
             @Override
             public void onStart(String utteranceId) {
@@ -103,7 +105,10 @@ public class SpatialAudioExample {
                 // startPanning() can be called with new CustomPanningData if the data provided does not fulfil the expectations. For example,
                 // for a more accurate estimation of the audio cue duration we recommend using the duration granted by Android.
                 CustomPanningData customPanningData = new CustomPanningData(getFileDuration(uriToFile), null, null);
-                spatialManeuverAudioCuePanning.startPanning(customPanningData);
+                spatialAudioCuePanning.startAngularPanning(customPanningData, spatialTrajectoryData -> {
+                    Log.d(SpatialAudioCuePanning.class.getSimpleName(), "Next azimuth:" + spatialTrajectoryData.azimuthInDegrees);
+                    updatePanning(spatialTrajectoryData);
+                });
                 executorSynthesization.shutdown();
             }
 

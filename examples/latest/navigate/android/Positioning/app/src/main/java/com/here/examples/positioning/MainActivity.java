@@ -100,12 +100,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
-        switch (item.getItemId()) {
-        case R.id.about:
+        if (item.getItemId() == R.id.about) {
             Intent intent = new Intent(this, ConsentStateActivity.class);
             startActivity(intent);
             return true;
-        default:
+        } else {
             return super.onOptionsItemSelected(item);
         }
     }

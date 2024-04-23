@@ -389,6 +389,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
         messageLabel.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: 16).isActive = true
         messageLabel.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor, constant: -16).isActive = true
         messageLabel.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor, constant: -16).isActive = true
+        
+        view.bringSubviewToFront(customSearchBar)
+        view.bringSubviewToFront(bottomDrawerView)
 
         spinnerView.layer.cornerRadius = 20
         spinnerView.isHidden = true
