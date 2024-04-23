@@ -99,18 +99,18 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
-        switch (item.getItemId()) {
-            case R.id.about:
-                Intent intent = new Intent(this, ConsentStateActivity.class);
-                startActivity(intent);
-                return true;
-            case R.id.stop:
-                if (positioningExample != null) {
-                    positioningExample.stopForegroundService();
-                }
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        int itemId = item.getItemId();
+        if (itemId == R.id.about) {
+            Intent intent = new Intent(this, ConsentStateActivity.class);
+            startActivity(intent);
+            return true;
+        } else if (itemId == R.id.stop) {
+            if (positioningExample != null) {
+              positioningExample.stopForegroundService();
+            }
+            return true;
+        } else {
+            return super.onOptionsItemSelected(item);
         }
     }
 

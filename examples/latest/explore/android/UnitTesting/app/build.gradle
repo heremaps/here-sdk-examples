@@ -23,31 +23,30 @@ android {
     namespace 'com.here.unittesting'
 }
 
+// Use the mock JAR when executing unit tests and the real HERE SDK AAR when building the app.
 def getHereSdkArtefactName() {
     def aarFile = fileTree(dir: 'libs', include: ['heresdk-*.aar']).first()
     // Filename without extension is necessary.
     return org.apache.commons.io.FilenameUtils.getBaseName(aarFile.name)
 }
 
-// Exclude HERE SDK's aar from unit test's dependencies.
+// Exclude HERE SDK's AAR from unit test's dependencies.
 configurations.testImplementation {
     exclude module: getHereSdkArtefactName()
 }
 
 dependencies {
-    // It's not possible to exclude an aar file from dependencies
-    // when it was added using 'fileTree',
-    // as gradle does not provide such a mechanism. Instead, HERE SDK's aar
-    // must be added from a 'local' repository (see how to add a local
-    // repository in the file gradle.build one level above, 'flatDir'
-    // command). The name might be hardcoded, for example:
-    // 'heresdk-explore-4.4.6.0.2841.release'.
+    // It's not possible to exclude an AAR file from dependencies
+    // when it was added using 'fileTree'
+    // as Gradle does not provide such a mechanism. Instead, below we load HERE SDK's AAR
+    // from a 'local' repository. The name can be hardcoded and is loaded with wildcards, for example:
+    // 'heresdk-explore-4.4.6.0.2841.release' is acceptable as file name.
     implementation(name: getHereSdkArtefactName(), ext:'aar')
 
     implementation 'androidx.appcompat:appcompat:1.3.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.1'
 
-    // Keep in mind that the original HERE SDK aar must be excluded from
+    // Keep in mind that the original HERE SDK AAR must be excluded from
     // the test dependency, see above.
     testImplementation fileTree(dir: 'libs', include: ['*mock*.jar'])
     testImplementation 'junit:junit:4.13.2'

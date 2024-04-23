@@ -34,6 +34,9 @@ import com.here.sdk.core.LocationListener;
 import com.here.sdk.core.UnitSystem;
 import com.here.sdk.core.engine.SDKOptions;
 import com.here.sdk.core.errors.InstantiationErrorException;
+import com.here.sdk.navigation.EventText;
+import com.here.sdk.navigation.EventTextListener;
+import com.here.sdk.navigation.EventTextOptions;
 import com.here.sdk.navigation.LocationSimulator;
 import com.here.sdk.navigation.LocationSimulatorOptions;
 import com.here.sdk.navigation.ManeuverNotificationOptions;
@@ -47,6 +50,7 @@ import com.here.sdk.routing.CarOptions;
 import com.here.sdk.routing.Route;
 import com.here.sdk.routing.RoutingEngine;
 import com.here.sdk.routing.Waypoint;
+import com.here.sdk.search.PlaceFilter;
 import com.here.spatialaudionavigation.PermissionsRequestor.ResultListener;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.engine.SDKNativeEngine;
@@ -196,23 +200,19 @@ public class MainActivity extends AppCompatActivity {
         // This enables a navigation view including a rendered navigation arrow.
         visualNavigator.startRendering(mapView);
 
-        // Notifies on voice maneuver messages and data related to the SpatialManeuver
-        visualNavigator.setSpatialManeuverNotificationListener(new SpatialManeuverNotificationListener() {
+        EventTextOptions eventTextOptions = new EventTextOptions();
+        eventTextOptions.enableSpatialAudio = true;
+        visualNavigator.setEventTextOptions(eventTextOptions);
+        visualNavigator.setEventTextListener(new EventTextListener() {
             @Override
-            public void onSpatialManeuverNotification(@NonNull SpatialManeuver spatialManeuver, @NonNull SpatialManeuverAudioCuePanning spatialManeuverAudioCuePanning) {
+            public void onEventTextUpdated(@NonNull EventText eventText) {
                 Log.d(TAG, "New spatial maneuver notification");;
-                spatialAudioExample.initSpatialAudioExecutors();
-                // Prepares the audio file to be played
-                spatialAudioExample.synthesizeStringToAudioFile(spatialManeuver.voiceText, (float) spatialManeuver.initialAzimuthInDegrees, spatialManeuverAudioCuePanning, MainActivity.this);
-            }
-        });
-
-        // Notifies the next azimuth for the current spatial audio trajectory
-        visualNavigator.setSpatialManeuverAzimuthListener(new SpatialManeuverAzimuthListener() {
-            @Override
-            public void onAzimuthNotification(@NonNull SpatialTrajectoryData spatialTrajectoryData) {
-                Log.d(TAG, "New azimuth notification:" + spatialTrajectoryData.azimuthInDegrees);
-                spatialAudioExample.updatePanning(spatialTrajectoryData);
+                if (eventText.spatialNotificationDetails != null) { // Spatial Audio
+                    spatialAudioExample.initSpatialAudioExecutors();
+                    spatialAudioExample.synthesizeStringToAudioFile(eventText.text, (float) eventText.spatialNotificationDetails.initialAzimuthInDegrees, eventText.spatialNotificationDetails.audioCuePanning, MainActivity.this);
+                } else {
+                    // TTS Speak mono
+                }
             }
         });
 
@@ -322,7 +322,7 @@ public class MainActivity extends AppCompatActivity {
         mapView.onSaveInstanceState(outState);
         super.onSaveInstanceState(outState);
     }
-    
+
     private void showDialog(String title, String message) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(title)

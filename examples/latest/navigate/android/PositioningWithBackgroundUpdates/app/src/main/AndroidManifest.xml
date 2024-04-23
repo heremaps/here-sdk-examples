@@ -11,6 +11,7 @@
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
 
     <application
         android:allowBackup="true"
@@ -35,7 +36,8 @@
 
         <service
             android:name="com.here.examples.positioningwithbackgroundupdates.HEREBackgroundPositioningService"
-            android:exported="false"/>
+            android:exported="false"
+            android:foregroundServiceType="location"/>
 
     </application>
 

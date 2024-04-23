@@ -168,7 +168,7 @@ public class DrawingSwitcher implements View.OnClickListener, AdapterView.OnItem
                 height += childView.getMeasuredHeight();
             }
             Log.d("DrawingSwitcher", "marginTop:" + margin.topMargin + " height: " + height);
-            margin.setMargins(margin.leftMargin, 1550 - height, margin.rightMargin, margin.bottomMargin);
+            margin.setMargins(margin.leftMargin, 1450 - height, margin.rightMargin, margin.bottomMargin);
             setCollapsed(true);
             setVisible(true);
         }

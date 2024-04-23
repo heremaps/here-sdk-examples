@@ -45,11 +45,10 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class TestBasicTypes {
 
+    // These tests show examples of how the HERE SDK can be accessed in a unit test scenario.
+
     @Test
     public void testNonStaticMethod() {
-        // Disclaimer: This test does not show a REAL unit test (although the test will get green).
-        // It just shows examples of how the HERE SDK can be accessed in a unit test scenario.
-
         Angle angleMock = mock(Angle.class);
 
         when(angleMock.getDegrees()).thenReturn(10.0);
@@ -61,9 +60,6 @@ public class TestBasicTypes {
 
     @Test
     public void testStaticMethod() {
-        // Disclaimer: This test does not show a REAL unit test (although the test will get green).
-        // It just shows examples of how the HERE SDK can be accessed in a unit test scenario.
-
         Angle angleMock = mock(Angle.class);
         when(angleMock.getDegrees()).thenReturn(10.0);
 
@@ -73,7 +69,7 @@ public class TestBasicTypes {
         when(Angle.StaticMockHelperInstance.fromRadians(anyDouble())).thenReturn(angleMock);
 
         // Test static creation of Angle class. Static HERE SDK classes require a StaticMockHelperInstance.
-        assertEquals(10.0, Angle.fromRadians(0.174533).getDegrees(), 0.1);
+        assertEquals(10.0, Angle.fromRadians(0.174533).getDegrees());
 
         verify(Angle.StaticMockHelperInstance, times(1)).fromRadians(anyDouble());
         verify(angleMock, times(1)).getDegrees();
@@ -83,9 +79,6 @@ public class TestBasicTypes {
 
     @Test
     public void testMapView() {
-        // Disclaimer: This test does not show a REAL unit test (although the test will get green).
-        // It just shows examples of how the HERE SDK can be accessed in a unit test scenario.
-
         GeoCoordinates targetCoordinates = mock(GeoCoordinates.class);
         GeoOrientation orientationAtTarget = mock(GeoOrientation.class);
         double distanceInMeters = 5000.0;
@@ -96,6 +89,7 @@ public class TestBasicTypes {
         GeoCoordinatesUpdate geoCoordinatesUpdate = mock(GeoCoordinatesUpdate.class);
 
         MapView mapView = mock(MapView.class);
+
         // When a mock is declared as lenient, then none of its stubbings will be checked for 'unnecessary stubbing'.
         MapCamera mapCamera = mock(MapCamera.class, withSettings().lenient());
         MapCamera.State state = new MapCamera.State(targetCoordinates, orientationAtTarget, distanceInMeters, zoomLevel);
@@ -106,7 +100,8 @@ public class TestBasicTypes {
         when(mapView.getWidth()).thenReturn(100);
         when(mapView.getHeight()).thenReturn(100);
         when(mapCamera.getState()).thenReturn(state);
-        when(MapCameraAnimationFactory.StaticMockHelperInstance.flyTo(geoCoordinatesUpdate, bowFactor, duration)).thenReturn(mapCameraAnimation);
+        when(MapCameraAnimationFactory.StaticMockHelperInstance.flyTo(
+                geoCoordinatesUpdate, bowFactor, duration)).thenReturn(mapCameraAnimation);
 
         // This verifies that the HERE SDK's MapView can be mocked as expected.
         assertEquals(100, mapView.getWidth());
@@ -114,7 +109,8 @@ public class TestBasicTypes {
 
         // This verifies that the HERE SDK's MapCamera can be mocked as expected.
         assertEquals(state, mapCamera.getState());
-        assertEquals(mapCameraAnimation, MapCameraAnimationFactory.StaticMockHelperInstance.flyTo(geoCoordinatesUpdate, bowFactor, duration));
+        assertEquals(mapCameraAnimation, MapCameraAnimationFactory.StaticMockHelperInstance.flyTo(
+                geoCoordinatesUpdate, bowFactor, duration));
         verify(mapView, times(1)).getWidth();
         verify(mapView, times(1)).getHeight();
         verify(mapCamera, times(1)).getState();
