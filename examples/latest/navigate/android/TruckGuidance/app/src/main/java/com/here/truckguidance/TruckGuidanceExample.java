@@ -848,13 +848,7 @@ public class TruckGuidanceExample {
             @Override
             public void onSearchCompleted(SearchError searchError, List<Place> items) {
                 if (searchError != null) {
-                    if (searchError == SearchError.POLYLINE_TOO_LONG) {
-                        // Increasing halfWidthInMeters will result in less precise results with the benefit of a less
-                        // complex route shape.
-                        Log.d("Search", "Route too long or halfWidthInMeters too small.");
-                    } else {
-                        Log.d("Search", "No places found along the route. Error: " + searchError);
-                    }
+                    Log.d("Search", "No places found along the route. Error: " + searchError);
                     return;
                 }
 

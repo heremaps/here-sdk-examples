@@ -24,8 +24,11 @@ import UIKit
 // This class combines the various events that can be emitted during turn-by-turn navigation.
 // Note that this class does not show an exhaustive list of all possible events.
 class NavigationEventHandler : NavigableLocationDelegate,
+                               BorderCrossingWarningDelegate,
+                               DangerZoneWarningDelegate,
                                DestinationReachedDelegate,
                                MilestoneStatusDelegate,
+                               SafetyCameraWarningDelegate,
                                SpeedWarningDelegate,
                                SpeedLimitDelegate,
                                RouteProgressDelegate,
@@ -60,11 +63,14 @@ class NavigationEventHandler : NavigableLocationDelegate,
         voiceAssistant = VoiceAssistant()
         
         visualNavigator.navigableLocationDelegate = self
+        visualNavigator.borderCrossingWarningDelegate = self
+        visualNavigator.dangerZoneWarningListenerDelegate = self
+        visualNavigator.destinationReachedDelegate = self
         visualNavigator.routeDeviationDelegate = self
         visualNavigator.routeProgressDelegate = self
         visualNavigator.maneuverNotificationDelegate = self
-        visualNavigator.destinationReachedDelegate = self
         visualNavigator.milestoneStatusDelegate = self
+        visualNavigator.safetyCameraWarningDelegate = self
         visualNavigator.speedWarningDelegate = self
         visualNavigator.speedLimitDelegate = self
         visualNavigator.tollStopWarningDelegate = self
@@ -77,6 +83,9 @@ class NavigationEventHandler : NavigableLocationDelegate,
         visualNavigator.roadTextsDelegate = self
         visualNavigator.realisticViewWarningDelegate = self
         
+        setupBorderCrossingWarnings()
+        setupDangerZoneWarnings()
+        setupSafetyCameraWarnings()
         setupSpeedWarnings()
         setupRoadSignWarnings()
         setupVoiceGuidance()
@@ -180,6 +189,18 @@ class NavigationEventHandler : NavigableLocationDelegate,
         } else if milestone.waypointIndex == nil && status == MilestoneStatus.missed {
             // For example, when transport mode changes due to a ferry a system-defined waypoint may have been added.
             print("A system-defined waypoint was missed at: \(String(describing: milestone.mapMatchedCoordinates))")
+        }
+    }
+    
+    // Conform to SafetyCameraWarningDelegate.
+    // Notifies on safety camera warnings as they appear along the road.
+    func onSafetyCameraWarningUpdated(_ safetyCameraWarning: SafetyCameraWarning) {
+        if safetyCameraWarning.distanceType == .ahead {
+            print("Safety camera warning \(safetyCameraWarning.type) ahead in: \(safetyCameraWarning.distanceToCameraInMeters) with speed limit = \(safetyCameraWarning.speedLimitInMetersPerSecond)m/s")
+        } else if safetyCameraWarning.distanceType == .passed {
+            print("Safety camera warning \(safetyCameraWarning.type) passed: \(safetyCameraWarning.distanceToCameraInMeters) with speed limit = \(safetyCameraWarning.speedLimitInMetersPerSecond)m/s")
+        } else if safetyCameraWarning.distanceType == .reached {
+            print("Safety camera warning \(safetyCameraWarning.type) reached at: \(safetyCameraWarning.distanceToCameraInMeters) with speed limit = \(safetyCameraWarning.speedLimitInMetersPerSecond)m/s")
         }
     }
 
@@ -617,12 +638,82 @@ class NavigationEventHandler : NavigableLocationDelegate,
         print("signpostSvgImage: \(signpostSvgImageContent)")
         print("junctionViewSvgImage: \(junctionViewSvgImageContent)")
     }
+    
+    // Conform to BorderCrossingWarningDelegate.
+    // Notifies whenever a country border is crossed and optionally, by default, also when
+    // a state borders are crossed within a country.
+    func onBorderCrossingWarningUpdated(_ borderCrossingWarning: BorderCrossingWarning) {
+        // Since the border crossing warning is given relative to a single location,
+        // the .reached case will never be given for this warning.
+        if borderCrossingWarning.distanceType == .ahead {
+            print("BorderCrossing: A border is ahead in: \(borderCrossingWarning.distanceToBorderCrossingInMeters) meters.")
+            print("BorderCrossing: Type (such as country or state): \(borderCrossingWarning.type)")
+            print("BorderCrossing: Country code: \(borderCrossingWarning.countryCode)")
+            
+            // The state code after the border crossing. It represents the state / province code.
+            // It is a 1 to 3 upper-case characters string that follows the ISO 3166-2 standard,
+            // but without the preceding country code (e.g., for Texas, the state code will be TX).
+            // It will be nil for countries without states or countries in which the states have very
+            // similar regulations (e.g., for Germany, there will be no state borders).
+            if let stateCode = borderCrossingWarning.stateCode {
+                print("BorderCrossing: State code: \(stateCode)")
+            }
+            
+            // The general speed limits that apply in the country / state after border crossing.
+            let generalVehicleSpeedLimits = borderCrossingWarning.speedLimits
+            print("BorderCrossing: Speed limit in cities (m/s): \(String(describing: generalVehicleSpeedLimits.maxSpeedUrbanInMetersPerSecond))")
+            print("BorderCrossing: Speed limit outside cities (m/s): \(String(describing: generalVehicleSpeedLimits.maxSpeedRuralInMetersPerSecond))")
+            print("BorderCrossing: Speed limit on highways (m/s): \(String(describing: generalVehicleSpeedLimits.maxSpeedHighwaysInMetersPerSecond))")
+        } else if borderCrossingWarning.distanceType == .passed {
+            print("BorderCrossing: A border has been passed.")
+        }
+    }
+    
+    // Notifies on danger zones.
+    // A danger zone refers to areas where there is an increased risk of traffic incidents.
+    // These zones are designated to alert drivers to potential hazards and encourage safer driving behaviors.
+    // The HERE SDK warns when approaching the danger zone, as well as when leaving such a zone.
+    // A danger zone may or may not have one or more speed cameras in it. The exact location of such speed cameras
+    // is not provided. Note that danger zones are only available in selected countries, such as France.
+    func onDangerZoneWarningsUpdated(_ dangerZoneWarning: DangerZoneWarning) {
+        // The list is guaranteed to be non-empty.
+        if (dangerZoneWarning.distanceType == DistanceType.ahead) {
+            print("A danger zone ahead in: \(dangerZoneWarning.distanceInMeters) meters.")
+            // isZoneStart indicates if we enter the danger zone from the start.
+            // It is false, when the danger zone is entered from a side street.
+            // Based on the route path, the HERE SDK anticipates from where the danger zone will be entered.
+            // In tracking mode, the most probable path will be used to anticipate from where
+            // the danger zone is entered.
+            print("isZoneStart: \(dangerZoneWarning.isZoneStart)")
+        } else if (dangerZoneWarning.distanceType == DistanceType.reached) {
+            print("A danger zone has been reached. isZoneStart: \(dangerZoneWarning.isZoneStart)")
+        } else if (dangerZoneWarning.distanceType == DistanceType.passed) {
+            print("A danger zone has been passed.")
+        }
+    }
 
     // Conform to RoadTextsDelegate
     // Notifies whenever any textual attribute of the current road changes, i.e., the current road texts differ
     // from the previous one. This can be useful during tracking mode, when no maneuver information is provided.
     func onRoadTextsUpdated(_ roadTexts: RoadTexts) {
         // See getRoadName() how to get the current road name from the provided RoadTexts.
+    }
+    
+    private func setupBorderCrossingWarnings() {
+        var borderCrossingWarningOptions = BorderCrossingWarningOptions()
+        // If set to true, all the state border crossing notifications will not be given.
+        // If the value is false, all border crossing notifications will be given for both
+        // country borders and state borders. Defaults to false
+        borderCrossingWarningOptions.filterOutStateBorderWarnings = true
+        // Warning distance setting for urban, in meters. Defaults to 500 meters.
+        borderCrossingWarningOptions.urbanWarningDistanceInMeters = 400
+        visualNavigator.borderCrossingWarningOptions = borderCrossingWarningOptions
+    }
+    private func setupDangerZoneWarnings() {
+        var dangerZoneWarningOptions = DangerZoneWarningOptions()
+        // Distance setting for urban, in meters. Defaults to 500 meters.
+        dangerZoneWarningOptions.urbanWarningDistanceInMeters = 400
+        visualNavigator.dangerZoneWarningOptions = dangerZoneWarningOptions
     }
     
     private func setupSpeedWarnings() {
@@ -636,11 +727,34 @@ class NavigationEventHandler : NavigableLocationDelegate,
         var roadSignWarningOptions = RoadSignWarningOptions()
         // Set a filter to get only shields relevant for trucks and heavyTrucks.
         roadSignWarningOptions.vehicleTypesFilter = [RoadSignVehicleType.trucks, RoadSignVehicleType.heavyTrucks]
+        // Warning distance setting for highways, defaults to 1500 meters.
+        roadSignWarningOptions.highwayWarningDistanceInMeters = 1600
+        // Warning distance setting for rural roads, defaults to 750 meters.
+        roadSignWarningOptions.ruralWarningDistanceInMeters = 800
+        // Warning distance setting for urban roads, defaults to 500 meters.
+        roadSignWarningOptions.urbanWarningDistanceInMeters = 600
         visualNavigator.roadSignWarningOptions = roadSignWarningOptions
+    }
+    
+    private func setupSafetyCameraWarnings() {
+        var safetyCameraWarningOptions = SafetyCameraWarningOptions()
+        // Warning distance setting for highways, defaults to 1500 meters.
+        safetyCameraWarningOptions.highwayWarningDistanceInMeters = 1600
+        // Warning distance setting for rural roads, defaults to 750 meters.
+        safetyCameraWarningOptions.ruralWarningDistanceInMeters = 800
+        // Warning distance setting for urban roads, defaults to 500 meters.
+        safetyCameraWarningOptions.urbanWarningDistanceInMeters = 600
+        visualNavigator.safetyCameraWarningOptions = safetyCameraWarningOptions
     }
 
     private func setupRealisticViewWarnings() {
-        let realisticViewWarningOptions = RealisticViewWarningOptions(aspectRatio: AspectRatio.aspectRatio3X4, darkTheme: false)
+        var realisticViewWarningOptions = RealisticViewWarningOptions(aspectRatio: AspectRatio.aspectRatio3X4, darkTheme: false)
+        // Warning distance setting for highways, defaults to 1500 meters.
+        realisticViewWarningOptions.highwayWarningDistanceInMeters = 1600
+        // Warning distance setting for rural roads, defaults to 750 meters.
+        realisticViewWarningOptions.ruralWarningDistanceInMeters = 800
+        // Warning distance setting for urban roads, defaults to 500;
+        realisticViewWarningOptions.urbanWarningDistanceInMeters = 600
         visualNavigator.realisticViewWarningOptions = realisticViewWarningOptions
     }
 

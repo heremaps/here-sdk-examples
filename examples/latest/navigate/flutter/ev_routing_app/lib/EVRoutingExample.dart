@@ -233,13 +233,7 @@ class EVRoutingExample {
 
     _searchEngine.searchByText(textQuery, searchOptions, (SearchError? searchError, List<Place>? items) {
       if (searchError != null) {
-        if (searchError == SearchError.polylineTooLong) {
-          // Increasing halfWidthInMeters will result in less precise results with the benefit of a less
-          // complex route shape.
-          print("Search: Route too long or halfWidthInMeters too small.");
-        } else {
-          print("Search: No charging stations found along the route. Error: $searchError");
-        }
+        print("Search: No charging stations found along the route. Error: $searchError");
         return;
       }
 

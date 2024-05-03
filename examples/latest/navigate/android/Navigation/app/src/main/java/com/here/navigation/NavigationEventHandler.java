@@ -74,6 +74,9 @@ import com.here.sdk.navigation.RouteDeviation;
 import com.here.sdk.navigation.RouteDeviationListener;
 import com.here.sdk.navigation.RouteProgress;
 import com.here.sdk.navigation.RouteProgressListener;
+import com.here.sdk.navigation.SafetyCameraWarning;
+import com.here.sdk.navigation.SafetyCameraWarningListener;
+import com.here.sdk.navigation.SafetyCameraWarningOptions;
 import com.here.sdk.navigation.SchoolZoneWarning;
 import com.here.sdk.navigation.SchoolZoneWarningListener;
 import com.here.sdk.navigation.SchoolZoneWarningOptions;
@@ -235,6 +238,35 @@ public class NavigationEventHandler {
                 }
             }
         });
+
+        // Notifies on safety camera warnings as they appear along the road.
+        visualNavigator.setSafetyCameraWarningListener(new SafetyCameraWarningListener() {
+            @Override
+            public void onSafetyCameraWarningUpdated(@NonNull SafetyCameraWarning safetyCameraWarning) {
+                if (safetyCameraWarning.distanceType == DistanceType.AHEAD) {
+                    Log.d(TAG,"Safety camera warning " + safetyCameraWarning.type.name() + " ahead in: "
+                            + safetyCameraWarning.distanceToCameraInMeters + "with speed limit ="
+                            + safetyCameraWarning.speedLimitInMetersPerSecond + "m/s");
+                } else if (safetyCameraWarning.distanceType == DistanceType.PASSED) {
+                    Log.d(TAG,"Safety camera warning " + safetyCameraWarning.type.name() + " passed: "
+                            + safetyCameraWarning.distanceToCameraInMeters + "with speed limit ="
+                            + safetyCameraWarning.speedLimitInMetersPerSecond + "m/s");
+                } else if (safetyCameraWarning.distanceType == DistanceType.REACHED) {
+                    Log.d(TAG,"Safety camera warning " + safetyCameraWarning.type.name() + " reached at: "
+                            + safetyCameraWarning.distanceToCameraInMeters + "with speed limit ="
+                            + safetyCameraWarning.speedLimitInMetersPerSecond + "m/s");
+                }
+            }
+        });
+
+        SafetyCameraWarningOptions safetyCameraWarningOptions = new SafetyCameraWarningOptions();
+        // Warning distance setting for highways, defaults to 1500 meters.
+        safetyCameraWarningOptions.highwayWarningDistanceInMeters = 1600;
+        // Warning distance setting for rural roads, defaults to 750 meters.
+        safetyCameraWarningOptions.ruralWarningDistanceInMeters = 800;
+        // Warning distance setting for urban roads, defaults to 500 meters.
+        safetyCameraWarningOptions.urbanWarningDistanceInMeters = 600;
+        visualNavigator.setSafetyCameraWarningOptions(safetyCameraWarningOptions);
 
         // Notifies when the current speed limit is exceeded.
         visualNavigator.setSpeedWarningListener(new SpeedWarningListener() {
@@ -435,6 +467,12 @@ public class NavigationEventHandler {
         RoadSignWarningOptions roadSignWarningOptions = new RoadSignWarningOptions();
         // Set a filter to get only shields relevant for TRUCKS and HEAVY_TRUCKS.
         roadSignWarningOptions.vehicleTypesFilter = Arrays.asList(RoadSignVehicleType.TRUCKS, RoadSignVehicleType.HEAVY_TRUCKS);
+        // Warning distance setting for highways, defaults to 1500 meters.
+        roadSignWarningOptions.highwayWarningDistanceInMeters = 1600;
+        // Warning distance setting for rural roads, defaults to 750 meters.
+        roadSignWarningOptions.ruralWarningDistanceInMeters = 800;
+        // Warning distance setting for urban roads, defaults to 500 meters.
+        roadSignWarningOptions.urbanWarningDistanceInMeters = 600;
         visualNavigator.setRoadSignWarningOptions(roadSignWarningOptions);
 
         // Notifies on road shields as they appear along the road.
@@ -611,6 +649,12 @@ public class NavigationEventHandler {
         RealisticViewWarningOptions realisticViewWarningOptions = new RealisticViewWarningOptions();
         realisticViewWarningOptions.aspectRatio = AspectRatio.ASPECT_RATIO_3_X_4;
         realisticViewWarningOptions.darkTheme = false;
+        // Warning distance setting for highways, defaults to 1500 meters.
+        realisticViewWarningOptions.highwayWarningDistanceInMeters = 1600;
+        // Warning distance setting for rural roads, defaults to 750 meters.
+        realisticViewWarningOptions.ruralWarningDistanceInMeters = 800;
+        // Warning distance setting for urban roads, defaults to 500 meters.
+        realisticViewWarningOptions.urbanWarningDistanceInMeters = 600;
         visualNavigator.setRealisticViewWarningOptions(realisticViewWarningOptions);
 
         // Notifies on signposts together with complex junction views.

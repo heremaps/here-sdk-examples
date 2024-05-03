@@ -20,35 +20,43 @@
 import heresdk
 import UIKit
 
-// This is the main view controller shown on a mobile device.
-class ViewController: UIViewController {
-
+// `CarPlayViewController` is the view controller shown on an in car's head unit display with CarPlay.
+class CarPlayViewController: UIViewController {
+    
     var mapView : MapView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         // Initialize MapView without a storyboard.
         mapView = MapView(frame: view.bounds)
         view.addSubview(mapView)
-
+        
         // Load the map scene using a map scheme to render the map with.
         mapView.mapScene.loadScene(mapScheme: MapScheme.normalDay, completion: onLoadScene)
     }
-
+    
     // Completion handler when loading a map scene.
     private func onLoadScene(mapError: MapError?) {
         guard mapError == nil else {
             print("Error: Map scene not loaded, \(String(describing: mapError))")
             return
         }
-
+        
         // Configure the map.
         let camera = mapView.camera
         let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 10)
         camera.lookAt(point: GeoCoordinates(latitude: 52.518043, longitude: 13.405991), zoom: distanceInMeters)
     }
-
+    
+    public func zoomIn() {
+        mapView.camera.zoomBy(2, around: mapView!.camera.principalPoint)
+    }
+    
+    public func zoomOut() {
+        mapView.camera.zoomBy(0.5, around: mapView!.camera.principalPoint)
+    }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         mapView.handleLowMemory()

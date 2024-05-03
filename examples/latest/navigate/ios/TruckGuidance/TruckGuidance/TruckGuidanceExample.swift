@@ -54,7 +54,7 @@ class TruckGuidanceExample: TapDelegate,
 
     // Reference to the UICallback delegate.
     private weak var uiCallback: UICallback?
-    
+
     init(viewController: UIViewController, mapView: MapView) {
         self.viewController = viewController
         self.mapView = mapView
@@ -64,27 +64,27 @@ class TruckGuidanceExample: TapDelegate,
         let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 90)
         camera.lookAt(point: GeoCoordinates(latitude: 52.520798, longitude: 13.409408),
                       zoom: distanceInMeters)
-        
+
         do {
             // We use the search engine to find places along a route.
             try searchEngine = SearchEngine()
         } catch let engineInstantiationError {
             fatalError("Failed to initialize SearchEngine. Cause: \(engineInstantiationError)")
         }
-        
+
         do {
             try routingEngine = RoutingEngine()
         } catch let engineInstantiationError {
             fatalError("Failed to initialize routing engine. Cause: \(engineInstantiationError)")
         }
-        
+
         do {
             // The Visual Navigator will be used for truck navigation.
             try visualNavigator = VisualNavigator()
         } catch let engineInstantiationError {
             fatalError("Failed to initialize VisualNavigator. Cause: \(engineInstantiationError)")
         }
-        
+
         do {
             // A headless Navigator to receive car speed limits in parallel.
             // This instance is running in tracking mode for its entire lifetime.
@@ -93,14 +93,14 @@ class TruckGuidanceExample: TapDelegate,
         } catch let engineInstantiationError {
             fatalError("Failed to initialize Navigator. Cause: \(engineInstantiationError)")
         }
-        
+
         herePositioningSimulator = HEREPositioningSimulator()
 
         startMapMarker = createPOIMapMarker(geoCoordinates: startGeoCoordinates, imageName: "poi_start")
         destinationMapMarker = createPOIMapMarker(geoCoordinates: destinationGeoCoordinates, imageName: "poi_destination")
         mapView.mapScene.addMapMarker(startMapMarker)
         mapView.mapScene.addMapMarker(destinationMapMarker)
-        
+
         // Create a TransportProfile instance.
         // This profile is currently only used to retrieve speed limits during tracking mode
         // when no route is set to the VisualNavigator instance.
@@ -145,7 +145,7 @@ class TruckGuidanceExample: TapDelegate,
         vehicleProfile.weightPerAxleInKilograms = MyTruckSpecs.weightPerAxleInKilograms
         return vehicleProfile
     }
-    
+
     // Used for route calculation.
     func createTruckSpecifications() -> TruckSpecifications {
         var truckSpecifications = TruckSpecifications()
@@ -167,7 +167,7 @@ class TruckGuidanceExample: TapDelegate,
     func setUICallback(callback: UICallback) {
             uiCallback = callback
     }
-    
+
     // Enable layers that may be useful for truck drivers.
     private func enableLayers() {
         var mapFeatures = [String: String]()
@@ -179,12 +179,12 @@ class TruckGuidanceExample: TapDelegate,
         mapFeatures[MapFeatures.congestionZones] = MapFeatureModes.defaultMode
         mapView.mapScene.enableFeatures(mapFeatures)
     }
-    
+
     private func setGestureHandlers() {
         mapView.gestures.tapDelegate = self
         mapView.gestures.longPressDelegate = self
     }
-    
+
     // Conform to TapDelegate.
     // Allows retrieving details from carto POIs including vehicleRestrictions layer
     // and traffic incidents.
@@ -194,7 +194,7 @@ class TruckGuidanceExample: TapDelegate,
     func onTap(origin: heresdk.Point2D) {
         // You can also use a larger area to include multiple carto POIs.
         let rectangle2D = Rectangle2D(origin: origin, size: Size2D(width: 50, height: 50))
-        
+
         mapView.pickMapContent(inside: rectangle2D) { pickMapContentResult in
             guard let pickMapContentResult = pickMapContentResult else {
                 // An error occurred while performing the pick operation.
@@ -216,7 +216,7 @@ class TruckGuidanceExample: TapDelegate,
                         print("searchPickedPlace() resulted in an error: \(searchError)")
                         return
                     }
-                    
+
                     if let place = place {
                         let address = place.address.addressText
                         var categories = ""
@@ -243,7 +243,7 @@ class TruckGuidanceExample: TapDelegate,
             }
         }
     }
-    
+
     // Conform to LongPressDelegate.
     func onLongPress(state: heresdk.GestureState, origin: heresdk.Point2D) {
         guard let geoCoordinates = mapView.viewToGeoCoordinates(viewCoordinates: origin) else {
@@ -264,7 +264,7 @@ class TruckGuidanceExample: TapDelegate,
             changeDestination = !changeDestination
         }
     }
-    
+
     private func setupListeners() {
         // Set the SpeedLimitDelegate for Navigator (to receive car speed limits)
         // and VisualNavigator (to receive truck Speed Limits).
@@ -279,14 +279,14 @@ class TruckGuidanceExample: TapDelegate,
 
         // For more warners and events during guidance, please check the Navigation example app, available on GitHub.
     }
-    
+
     // Receive speed limits for trucks.
     class VisualNavigatorSpeedLimitDelegate: SpeedLimitDelegate {
         private let truckGuidanceExample: TruckGuidanceExample
         init(_ truckGuidanceExample: TruckGuidanceExample) {
             self.truckGuidanceExample = truckGuidanceExample
         }
-         
+
         // Conform to SpeedLimitDelegate protocol.
         func onSpeedLimitUpdated(_ speedLimit: heresdk.SpeedLimit) {
             // For simplicity, we use here the effective legal speed limit. More differentiated speed values,
@@ -307,16 +307,16 @@ class TruckGuidanceExample: TapDelegate,
                 truckGuidanceExample.uiCallback?.onTruckSpeedLimit(speedLimit: "n/a")
             }
         }
-        
+
     }
-   
+
     // A headless navigator delegate to receive car speed limits based on the truck route navigated by VisualNavigator.
     class NavigatorSpeedLimitDelegate: SpeedLimitDelegate {
         private let truckGuidanceExample: TruckGuidanceExample
         init(_ truckGuidanceExample: TruckGuidanceExample) {
             self.truckGuidanceExample = truckGuidanceExample
         }
-        
+
         // Conform to SpeedLimitDelegate protocol.
         func onSpeedLimitUpdated(_ speedLimit: heresdk.SpeedLimit) {
             if let currentSpeedLimit = speedLimit.effectiveSpeedLimitInMetersPerSecond() {
@@ -335,7 +335,7 @@ class TruckGuidanceExample: TapDelegate,
             }
         }
     }
-    
+
     // Conform to NavigableLocationDelegate.
     // Notifies on the current map-matched location and other useful information while driving.
     func onNavigableLocationUpdated(_ navigableLocation: heresdk.NavigableLocation) {
@@ -347,7 +347,7 @@ class TruckGuidanceExample: TapDelegate,
             uiCallback?.onDrivingSpeed(drivingSpeed: "n/a")
         }
     }
-    
+
     // Conform to TruckRestrictionsWarningDelegate.
     // Notifies truck drivers on road restrictions ahead. Called whenever there is a change.
     // For example, there can be a bridge ahead not high enough to pass a big truck
@@ -433,7 +433,7 @@ class TruckGuidanceExample: TapDelegate,
             print("environmentalZoneWarning: websiteUrl: \(websiteUrl ?? "N/A")")
         }
     }
-        
+
     private func handleWeightTruckWarning(weightRestriction: WeightRestriction, distanceType: DistanceType) {
         let type = weightRestriction.type
         let value = weightRestriction.valueInKilograms
@@ -450,7 +450,7 @@ class TruckGuidanceExample: TapDelegate,
         let description = "\(weightType): \(weightValue)"
         handleTruckRestrictions(description, distanceType)
     }
-   
+
     private func handleDimensionTruckWarning(dimensionRestriction: DimensionRestriction, distanceType: DistanceType) {
         // Can be either a length, width, or height restriction for a truck. For example, a height
         // restriction can apply for a tunnel.
@@ -472,7 +472,7 @@ class TruckGuidanceExample: TapDelegate,
         let description = "\(dimType): \(dimValue)"
         handleTruckRestrictions(description, distanceType)
     }
-    
+
     // For this example, we always show only the next restriction ahead.
     // In case there are multiple restrictions ahead,
     // the nearest one will be shown after the current one has passed by.
@@ -513,7 +513,7 @@ class TruckGuidanceExample: TapDelegate,
             print("Unknown distance type.")
         }
     }
-    
+
     private func getTons(_ valueInKilograms: Int) -> Int {
         // Convert kilograms to tons.
         let valueInTons = Double(valueInKilograms) / 1000.0
@@ -531,11 +531,11 @@ class TruckGuidanceExample: TapDelegate,
         // Convert the rounded value back to an integer and return.
         return Int(roundedValue)
     }
-    
+
     func metersPerSecondToKilometersPerHour(_ metersPerSecond: Double) -> Double {
         return metersPerSecond * 3.6
     }
-    
+
     // Get the waypoint list using the last two long press points.
     func getCurrentWaypoints() -> [Waypoint] {
         let startWaypoint = Waypoint(coordinates: GeoCoordinates(latitude: startGeoCoordinates.latitude, longitude: startGeoCoordinates.longitude))
@@ -547,7 +547,7 @@ class TruckGuidanceExample: TapDelegate,
 
         return waypoints
     }
-    
+
     func onShowRouteClicked() {
         // Calculate a truck route with the current waypoints and truck options
         routingEngine.calculateRoute(with: getCurrentWaypoints(),
@@ -599,7 +599,7 @@ class TruckGuidanceExample: TapDelegate,
             showDialog(title: "Note", message: "Stopped tracking.")
         }
     }
-    
+
     func onToggleSpeedClicked() {
         // Toggle simulation speed factor.
         if simulationSpeedFactor == 1 {
@@ -610,7 +610,7 @@ class TruckGuidanceExample: TapDelegate,
 
         showDialog(title: "Note", message: "Changed simulation speed factor to \(simulationSpeedFactor). Start again to use the new value.")
     }
-    
+
     private func startRendering() {
         visualNavigator.startRendering(mapView: mapView)
         herePositioningSimulator.setSpeedFactor(simulationSpeedFactor)
@@ -631,7 +631,7 @@ class TruckGuidanceExample: TapDelegate,
     private func untiltUnrotateMap() {
         mapView.camera.setOrientationAtTarget(GeoOrientationUpdate(bearing: 0, tilt: 0))
     }
-    
+
     private func handleTruckRouteResults(_ routingError: RoutingError?, _ routes: [Route]?) {
         if let routingError = routingError {
             showDialog(title: "Error while calculating a truck route: ", message: "\(routingError.rawValue)")
@@ -764,13 +764,7 @@ class TruckGuidanceExample: TapDelegate,
 
         searchEngine.search(categoryQuery: categoryQuery, options: searchOptions, completion: { (searchError, items) in
             if let searchError = searchError {
-                if searchError == .polylineTooLong {
-                    // Increasing halfWidthInMeters will result in less precise results with the benefit of a less
-                    // complex route shape.
-                    print("Route too long or halfWidthInMeters too small.")
-                } else {
-                    print("No places found along the route. Error: \(searchError)")
-                }
+                print("No places found along the route. Error: \(searchError)")
                 return
             }
 
@@ -786,7 +780,7 @@ class TruckGuidanceExample: TapDelegate,
         let truckAmenities = place.details.truckAmenities
         if let truckAmenities = truckAmenities {
             print("Found place with truck amenities: \(place.title)")
-            
+
             // All amenities can be true or false at the same time.
             // You can use this information like in a bitmask to visualize the possible amenities.
             print("This place hasParking: \(truckAmenities.hasParking)")
@@ -802,7 +796,7 @@ class TruckGuidanceExample: TapDelegate,
             print("This place hasWifi: \(truckAmenities.hasWifi)")
             print("This place hasTruckService: \(truckAmenities.hasTruckService)")
             print("This place hasShower: \(truckAmenities.hasShower)")
-            
+
             if let showerCount = truckAmenities.showerCount {
                 print("This place has \(showerCount) showers.")
             }
@@ -819,18 +813,18 @@ class TruckGuidanceExample: TapDelegate,
                                                             size: widthInPixels),
                                                         color: color,
                                                         capShape: LineCap.round))
-            
+
             mapView.mapScene.addMapPolyline(routeMapPolyline)
             mapPolylines.append(routeMapPolyline)
         } catch let error {
             fatalError("Failed to render MapPolyline. Cause: \(error)")
         }
-        
+
         // Optionally, hide irrelevant icons from the vehicle restriction layer that cross our route.
         // If needed, you can block specific map content categories to customize the map view.
         // For example, to hide vehicle restriction icons, you can uncomment the following line:
         // routeMapPolyline.mapContentCategoriesToBlock = Set([MapContentCategory.vehicleRestrictionIcons])
-        
+
         animateToRoute(route)
     }
 
@@ -838,7 +832,7 @@ class TruckGuidanceExample: TapDelegate,
         // Untilt and unrotate the map.
         let bearing: Double = 0
         let tilt: Double = 0
-        
+
         // We want to show the route fitting in the map view with an additional padding of 50 pixels.
         let origin:Point2D = Point2D(x: 50.0, y: 50.0)
         let sizeInPixels:Size2D = Size2D(width: mapView.viewportSize.width - 100, height: mapView.viewportSize.height - 100)
@@ -849,7 +843,7 @@ class TruckGuidanceExample: TapDelegate,
         let animation: MapCameraAnimation = MapCameraAnimationFactory.createAnimation(from: update, duration: TimeInterval(3), easing: Easing(EasingFunction.inCubic))
         mapView.camera.startAnimation(animation)
     }
-    
+
     public func onClearClicked() {
         clearRoute()
         clearMapMarker()
@@ -882,7 +876,7 @@ class TruckGuidanceExample: TapDelegate,
                                   anchor: anchor2D)
         return mapMarker
     }
-    
+
     private func showDialog(title: String, message: String) {
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
