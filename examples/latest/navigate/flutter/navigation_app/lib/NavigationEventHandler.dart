@@ -188,6 +188,72 @@ class NavigationEventHandler {
     schoolZoneWarningOptions.warningDistanceInMeters = 150;
     _visualNavigator.schoolZoneWarningOptions = schoolZoneWarningOptions;
 
+    // Notifies whenever a border is crossed of a country and optionally, by default, also when a state
+    // border of a country is crossed.
+    _visualNavigator.borderCrossingWarningListener = BorderCrossingWarningListener((BorderCrossingWarning borderCrossingWarning) {
+      // Since the border crossing warning is given relative to a single location,
+      // the DistanceType.reached will never be given for this warning.
+      if (borderCrossingWarning.distanceType == DistanceType.ahead) {
+        print("BorderCrossing: A border is ahead in: ${borderCrossingWarning.distanceToBorderCrossingInMeters} meters.");
+        print("BorderCrossing: Type (such as country or state): ${borderCrossingWarning.type.name}");
+        print("BorderCrossing: Country code: ${borderCrossingWarning.countryCode.name}");
+
+        // The state code after the border crossing. It represents the state / province code.
+        // It is a 1 to 3 upper-case characters string that follows the ISO 3166-2 standard,
+        // but without the preceding country code (e.g., for Texas, the state code will be TX).
+        // It will be null for countries without states or countries in which the states have very
+        // similar regulations (e.g., for Germany, there will be no state borders).
+        if (borderCrossingWarning.stateCode != null) {
+          print("BorderCrossing: State code: ${borderCrossingWarning.stateCode}");
+        }
+
+        // The general speed limits that apply in the country / state after border crossing.
+        var generalVehicleSpeedLimits = borderCrossingWarning.speedLimits;
+        print("BorderCrossing: Speed limit in cities (m/s): ${generalVehicleSpeedLimits.maxSpeedUrbanInMetersPerSecond}");
+        print("BorderCrossing: Speed limit outside cities (m/s): ${generalVehicleSpeedLimits.maxSpeedRuralInMetersPerSecond}");
+        print("BorderCrossing: Speed limit on highways (m/s): ${generalVehicleSpeedLimits.maxSpeedHighwaysInMetersPerSecond}");
+      } else if (borderCrossingWarning.distanceType == DistanceType.passed) {
+        print("BorderCrossing: A border has been passed.");
+      }
+    });
+
+    BorderCrossingWarningOptions borderCrossingWarningOptions = BorderCrossingWarningOptions();
+    // If set to true, all the state border crossing notifications will not be given.
+    // If the value is false, all border crossing notifications will be given for both
+    // country borders and state borders. Defaults to false.
+    borderCrossingWarningOptions.filterOutStateBorderWarnings = true;
+    // Warning distance setting for urban, in meters. Defaults to 500 meters.
+    borderCrossingWarningOptions.urbanWarningDistanceInMeters = 400;
+    _visualNavigator.borderCrossingWarningOptions = borderCrossingWarningOptions;
+
+    // Notifies on danger zones.
+    // A danger zone refers to areas where there is an increased risk of traffic incidents.
+    // These zones are designated to alert drivers to potential hazards and encourage safer driving behaviors.
+    // The HERE SDK warns when approaching the danger zone, as well as when leaving such a zone.
+    // A danger zone may or may not have one or more speed cameras in it. The exact location of such speed cameras
+    // is not provided. Note that danger zones are only available in selected countries, such as France.
+    _visualNavigator.dangerZoneWarningListener = DangerZoneWarningListener((DangerZoneWarning dangerZoneWarning) {
+      // The list is guaranteed to be non-empty.
+      if (dangerZoneWarning.distanceType == DistanceType.ahead) {
+        print("A danger zone ahead in: " + dangerZoneWarning.distanceInMeters.toString() + " meters.");
+        // isZoneStart indicates if we enter the danger zone from the start.
+        // It is false, when the danger zone is entered from a side street.
+        // Based on the route path, the HERE SDK anticipates from where the danger zone will be entered.
+        // In tracking mode, the most probable path will be used to anticipate from where
+        // the danger zone is entered.
+        print("isZoneStart: " + dangerZoneWarning.isZoneStart.toString());
+      } else if (dangerZoneWarning.distanceType == DistanceType.reached) {
+        print("A danger zone has been reached. isZoneStart: " + dangerZoneWarning.isZoneStart.toString());
+      } else if (dangerZoneWarning.distanceType == DistanceType.passed) {
+        print("A danger zone has been passed.");
+      }
+    });
+
+    DangerZoneWarningOptions dangerZoneWarningOptions = new DangerZoneWarningOptions();
+    // Distance setting for urban, in meters. Defaults to 500 meters.
+    dangerZoneWarningOptions.urbanWarningDistanceInMeters = 400;
+    _visualNavigator.dangerZoneWarningOptions = dangerZoneWarningOptions;
+
     // Notifies when the current speed limit is exceeded.
     _visualNavigator.speedWarningListener = SpeedWarningListener((SpeedWarningStatus speedWarningStatus) {
       // Handle results from onSpeedWarningStatusChanged().
@@ -349,6 +415,12 @@ class NavigationEventHandler {
     RoadSignWarningOptions roadSignWarningOptions = new RoadSignWarningOptions();
     // Set a filter to get only shields relevant for TRUCKS and HEAVY_TRUCKS.
     roadSignWarningOptions.vehicleTypesFilter = [RoadSignVehicleType.trucks, RoadSignVehicleType.heavyTrucks];
+    // Warning distance setting for highways, defaults to 1500 meters.
+    roadSignWarningOptions.highwayWarningDistanceInMeters = 1600;
+    // Warning distance setting for rural roads, defaults to 750 meters.
+    roadSignWarningOptions.ruralWarningDistanceInMeters = 800;
+    // Warning distance setting for urban roads, defaults to 500 meters.
+    roadSignWarningOptions.urbanWarningDistanceInMeters = 600;
     _visualNavigator.roadSignWarningOptions = roadSignWarningOptions;
 
     // Notifies on road shields as they appear along the road.
@@ -363,6 +435,32 @@ class NavigationEventHandler {
 
       // For more road sign attributes, please check the API Reference.
     });
+
+    // Notifies on safety camera warnings as they appear along the road.
+    _visualNavigator.safetyCameraWarningListener = SafetyCameraWarningListener((SafetyCameraWarning safetyCameraWarning) {
+      if (safetyCameraWarning.distanceType == DistanceType.ahead) {
+        print("Safety camera warning " + safetyCameraWarning.type.name + " ahead in: "
+            + safetyCameraWarning.distanceToCameraInMeters.toString()  + "with speed limit ="
+            + safetyCameraWarning.speedLimitInMetersPerSecond.toString()  + "m/s");
+      } else if (safetyCameraWarning.distanceType == DistanceType.passed) {
+        print("Safety camera warning " + safetyCameraWarning.type.name + " passed: "
+            + safetyCameraWarning.distanceToCameraInMeters.toString()  + "with speed limit ="
+            + safetyCameraWarning.speedLimitInMetersPerSecond.toString()  + "m/s");
+      } else if (safetyCameraWarning.distanceType == DistanceType.reached) {
+        print("Safety camera warning " + safetyCameraWarning.type.name + " reached at: "
+            + safetyCameraWarning.distanceToCameraInMeters.toString() + "with speed limit ="
+            + safetyCameraWarning.speedLimitInMetersPerSecond.toString()  + "m/s");
+      }
+    });
+
+    SafetyCameraWarningOptions safetyCameraWarningOptions = new SafetyCameraWarningOptions();
+    // Warning distance setting for highways, defaults to 1500 meters.
+    safetyCameraWarningOptions.highwayWarningDistanceInMeters = 1600;
+    // Warning distance setting for rural roads, defaults to 750 meters.
+    safetyCameraWarningOptions.ruralWarningDistanceInMeters = 800;
+    // Warning distance setting for urban roads, defaults to 500 meters.
+    safetyCameraWarningOptions.urbanWarningDistanceInMeters = 600;
+    _visualNavigator.safetyCameraWarningOptions = safetyCameraWarningOptions;
 
     // Notifies truck drivers on road restrictions ahead. Called whenever there is a change.
     // For example, there can be a bridge ahead not high enough to pass a big truck
@@ -502,6 +600,12 @@ class NavigationEventHandler {
     RealisticViewWarningOptions realisticViewWarningOptions = RealisticViewWarningOptions();
     realisticViewWarningOptions.aspectRatio = AspectRatio.aspectRatio3X4;
     realisticViewWarningOptions.darkTheme = false;
+    // Warning distance setting for highways, defaults to 1500 meters.
+    realisticViewWarningOptions.highwayWarningDistanceInMeters = 1600;
+    // Warning distance setting for rural roads, defaults to 750 meters.
+    realisticViewWarningOptions.ruralWarningDistanceInMeters = 800;
+    // Warning distance setting for urban roads, defaults to 500 meters.
+    realisticViewWarningOptions.urbanWarningDistanceInMeters = 600;
     _visualNavigator.realisticViewWarningOptions = realisticViewWarningOptions;
   }
 

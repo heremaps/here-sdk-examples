@@ -302,13 +302,7 @@ public class EVRoutingExample {
             @Override
             public void onSearchCompleted(SearchError searchError, List<Place> items) {
                 if (searchError != null) {
-                    if (searchError == SearchError.POLYLINE_TOO_LONG) {
-                        // Increasing halfWidthInMeters will result in less precise results with the benefit of a less
-                        // complex route shape.
-                        Log.d("Search", "Route too long or halfWidthInMeters too small.");
-                    } else {
-                        Log.d("Search", "No charging stations found along the route. Error: " + searchError);
-                    }
+                    Log.d("Search", "No charging stations found along the route. Error: " + searchError);
                     return;
                 }
 
@@ -334,7 +328,7 @@ public class EVRoutingExample {
             showDialog("Error", "Please add at least one route first.");
             return;
         }
-        
+
         // Clear previously added polygon area, if any.
         clearIsolines();
 

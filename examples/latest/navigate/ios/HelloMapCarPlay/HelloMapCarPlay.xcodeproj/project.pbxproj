@@ -3,10 +3,12 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		861F494C2BE0D3A6009579BD /* CarPlaySceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 861F494B2BE0D3A6009579BD /* CarPlaySceneDelegate.swift */; };
+		861F49502BE0DEBD009579BD /* iPhoneSceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 861F494F2BE0DEBD009579BD /* iPhoneSceneDelegate.swift */; };
 		C8579318281C59860031EC04 /* Entitlements.plist in Resources */ = {isa = PBXBuildFile; fileRef = C8579317281C59860031EC04 /* Entitlements.plist */; };
 		C857931A281C5B210031EC04 /* CarPlayViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8579319281C5B210031EC04 /* CarPlayViewController.swift */; };
 		C865242520B7E70F00392D48 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C865242420B7E70F00392D48 /* AppDelegate.swift */; };
@@ -33,6 +35,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		861F494B2BE0D3A6009579BD /* CarPlaySceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlaySceneDelegate.swift; sourceTree = "<group>"; };
+		861F494F2BE0DEBD009579BD /* iPhoneSceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iPhoneSceneDelegate.swift; sourceTree = "<group>"; };
 		C8579317281C59860031EC04 /* Entitlements.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Entitlements.plist; sourceTree = "<group>"; };
 		C8579319281C5B210031EC04 /* CarPlayViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlayViewController.swift; sourceTree = "<group>"; };
 		C865242120B7E70F00392D48 /* HelloMapCarPlay.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HelloMapCarPlay.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -57,6 +61,24 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		861F49532BE0E003009579BD /* scenes */ = {
+			isa = PBXGroup;
+			children = (
+				861F494F2BE0DEBD009579BD /* iPhoneSceneDelegate.swift */,
+				861F494B2BE0D3A6009579BD /* CarPlaySceneDelegate.swift */,
+			);
+			path = scenes;
+			sourceTree = "<group>";
+		};
+		861F49542BE0E021009579BD /* controllers */ = {
+			isa = PBXGroup;
+			children = (
+				C8579319281C5B210031EC04 /* CarPlayViewController.swift */,
+				C865242620B7E70F00392D48 /* ViewController.swift */,
+			);
+			path = controllers;
+			sourceTree = "<group>";
+		};
 		C865241820B7E70F00392D48 = {
 			isa = PBXGroup;
 			children = (
@@ -77,10 +99,10 @@
 		C865242320B7E70F00392D48 /* HelloMapCarPlay */ = {
 			isa = PBXGroup;
 			children = (
+				861F49542BE0E021009579BD /* controllers */,
+				861F49532BE0E003009579BD /* scenes */,
 				C8579317281C59860031EC04 /* Entitlements.plist */,
 				C865242420B7E70F00392D48 /* AppDelegate.swift */,
-				C865242620B7E70F00392D48 /* ViewController.swift */,
-				C8579319281C5B210031EC04 /* CarPlayViewController.swift */,
 				C865242820B7E70F00392D48 /* Main.storyboard */,
 				C865242B20B7E71200392D48 /* Assets.xcassets */,
 				C865242D20B7E71200392D48 /* LaunchScreen.storyboard */,
@@ -173,7 +195,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				C865242720B7E70F00392D48 /* ViewController.swift in Sources */,
+				861F49502BE0DEBD009579BD /* iPhoneSceneDelegate.swift in Sources */,
 				C865242520B7E70F00392D48 /* AppDelegate.swift in Sources */,
+				861F494C2BE0D3A6009579BD /* CarPlaySceneDelegate.swift in Sources */,
 				C857931A281C5B210031EC04 /* CarPlayViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

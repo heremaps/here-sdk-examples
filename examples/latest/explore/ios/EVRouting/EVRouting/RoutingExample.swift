@@ -200,7 +200,7 @@ class RoutingExample {
                                                             size: widthInPixels),
                                                         color: polylineColor,
                                                         capShape: LineCap.round))
-            
+
             mapView.mapScene.addMapPolyline(routeMapPolyline)
             mapPolylineList.append(routeMapPolyline)
         } catch let error {
@@ -234,13 +234,7 @@ class RoutingExample {
     // Completion handler to receive results for found charging stations along the route.
     func onSearchCompleted(error: SearchError?, items: [Place]?) {
         if let searchError = error {
-            if searchError == .polylineTooLong {
-                // Increasing halfWidthInMeters will result in less precise results with the benefit of a less
-                // complex route shape.
-                print("Route too long or halfWidthInMeters too small.")
-            } else {
-                print("No charging stations found along the route. Error: \(searchError)")
-            }
+            print("No charging stations found along the route. Error: \(searchError)")
             return
         }
 
@@ -269,7 +263,7 @@ class RoutingExample {
 
         // Clear previously added polygon area, if any.
         clearIsolines()
-        
+
         // This finds the area that an electric vehicle can reach by consuming 400 Wh or less,
         // while trying to take the fastest possible route into any possible straight direction from start.
         // Note: We have specified evCarOptions.routeOptions.optimizationMode = .fastest for EV car options above.

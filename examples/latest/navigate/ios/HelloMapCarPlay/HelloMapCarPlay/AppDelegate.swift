@@ -17,26 +17,22 @@
  * License-Filename: LICENSE
  */
 
-import CarPlay
-import heresdk
 import UIKit
+import heresdk
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate, CPApplicationDelegate {
-
+class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
-    let carPlayViewController = CarPlayViewController()
-    let carPlayMapTemplate = CPMapTemplate()
-
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
-
+        
         // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
         initializeHERESDK()
-
+        
         return true
     }
-
+    
     private func initializeHERESDK() {
         // Set your credentials for the HERE SDK.
         let accessKeyID = "YOUR_ACCESS_KEY_ID"
@@ -48,45 +44,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CPApplicationDelegate {
             fatalError("Failed to initialize the HERE SDK. Cause: \(engineInstantiationError)")
         }
     }
-
+    
     private func disposeHERESDK() {
         // Free HERE SDK resources before the application shuts down.
         // Usually, this should be called only on application termination.
         // Afterwards, the HERE SDK is no longer usable unless it is initialized again.
         SDKNativeEngine.sharedInstance = nil
     }
-
-    // Conform to CPApplicationDelegate, needed for CarPlay.
-    func application(_ application: UIApplication,
-                     didConnectCarInterfaceController interfaceController: CPInterfaceController,
-                     to window: CPWindow) {
-        // CarPlay window has been connected. Set up the view controller for it and a map template.
-        carPlayMapTemplate.leadingNavigationBarButtons = [createButton(title: "Zoom +"),
-                                                          createButton(title: "Zoom -")]
-        interfaceController.setRootTemplate(carPlayMapTemplate, animated: true)
-        // CarPlayViewController is main view controller for the provided CPWindow.
-        window.rootViewController = carPlayViewController
-    }
-
-    private func createButton(title: String) -> CPBarButton {
-        let barButton = CPBarButton(type: .text) { (button) in
-            if (title == "Zoom +") {
-                self.carPlayViewController.zoomIn()
-            } else if (title == "Zoom -") {
-                self.carPlayViewController.zoomOut()
-            }
-        }
-        barButton.title = title
-        return barButton
-    }
-
-    // Conform to CPApplicationDelegate, needed for CarPlay.
-    func application(_ application: UIApplication,
-                     didDisconnectCarInterfaceController interfaceController: CPInterfaceController,
-                     from window: CPWindow) {
-        // Override point for customization when disconnecting from car interface.
-    }
-
+    
     func applicationWillTerminate(_ application: UIApplication) {
         // Deinitializes map renderer and releases all of its resources.
         // All existing MapView instances will become invalid after this call.
