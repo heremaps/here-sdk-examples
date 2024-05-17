@@ -206,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
         visualNavigator.setEventTextListener(new EventTextListener() {
             @Override
             public void onEventTextUpdated(@NonNull EventText eventText) {
-                Log.d(TAG, "New spatial maneuver notification");;
+                Log.d(TAG, "New spatial maneuver notification");
                 if (eventText.spatialNotificationDetails != null) { // Spatial Audio
                     spatialAudioExample.initSpatialAudioExecutors();
                     spatialAudioExample.synthesizeStringToAudioFile(eventText.text, (float) eventText.spatialNotificationDetails.initialAzimuthInDegrees, eventText.spatialNotificationDetails.audioCuePanning, MainActivity.this);
