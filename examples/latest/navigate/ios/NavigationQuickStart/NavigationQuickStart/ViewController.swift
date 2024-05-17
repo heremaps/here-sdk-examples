@@ -105,7 +105,7 @@ class ViewController: UIViewController, EventTextDelegate {
 
     // Conform to EventTextDelegate.
     func onEventTextUpdated(_ eventText: heresdk.EventText) {
-        print("Voice maneuver text: \(eventText.text)")
+        print("Maneuver text: \(eventText.text)")
     }
     
     private func setupLocationSource(locationDelegate: LocationDelegate, route: Route) {

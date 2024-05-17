@@ -41,6 +41,8 @@ import com.here.sdk.navigation.DangerZoneWarningOptions;
 import com.here.sdk.navigation.DestinationReachedListener;
 import com.here.sdk.navigation.DimensionRestrictionType;
 import com.here.sdk.navigation.DistanceType;
+import com.here.sdk.navigation.EventText;
+import com.here.sdk.navigation.EventTextListener;
 import com.here.sdk.navigation.JunctionViewLaneAssistance;
 import com.here.sdk.navigation.JunctionViewLaneAssistanceListener;
 import com.here.sdk.navigation.Lane;
@@ -48,7 +50,6 @@ import com.here.sdk.navigation.LaneAccess;
 import com.here.sdk.navigation.LaneDirectionCategory;
 import com.here.sdk.navigation.LaneRecommendationState;
 import com.here.sdk.navigation.LaneType;
-import com.here.sdk.navigation.ManeuverNotificationListener;
 import com.here.sdk.navigation.ManeuverNotificationOptions;
 import com.here.sdk.navigation.ManeuverProgress;
 import com.here.sdk.navigation.ManeuverViewLaneAssistance;
@@ -87,6 +88,7 @@ import com.here.sdk.navigation.SpeedLimitOffset;
 import com.here.sdk.navigation.SpeedWarningListener;
 import com.here.sdk.navigation.SpeedWarningOptions;
 import com.here.sdk.navigation.SpeedWarningStatus;
+import com.here.sdk.navigation.TextNotificationType;
 import com.here.sdk.navigation.TollBooth;
 import com.here.sdk.navigation.TollBoothLane;
 import com.here.sdk.navigation.TollCollectionMethod;
@@ -313,6 +315,10 @@ public class NavigationEventHandler {
                     return;
                 }
 
+                if (lastMapMatchedLocation.isDrivingInTheWrongWay) {
+                    Log.d(TAG,"User is driving in the wrong direction of the route.");
+                }
+
                 Double speed = currentNavigableLocation.originalLocation.speedInMetersPerSecond;
                 Double accuracy = currentNavigableLocation.originalLocation.speedAccuracyInMetersPerSecond;
                 Log.d(TAG, "Driving speed (m/s): " + speed + "plus/minus an accuracy of: " +accuracy);
@@ -361,11 +367,18 @@ public class NavigationEventHandler {
             }
         });
 
-        // Notifies on voice maneuver messages.
-        visualNavigator.setManeuverNotificationListener(new ManeuverNotificationListener() {
+        // Notifies on messages that can be fed into TTS engines to guide the user with audible instructions.
+        // The texts can be maneuver instructions or warn on certain obstacles, such as speed cameras.
+        visualNavigator.setEventTextListener(new EventTextListener() {
             @Override
-            public void onManeuverNotification(@NonNull String voiceText) {
-                voiceAssistant.speak(voiceText);
+            public void onEventTextUpdated(@NonNull EventText eventText) {
+                // We use the built-in TTS engine to synthesize the localized text as audio.
+                voiceAssistant.speak(eventText.text);
+                // We can optionally retrieve the associated maneuver. The details will be null if the text contains
+                // non-maneuver related information, such as for speed camera warnings.
+                if (eventText.type == TextNotificationType.MANEUVER && eventText.maneuverNotificationDetails != null) {
+                    Maneuver maneuver = eventText.maneuverNotificationDetails.maneuver;
+                }
             }
         });
 

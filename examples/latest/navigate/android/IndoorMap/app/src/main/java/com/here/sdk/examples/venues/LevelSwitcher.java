@@ -135,12 +135,14 @@ public class LevelSwitcher extends LinearLayout {
             @Override
             public void onClick(View view) {
                 listView.smoothScrollByOffset(1);
+                venueMap.getSelectedVenue().setSelectedLevelIndex(venueMap.getSelectedVenue().getSelectedLevelIndex() + 1);
             }
         });
         levelDown.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 listView.smoothScrollByOffset(-1);
+                venueMap.getSelectedVenue().setSelectedLevelIndex(venueMap.getSelectedVenue().getSelectedLevelIndex() - 1);
             }
         });
         setVisibility(View.GONE);

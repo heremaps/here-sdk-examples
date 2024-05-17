@@ -134,7 +134,8 @@ public class LevelSwitcher: UIView {
             if nextIndexPathForLevelIndex >= 0 {
                 let nextSelectedIndexPath = IndexPath(row: Int(nextIndexPathForLevelIndex), section: 0)
                 tableView.scrollToRow(at: nextSelectedIndexPath, at: .top, animated: true)
-                currentLevelIndex += 1 // Update the currentLevelIndex to reflect the new selected row
+                setCurrentLevel(currentLevelIndex + 1)
+                updateLevel(currentLevelIndex + 1)
             }
         }
     }
@@ -149,7 +150,8 @@ public class LevelSwitcher: UIView {
             if previousIndexPathForLevelIndex < Int32(levels.count) {
                 let previousSelectedIndexPath = IndexPath(row: Int(previousIndexPathForLevelIndex), section: 0)
                 tableView.scrollToRow(at: previousSelectedIndexPath, at: .top, animated: true)
-                currentLevelIndex -= 1 // Update the currentLevelIndex to reflect the new selected row (move down)
+                setCurrentLevel(currentLevelIndex - 1)
+                updateLevel(currentLevelIndex - 1)
             }
         }
     }

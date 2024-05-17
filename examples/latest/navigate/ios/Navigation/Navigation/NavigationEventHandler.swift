@@ -33,7 +33,7 @@ class NavigationEventHandler : NavigableLocationDelegate,
                                SpeedLimitDelegate,
                                RouteProgressDelegate,
                                RouteDeviationDelegate,
-                               ManeuverNotificationDelegate,
+                               EventTextDelegate,
                                TollStopWarningDelegate,
                                ManeuverViewLaneAssistanceDelegate,
                                JunctionViewLaneAssistanceDelegate,
@@ -68,7 +68,7 @@ class NavigationEventHandler : NavigableLocationDelegate,
         visualNavigator.destinationReachedDelegate = self
         visualNavigator.routeDeviationDelegate = self
         visualNavigator.routeProgressDelegate = self
-        visualNavigator.maneuverNotificationDelegate = self
+        visualNavigator.eventTextDelegate = self
         visualNavigator.milestoneStatusDelegate = self
         visualNavigator.safetyCameraWarningDelegate = self
         visualNavigator.speedWarningDelegate = self
@@ -274,6 +274,10 @@ class NavigationEventHandler : NavigableLocationDelegate,
 
         lastMapMatchedLocation = navigableLocation.mapMatchedLocation!
 
+        if (lastMapMatchedLocation?.isDrivingInTheWrongWay == true) {
+            print("User is driving in the wrong direction of the route.")
+        }
+        
         let speed = navigableLocation.originalLocation.speedInMetersPerSecond
         let accuracy = navigableLocation.originalLocation.speedAccuracyInMetersPerSecond
         print("Driving speed: \(String(describing: speed)) plus/minus accuracy of \(String(describing: accuracy)).")
@@ -324,11 +328,18 @@ class NavigationEventHandler : NavigableLocationDelegate,
         // The deviation event is sent any time an off-route location is detected: It may make
         // sense to await around 3 events before deciding on possible actions.
     }
-
-    // Conform to ManeuverNotificationDelegate.
-    // Notifies on voice maneuver messages.
-    func onManeuverNotification(_ text: String) {
-        voiceAssistant.speak(message: text)
+    
+    // Conform to EventTextDelegate.
+    // Notifies on messages that can be fed into TTS engines to guide the user with audible instructions.
+    // The texts can be maneuver instructions or warn on certain obstacles, such as speed cameras.
+    func onEventTextUpdated(_ eventText: heresdk.EventText) {
+        // We use the built-in TTS engine to synthesize the localized text as audio.
+        voiceAssistant.speak(message: eventText.text)
+        // We can optionally retrieve the associated maneuver. The details will be nil if the text contains
+        // non-maneuver related information, such as for speed camera warnings.
+        if (eventText.type == TextNotificationType.maneuver) {
+            let maneuver = eventText.maneuverNotificationDetails?.maneuver;
+        }
     }
     
     // Conform to TollStopWarningDelegate.

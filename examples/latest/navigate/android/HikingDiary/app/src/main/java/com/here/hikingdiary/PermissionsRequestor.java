@@ -109,6 +109,12 @@ public class PermissionsRequestor {
                                 permission.equals(Manifest.permission.POST_NOTIFICATIONS)) {
                             continue;
                         }
+
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE &&
+                                permission.equals(Manifest.permission.FOREGROUND_SERVICE_LOCATION)) {
+                            continue;
+                        }
+
                         permissionList.add(permission);
                     }
                 }
