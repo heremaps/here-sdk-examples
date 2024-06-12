@@ -30,6 +30,7 @@ import android.view.Display;
 import android.view.View;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.here.multidisplays.PermissionsRequestor.ResultListener;
@@ -68,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
         mapView = findViewById(R.id.map_view);
         mapView.onCreate(savedInstanceState);
 
-        registerReceiver(dataBroadcast, dataBroadcast.getFilter(DataBroadcast.MESSAGE_FROM_SECONDARY_DISPLAY));
+        registerReceiver(dataBroadcast, dataBroadcast.getFilter(DataBroadcast.MESSAGE_FROM_SECONDARY_DISPLAY), Context.RECEIVER_EXPORTED);
         handleAndroidPermissions();
     }
 

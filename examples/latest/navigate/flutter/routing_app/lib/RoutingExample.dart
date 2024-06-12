@@ -85,10 +85,23 @@ class RoutingExample {
   // An implementation may decide to reject a route if one or more violations are detected.
   void _logRouteViolations(here.Route route) {
     for (var section in route.sections) {
-      for (var notice in section.sectionNotices) {
-        print("This route contains the following warning: " + notice.code.toString());
+      for (var span in section.spans) {
+        List<GeoCoordinates> spanGeometryVertices = span.geometry.vertices;
+        // This route violation spreads across the whole span geometry.
+        GeoCoordinates violationStartPoint = spanGeometryVertices[0];
+        GeoCoordinates violationEndPoint = spanGeometryVertices[spanGeometryVertices.length - 1];
+        for (var index in span.noticeIndexes) {
+          SectionNotice spanSectionNotice = section.sectionNotices[index];
+          // The violation code such as "violatedVehicleRestriction".
+          var violationCode = spanSectionNotice.code.toString();
+          print("The violation  $violationCode starts at  ${_toString(violationStartPoint)} and ends at ${_toString(violationEndPoint)} .");
+        }
       }
     }
+  }
+
+  String _toString(GeoCoordinates geoCoordinates){
+    return "${geoCoordinates.latitude},  ${geoCoordinates.longitude}";
   }
 
   void _logTollDetails(here.Route route) {

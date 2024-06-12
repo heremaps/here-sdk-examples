@@ -126,10 +126,23 @@ public class RoutingExample {
     // An implementation may decide to reject a route if one or more violations are detected.
     private void logRouteViolations(Route route) {
         for (Section section : route.getSections()) {
-            for (SectionNotice notice : section.getSectionNotices()) {
-                Log.e(TAG, "This route contains the following warning: " + notice.code.toString());
+            for (Span span : section.getSpans()) {
+                List<GeoCoordinates> spanGeometryVertices = span.getGeometry().vertices;
+                // This route violation spreads across the whole span geometry.
+                GeoCoordinates violationStartPoint = spanGeometryVertices.get(0);
+                GeoCoordinates violationEndPoint = spanGeometryVertices.get(spanGeometryVertices.size() - 1);
+                for (int index : span.getNoticeIndexes()) {
+                    SectionNotice spanSectionNotice = section.getSectionNotices().get(index);
+                    // The violation code such as "VIOLATED_VEHICLE_RESTRICTION".
+                    String violationCode = spanSectionNotice.code.toString();
+                    Log.d(TAG, "The violation " + violationCode + " starts at " + toString(violationStartPoint) + " and ends at " + toString(violationEndPoint) + " .");
+                }
             }
         }
+    }
+
+    private String toString(GeoCoordinates geoCoordinates) {
+        return geoCoordinates.latitude + ", " + geoCoordinates.longitude;
     }
 
     private void logRouteSectionDetails(Route route) {
@@ -330,10 +343,10 @@ public class RoutingExample {
                 MapPolyline trafficSpanMapPolyline = null;
                 try {
                     trafficSpanMapPolyline = new MapPolyline(span.getGeometry(), new MapPolyline.SolidRepresentation(
-                                    new MapMeasureDependentRenderSize(RenderSize.Unit.PIXELS, widthInPixels),
-                                    lineColor,
-                                    LineCap.ROUND));
-                }  catch (MapPolyline.Representation.InstantiationException e) {
+                            new MapMeasureDependentRenderSize(RenderSize.Unit.PIXELS, widthInPixels),
+                            lineColor,
+                            LineCap.ROUND));
+                } catch (MapPolyline.Representation.InstantiationException e) {
                     Log.e("MapPolyline Representation Exception:", e.error.name());
                 } catch (MapMeasureDependentRenderSize.InstantiationException e) {
                     Log.e("MapMeasureDependentRenderSize Exception:", e.error.name());
