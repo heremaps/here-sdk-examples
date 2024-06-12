@@ -52,6 +52,7 @@ import com.here.sdk.routing.RoutingError;
 import com.here.sdk.routing.RoutingInterface;
 import com.here.sdk.routing.Section;
 import com.here.sdk.routing.SectionNotice;
+import com.here.sdk.routing.Span;
 import com.here.sdk.routing.Waypoint;
 
 import java.util.ArrayList;
@@ -135,10 +136,23 @@ public class RoutingExample {
     // An implementation may decide to reject a route if one or more violations are detected.
     private void logRouteViolations(Route route) {
         for (Section section : route.getSections()) {
-            for (SectionNotice notice : section.getSectionNotices()) {
-                Log.e(TAG, "This route contains the following warning: " + notice.code.toString());
+            for (Span span : section.getSpans()) {
+                List<GeoCoordinates> spanGeometryVertices = span.getGeometry().vertices;
+                // This route violation spreads across the whole span geometry.
+                GeoCoordinates violationStartPoint = spanGeometryVertices.get(0);
+                GeoCoordinates violationEndPoint = spanGeometryVertices.get(spanGeometryVertices.size() - 1);
+                for (int index : span.getNoticeIndexes()) {
+                    SectionNotice spanSectionNotice = section.getSectionNotices().get(index);
+                    // The violation code such as "VIOLATED_VEHICLE_RESTRICTION".
+                    String violationCode = spanSectionNotice.code.toString();
+                    Log.d(TAG, "The violation " + violationCode + " starts at " + toString(violationStartPoint) + " and ends at " + toString(violationEndPoint) + " .");
+                }
             }
         }
+    }
+
+    private String toString(GeoCoordinates geoCoordinates) {
+        return geoCoordinates.latitude + ", " + geoCoordinates.longitude;
     }
 
     private void showRouteDetails(Route route) {

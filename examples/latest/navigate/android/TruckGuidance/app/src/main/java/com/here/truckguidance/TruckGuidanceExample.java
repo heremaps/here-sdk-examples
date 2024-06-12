@@ -80,6 +80,7 @@ import com.here.sdk.routing.RoutingEngine;
 import com.here.sdk.routing.RoutingError;
 import com.here.sdk.routing.Section;
 import com.here.sdk.routing.SectionNotice;
+import com.here.sdk.routing.Span;
 import com.here.sdk.routing.TruckOptions;
 import com.here.sdk.routing.ViolatedRestriction;
 import com.here.sdk.routing.Waypoint;
@@ -747,12 +748,21 @@ public class TruckGuidanceExample {
         int sectionNr = -1;
         for (Section section : sections) {
             sectionNr++;
+            for (Span span : section.getSpans()) {
+                List<GeoCoordinates> spanGeometryVertices = span.getGeometry().vertices;
+                // This route violation spreads across the whole span geometry.
+                GeoCoordinates violationStartPoint = spanGeometryVertices.get(0);
+                GeoCoordinates violationEndPoint = spanGeometryVertices.get(spanGeometryVertices.size() - 1);
+                for (int index : span.getNoticeIndexes()) {
+                    SectionNotice spanSectionNotice = section.getSectionNotices().get(index);
+                    // The violation code such as "VIOLATED_VEHICLE_RESTRICTION".
+                    // For example, if code is VIOLATED_AVOID_FERRY, then the route contains a ferry, although it
+                    // was requested to avoid ferries in RouteOptions.AvoidanceOptions.
+                    String violationCode = spanSectionNotice.code.toString();
+                    Log.d(TAG, "Section " + sectionNr + ": " +"The violation " + violationCode + " starts at " + toString(violationStartPoint) + " and ends at " + toString(violationEndPoint) + " .");
+                }
+            }
             for (SectionNotice sectionNotice : section.getSectionNotices()) {
-                // For example, if code is VIOLATED_AVOID_FERRY, then the route contains a ferry, although it
-                // was requested to avoid ferries in RouteOptions.AvoidanceOptions.
-                Log.d("RouteViolations", "Section " + sectionNr + ": " +
-                        "This route contains the following warning: " + sectionNotice.code);
-
                 // Get violated truck vehicle restrictions.
                 for (ViolatedRestriction violatedRestriction : sectionNotice.violatedRestrictions) {
                     // A human readable description of the violated restriction.
@@ -814,6 +824,10 @@ public class TruckGuidanceExample {
                 }
             }
         }
+    }
+
+    private String toString(GeoCoordinates geoCoordinates) {
+        return geoCoordinates.latitude + ", " + geoCoordinates.longitude;
     }
 
     private void searchAlongARoute(Route route) {

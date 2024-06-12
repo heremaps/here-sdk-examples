@@ -76,10 +76,30 @@ class RoutingExample {
     private func logRouteViolations(route: Route) {
         let sections = route.sections
         for section in sections {
-            for notice in section.sectionNotices {
-                print("This route contains the following warning: \(notice.code)")
+            for span in section.spans {
+                let spanGeometryVertices = span.geometry.vertices;
+                // This route violation spreads across the whole span geometry.
+                guard let violationStartPoint: GeoCoordinates  = spanGeometryVertices.first else {
+                    print("Error: violation start geocoordinate is empty.")
+                    return
+                };
+                guard let violationEndPoint : GeoCoordinates = spanGeometryVertices.last else {
+                    print("Error: violation end geocoordinate is empty.")
+                    return
+                };
+                for index in span.noticeIndexes{
+                    let spanSectionNotice : SectionNotice = section.sectionNotices[Int(index)];
+                    // The violation code such as "violatedVehicleRestriction".
+                    let violationCode = spanSectionNotice.code;
+                    print("The violation \(violationCode)  starts at \(toString(geoCoordinates: violationStartPoint))  and ends at  \(toString(geoCoordinates: violationEndPoint)) .");
+                                  
+                }
             }
         }
+    }
+    
+    private func toString(geoCoordinates: GeoCoordinates) -> String {
+        return String(geoCoordinates.latitude) + ", " + String(geoCoordinates.longitude);
     }
 
     private func logRouteSectionDetails(route: Route) {
