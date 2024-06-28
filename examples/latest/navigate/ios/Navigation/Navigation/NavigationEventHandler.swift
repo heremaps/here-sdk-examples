@@ -632,7 +632,7 @@ class NavigationEventHandler : NavigableLocationDelegate,
             print("A RealisticView just passed.")
         }
 
-        let realisticView = realisticViewWarning.realisticView
+        let realisticView = realisticViewWarning.realisticViewVectorImage
         guard let signpostSvgImageContent = realisticView?.signpostSvgImageContent,
               let junctionViewSvgImageContent = realisticView?.junctionViewSvgImageContent
         else {

@@ -393,13 +393,10 @@ class TruckGuidanceExample: TapDelegate,
             // One of the following restrictions applies; if more restrictions apply at the same time,
             // they are part of another TruckRestrictionWarning element contained in the list.
             if let weightRestriction = truckRestrictionWarning.weightRestriction {
-                assert(truckRestrictionWarning.type == .weight)
                 handleWeightTruckWarning(weightRestriction: weightRestriction, distanceType: distanceType)
             } else if let dimensionRestriction = truckRestrictionWarning.dimensionRestriction {
-                assert(truckRestrictionWarning.type == .dimension)
                 handleDimensionTruckWarning(dimensionRestriction: dimensionRestriction, distanceType: distanceType)
             } else {
-                assert(truckRestrictionWarning.type == .general)
                 handleTruckRestrictions("No Trucks.", distanceType)
                 print("TruckRestriction: General restriction - no trucks allowed.")
             }
@@ -723,6 +720,9 @@ class TruckGuidanceExample: TapDelegate,
                         if let forbiddenTruckType = details.forbiddenTruckType {
                             print("Section \(sectionNr): ForbiddenTruckType is required: \(forbiddenTruckType.rawValue)")
                         }
+                        if let timeRule = details.timeRule {
+                            print("Section \(sectionNr): Time restriction violated: \(timeRule.timeRuleString)")
+                        }
 
                         for hazardousMaterial in details.forbiddenHazardousGoods {
                             print("Section \(sectionNr): Forbidden hazardousMaterial carried: \(hazardousMaterial.rawValue)")
@@ -734,11 +734,6 @@ class TruckGuidanceExample: TapDelegate,
     }
 
     private func searchAlongARoute(_ route: Route) {
-        // We specify here that we only want to include results
-        // within a max distance of xx meters from any point of the route.
-        let halfWidthInMeters: Int32 = 200
-        let routeCorridor = GeoCorridor(polyline: route.geometry.vertices, halfWidthInMeters: halfWidthInMeters)
-
         // Not all place categories are predefined as part of the NMAPlaceCategory class.
         // Find more here: https://developer.here.com/documentation/geocoding-search-api/dev_guide/topics-places/introduction.html
         let truckParking = "700-7900-0131"
@@ -752,7 +747,19 @@ class TruckGuidanceExample: TapDelegate,
             PlaceCategory(id: truckStopPlaza)
         ]
 
-        let categoryQueryArea = CategoryQuery.Area(inCorridor: routeCorridor)
+        // We specify here that we only want to include results
+        // within a max distance of xx meters from any point of the route.
+        let halfWidthInMeters: Int32 = 200
+        let routeVertices = route.geometry.vertices
+        
+        // The areaCenter specifies a prioritized point within the corridor.
+        // You can choose any coordinate given it's closer to the route and within the corridor.
+        // Following route calculation, the first relevant point is expected to be the start of the route,
+        // but it can vary based on your use case.
+        // For example, while travelling, you can set the current location of the user.
+        let areaCenter: GeoCoordinates = routeVertices[0]
+        let routeCorridor = GeoCorridor(polyline: route.geometry.vertices, halfWidthInMeters: halfWidthInMeters)
+        let categoryQueryArea = CategoryQuery.Area(inCorridor: routeCorridor,near: areaCenter)
         let categoryQuery = CategoryQuery(placeCategoryList, area: categoryQueryArea)
 
         var searchOptions = SearchOptions()

@@ -26,7 +26,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
 
 
 import com.here.sdk.core.LanguageCode;
@@ -40,17 +39,11 @@ import com.here.sdk.navigation.EventTextOptions;
 import com.here.sdk.navigation.LocationSimulator;
 import com.here.sdk.navigation.LocationSimulatorOptions;
 import com.here.sdk.navigation.ManeuverNotificationOptions;
-import com.here.sdk.navigation.SpatialManeuver;
-import com.here.sdk.navigation.SpatialManeuverAudioCuePanning;
-import com.here.sdk.navigation.SpatialManeuverAzimuthListener;
-import com.here.sdk.navigation.SpatialManeuverNotificationListener;
-import com.here.sdk.navigation.SpatialTrajectoryData;
 import com.here.sdk.navigation.VisualNavigator;
 import com.here.sdk.routing.CarOptions;
 import com.here.sdk.routing.Route;
 import com.here.sdk.routing.RoutingEngine;
 import com.here.sdk.routing.Waypoint;
-import com.here.sdk.search.PlaceFilter;
 import com.here.spatialaudionavigation.PermissionsRequestor.ResultListener;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.engine.SDKNativeEngine;

@@ -60,7 +60,7 @@ import com.here.sdk.navigation.MilestoneStatus;
 import com.here.sdk.navigation.MilestoneStatusListener;
 import com.here.sdk.navigation.NavigableLocation;
 import com.here.sdk.navigation.NavigableLocationListener;
-import com.here.sdk.navigation.RealisticView;
+import com.here.sdk.navigation.RealisticViewVectorImage;
 import com.here.sdk.navigation.RealisticViewWarning;
 import com.here.sdk.navigation.RealisticViewWarningListener;
 import com.here.sdk.navigation.RealisticViewWarningOptions;
@@ -694,7 +694,7 @@ public class NavigationEventHandler {
                     Log.d(TAG, "A RealisticView just passed.");
                 }
 
-                RealisticView realisticView = realisticViewWarning.realisticView;
+                RealisticViewVectorImage realisticView = realisticViewWarning.realisticViewVectorImage;
                 if (realisticView == null) {
                     Log.d(TAG, "A RealisticView just passed. No SVG data delivered.");
                     return;

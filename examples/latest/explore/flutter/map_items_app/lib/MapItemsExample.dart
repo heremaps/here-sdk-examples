@@ -356,34 +356,49 @@ class MapItemsExample {
   }
 
   void _pickMapMarker(Point2D touchPoint) {
-    double radiusInPixel = 2;
-    _hereMapController.pickMapItems(touchPoint, radiusInPixel, (pickMapItemsResult) {
+    Point2D originInPixels = Point2D(touchPoint.x, touchPoint.y);
+    Size2D sizeInPixels = Size2D(1, 1);
+    Rectangle2D rectangle = Rectangle2D(originInPixels, sizeInPixels);
+
+    // Creates a list of map content type from which the results will be picked.
+    // The content type values can be mapContent, mapItems and customLayerData.
+    List<MapSceneMapPickFilterContentType> contentTypesToPickFrom = [];
+
+    // mapContent is used when picking embedded carto POIs, traffic incidents, vehicle restriction etc.
+    // mapItems is used when picking map items such as MapMarker, MapPolyline, MapPolygon etc.
+    // Currently we need map markers so adding the mapItems filter.
+    contentTypesToPickFrom.add(MapSceneMapPickFilterContentType.mapItems);
+    MapSceneMapPickFilter filter =
+        MapSceneMapPickFilter(contentTypesToPickFrom);
+    _hereMapController.pick(filter, rectangle, (pickMapItemsResult) {
       if (pickMapItemsResult == null) {
         // Pick operation failed.
         return;
       }
+      PickMapItemsResult? mapItemsResult = pickMapItemsResult.mapItems;
 
       // Note that MapMarker items contained in a cluster are not part of pickMapItemsResult.markers.
-      _handlePickedMapMarkerClusters(pickMapItemsResult);
-
-      // Note that 3D map markers can't be picked yet. Only marker, polgon and polyline map items are pickable.
-      List<MapMarker> mapMarkerList = pickMapItemsResult.markers;
-      int listLength = mapMarkerList.length;
-      if (listLength == 0) {
-        print("No map markers found.");
-        return;
+      if (mapItemsResult != null) {
+        _handlePickedMapMarkerClusters(mapItemsResult);
       }
 
-      MapMarker topmostMapMarker = mapMarkerList.first;
-      Metadata? metadata = topmostMapMarker.metadata;
-      if (metadata != null) {
-        String message = metadata.getString("key_poi") ?? "No message found.";
-
-        _showDialog("Map Marker picked", message);
-        return;
+      // Note that 3D map markers can't be picked yet. Only marker, polygon and polyline map items are pickable.
+      if (mapItemsResult != null) {
+        List<MapMarker>? mapMarkerList = mapItemsResult.markers;
+        int? listLength = mapMarkerList.length;
+        if (listLength == 0) {
+          print("No map markers found.");
+          return;
+        }
+        MapMarker? topmostMapMarker = mapMarkerList.first;
+        Metadata? metadata = topmostMapMarker?.metadata;
+        if (metadata != null) {
+          String message = metadata.getString("key_poi") ?? "No message found.";
+          _showDialog("Map Marker picked", message);
+          return;
+        }
+        _showDialog("Map Marker picked", "No metadata attached.");
       }
-
-      _showDialog("Map Marker picked", "No metadata attached.");
     });
   }
 

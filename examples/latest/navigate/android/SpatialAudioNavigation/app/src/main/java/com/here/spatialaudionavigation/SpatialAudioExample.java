@@ -14,7 +14,6 @@ import androidx.annotation.NonNull;
 
 import com.here.sdk.navigation.CustomPanningData;
 import com.here.sdk.navigation.SpatialAudioCuePanning;
-import com.here.sdk.navigation.SpatialManeuverAudioCuePanning;
 import com.here.sdk.navigation.SpatialTrajectoryData;
 import com.here.spatialaudionavigation.defaultexample.DefaultEncoder;
 import com.here.time.Duration;
