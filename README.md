@@ -42,7 +42,7 @@ For an overview of the existing features, please check the _Developer Guide_ for
 - **OfflineMaps**: Shows how the HERE SDK can work fully offline and how offline map data can be downloaded for continents and countries. Exclusively available for the _Navigate Edition_.
 - **MapItems**: Shows how to add circles, polygons and polylines, native views, 2D and 3D map markers to locate POIs (and more) on the map. 3D map markers are exclusively available for the _Explore and Navigate Editions_.
 - **MultiDisplays**: Shows how a HERE SDK map can be shown on two separate displays using Android's Multi-Display API. Exclusively available for the _Explore Edition_ and the _Navigate Edition_.
-- **OffscreenMapSurface**: Shows how the HERE SDK can be used to generate images of the map, without the need to put a map view on screen. Exclusively available for the _Explore Edition_ and the _Navigate Edition_ (Android only). 
+- **OffscreenMap/OffscreenMapSurface**: Shows how the HERE SDK can be used to generate images of the map, without the need to put a map view on screen. Exclusively available for the _Explore Edition_ and the _Navigate Edition_ (OffscreenMap: iOS only, OffscreenMapSurface: Android only). 
 - **CartoPOIPicking**: Shows how to pick embedded map markers with extended place details. Embedded map markers are already visible on every map, by default. Exclusively available for the _Explore and Navigate Editions_.
 - **Routing**: Shows how to calculate routes and add them to the map.
 - **RoutingHybrid**: Shows how to calculate routes and add them to the map. Also shows how to calculate routes offline, when no internet connection is available. Exclusively available for the _Navigate Edition_.
