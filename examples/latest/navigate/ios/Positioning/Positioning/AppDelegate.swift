@@ -51,9 +51,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func applicationWillTerminate(_ application: UIApplication) {
-        // Deinitializes map renderer and releases all of its resources.
-        // All existing MapView instances will become invalid after this call.
-        MapView.deinitialize()
         disposeHERESDK()
     }
 }

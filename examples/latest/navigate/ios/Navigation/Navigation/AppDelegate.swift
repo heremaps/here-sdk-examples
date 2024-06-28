@@ -56,13 +56,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func applicationWillTerminate(_ application: UIApplication) {
-        // Deinitializes map renderer and releases all of its resources.
-        // All existing MapView instances will become invalid after this call.
-        // Also, the VisualNavigator will become non-functional as it is
-        // relying on the map view. If your app is not planned to be terminated
-        // after calling deinitialize(), make sure to also call
-        // visualNavigator.stopRendering() beforehand.
-        MapView.deinitialize()
         disposeHERESDK()
     }
 }

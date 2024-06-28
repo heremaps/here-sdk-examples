@@ -41,6 +41,7 @@ class EVRoutingExample {
   List<MapPolygon> _mapPolygons = [];
   late RoutingEngine _routingEngine;
   late SearchEngine _searchEngine;
+  late IsolineRoutingEngine _isolineRoutingEngine;
   GeoCoordinates? _startGeoCoordinates;
   GeoCoordinates? _destinationGeoCoordinates;
   final ShowDialogFunction _showDialog;
@@ -57,6 +58,14 @@ class EVRoutingExample {
       _routingEngine = RoutingEngine();
     } on InstantiationException {
       throw ("Initialization of RoutingEngine failed.");
+    }
+
+    try{
+      // Use the IsolineRoutingEngine to calculate a reachable area from a center point.
+      // The calculation is done asynchronously and requires an online connection.
+      _isolineRoutingEngine = IsolineRoutingEngine();
+    } on InstantiationException {
+      throw ("Initialization of IsolineRoutingEngine failed.");
     }
 
     try {
@@ -278,7 +287,7 @@ class EVRoutingExample {
         RoutePlaceDirection.departure);
     IsolineOptions isolineOptions = IsolineOptions.withEVCarOptions(calculationOptions, _getEVCarOptions());
 
-    _routingEngine.calculateIsoline(Waypoint(_startGeoCoordinates!), isolineOptions,
+    _isolineRoutingEngine.calculateIsoline(Waypoint(_startGeoCoordinates!), isolineOptions,
         (RoutingError? routingError, List<Isoline>? list) {
       if (routingError != null) {
         _showDialog("Error while calculating reachable area:", routingError.toString());

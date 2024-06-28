@@ -34,6 +34,8 @@ import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.LanguageCode;
 import com.here.sdk.core.Metadata;
 import com.here.sdk.core.Point2D;
+import com.here.sdk.core.Rectangle2D;
+import com.here.sdk.core.Size2D;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.gestures.GestureState;
 import com.here.sdk.mapview.MapCamera;
@@ -41,9 +43,10 @@ import com.here.sdk.mapview.MapImage;
 import com.here.sdk.mapview.MapImageFactory;
 import com.here.sdk.mapview.MapMarker;
 import com.here.sdk.mapview.MapMeasure;
+import com.here.sdk.mapview.MapPickResult;
+import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapView;
 import com.here.sdk.mapview.MapViewBase;
-import com.here.sdk.mapview.PickMapItemsResult;
 import com.here.sdk.search.Address;
 import com.here.sdk.search.AddressQuery;
 import com.here.sdk.search.Place;
@@ -85,7 +88,7 @@ public class SearchExample {
         setTapGestureHandler();
         setLongPressGestureHandler();
 
-        Toast.makeText(context,"Long press on map to get the address for that position using reverse geocoding.", Toast.LENGTH_LONG).show();
+        Toast.makeText(context, "Long press on map to get the address for that position using reverse geocoding.", Toast.LENGTH_LONG).show();
     }
 
     public void onSearchButtonClicked() {
@@ -104,7 +107,7 @@ public class SearchExample {
     private void searchExample() {
         String searchTerm = "Pizza";
 
-        Toast.makeText(context,"Searching in viewport: " + searchTerm, Toast.LENGTH_LONG).show();
+        Toast.makeText(context, "Searching in viewport: " + searchTerm, Toast.LENGTH_LONG).show();
         searchInViewport(searchTerm);
     }
 
@@ -117,7 +120,7 @@ public class SearchExample {
 
         String queryString = "Invalidenstraße 116, Berlin";
 
-        Toast.makeText(context,"Finding locations for: " + queryString
+        Toast.makeText(context, "Finding locations for: " + queryString
                 + ". Tap marker to see the coordinates. Check the logs for the address.", Toast.LENGTH_LONG).show();
 
         geocodeAddressAtLocation(queryString, geoCoordinates);
@@ -161,21 +164,34 @@ public class SearchExample {
         }
     };
 
-    private void pickMapMarker(final Point2D point2D) {
-        float radiusInPixel = 2;
-        mapView.pickMapItems(point2D, radiusInPixel, new MapViewBase.PickMapItemsCallback() {
+    private void pickMapMarker(final Point2D touchPOint) {
+        Point2D originInPixels = new Point2D(touchPOint.x, touchPOint.y);
+        Size2D sizeInPixels = new Size2D(1, 1);
+        Rectangle2D rectangle = new Rectangle2D(originInPixels, sizeInPixels);
+
+        // Creates a list of map content type from which the results will be picked.
+        // The content type values can be MAP_CONTENT, MAP_ITEMS and CUSTOM_LAYER_DATA.
+        ArrayList<MapScene.MapPickFilter.ContentType> contentTypesToPickFrom = new ArrayList<>();
+
+        // MAP_CONTENT is used when picking embedded carto POIs, traffic incidents, vehicle restriction etc.
+        // MAP_ITEMS is used when picking map items such as MapMarker, MapPolyline, MapPolygon etc.
+        // Currently we need map markers so adding the MAP_ITEMS filter.
+        contentTypesToPickFrom.add(MapScene.MapPickFilter.ContentType.MAP_ITEMS);
+        MapScene.MapPickFilter filter = new MapScene.MapPickFilter(contentTypesToPickFrom);
+
+        // If you do not want to specify any filter you can pass filter as NULL and all of the pickable contents will be picked.
+        mapView.pick(filter, rectangle, new MapViewBase.MapPickCallback() {
             @Override
-            public void onPickMapItems(@Nullable PickMapItemsResult pickMapItemsResult) {
-                if (pickMapItemsResult == null) {
+            public void onPickMap(@Nullable MapPickResult mapPickResult) {
+                if (mapPickResult == null) {
+                    // An error occurred while performing the pick operation.
                     return;
                 }
-
-                List<MapMarker> mapMarkerList = pickMapItemsResult.getMarkers();
-                if (mapMarkerList.size() == 0) {
+                List<MapMarker> mapMarkerList = mapPickResult.getMapItems().getMarkers();
+                if (mapMarkerList.isEmpty()) {
                     return;
                 }
                 MapMarker topmostMapMarker = mapMarkerList.get(0);
-
                 Metadata metadata = topmostMapMarker.getMetadata();
                 if (metadata != null) {
                     CustomMetadataValue customMetadataValue = metadata.getCustomValue("key_search_result");
@@ -183,18 +199,20 @@ public class SearchExample {
                         SearchResultMetadata searchResultMetadata = (SearchResultMetadata) customMetadataValue;
                         String title = searchResultMetadata.searchResult.getTitle();
                         String vicinity = searchResultMetadata.searchResult.getAddress().addressText;
-                        showDialog("Picked Search Result",title + ". Vicinity: " + vicinity);
+                        showDialog("Picked Search Result", title + ". Vicinity: " + vicinity);
                         return;
                     }
                 }
-
                 showDialog("Picked Map Marker",
                         "Geographic coordinates: " +
                                 topmostMapMarker.getCoordinates().latitude + ", " +
                                 topmostMapMarker.getCoordinates().longitude);
+
             }
         });
+
     }
+
 
     private void searchInViewport(String queryString) {
         clearMap();
@@ -331,7 +349,7 @@ public class SearchExample {
                 addPoiMapMarker(geoCoordinates);
             }
 
-            showDialog("Geocoding result","Size: " + list.size());
+            showDialog("Geocoding result", "Size: " + list.size());
         }
     };
 

@@ -2,10 +2,12 @@ package com.here.multidisplays;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.here.sdk.core.Color;
@@ -38,16 +40,17 @@ public class SecondaryActivity extends AppCompatActivity {
         }
     };
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        super.onCreate(null);
         setContentView(R.layout.activity_second);
 
         // Get a MapView instance from the layout.
         mapView = findViewById(R.id.map_view);
         mapView.onCreate(savedInstanceState);
 
-        registerReceiver(dataBroadcast, dataBroadcast.getFilter(DataBroadcast.MESSAGE_FROM_PRIMARY_DISPLAY));
+        registerReceiver(dataBroadcast, dataBroadcast.getFilter(DataBroadcast.MESSAGE_FROM_PRIMARY_DISPLAY),Context.RECEIVER_EXPORTED);
         loadMapScene();
     }
 
@@ -95,7 +98,6 @@ public class SecondaryActivity extends AppCompatActivity {
     protected void onDestroy() {
         unregisterReceiver(dataBroadcast);
         mapView.onDestroy();
-
         super.onDestroy();
     }
 }

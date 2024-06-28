@@ -54,6 +54,7 @@ import com.here.sdk.routing.Isoline;
 import com.here.sdk.routing.IsolineCalculationMode;
 import com.here.sdk.routing.IsolineOptions;
 import com.here.sdk.routing.IsolineRangeType;
+import com.here.sdk.routing.IsolineRoutingEngine;
 import com.here.sdk.routing.OptimizationMode;
 import com.here.sdk.routing.PostAction;
 import com.here.sdk.routing.Route;
@@ -91,6 +92,8 @@ public class EVRoutingExample {
     private GeoCoordinates startGeoCoordinates;
     private GeoCoordinates destinationGeoCoordinates;
     private final List<String> chargingStationsIDs = new ArrayList<>();
+    private final IsolineRoutingEngine isolineRoutingEngine;
+
 
     public EVRoutingExample(Context context, MapView mapView) {
         this.context = context;
@@ -104,6 +107,14 @@ public class EVRoutingExample {
             routingEngine = new RoutingEngine();
         } catch (InstantiationErrorException e) {
             throw new RuntimeException("Initialization of RoutingEngine failed: " + e.error.name());
+        }
+
+        try {
+            // Use the IsolineRoutingEngine to calculate a reachable area from a center point.
+            // The calculation is done asynchronously and requires an online connection.
+            isolineRoutingEngine = new IsolineRoutingEngine();
+        } catch (InstantiationErrorException e) {
+            throw new RuntimeException("Initialization of IsolineRoutingEngine failed: " + e.error.name());
         }
 
         try {
@@ -341,7 +352,7 @@ public class EVRoutingExample {
                 new IsolineOptions.Calculation(IsolineRangeType.CONSUMPTION_IN_WATT_HOURS, rangeValues, IsolineCalculationMode.BALANCED);
         IsolineOptions isolineOptions = new IsolineOptions(calculationOptions, getEVCarOptions());
 
-        routingEngine.calculateIsoline(new Waypoint(startGeoCoordinates), isolineOptions, new CalculateIsolineCallback() {
+        isolineRoutingEngine.calculateIsoline(new Waypoint(startGeoCoordinates), isolineOptions, new CalculateIsolineCallback() {
             @Override
             public void onIsolineCalculated(RoutingError routingError, List<Isoline> list) {
                 if (routingError != null) {

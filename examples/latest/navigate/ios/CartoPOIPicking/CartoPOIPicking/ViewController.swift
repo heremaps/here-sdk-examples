@@ -75,16 +75,28 @@ class ViewController: UIViewController, TapDelegate {
         // You can also use a larger area to include multiple map icons.
         let rectangle2D = Rectangle2D(origin: origin,
                                       size: Size2D(width: 50, height: 50))
-        mapView.pickMapContent(inside: rectangle2D, completion: onMapItemsPicked)
+        // Creates a list of map content type from which the results will be picked.
+        // The content type values can be mapContent, mapItems and customLayerData.
+        var contentTypesToPickFrom = Array<MapScene.MapPickFilter.ContentType>();
+        
+        // mapContent is used when picking embedded carto POIs, traffic incidents, vehicle restriction etc.
+        // mapItems is used when picking map items such as MapMarker, MapPolyline, MapPolygon etc.
+        // Currently we need carto POIs so adding the mapContent filter.
+        contentTypesToPickFrom.append(MapScene.MapPickFilter.ContentType.mapContent);
+        var filter = MapScene.MapPickFilter(filter: contentTypesToPickFrom);
+        mapView.pick(filter:filter,inside: rectangle2D, completion: onMapItemsPicked)
     }
 
     // Completion handler to receive picked map icons.
-    func onMapItemsPicked(pickedMapContent: PickMapContentResult?) {
-        guard let pickedMapContent = pickedMapContent else {
+    func onMapItemsPicked(mapPickResults: MapPickResult?) {
+        guard let mapPickResults = mapPickResults else {
             print("Pick operation failed.")
             return
         }
-
+        guard let pickedMapContent =  mapPickResults.mapContent else {
+            print("Pick operation failed.")
+            return
+        }
         handlePickedCartoPOIs(pickedMapContent.pickedPlaces)
         handlePickedTrafficIncidents(pickedMapContent.trafficIncidents)
         handlePickedVehicleRestrictions(pickedMapContent.vehicleRestrictions)

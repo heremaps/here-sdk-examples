@@ -372,11 +372,26 @@ class MapItemsExample: TapDelegate {
 
     // Conform to the TapDelegate protocol.
     func onTap(origin: Point2D) {
-        mapView.pickMapItems(at: origin, radius: 2, completion: onMapItemsPicked)
+        let originInPixels = Point2D(x:origin.x,y:origin.y);
+        let sizeInPixels = Size2D(width:1,height:1);
+        let rectangle = Rectangle2D(origin: originInPixels, size: sizeInPixels);
+        
+        // Creates a list of map content type from which the results will be picked.
+        // The content type values can be mapContent, mapItems and customLayerData.
+        var contentTypesToPickFrom = Array<MapScene.MapPickFilter.ContentType>();
+        
+        // mapContent is used when picking embedded carto POIs, traffic incidents, vehicle restriction etc.
+        // mapItems is used when picking map items such as MapMarker, MapPolyline, MapPolygon etc.
+        // Currently we need map markers so adding the mapItems filter.
+        contentTypesToPickFrom.append(MapScene.MapPickFilter.ContentType.mapItems);
+        var filter = MapScene.MapPickFilter(filter: contentTypesToPickFrom);
+        
+        mapView.pick(filter: filter, inside: rectangle, completion:onMapItemsPicked);
     }
 
     // Completion handler to receive picked map items.
-    func onMapItemsPicked(pickedMapItems: PickMapItemsResult?) {
+    func onMapItemsPicked(mapPickResults: MapPickResult?) {
+        var pickedMapItems = mapPickResults?.mapItems;
         // Note that MapMarker items contained in a cluster are not part of pickedMapItems?.markers.
         if let groupingList = pickedMapItems?.clusteredMarkers {
             handlePickedMapMarkerClusters(groupingList)

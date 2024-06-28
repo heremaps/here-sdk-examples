@@ -33,6 +33,7 @@ class RoutingExample {
     private var mapPolygonList = [MapPolygon]()
     private var routingEngine: RoutingEngine
     private var searchEngine: SearchEngine
+    private var isolineRoutingEngine: IsolineRoutingEngine
     private var startGeoCoordinates: GeoCoordinates?
     private var destinationGeoCoordinates: GeoCoordinates?
     private var chargingStationsIDs = [String]()
@@ -49,6 +50,14 @@ class RoutingExample {
             try routingEngine = RoutingEngine()
         } catch let engineInstantiationError {
             fatalError("Failed to initialize routing engine. Cause: \(engineInstantiationError)")
+        }
+        
+        do {
+            // Use the IsolineRoutingEngine to calculate a reachable area from a center point.
+            // The calculation is done asynchronously and requires an online connection.
+            try isolineRoutingEngine = IsolineRoutingEngine()
+        } catch let engineInstantiationError {
+            fatalError("Failed to initialize isoline routing engine. Cause: \(engineInstantiationError)")
         }
 
         do {

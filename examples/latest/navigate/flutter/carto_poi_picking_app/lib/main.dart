@@ -117,17 +117,35 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _pickMapContent(Point2D touchPoint) {
-    // You can also use a larger area to include multiple map icons.
-    Rectangle2D rectangle2D = new Rectangle2D(touchPoint, new Size2D(50, 50));
-    _hereMapController!.pickMapContent(rectangle2D, (pickMapContentResult) {
-      if (pickMapContentResult == null) {
-        print("Pick operation failed.");
+    Point2D originInPixels = Point2D(touchPoint.x, touchPoint.y);
+    Size2D sizeInPixels = Size2D(1, 1);
+    Rectangle2D rectangle = Rectangle2D(originInPixels, sizeInPixels);
+
+    // Creates a list of map content type from which the results will be picked.
+    // The content type values can be mapContent, mapItems and customLayerData.
+    List<MapSceneMapPickFilterContentType> contentTypesToPickFrom = [];
+
+    // mapContent is used when picking embedded carto POIs, traffic incidents, vehicle restriction etc.
+    // mapItems is used when picking map items such as MapMarker, MapPolyline, MapPolygon etc.
+    // Currently we need map content so adding the mapContent filter.
+    contentTypesToPickFrom.add(MapSceneMapPickFilterContentType.mapContent);
+    MapSceneMapPickFilter filter =
+        MapSceneMapPickFilter(contentTypesToPickFrom);
+    _hereMapController?.pick(filter, rectangle, (pickMapResult) {
+      if (pickMapResult == null) {
+        // Pick operation failed.
         return;
       }
 
+      PickMapContentResult? pickMapContentResult = pickMapResult.mapContent;
+      if (pickMapContentResult == null) {
+        // Pick operation failed.
+        return;
+      }
       _handlePickedCartoPOIs(pickMapContentResult.pickedPlaces);
       _handlePickedTrafficIncidents(pickMapContentResult.trafficIncidents);
-      _handlePickedVehicleRestrictions(pickMapContentResult.vehicleRestrictions);
+      _handlePickedVehicleRestrictions(
+          pickMapContentResult.vehicleRestrictions);
     });
   }
 

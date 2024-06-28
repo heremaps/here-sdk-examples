@@ -633,7 +633,7 @@ class NavigationEventHandler {
         print("A RealisticView just passed.");
       }
 
-      RealisticView? realisticView = realisticViewWarning.realisticView;
+      RealisticViewVectorImage? realisticView = realisticViewWarning.realisticViewVectorImage;
       if (realisticView == null) {
         print("A RealisticView just passed. No SVG content delivered.");
         return;

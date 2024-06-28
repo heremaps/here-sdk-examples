@@ -46,7 +46,6 @@ import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
-import com.here.sdk.mapview.MapViewBase;
 import com.here.sdk.mapview.PickMapContentResult;
 import com.here.sdk.search.OfflineSearchEngine;
 import com.here.sdk.search.Place;
@@ -54,6 +53,7 @@ import com.here.sdk.search.PlaceIdQuery;
 import com.here.sdk.search.PlaceIdSearchCallback;
 import com.here.sdk.search.SearchError;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void handleAndroidPermissions() {
         permissionsRequestor = new PermissionsRequestor(this);
-        permissionsRequestor.request(new ResultListener(){
+        permissionsRequestor.request(new ResultListener() {
 
             @Override
             public void permissionsGranted() {
@@ -156,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
     private void enableVehicleRestrictionsOnMap() {
         Map<String, String> mapFeatures = new HashMap<>();
         mapFeatures.put(MapFeatures.VEHICLE_RESTRICTIONS,
-                        MapFeatureModes.VEHICLE_RESTRICTIONS_ACTIVE_AND_INACTIVE_DIFFERENTIATED);
+                MapFeatureModes.VEHICLE_RESTRICTIONS_ACTIVE_AND_INACTIVE_DIFFERENTIATED);
         mapView.getMapScene().enableFeatures(mapFeatures);
     }
 
@@ -172,18 +172,26 @@ public class MainActivity extends AppCompatActivity {
     private void pickMapContent(final Point2D touchPoint) {
         // You can also use a larger area to include multiple map icons.
         Rectangle2D rectangle2D = new Rectangle2D(touchPoint, new Size2D(50, 50));
-        mapView.pickMapContent(rectangle2D, new MapViewBase.PickMapContentCallback() {
-            @Override
-            public void onPickMapContent(@Nullable PickMapContentResult pickMapContentResult) {
-                if (pickMapContentResult == null) {
-                    Log.e("onPickMapContent", "An error occurred while performing the pick operation.");
-                    return;
-                }
+        // Creates a list of map content type from which the results will be picked.
+        // The content type values can be MAP_CONTENT, MAP_ITEMS and CUSTOM_LAYER_DATA.
+        ArrayList<MapScene.MapPickFilter.ContentType> contentTypesToPickFrom = new ArrayList<>();
 
-                handlePickedCartoPOIs(pickMapContentResult.getPickedPlaces());
-                handlePickedTrafficIncidents(pickMapContentResult.getTrafficIncidents());
-                handlePickedVehicleRestrictions(pickMapContentResult.getVehicleRestrictions());
+        // MAP_CONTENT is used when picking embedded carto POIs, traffic incidents, vehicle restriction etc.
+        // MAP_ITEMS is used when picking map items such as MapMarker, MapPolyline, MapPolygon etc.
+        // Currently we need carto POIs so adding the MAP_CONTENT filter.
+        contentTypesToPickFrom.add(MapScene.MapPickFilter.ContentType.MAP_CONTENT);
+        MapScene.MapPickFilter filter = new MapScene.MapPickFilter(contentTypesToPickFrom);
+
+        // If you do not want to specify any filter you can pass filter as NULL and all of the pickable contents will be picked.
+        mapView.pick(filter, rectangle2D, mapPickResult -> {
+            if (mapPickResult == null) {
+                Log.e("onPickMapContent", "An error occurred while performing the pick operation.");
+                return;
             }
+            PickMapContentResult pickedContent = mapPickResult.getMapContent();
+            handlePickedCartoPOIs(pickedContent.getPickedPlaces());
+            handlePickedTrafficIncidents(pickedContent.getTrafficIncidents());
+            handlePickedVehicleRestrictions(pickedContent.getVehicleRestrictions());
         });
     }
 

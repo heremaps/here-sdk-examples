@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Get a MapView instance from the layout.
         mapView = findViewById(R.id.map_view);
-        mapView.onCreate(savedInstanceState);
+        mapView.onCreate(null);
 
         registerReceiver(dataBroadcast, dataBroadcast.getFilter(DataBroadcast.MESSAGE_FROM_SECONDARY_DISPLAY), Context.RECEIVER_EXPORTED);
         handleAndroidPermissions();

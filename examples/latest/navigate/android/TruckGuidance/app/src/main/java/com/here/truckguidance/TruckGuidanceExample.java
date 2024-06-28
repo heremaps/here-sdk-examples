@@ -56,6 +56,7 @@ import com.here.sdk.mapview.MapMarker;
 import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapMeasureDependentRenderSize;
 import com.here.sdk.mapview.MapPolyline;
+import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapView;
 import com.here.sdk.mapview.PickMapContentResult;
 import com.here.sdk.mapview.RenderSize;
@@ -68,7 +69,6 @@ import com.here.sdk.navigation.NavigableLocation;
 import com.here.sdk.navigation.NavigableLocationListener;
 import com.here.sdk.navigation.Navigator;
 import com.here.sdk.navigation.TruckRestrictionWarning;
-import com.here.sdk.navigation.TruckRestrictionWarningType;
 import com.here.sdk.navigation.TruckRestrictionsWarningListener;
 import com.here.sdk.navigation.VisualNavigator;
 import com.here.sdk.navigation.WeightRestriction;
@@ -197,7 +197,7 @@ public class TruckGuidanceExample {
         destinationMapMarker = addPOIMapMarker(destinationGeoCoordinates, R.drawable.poi_destination);
 
         setLongPressGestureHandler(mapView);
-        showDialog("Note","Do a long press to change start and destination coordinates. " +
+        showDialog("Note", "Do a long press to change start and destination coordinates. " +
                 "Map icons are pickable.");
     }
 
@@ -275,18 +275,27 @@ public class TruckGuidanceExample {
     private void pickCartoPois(final Point2D touchPoint) {
         // You can also use a larger area to include multiple carto POIs.
         Rectangle2D rectangle2D = new Rectangle2D(touchPoint, new Size2D(50, 50));
-        mapView.pickMapContent(rectangle2D, pickMapContentResult -> {
-            if (pickMapContentResult == null) {
+        // Creates a list of map content type from which the results will be picked.
+        // The content type values can be MAP_CONTENT, MAP_ITEMS and CUSTOM_LAYER_DATA.
+        ArrayList<MapScene.MapPickFilter.ContentType> contentTypesToPickFrom = new ArrayList<>();
+
+        // MAP_CONTENT is used when picking embedded carto POIs, traffic incidents, vehicle restriction etc.
+        // MAP_ITEMS is used when picking map items such as MapMarker, MapPolyline, MapPolygon etc.
+        // Currently we need traffic incidents, vehicle restrictions so adding the MAP_CONTENT filter.
+        contentTypesToPickFrom.add(MapScene.MapPickFilter.ContentType.MAP_CONTENT);
+        MapScene.MapPickFilter filter = new MapScene.MapPickFilter(contentTypesToPickFrom);
+        mapView.pick(filter, rectangle2D, mapPickResult -> {
+            if (mapPickResult == null) {
                 // An error occurred while performing the pick operation.
                 return;
             }
-
-            List<PickedPlace> cartoPOIList = pickMapContentResult.getPickedPlaces();
-            List<PickMapContentResult.TrafficIncidentResult> trafficPOIList = pickMapContentResult.getTrafficIncidents();
-            List<PickMapContentResult.VehicleRestrictionResult> vehicleRestrictionResultList = pickMapContentResult.getVehicleRestrictions();
+            PickMapContentResult pickedMapContent = mapPickResult.getMapContent();
+            List<PickedPlace> cartoPOIList = pickedMapContent.getPickedPlaces();
+            List<PickMapContentResult.TrafficIncidentResult> trafficPOIList = pickedMapContent.getTrafficIncidents();
+            List<PickMapContentResult.VehicleRestrictionResult> vehicleRestrictionResultList = pickedMapContent.getVehicleRestrictions();
 
             // Note that pick here only the top most icon and ignore others that may be underneath.
-            if (cartoPOIList.size() > 0) {
+            if (!cartoPOIList.isEmpty()) {
                 PickedPlace pickedPlace = cartoPOIList.get(0);
                 Log.d("Carto POI picked: ", pickedPlace.name +
                         ", Place category: " + pickedPlace.placeCategoryId);
@@ -312,14 +321,14 @@ public class TruckGuidanceExample {
                 });
             }
 
-            if (trafficPOIList.size() > 0) {
+            if (!trafficPOIList.isEmpty()) {
                 PickMapContentResult.TrafficIncidentResult topmostContent = trafficPOIList.get(0);
                 showDialog("Traffic incident picked", "Type: " +
                         topmostContent.getType().name());
                 // Optionally, you can now use the TrafficEngine to retrieve more details for this incident.
             }
 
-            if (vehicleRestrictionResultList.size() > 0) {
+            if (!vehicleRestrictionResultList.isEmpty()) {
                 PickMapContentResult.VehicleRestrictionResult topmostContent = vehicleRestrictionResultList.get(0);
                 // Note that the text property is empty for general truck restrictions.
                 showDialog("Vehicle restriction picked", "Type: " +
@@ -417,7 +426,7 @@ public class TruckGuidanceExample {
 
                     DistanceType distanceType = truckRestrictionWarning.distanceType;
                     if (distanceType == DistanceType.AHEAD) {
-                        Log.d(TAG, "A TruckRestriction ahead in: "+ truckRestrictionWarning.distanceInMeters + " meters.");
+                        Log.d(TAG, "A TruckRestriction ahead in: " + truckRestrictionWarning.distanceInMeters + " meters.");
                     } else if (distanceType == DistanceType.REACHED) {
                         Log.d(TAG, "A TruckRestriction has been reached.");
                     } else if (distanceType == DistanceType.PASSED) {
@@ -428,17 +437,14 @@ public class TruckGuidanceExample {
                     // One of the following restrictions applies, if more restrictions apply at the same time,
                     // they are part of another TruckRestrictionWarning element contained in the list.
                     if (truckRestrictionWarning.weightRestriction != null) {
-                        assert truckRestrictionWarning.type == TruckRestrictionWarningType.WEIGHT;
                         handleWeightTruckWarning(truckRestrictionWarning.weightRestriction, distanceType);
                     } else if (truckRestrictionWarning.dimensionRestriction != null) {
-                        assert truckRestrictionWarning.type == TruckRestrictionWarningType.DIMENSION;
                         handleDimensionTruckWarning(truckRestrictionWarning.dimensionRestriction, distanceType);
                     } else {
-                        assert truckRestrictionWarning.type == TruckRestrictionWarningType.GENERAL;
                         handleTruckRestrictions("No Trucks.", distanceType);
                         Log.d(TAG, "TruckRestriction: General restriction - no trucks allowed.");
                     }
-                 }
+                }
             }
         });
 
@@ -449,7 +455,7 @@ public class TruckGuidanceExample {
                 for (EnvironmentalZoneWarning environmentalZoneWarning : list) {
                     DistanceType distanceType = environmentalZoneWarning.distanceType;
                     if (distanceType == DistanceType.AHEAD) {
-                        Log.d(TAG, "A EnvironmentalZone ahead in: "+ environmentalZoneWarning.distanceInMeters + " meters.");
+                        Log.d(TAG, "A EnvironmentalZone ahead in: " + environmentalZoneWarning.distanceInMeters + " meters.");
                     } else if (distanceType == DistanceType.REACHED) {
                         Log.d(TAG, "A EnvironmentalZone has been reached.");
                     } else if (distanceType == DistanceType.PASSED) {
@@ -619,13 +625,13 @@ public class TruckGuidanceExample {
 
     public void onShowRouteButtonClicked() {
         routingEngine.calculateRoute(getCurrentWaypoints(), createTruckOptions(), (routingError, list) -> {
-             handleTruckRouteResults(routingError, list);
+            handleTruckRouteResults(routingError, list);
         });
     }
 
     public void onStartStopButtonClicked() {
         if (lastCalculatedTruckRoute == null) {
-            showDialog("Note","Show a route first.");
+            showDialog("Note", "Show a route first.");
             return;
         }
 
@@ -634,19 +640,19 @@ public class TruckGuidanceExample {
             // Start guidance.
             visualNavigator.setRoute(lastCalculatedTruckRoute);
             startRendering();
-            showDialog("Note","Started guidance.");
+            showDialog("Note", "Started guidance.");
         } else {
             // Stop guidance.
             visualNavigator.setRoute(null);
             stopRendering();
             isTracking = false;
-            showDialog("Note","Stopped guidance.");
+            showDialog("Note", "Stopped guidance.");
         }
     }
 
     public void onTrackingButtonClicked() {
         if (lastCalculatedTruckRoute == null) {
-            showDialog("Note","Show a route first.");
+            showDialog("Note", "Show a route first.");
             return;
         }
 
@@ -657,13 +663,13 @@ public class TruckGuidanceExample {
             startRendering();
             // Note that during tracking the above set TransportProfile becomes active to receive
             // suitable speed limits.
-            showDialog("Note","Started tracking along the last calculated route.");
+            showDialog("Note", "Started tracking along the last calculated route.");
         } else {
             // Stop tracking.
             visualNavigator.setRoute(null);
             stopRendering();
             isGuidance = false;
-            showDialog("Note","Stopped tracking.");
+            showDialog("Note", "Stopped tracking.");
         }
     }
 
@@ -696,7 +702,7 @@ public class TruckGuidanceExample {
             simulationSpeedFactor = 1;
         }
 
-        showDialog("Note","Changed simulation speed factor to " + simulationSpeedFactor +
+        showDialog("Note", "Changed simulation speed factor to " + simulationSpeedFactor +
                 ". Start again to use the new value.");
     }
 
@@ -759,7 +765,7 @@ public class TruckGuidanceExample {
                     // For example, if code is VIOLATED_AVOID_FERRY, then the route contains a ferry, although it
                     // was requested to avoid ferries in RouteOptions.AvoidanceOptions.
                     String violationCode = spanSectionNotice.code.toString();
-                    Log.d(TAG, "Section " + sectionNr + ": " +"The violation " + violationCode + " starts at " + toString(violationStartPoint) + " and ends at " + toString(violationEndPoint) + " .");
+                    Log.d(TAG, "Section " + sectionNr + ": " + "The violation " + violationCode + " starts at " + toString(violationStartPoint) + " and ends at " + toString(violationEndPoint) + " .");
                 }
             }
             for (SectionNotice sectionNotice : section.getSectionNotices()) {
@@ -801,12 +807,12 @@ public class TruckGuidanceExample {
                     if (details.forbiddenAxleCount != null) {
                         Log.d("ViolatedRestriction", "Section " + sectionNr + ": " +
                                 "Inside of forbiddenAxleCount range: " + details.forbiddenAxleCount.min
-                                        + " - " + details.forbiddenAxleCount.max);
+                                + " - " + details.forbiddenAxleCount.max);
                     }
                     if (details.forbiddenTrailerCount != null) {
                         Log.d("ViolatedRestriction", "Section " + sectionNr + ": " +
                                 "Inside of forbiddenTrailerCount range: " + details.forbiddenTrailerCount.min
-                                        + " - " + details.forbiddenAxleCount.max);
+                                + " - " + details.forbiddenAxleCount.max);
                     }
                     if (details.maxTunnelCategory != null) {
                         Log.d("ViolatedRestriction", "Section " + sectionNr + ": " +
@@ -815,6 +821,10 @@ public class TruckGuidanceExample {
                     if (details.forbiddenTruckType != null) {
                         Log.d("ViolatedRestriction", "Section " + sectionNr + ": " +
                                 "ForbiddenTruckType is required: " + details.forbiddenTruckType.name());
+                    }
+                    if (details.timeRule != null) {
+                        Log.d("ViolatedRestriction", "Section " + sectionNr + ": " +
+                                "Violated time restriction: " + details.timeRule.getTimeRuleString());
                     }
 
                     for (HazardousMaterial hazardousMaterial : details.forbiddenHazardousGoods) {
@@ -831,11 +841,6 @@ public class TruckGuidanceExample {
     }
 
     private void searchAlongARoute(Route route) {
-        // We specify here that we only want to include results
-        // within a max distance of xx meters from any point of the route.
-        int halfWidthInMeters = 200;
-        GeoCorridor routeCorridor = new GeoCorridor(route.getGeometry().vertices, halfWidthInMeters);
-
         // Not all place categories are predefined as part of the PlaceCategory class. Find more here:
         // https://developer.here.com/documentation/geocoding-search-api/dev_guide/topics-places/introduction.html
         String TRUCK_PARKING = "700-7900-0131";
@@ -848,7 +853,19 @@ public class TruckGuidanceExample {
                 new PlaceCategory(TRUCK_PARKING),
                 new PlaceCategory(TRUCK_STOP_PLAZA));
 
-        CategoryQuery.Area categoryQueryArea = new CategoryQuery.Area(routeCorridor);
+        // We specify here that we only want to include results
+        // within a max distance of xx meters from any point of the route.
+        int halfWidthInMeters = 200;
+        List<GeoCoordinates> routeVertices = route.getGeometry().vertices;
+
+        // The areaCenter specifies a prioritized point within the corridor.
+        // You can choose any coordinate given it's closer to the route and within the corridor.
+        // Following route calculation, the first relevant point is expected to be the start of the route,
+        // but it can vary based on your use case.
+        // For example, while travelling, you can set the current location of the user.
+        GeoCoordinates areaCenter = routeVertices.get(0);
+        GeoCorridor routeCorridor = new GeoCorridor(routeVertices, halfWidthInMeters);
+        CategoryQuery.Area categoryQueryArea = new CategoryQuery.Area(routeCorridor, areaCenter);
         CategoryQuery categoryQuery = new CategoryQuery(placeCategoryList, categoryQueryArea);
 
         SearchOptions searchOptions = new SearchOptions();
@@ -867,7 +884,7 @@ public class TruckGuidanceExample {
                 }
 
                 // If error is nil, it is guaranteed that the items will not be nil.
-                Log.d("Search","Search along route found " + items.size() + " places:");
+                Log.d("Search", "Search along route found " + items.size() + " places:");
                 for (Place place : items) {
                     logPlaceAmenities(place);
                 }
@@ -878,26 +895,26 @@ public class TruckGuidanceExample {
     private void logPlaceAmenities(Place place) {
         TruckAmenities truckAmenities = place.getDetails().truckAmenities;
         if (truckAmenities != null) {
-            Log.d("Search","Found place with truck amenities: " + place.getTitle());
+            Log.d("Search", "Found place with truck amenities: " + place.getTitle());
 
             // All amenities can be true or false at the same time.
             // You can use this information like in a bitmask to visualize the possible amenities.
-            Log.d(TAG,"This place hasParking: " + truckAmenities.hasParking);
-            Log.d(TAG,"This place hasSecureParking: " + truckAmenities.hasSecureParking);
-            Log.d(TAG,"This place hasCarWash: " + truckAmenities.hasCarWash);
-            Log.d(TAG,"This place hasTruckWash: " + truckAmenities.hasTruckWash);
-            Log.d(TAG,"This place hasHighCanopy: " + truckAmenities.hasHighCanopy);
-            Log.d(TAG,"This place hasIdleReductionSystem: " + truckAmenities.hasIdleReductionSystem);
-            Log.d(TAG,"This place hasTruckScales: " + truckAmenities.hasTruckScales);
-            Log.d(TAG,"This place hasPowerSupply: " + truckAmenities.hasPowerSupply);
-            Log.d(TAG,"This place hasChemicalToiletDisposal: " + truckAmenities.hasChemicalToiletDisposal);
-            Log.d(TAG,"This place hasTruckStop: " + truckAmenities.hasTruckStop);
-            Log.d(TAG,"This place hasWifi: " + truckAmenities.hasWifi);
-            Log.d(TAG,"This place hasTruckService: " + truckAmenities.hasTruckService);
-            Log.d(TAG,"This place hasShower: " + truckAmenities.hasShower);
+            Log.d(TAG, "This place hasParking: " + truckAmenities.hasParking);
+            Log.d(TAG, "This place hasSecureParking: " + truckAmenities.hasSecureParking);
+            Log.d(TAG, "This place hasCarWash: " + truckAmenities.hasCarWash);
+            Log.d(TAG, "This place hasTruckWash: " + truckAmenities.hasTruckWash);
+            Log.d(TAG, "This place hasHighCanopy: " + truckAmenities.hasHighCanopy);
+            Log.d(TAG, "This place hasIdleReductionSystem: " + truckAmenities.hasIdleReductionSystem);
+            Log.d(TAG, "This place hasTruckScales: " + truckAmenities.hasTruckScales);
+            Log.d(TAG, "This place hasPowerSupply: " + truckAmenities.hasPowerSupply);
+            Log.d(TAG, "This place hasChemicalToiletDisposal: " + truckAmenities.hasChemicalToiletDisposal);
+            Log.d(TAG, "This place hasTruckStop: " + truckAmenities.hasTruckStop);
+            Log.d(TAG, "This place hasWifi: " + truckAmenities.hasWifi);
+            Log.d(TAG, "This place hasTruckService: " + truckAmenities.hasTruckService);
+            Log.d(TAG, "This place hasShower: " + truckAmenities.hasShower);
 
             if (truckAmenities.showerCount != null) {
-                Log.d(TAG,"This place " + truckAmenities.showerCount + " showers.");
+                Log.d(TAG, "This place " + truckAmenities.showerCount + " showers.");
             }
         }
     }

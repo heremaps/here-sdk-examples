@@ -35,6 +35,8 @@ import com.here.sdk.core.GeoOrientationUpdate;
 import com.here.sdk.core.Location;
 import com.here.sdk.core.Metadata;
 import com.here.sdk.core.Point2D;
+import com.here.sdk.core.Rectangle2D;
+import com.here.sdk.core.Size2D;
 import com.here.sdk.gestures.TapListener;
 import com.here.sdk.mapview.LocationIndicator;
 import com.here.sdk.mapview.MapImage;
@@ -43,6 +45,8 @@ import com.here.sdk.mapview.MapMarker;
 import com.here.sdk.mapview.MapMarker3D;
 import com.here.sdk.mapview.MapMarker3DModel;
 import com.here.sdk.mapview.MapMarkerCluster;
+import com.here.sdk.mapview.MapPickResult;
+import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapView;
 import com.here.sdk.mapview.MapViewBase;
 import com.here.sdk.mapview.PickMapItemsResult;
@@ -368,14 +372,29 @@ public class MapItemsExample {
     }
 
     private void pickMapMarker(final Point2D touchPoint) {
-        float radiusInPixel = 2;
-        mapView.pickMapItems(touchPoint, radiusInPixel, new MapViewBase.PickMapItemsCallback() {
+        Point2D originInPixels = new Point2D(touchPoint.x, touchPoint.y);
+        Size2D sizeInPixels = new Size2D(1, 1);
+        Rectangle2D rectangle = new Rectangle2D(originInPixels, sizeInPixels);
+
+        // Creates a list of map content type from which the results will be picked.
+        // The content type values can be MAP_CONTENT, MAP_ITEMS and CUSTOM_LAYER_DATA.
+        ArrayList<MapScene.MapPickFilter.ContentType> contentTypesToPickFrom = new ArrayList<>();
+
+        // MAP_CONTENT is used when picking embedded carto POIs, traffic incidents, vehicle restriction etc.
+        // MAP_ITEMS is used when picking map items such as MapMarker, MapPolyline, MapPolygon etc.
+        // Currently we need map markers so adding the MAP_ITEMS filter.
+        contentTypesToPickFrom.add(MapScene.MapPickFilter.ContentType.MAP_ITEMS);
+        MapScene.MapPickFilter filter = new MapScene.MapPickFilter(contentTypesToPickFrom);
+
+        // If you do not want to specify any filter you can pass filter as NULL and all of the pickable contents will be picked.
+        mapView.pick(filter, rectangle, new MapViewBase.MapPickCallback() {
             @Override
-            public void onPickMapItems(@Nullable PickMapItemsResult pickMapItemsResult) {
-                if (pickMapItemsResult == null) {
+            public void onPickMap(@Nullable MapPickResult mapPickResult) {
+                if (mapPickResult == null) {
                     // An error occurred while performing the pick operation.
                     return;
                 }
+                PickMapItemsResult pickMapItemsResult = mapPickResult.getMapItems();
 
                 // Note that MapMarker items contained in a cluster are not part of pickMapItemsResult.getMarkers().
                 handlePickedMapMarkerClusters(pickMapItemsResult);
@@ -424,7 +443,7 @@ public class MapItemsExample {
                     "This MapMarker belongs to a cluster. Metadata: " + getClusterMetadata(topmostGrouping.markers.get(0)));
         } else {
             String metadata = "";
-            for (MapMarker mapMarker: topmostGrouping.markers) {
+            for (MapMarker mapMarker : topmostGrouping.markers) {
                 metadata += getClusterMetadata(mapMarker);
                 metadata += " ";
             }
@@ -449,13 +468,13 @@ public class MapItemsExample {
 
     private void tiltMap() {
         double bearing = mapView.getCamera().getState().orientationAtTarget.bearing;
-        double tilt =  60;
+        double tilt = 60;
         mapView.getCamera().setOrientationAtTarget(new GeoOrientationUpdate(bearing, tilt));
     }
 
     private void unTiltMap() {
         double bearing = mapView.getCamera().getState().orientationAtTarget.bearing;
-        double tilt =  0;
+        double tilt = 0;
         mapView.getCamera().setOrientationAtTarget(new GeoOrientationUpdate(bearing, tilt));
     }
 
