@@ -164,8 +164,25 @@ class SearchExample {
   }
 
   void _pickMapMarker(Point2D touchPoint) {
-    double radiusInPixel = 2;
-    _hereMapController.pickMapItems(touchPoint, radiusInPixel, (pickMapItemsResult) {
+    Point2D originInPixels = Point2D(touchPoint.x, touchPoint.y);
+    Size2D sizeInPixels = Size2D(50, 50);
+    Rectangle2D rectangle = Rectangle2D(originInPixels, sizeInPixels);
+
+    // Creates a list of map content type from which the results will be picked.
+    // The content type values can be mapContent, mapItems and customLayerData.
+    List<MapSceneMapPickFilterContentType> contentTypesToPickFrom = [];
+
+    // mapContent is used when picking embedded carto POIs, traffic incidents, vehicle restriction etc.
+    // mapItems is used when picking map items such as MapMarker, MapPolyline, MapPolygon etc.
+    // Currently we need map marker so adding the mapItems filter.
+    contentTypesToPickFrom.add(MapSceneMapPickFilterContentType.mapItems);
+    MapSceneMapPickFilter filter = MapSceneMapPickFilter(contentTypesToPickFrom);
+    _hereMapController.pick(filter, rectangle, (pickMapResult) {
+      if (pickMapResult == null) {
+        // Pick operation failed.
+        return;
+      }
+      PickMapItemsResult? pickMapItemsResult = pickMapResult.mapItems;
       if (pickMapItemsResult == null) {
         // Pick operation failed.
         return;

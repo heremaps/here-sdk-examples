@@ -31,9 +31,14 @@ import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.core.engine.SDKOptions;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.mapview.MapError;
+import com.here.sdk.mapview.MapFeatureModes;
+import com.here.sdk.mapview.MapFeatures;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -98,6 +103,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onLoadScene(@Nullable MapError mapError) {
                 if (mapError == null) {
+                    // Enable traffic flows, incidents and 3D landmarks, by default.
+                    Map<String, String> mapFeatures = new HashMap<>();
+                    mapFeatures.put(MapFeatures.TRAFFIC_FLOW, MapFeatureModes.TRAFFIC_FLOW_WITH_FREE_FLOW);
+                    mapFeatures.put(MapFeatures.TRAFFIC_INCIDENTS,MapFeatureModes.TRAFFIC_INCIDENTS_ALL);
+                    mapFeatures.put(MapFeatures.LANDMARKS, MapFeatureModes.LANDMARKS_TEXTURED);
+                    mapView.getMapScene().enableFeatures(mapFeatures);
+                    
                     routingExample = new RoutingExample(MainActivity.this, mapView);
                 } else {
                     Log.d(TAG, "Loading map failed: mapErrorCode: " + mapError.name());
@@ -150,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
         mapView.onSaveInstanceState(outState);
         super.onSaveInstanceState(outState);
     }
-    
+
     private void disposeHERESDK() {
         // Free HERE SDK resources before the application shuts down.
         // Usually, this should be called only on application termination.

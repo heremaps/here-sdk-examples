@@ -37,6 +37,8 @@ final class ViewController: UIViewController {
             return
         }
 
+        mapView.mapScene.enableFeatures([MapFeatures.lowSpeedZones : MapFeatureModes.lowSpeedZonesAll]);
+        
         // Start the example.
         self.routingExample = RoutingExample(viewController: self, mapView: self.mapView!)
         self.isMapSceneLoaded = true

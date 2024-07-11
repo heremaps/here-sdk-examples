@@ -45,8 +45,9 @@ final class ViewController: UIViewController {
         self.app = App(viewController: self, mapView: self.mapView!, messageTextView: self.messageTextView!)
         self.isMapSceneLoaded = true
 
-        // Enable traffic flows and 3d landmarks, by default.
+        // Enable traffic flows, low speed zones and 3d landmarks, by default.
         mapView.mapScene.enableFeatures([MapFeatures.trafficFlow : MapFeatureModes.trafficFlowWithFreeFlow])
+        mapView.mapScene.enableFeatures([MapFeatures.lowSpeedZones : MapFeatureModes.lowSpeedZonesAll])
         mapView.mapScene.enableFeatures([MapFeatures.landmarks : MapFeatureModes.landmarksTextured])
     }
 

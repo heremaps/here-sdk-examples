@@ -26,6 +26,7 @@ import UIKit
 class NavigationEventHandler : NavigableLocationDelegate,
                                BorderCrossingWarningDelegate,
                                DangerZoneWarningDelegate,
+                               LowSpeedZoneWarningDelegate,
                                DestinationReachedDelegate,
                                MilestoneStatusDelegate,
                                SafetyCameraWarningDelegate,
@@ -65,6 +66,7 @@ class NavigationEventHandler : NavigableLocationDelegate,
         visualNavigator.navigableLocationDelegate = self
         visualNavigator.borderCrossingWarningDelegate = self
         visualNavigator.dangerZoneWarningListenerDelegate = self
+        visualNavigator.lowSpeedZoneWarningDelegate = self
         visualNavigator.destinationReachedDelegate = self
         visualNavigator.routeDeviationDelegate = self
         visualNavigator.routeProgressDelegate = self
@@ -85,6 +87,7 @@ class NavigationEventHandler : NavigableLocationDelegate,
         
         setupBorderCrossingWarnings()
         setupDangerZoneWarnings()
+        setupLowSpeedZoneWarnings()
         setupSafetyCameraWarnings()
         setupSpeedWarnings()
         setupRoadSignWarnings()
@@ -338,7 +341,7 @@ class NavigationEventHandler : NavigableLocationDelegate,
         // We can optionally retrieve the associated maneuver. The details will be nil if the text contains
         // non-maneuver related information, such as for speed camera warnings.
         if (eventText.type == TextNotificationType.maneuver) {
-            let maneuver = eventText.maneuverNotificationDetails?.maneuver;
+            let maneuver = eventText.maneuverNotificationDetails?.maneuver
         }
     }
     
@@ -680,6 +683,7 @@ class NavigationEventHandler : NavigableLocationDelegate,
         }
     }
     
+    // Conform to DangerZoneWarningDelegate.
     // Notifies on danger zones.
     // A danger zone refers to areas where there is an increased risk of traffic incidents.
     // These zones are designated to alert drivers to potential hazards and encourage safer driving behaviors.
@@ -687,7 +691,6 @@ class NavigationEventHandler : NavigableLocationDelegate,
     // A danger zone may or may not have one or more speed cameras in it. The exact location of such speed cameras
     // is not provided. Note that danger zones are only available in selected countries, such as France.
     func onDangerZoneWarningsUpdated(_ dangerZoneWarning: DangerZoneWarning) {
-        // The list is guaranteed to be non-empty.
         if (dangerZoneWarning.distanceType == DistanceType.ahead) {
             print("A danger zone ahead in: \(dangerZoneWarning.distanceInMeters) meters.")
             // isZoneStart indicates if we enter the danger zone from the start.
@@ -703,6 +706,21 @@ class NavigationEventHandler : NavigableLocationDelegate,
         }
     }
 
+    // Conform to LowSpeedZoneWarningDelegate.
+    // Notifies on low speed zones ahead - as indicated also on the map when
+    // MapFeatures.lowSpeedZones is set.
+    func onLowSpeedZoneWarningUpdated(_ lowSpeedZoneWarning: heresdk.LowSpeedZoneWarning) {
+        if (lowSpeedZoneWarning.distanceType == DistanceType.ahead) {
+            print("A low speed zone ahead in: \(lowSpeedZoneWarning.distanceToLowSpeedZoneInMeters) meters.")
+            print("Speed limit in low speed zone (m/s):  \(lowSpeedZoneWarning.speedLimitInMetersPerSecond)")
+        } else if (lowSpeedZoneWarning.distanceType == DistanceType.reached) {
+            print("A low speed zone has been reached.")
+            print("Speed limit in low speed zone (m/s):  \(lowSpeedZoneWarning.speedLimitInMetersPerSecond)")
+        } else if (lowSpeedZoneWarning.distanceType == DistanceType.passed) {
+            print("A low speed zone has been passed.")
+        }
+    }
+    
     // Conform to RoadTextsDelegate
     // Notifies whenever any textual attribute of the current road changes, i.e., the current road texts differ
     // from the previous one. This can be useful during tracking mode, when no maneuver information is provided.
@@ -720,11 +738,19 @@ class NavigationEventHandler : NavigableLocationDelegate,
         borderCrossingWarningOptions.urbanWarningDistanceInMeters = 400
         visualNavigator.borderCrossingWarningOptions = borderCrossingWarningOptions
     }
+    
     private func setupDangerZoneWarnings() {
         var dangerZoneWarningOptions = DangerZoneWarningOptions()
         // Distance setting for urban, in meters. Defaults to 500 meters.
         dangerZoneWarningOptions.urbanWarningDistanceInMeters = 400
         visualNavigator.dangerZoneWarningOptions = dangerZoneWarningOptions
+    }
+    
+    private func setupLowSpeedZoneWarnings() {
+        var lowSpeedZoneWarningOptions = LowSpeedZoneWarningOptions()
+        // Distance setting for urban, in meters. Defaults to 500 meters.
+        lowSpeedZoneWarningOptions.urbanWarningDistanceInMeters = 400
+        visualNavigator.lowSpeedZoneWarningOptions = lowSpeedZoneWarningOptions
     }
     
     private func setupSpeedWarnings() {
@@ -764,7 +790,7 @@ class NavigationEventHandler : NavigableLocationDelegate,
         realisticViewWarningOptions.highwayWarningDistanceInMeters = 1600
         // Warning distance setting for rural roads, defaults to 750 meters.
         realisticViewWarningOptions.ruralWarningDistanceInMeters = 800
-        // Warning distance setting for urban roads, defaults to 500;
+        // Warning distance setting for urban roads, defaults to 500.
         realisticViewWarningOptions.urbanWarningDistanceInMeters = 600
         visualNavigator.realisticViewWarningOptions = realisticViewWarningOptions
     }

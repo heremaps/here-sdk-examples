@@ -118,7 +118,7 @@ class _MyAppState extends State<MyApp> {
 
   void _pickMapContent(Point2D touchPoint) {
     Point2D originInPixels = Point2D(touchPoint.x, touchPoint.y);
-    Size2D sizeInPixels = Size2D(1, 1);
+    Size2D sizeInPixels = Size2D(50, 50);
     Rectangle2D rectangle = Rectangle2D(originInPixels, sizeInPixels);
 
     // Creates a list of map content type from which the results will be picked.

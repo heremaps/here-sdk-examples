@@ -32,9 +32,14 @@ import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.core.engine.SDKOptions;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.mapview.MapError;
+import com.here.sdk.mapview.MapFeatureModes;
+import com.here.sdk.mapview.MapFeatures;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -100,6 +105,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onLoadScene(@Nullable MapError mapError) {
                 if (mapError == null) {
+                    Map<String, String> mapFeatures = new HashMap<>();
+                    mapFeatures.put(MapFeatures.LOW_SPEED_ZONES, MapFeatureModes.LOW_SPEED_ZONES_ALL);
+                    mapView.getMapScene().enableFeatures(mapFeatures);
+
                     routingExample = new RoutingExample(MainActivity.this, mapView);
                 } else {
                     Log.d(TAG, "Loading map failed: mapErrorCode: " + mapError.name());
@@ -110,6 +119,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void addRouteButtonClicked(View view) {
         routingExample.addRoute();
+    }
+
+    public void toggleTrafficOptimization(View view) {
+        routingExample.toggleTrafficOptimization();
     }
 
     public void addWaypointsButtonClicked(View view) {

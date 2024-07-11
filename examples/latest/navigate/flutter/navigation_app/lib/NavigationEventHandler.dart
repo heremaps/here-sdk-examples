@@ -278,7 +278,6 @@ class NavigationEventHandler {
     // is not provided. Note that danger zones are only available in selected countries, such as France.
     _visualNavigator.dangerZoneWarningListener =
         DangerZoneWarningListener((DangerZoneWarning dangerZoneWarning) {
-      // The list is guaranteed to be non-empty.
       if (dangerZoneWarning.distanceType == DistanceType.ahead) {
         print("A danger zone ahead in: " +
             dangerZoneWarning.distanceInMeters.toString() +
@@ -302,6 +301,31 @@ class NavigationEventHandler {
     // Distance setting for urban, in meters. Defaults to 500 meters.
     dangerZoneWarningOptions.urbanWarningDistanceInMeters = 400;
     _visualNavigator.dangerZoneWarningOptions = dangerZoneWarningOptions;
+
+    // Notifies on low speed zones ahead - as indicated also on the map when
+    // MapFeatures.lowSpeedZones is set.
+    _visualNavigator.lowSpeedZoneWarningListener =
+        LowSpeedZoneWarningListener((LowSpeedZoneWarning lowSpeedZoneWarning) {
+      if (lowSpeedZoneWarning.distanceType == DistanceType.ahead) {
+        print("A low speed zone ahead in: " +
+            lowSpeedZoneWarning.distanceToLowSpeedZoneInMeters.toString() +
+            " meters.");
+        print("Speed limit in low speed zone (m/s): " +
+            lowSpeedZoneWarning.speedLimitInMetersPerSecond.toString());
+      } else if (lowSpeedZoneWarning.distanceType == DistanceType.reached) {
+        print("A low speed zone has been reached.");
+        print("Speed limit in low speed zone (m/s): " +
+            lowSpeedZoneWarning.speedLimitInMetersPerSecond.toString());
+      } else if (lowSpeedZoneWarning.distanceType == DistanceType.passed) {
+        print("A low speed zone has been passed.");
+      }
+    });
+
+    LowSpeedZoneWarningOptions lowSpeedZoneWarningOptions =
+        LowSpeedZoneWarningOptions();
+    // Distance setting for urban, in meters. Defaults to 500 meters.
+    lowSpeedZoneWarningOptions.urbanWarningDistanceInMeters = 400;
+    _visualNavigator.lowSpeedZoneWarningOptions = lowSpeedZoneWarningOptions;
 
     // Notifies when the current speed limit is exceeded.
     _visualNavigator.speedWarningListener =
@@ -633,7 +657,8 @@ class NavigationEventHandler {
         print("A RealisticView just passed.");
       }
 
-      RealisticViewVectorImage? realisticView = realisticViewWarning.realisticViewVectorImage;
+      RealisticViewVectorImage? realisticView =
+          realisticViewWarning.realisticViewVectorImage;
       if (realisticView == null) {
         print("A RealisticView just passed. No SVG content delivered.");
         return;

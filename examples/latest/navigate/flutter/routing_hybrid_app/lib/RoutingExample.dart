@@ -24,6 +24,7 @@ import 'package:here_sdk/animation.dart' as here;
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/core.errors.dart';
 import 'package:here_sdk/mapview.dart';
+import 'package:here_sdk/navigation.dart';
 import 'package:here_sdk/routing.dart';
 import 'package:here_sdk/routing.dart' as here;
 
@@ -42,12 +43,17 @@ class RoutingExample {
   ShowDialogFunction _showDialog;
   final _BERLIN_HQ_GEO_COORDINATES = GeoCoordinates(52.530971, 13.385088);
 
-  RoutingExample(ShowDialogFunction showDialogCallback, HereMapController hereMapController)
+  RoutingExample(ShowDialogFunction showDialogCallback,
+      HereMapController hereMapController)
       : _showDialog = showDialogCallback,
         _hereMapController = hereMapController {
     double distanceToEarthInMeters = 5000;
-    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
-    _hereMapController.camera.lookAtPointWithMeasure(GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
+    _hereMapController.mapScene.enableFeatures({MapFeatures.trafficFlow: MapFeatureModes.defaultMode});
+    _hereMapController.mapScene.enableFeatures({MapFeatures.trafficIncidents: MapFeatureModes.defaultMode});
+    MapMeasure mapMeasureZoom =
+        MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+    _hereMapController.camera.lookAtPointWithMeasure(
+        GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
 
     try {
       _onlineRoutingEngine = RoutingEngine();
@@ -78,7 +84,8 @@ class RoutingExample {
     _startGeoCoordinates = _BERLIN_HQ_GEO_COORDINATES;
     _destinationGeoCoordinates = _createRandomGeoCoordinatesInViewport();
     var startWaypoint = Waypoint.withDefaults(_startGeoCoordinates!);
-    var destinationWaypoint = Waypoint.withDefaults(_destinationGeoCoordinates!);
+    var destinationWaypoint =
+        Waypoint.withDefaults(_destinationGeoCoordinates!);
 
     List<Waypoint> waypoints = [startWaypoint, destinationWaypoint];
 
@@ -107,13 +114,21 @@ class RoutingExample {
     clearMap();
 
     var startWaypoint = Waypoint.withDefaults(_startGeoCoordinates!);
-    var destinationWaypoint = Waypoint.withDefaults(_destinationGeoCoordinates!);
+    var destinationWaypoint =
+        Waypoint.withDefaults(_destinationGeoCoordinates!);
 
     // Additional waypoints.
-    var waypoint1 = Waypoint.withDefaults(_createRandomGeoCoordinatesInViewport());
-    var waypoint2 = Waypoint.withDefaults(_createRandomGeoCoordinatesInViewport());
+    var waypoint1 =
+        Waypoint.withDefaults(_createRandomGeoCoordinatesInViewport());
+    var waypoint2 =
+        Waypoint.withDefaults(_createRandomGeoCoordinatesInViewport());
 
-    List<Waypoint> waypoints = [startWaypoint, waypoint1, waypoint2, destinationWaypoint];
+    List<Waypoint> waypoints = [
+      startWaypoint,
+      waypoint1,
+      waypoint2,
+      destinationWaypoint
+    ];
 
     _routingEngine.calculateCarRoute(waypoints, CarOptions(),
         (RoutingError? routingError, List<here.Route>? routeList) async {
@@ -140,21 +155,23 @@ class RoutingExample {
   void _logRouteViolations(here.Route route) {
     for (var section in route.sections) {
       for (var notice in section.sectionNotices) {
-        print("This route contains the following warning: " + notice.code.toString());
+        print("This route contains the following warning: " +
+            notice.code.toString());
       }
     }
   }
 
   void useOnlineRoutingEngine() {
     _routingEngine = _onlineRoutingEngine;
-    _showDialog('Switched to RoutingEngine', 'Routes will be calculated online.');
+    _showDialog(
+        'Switched to RoutingEngine', 'Routes will be calculated online.');
   }
 
   void useOfflineRoutingEngine() {
     _routingEngine = _offlineRoutingEngine;
     // Note that this app does not show how to download offline maps. For this, check the offline_maps_app example.
-    _showDialog(
-        'Switched to OfflineRoutingEngine', 'Routes will be calculated offline on cached or downloaded map data.');
+    _showDialog('Switched to OfflineRoutingEngine',
+        'Routes will be calculated offline on cached or downloaded map data.');
   }
 
   void clearMap() {
@@ -180,8 +197,10 @@ class RoutingExample {
     int estimatedTravelTimeInSeconds = route.duration.inSeconds;
     int lengthInMeters = route.lengthInMeters;
 
-    String routeDetails =
-        'Travel Time: ' + _formatTime(estimatedTravelTimeInSeconds) + ', Length: ' + _formatLength(lengthInMeters);
+    String routeDetails = 'Travel Time: ' +
+        _formatTime(estimatedTravelTimeInSeconds) +
+        ', Length: ' +
+        _formatLength(lengthInMeters);
 
     _showDialog('Route Details', '$routeDetails');
   }
@@ -203,15 +222,28 @@ class RoutingExample {
   _showRouteOnMap(here.Route route) {
     // Show route as polyline.
     GeoPolyline routeGeoPolyline = route.geometry;
-    double widthInPixels = 20;
     Color polylineColor = const Color.fromARGB(160, 0, 144, 138);
+    Color outlineColor = const Color.fromARGB(160, 0, 144, 138);
     MapPolyline routeMapPolyline;
     try {
+      // Below, we're creating an instance of MapMeasureDependentRenderSize. This instance will use the scaled width values to render the route polyline.
+      // The parameters for the constructor are: the kind of MapMeasure (in this case, ZOOM_LEVEL), the unit of measurement for the render size (PIXELS), and the scaled width values.
+      MapMeasureDependentRenderSize mapMeasureDependentLineWidth =
+          MapMeasureDependentRenderSize(MapMeasureKind.zoomLevel,
+              RenderSizeUnit.pixels, getDefaultLineWidthValues());
+
+      // We can also use MapMeasureDependentRenderSize to specify the outline width of the polyline.
+      double outlineWidthInPixel = 1.23 * _hereMapController.pixelScale;
+      MapMeasureDependentRenderSize mapMeasureDependentOutlineWidth =
+          MapMeasureDependentRenderSize.withSingleSize(
+              RenderSizeUnit.pixels, outlineWidthInPixel);
       routeMapPolyline = MapPolyline.withRepresentation(
           routeGeoPolyline,
-          MapPolylineSolidRepresentation(
-              MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
+          MapPolylineSolidRepresentation.withOutline(
+              mapMeasureDependentLineWidth,
               polylineColor,
+              mapMeasureDependentOutlineWidth,
+              outlineColor,
               LineCap.round));
       _hereMapController.mapScene.addMapPolyline(routeMapPolyline);
       _mapPolylines.add(routeMapPolyline);
@@ -237,6 +269,20 @@ class RoutingExample {
     }
   }
 
+  // We are retrieving the default route line widths from VisualNavigator and scale them according to the screen's pixel density.
+  // Note that the VisualNavigator stores the width values per zoom level MapMeasure.Kind.
+  Map<double, double> getDefaultLineWidthValues() {
+    Map<double, double> widthsPerZoomLevel = {};
+    for (MapEntry<MapMeasure, double> defaultValues
+        in VisualNavigator.defaultRouteManeuverArrowMeasureDependentWidths()
+            .entries) {
+      double key = defaultValues.key.value;
+      double value = defaultValues.value * _hereMapController.pixelScale;
+      widthsPerZoomLevel[key] = value;
+    }
+    return widthsPerZoomLevel;
+  }
+
   void _logManeuverInstructions(Section section) {
     print("Log maneuver instructions per route section:");
     List<Maneuver> maneuverInstructions = section.maneuvers;
@@ -258,7 +304,8 @@ class RoutingExample {
     int imageHeight = 60;
     // Note that you can reuse the same mapImage instance for other MapMarker instances
     // to save resources.
-    MapImage mapImage = MapImage.withFilePathAndWidthAndHeight(imageName, imageWidth, imageHeight);
+    MapImage mapImage = MapImage.withFilePathAndWidthAndHeight(
+        imageName, imageWidth, imageHeight);
     MapMarker mapMarker = MapMarker(geoCoordinates, mapImage);
     _hereMapController.mapScene.addMapMarker(mapMarker);
     _mapMarkers.add(mapMarker);
@@ -268,7 +315,8 @@ class RoutingExample {
     GeoBox? geoBox = _hereMapController.camera.boundingBox;
     if (geoBox == null) {
       // Happens only when map is not fully covering the viewport as the map is tilted.
-      print("The map view is tilted, falling back to fixed destination coordinate.");
+      print(
+          "The map view is tilted, falling back to fixed destination coordinate.");
       return GeoCoordinates(52.520798, 13.409408);
     }
 
@@ -296,15 +344,21 @@ class RoutingExample {
     double tilt = 0;
     // We want to show the route fitting in the map view with an additional padding of 50 pixels.
     Point2D origin = Point2D(50, 50);
-    Size2D sizeInPixels =
-        Size2D(_hereMapController.viewportSize.width - 100, _hereMapController.viewportSize.height - 100);
+    Size2D sizeInPixels = Size2D(_hereMapController.viewportSize.width - 100,
+        _hereMapController.viewportSize.height - 100);
     Rectangle2D mapViewport = Rectangle2D(origin, sizeInPixels);
 
     // Animate to the route within a duration of 3 seconds.
-    MapCameraUpdate update = MapCameraUpdateFactory.lookAtAreaWithGeoOrientationAndViewRectangle(
-        route.boundingBox, GeoOrientationUpdate(bearing, tilt), mapViewport);
-    MapCameraAnimation animation = MapCameraAnimationFactory.createAnimationFromUpdateWithEasing(
-        update, const Duration(milliseconds: 3000), here.Easing(here.EasingFunction.inCubic));
+    MapCameraUpdate update =
+        MapCameraUpdateFactory.lookAtAreaWithGeoOrientationAndViewRectangle(
+            route.boundingBox,
+            GeoOrientationUpdate(bearing, tilt),
+            mapViewport);
+    MapCameraAnimation animation =
+        MapCameraAnimationFactory.createAnimationFromUpdateWithEasing(
+            update,
+            const Duration(milliseconds: 3000),
+            here.Easing(here.EasingFunction.inCubic));
     _hereMapController.camera.startAnimation(animation);
   }
 }

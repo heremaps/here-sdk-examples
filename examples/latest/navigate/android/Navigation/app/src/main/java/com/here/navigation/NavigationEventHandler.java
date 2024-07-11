@@ -50,6 +50,9 @@ import com.here.sdk.navigation.LaneAccess;
 import com.here.sdk.navigation.LaneDirectionCategory;
 import com.here.sdk.navigation.LaneRecommendationState;
 import com.here.sdk.navigation.LaneType;
+import com.here.sdk.navigation.LowSpeedZoneWarning;
+import com.here.sdk.navigation.LowSpeedZoneWarningListener;
+import com.here.sdk.navigation.LowSpeedZoneWarningOptions;
 import com.here.sdk.navigation.ManeuverNotificationOptions;
 import com.here.sdk.navigation.ManeuverProgress;
 import com.here.sdk.navigation.ManeuverViewLaneAssistance;
@@ -649,6 +652,27 @@ public class NavigationEventHandler {
         // Distance setting for urban, in meters. Defaults to 500 meters.
         dangerZoneWarningOptions.urbanWarningDistanceInMeters = 400;
         visualNavigator.setDangerZoneWarningOptions(dangerZoneWarningOptions);
+
+        // Notifies on low speed zones ahead - as indicated also on the map when MapFeatures.LOW_SPEED_ZONE is set.
+        visualNavigator.setLowSpeedZoneWarningListener(new LowSpeedZoneWarningListener() {
+            @Override
+            public void onLowSpeedZoneWarningUpdated(@NonNull LowSpeedZoneWarning lowSpeedZoneWarning) {
+                if (lowSpeedZoneWarning.distanceType == DistanceType.AHEAD) {
+                    Log.d(TAG, "Low speed zone ahead in meters: " + lowSpeedZoneWarning.distanceToLowSpeedZoneInMeters);
+                    Log.d(TAG, "Speed limit in low speed zone (m/s): " + lowSpeedZoneWarning.speedLimitInMetersPerSecond);
+                } else if (lowSpeedZoneWarning.distanceType == DistanceType.REACHED) {
+                    Log.d(TAG, "A low speed zone has been reached.");
+                    Log.d(TAG, "Speed limit in low speed zone (m/s): " + lowSpeedZoneWarning.speedLimitInMetersPerSecond);
+                } else if (lowSpeedZoneWarning.distanceType == DistanceType.PASSED) {
+                    Log.d(TAG, "A low speed zone has been passed.");
+                }
+            }
+        });
+
+        LowSpeedZoneWarningOptions lowSpeedZoneWarningOptions = new LowSpeedZoneWarningOptions();
+        // Distance setting for urban, in meters. Defaults to 500 meters.
+        lowSpeedZoneWarningOptions.urbanWarningDistanceInMeters = 400;
+        visualNavigator.setLowSpeedZoneWarningOptions(lowSpeedZoneWarningOptions);
 
         // Notifies whenever any textual attribute of the current road changes, i.e., the current road texts differ
         // from the previous one. This can be useful during tracking mode, when no maneuver information is provided.

@@ -252,12 +252,32 @@ class SearchExample: TapDelegate,
 
     // Conforming to TapDelegate protocol.
     func onTap(origin: Point2D) {
-        mapView.pickMapItems(at: origin, radius: 2, completion: onMapItemsPicked)
+        // You can also use a larger area to include multiple map icons.
+        let rectangle2D = Rectangle2D(origin: origin,
+                                      size: Size2D(width: 50, height: 50))
+        // Creates a list of map content type from which the results will be picked.
+        // The content type values can be mapContent, mapItems and customLayerData.
+        var contentTypesToPickFrom = Array<MapScene.MapPickFilter.ContentType>();
+        
+        // mapContent is used when picking embedded carto POIs, traffic incidents, vehicle restriction etc.
+        // mapItems is used when picking map items such as MapMarker, MapPolyline, MapPolygon etc.
+        // Currently we need map markers so adding the mapItems filter.
+        contentTypesToPickFrom.append(MapScene.MapPickFilter.ContentType.mapItems);
+        let filter = MapScene.MapPickFilter(filter: contentTypesToPickFrom);
+        mapView.pick(filter:filter,inside: rectangle2D, completion: onMapItemsPicked)
     }
 
     // Completion handler to receive picked map items.
-    func onMapItemsPicked(pickedMapItems: PickMapItemsResult?) {
-        guard let topmostMapMarker = pickedMapItems?.markers.first else {
+    func onMapItemsPicked(mapPickResults: MapPickResult?) {
+        guard let mapPickResults = mapPickResults else {
+            print("Pick operation failed.")
+            return
+        }
+        guard let pickedMapItems =  mapPickResults.mapItems else {
+            print("Pick operation failed.")
+            return
+        }
+        guard let topmostMapMarker = pickedMapItems.markers.first else {
             return
         }
 
