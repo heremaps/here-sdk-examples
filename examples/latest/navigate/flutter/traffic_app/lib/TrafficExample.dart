@@ -95,15 +95,28 @@ class TrafficExample {
   // Traffic incidents can only be picked, when MapScene.Layers.TRAFFIC_INCIDENTS is visible.
   _pickTrafficIncident(Point2D touchPointInPixels) {
     Point2D originInPixels = new Point2D(touchPointInPixels.x, touchPointInPixels.y);
-    Size2D sizeInPixels = new Size2D(1, 1);
+    Size2D sizeInPixels = new Size2D(50, 50);
     Rectangle2D rectangle = new Rectangle2D(originInPixels, sizeInPixels);
+    // Creates a list of map content type from which the results will be picked.
+    // The content type values can be mapContent, mapItems and customLayerData.
+    List<MapSceneMapPickFilterContentType> contentTypesToPickFrom = [];
 
-    _hereMapController.pickMapContent(rectangle, (pickMapContentResult) {
-      if (pickMapContentResult == null) {
-        // An error occurred while performing the pick operation.
+    // mapContent is used when picking embedded carto POIs, traffic incidents, vehicle restriction etc.
+    // mapItems is used when picking map items such as MapMarker, MapPolyline, MapPolygon etc.
+    // Currently we need traffic incidents so adding the mapContent filter.
+    contentTypesToPickFrom.add(MapSceneMapPickFilterContentType.mapContent);
+    MapSceneMapPickFilter filter = MapSceneMapPickFilter(contentTypesToPickFrom);
+
+    _hereMapController.pick(filter, rectangle, (pickMapResult) {
+      if (pickMapResult == null) {
+        // Pick operation failed.
         return;
       }
-
+      PickMapContentResult? pickMapContentResult = pickMapResult.mapContent;
+      if (pickMapContentResult == null) {
+        // Pick operation failed.
+        return;
+      }
       List<PickTrafficIncidentResult> trafficIncidents = pickMapContentResult.trafficIncidents;
       if (trafficIncidents.length == 0) {
         print("No traffic incident found at picked location");

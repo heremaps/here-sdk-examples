@@ -1,4 +1,4 @@
-The carto_poi_picking example app shows how the HERE SDK can be used to pick embedded POI marker.
+The carto_poi_picking example app shows how the HERE SDK can be used to pick embedded POI, vehicle restrictions & traffic incidents.
 
 Build instructions:
 -------------------

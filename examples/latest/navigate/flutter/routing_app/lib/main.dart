@@ -56,6 +56,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   RoutingExample? _routingExample;
+  HereMapController? _hereMapController;
 
   @override
   Widget build(BuildContext context) {
@@ -79,8 +80,10 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _onMapCreated(HereMapController hereMapController) {
-    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
+    _hereMapController = hereMapController;
+    _hereMapController?.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
       if (error == null) {
+        _hereMapController?.mapScene.enableFeatures({MapFeatures.lowSpeedZones: MapFeatureModes.lowSpeedZonesAll});
         _routingExample = RoutingExample(_showDialog, hereMapController);
       } else {
         print("Map scene not loaded. MapError: " + error.toString());

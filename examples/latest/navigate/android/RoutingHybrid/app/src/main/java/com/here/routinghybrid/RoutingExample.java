@@ -41,6 +41,7 @@ import com.here.sdk.mapview.MapMeasureDependentRenderSize;
 import com.here.sdk.mapview.MapPolyline;
 import com.here.sdk.mapview.MapView;
 import com.here.sdk.mapview.RenderSize;
+import com.here.sdk.navigation.VisualNavigator;
 import com.here.sdk.routing.CalculateRouteCallback;
 import com.here.sdk.routing.CarOptions;
 import com.here.sdk.routing.Maneuver;
@@ -57,8 +58,10 @@ import com.here.sdk.routing.Waypoint;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class RoutingExample {
 
@@ -75,6 +78,7 @@ public class RoutingExample {
     private GeoCoordinates destinationGeoCoordinates;
     private boolean isDeviceConnected = true;
 
+
     public RoutingExample(Context context, MapView mapView) {
         this.context = context;
         this.mapView = mapView;
@@ -82,7 +86,6 @@ public class RoutingExample {
         double distanceInMeters = 5000;
         MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
         camera.lookAt(new GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
-
         try {
             onlineRoutingEngine = new RoutingEngine();
         } catch (InstantiationErrorException e) {
@@ -185,14 +188,24 @@ public class RoutingExample {
 
         // Show route as polyline.
         GeoPolyline routeGeoPolyline = route.getGeometry();
-        float widthInPixels = 20;
         Color polylineColor = Color.valueOf(0, 0.56f, 0.54f, 0.63f);
+        Color outlineColor = Color.valueOf(0, 0.56f, 0.54f, 0.63f);
         MapPolyline routeMapPolyline = null;
         try {
+            // Below, we're creating an instance of MapMeasureDependentRenderSize. This instance will use the scaled width values to render the route polyline.
+            // The parameters for the constructor are: the kind of MapMeasure (in this case, ZOOM_LEVEL), the unit of measurement for the render size (PIXELS), and the scaled width values.
+            MapMeasureDependentRenderSize mapMeasureDependentLineWidth = new MapMeasureDependentRenderSize(MapMeasure.Kind.ZOOM_LEVEL, RenderSize.Unit.PIXELS, getDefaultLineWidthValues());
+
+            // We can also use MapMeasureDependentRenderSize to specify the outline width of the polyline.
+            double outlineWidthInPixel = 1.23 * mapView.getPixelScale();
+            MapMeasureDependentRenderSize mapMeasureDependentOutlineWidth = new MapMeasureDependentRenderSize(RenderSize.Unit.PIXELS, outlineWidthInPixel);
             routeMapPolyline = new MapPolyline(routeGeoPolyline, new MapPolyline.SolidRepresentation(
-                    new MapMeasureDependentRenderSize(RenderSize.Unit.PIXELS, widthInPixels),
+                    mapMeasureDependentLineWidth,
                     polylineColor,
+                    mapMeasureDependentOutlineWidth,
+                    outlineColor,
                     LineCap.ROUND));
+
         } catch (MapPolyline.Representation.InstantiationException e) {
             Log.e("MapPolyline Representation Exception:", e.error.name());
         } catch (MapMeasureDependentRenderSize.InstantiationException e) {
@@ -216,6 +229,19 @@ public class RoutingExample {
             logManeuverInstructions(section);
         }
     }
+
+    // We are retrieving the default route line widths from VisualNavigator and scale them according to the screen's pixel density.
+    // Note that the VisualNavigator stores the width values per zoom level MapMeasure.Kind.
+    private HashMap<Double, Double> getDefaultLineWidthValues() {
+        HashMap<Double, Double> widthsPerZoomLevel = new HashMap<>();
+        for (Map.Entry<MapMeasure, Double> defaultValues : VisualNavigator.defaultRouteManeuverArrowMeasureDependentWidths().entrySet()) {
+            Double key = defaultValues.getKey().value;
+            Double value = defaultValues.getValue() * mapView.getPixelScale();
+            widthsPerZoomLevel.put(key, value);
+        }
+        return widthsPerZoomLevel;
+    }
+
 
     private void logManeuverInstructions(Section section) {
         Log.d(TAG, "Log maneuver instructions per route section:");
@@ -321,12 +347,12 @@ public class RoutingExample {
 
     public void onSwitchOnlineButtonClicked() {
         isDeviceConnected = true;
-        Toast.makeText(context,"The app will now use the RoutingEngine.", Toast.LENGTH_LONG).show();
+        Toast.makeText(context, "The app will now use the RoutingEngine.", Toast.LENGTH_LONG).show();
     }
 
     public void onSwitchOfflineButtonClicked() {
         isDeviceConnected = false;
-        Toast.makeText(context,"The app will now use the OfflineRoutingEngine.", Toast.LENGTH_LONG).show();
+        Toast.makeText(context, "The app will now use the OfflineRoutingEngine.", Toast.LENGTH_LONG).show();
     }
 
     private boolean isDeviceConnected() {

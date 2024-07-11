@@ -36,6 +36,8 @@ final class ViewController: UIViewController {
             print("Error: Map scene not loaded, \(String(describing: mapError))")
             return
         }
+        mapView.mapScene.enableFeatures([MapFeatures.trafficFlow : MapFeatureModes.defaultMode]);
+        mapView.mapScene.enableFeatures([MapFeatures.trafficIncidents : MapFeatureModes.defaultMode]);
 
         // Start the example.
         self.routingExample = RoutingExample(viewController: self, mapView: self.mapView!)

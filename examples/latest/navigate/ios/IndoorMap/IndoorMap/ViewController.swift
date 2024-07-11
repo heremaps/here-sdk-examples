@@ -219,7 +219,7 @@ class StructureSwitcherAlertController: UIViewController {
     }
 }
 
-class ViewController: UIViewController, UIGestureRecognizerDelegate {
+class ViewController: UIViewController, UIGestureRecognizerDelegate, VenueInfoListListenerDelegate {
     @IBOutlet weak var levelSwitcherStackView: UIStackView!
     @IBOutlet weak var viewFrame: UIView!
     @IBOutlet private weak var levelSwitcher: LevelSwitcher!
@@ -394,7 +394,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
         view.bringSubviewToFront(bottomDrawerView)
 
         spinnerView.layer.cornerRadius = 20
-        spinnerView.isHidden = true
+        spinnerView.isHidden = false
+        startRotation()
         
         setWatermarkLocation()
     }
@@ -575,6 +576,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
         venueService.removeServiceDelegate(self)
         venueService.removeVenueDelegate(self)
         venueMap.removeVenueSelectionDelegate(self)
+        venueMap.removeVenueSelectionDelegate(self)
         mapView.gestures.tapDelegate = nil
         mapView.gestures.longPressDelegate = nil
     }
@@ -610,6 +612,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
         venueService.addServiceDelegate(self)
         venueService.addVenueDelegate(self)
         venueMap.addVenueSelectionDelegate(self)
+        venueMap.addVenueInfoListDelegate(self)
         
         // Connect VenueMap to switchers, to control selected drawing and level in the UI.
         levelSwitcher.setVenueMap(venueMap)
@@ -758,25 +761,7 @@ extension ViewController: VenueServiceDelegate {
     func onInitializationCompleted(result: VenueServiceInitStatus) {
         if (result == .onlineSuccess) {
             print("Venue Service successfully initialized.")
-            var index: Int
-            index = 0
-            //Get List of venues info
-            let venueInfo:[VenueInfo]? = venueEngine?.venueMap.getVenueInfoList(completion: self.onVenueLoadError)
-            if let venueInfo = venueInfo {
-                for venueInfo in venueInfo {
-                    print("Venue Identifier: \(venueInfo.venueIdentifier)." + " Venue Id: \(venueInfo.venueId)." + " Venue Name: \(venueInfo.venueName).")
-                    let venueIdStr = venueInfo.venueIdentifier
-                    venueMapList.insert(String(venueIdStr.dropFirst(41) + ":" + (venueInfo.venueName)), at: index)
-                    venueNamesList.insert((venueInfo.venueName), at: index)
-                    index = index+1
-                }
-                
-                self.tableView.delegate = self
-                self.tableView.dataSource = self
-                tableView.register(UINib(nibName: "CustomCell", bundle: nil), forCellReuseIdentifier: "customCell")
-                bottomDrawerView.addSubview(tableView)
-                handleView.isHidden = false
-            }
+            venueEngine?.venueMap.getVenueInfoListAsync(completion: self.onVenueLoadError)
         } else {
             print("Venue Service failed to initialize!")
         }
@@ -1171,6 +1156,32 @@ extension ViewController: UISearchBarDelegate {
         }
         else {
             searchBar.text = "Search for venues"
+        }
+    }
+    
+    func onVenueInfoListLoad(venueInfoList: [VenueInfo]) {
+        DispatchQueue.main.async { [self] in
+            var index: Int
+            index = 0
+            //Get List of venues info
+            let venueInfo:[VenueInfo]? = venueEngine?.venueMap.getVenueInfoList(completion: self.onVenueLoadError)
+            if let venueInfo = venueInfo {
+                for venueInfo in venueInfo {
+                    print("Venue Identifier: \(venueInfo.venueIdentifier)." + " Venue Id: \(venueInfo.venueId)." + " Venue Name: \(venueInfo.venueName).")
+                    let venueIdStr = venueInfo.venueIdentifier
+                    venueMapList.insert(String(venueIdStr.dropFirst(41) + ":" + (venueInfo.venueName)), at: index)
+                    venueNamesList.insert((venueInfo.venueName), at: index)
+                    index = index+1
+                }
+                
+                self.tableView.delegate = self
+                self.tableView.dataSource = self
+                tableView.register(UINib(nibName: "CustomCell", bundle: nil), forCellReuseIdentifier: "customCell")
+                bottomDrawerView.addSubview(tableView)
+                handleView.isHidden = false
+                spinnerView.isHidden = true
+                stopRotation()
+            }
         }
     }
 }

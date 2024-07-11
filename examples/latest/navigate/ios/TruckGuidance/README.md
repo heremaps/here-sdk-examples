@@ -9,7 +9,7 @@ Additional features:
 - Show a simple UI building block to render the next truck restriction. Note that all restrictions are shown, regardless of current truck specs (can be adjusted in the code).
 - Search along the route for truck amenities.
 - Avoid routes that are not suitable for trucks.
-- Shows how to pick carto POIs to get information on POIs, traffic incidents and vehicle restrictions shown on the map.
+- Shows how to pick Carto POIs to get information on POIs, traffic incidents and vehicle restrictions shown on the map.
 - Shows how to use a global `TransportProfile`.
 - Shows how to get `EnvironmentalZoneWarning` events.
 

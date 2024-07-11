@@ -90,20 +90,32 @@ class TrafficExample: TapDelegate {
     // Traffic incidents can only be picked, when MapScene.Layers.trafficIncidents is visible.
     func pickTrafficIncident(touchPointInPixels: Point2D) {
         let originInPixels = Point2D(x: touchPointInPixels.x, y: touchPointInPixels.y)
-        let sizeInPixels = Size2D(width: 1, height: 1)
+        let sizeInPixels = Size2D(width: 50, height: 50)
         let rectangle = Rectangle2D(origin: originInPixels, size: sizeInPixels)
-
-        mapView.pickMapContent(inside: rectangle, completion: onPickMapContent)
+        // Creates a list of map content type from which the results will be picked.
+        // The content type values can be mapContent, mapItems and customLayerData.
+        var contentTypesToPickFrom = Array<MapScene.MapPickFilter.ContentType>();
+        
+        // mapContent is used when picking embedded carto POIs, traffic incidents, vehicle restriction etc.
+        // mapItems is used when picking map items such as MapMarker, MapPolyline, MapPolygon etc.
+        // Currently we need traffic incidents so adding the mapContent filter.
+        contentTypesToPickFrom.append(MapScene.MapPickFilter.ContentType.mapContent);
+        let filter = MapScene.MapPickFilter(filter: contentTypesToPickFrom);
+        mapView.pick(filter:filter,inside: rectangle, completion: onPickMapContent)
     }
 
     // MapViewBase.PickMapContentHandler to receive picked map content.
-    func onPickMapContent(mapContentResult: PickMapContentResult?) {
-        if mapContentResult == nil {
-            // An error occurred while performing the pick operation.
+    func onPickMapContent(mapPickResults: MapPickResult?) {
+        guard let mapPickResults = mapPickResults else {
+            print("Pick operation failed.")
+            return
+        }
+        guard let mapContentResult =  mapPickResults.mapContent else {
+            print("Pick operation failed.")
             return
         }
 
-        let trafficIncidents = mapContentResult!.trafficIncidents
+        let trafficIncidents = mapContentResult.trafficIncidents
         if trafficIncidents.count == 0 {
             print("No traffic incident found at picked location")
         } else {

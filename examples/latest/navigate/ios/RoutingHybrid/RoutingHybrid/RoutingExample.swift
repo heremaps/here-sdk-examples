@@ -131,15 +131,22 @@ class RoutingExample {
         
         // Show route as polyline.
         let routeGeoPolyline = route.geometry
-        let widthInPixels = 20.0
         let polylineColor = UIColor(red: 0, green: 0.56, blue: 0.54, alpha: 0.63)
+        let outlineColor = UIColor(red: 0, green: 0.56, blue: 0.54, alpha: 0.63)
         do {
+            // Below, we're creating an instance of MapMeasureDependentRenderSize. This instance will use the scaled width values to render the route polyline.
+            // The parameters for the constructor are: the kind of MapMeasure (in this case, ZOOM_LEVEL), the unit of measurement for the render size (PIXELS), and the scaled width values.
+            let mapMeasureDependentLineWidth = try MapMeasureDependentRenderSize(measureKind: MapMeasure.Kind.zoomLevel, sizeUnit: RenderSize.Unit.pixels, sizes: getDefaultLineWidthValues())
+            
+            // We can also use MapMeasureDependentRenderSize to specify the outline width of the polyline.
+            let outlineWidthInPixel = 1.23 * mapView.pixelScale
+            let mapMeasureDependentOutlineWidth = try MapMeasureDependentRenderSize(sizeUnit: RenderSize.Unit.pixels, size: outlineWidthInPixel)
             let routeMapPolyline =  try MapPolyline(geometry: routeGeoPolyline,
                                                     representation: MapPolyline.SolidRepresentation(
-                                                        lineWidth: MapMeasureDependentRenderSize(
-                                                            sizeUnit: RenderSize.Unit.pixels,
-                                                            size: widthInPixels),
+                                                        lineWidth: mapMeasureDependentLineWidth,
                                                         color: polylineColor,
+                                                        outlineWidth: mapMeasureDependentOutlineWidth,
+                                                        outlineColor: outlineColor,
                                                         capShape: LineCap.round))
             
             mapView.mapScene.addMapPolyline(routeMapPolyline)
@@ -160,6 +167,18 @@ class RoutingExample {
         for section in sections {
             logManeuverInstructions(section: section)
         }
+    }
+    
+    // We are retrieving the default route line widths from VisualNavigator and scale them according to the screen's pixel density.
+    // Note that the VisualNavigator stores the width values per zoom level MapMeasure.Kind.
+    private func getDefaultLineWidthValues() -> [Double:Double] {
+        var widthsPerZoomLevel: [Double: Double] = [:];
+        for defaultValues in VisualNavigator.defaultRouteManeuverArrowMeasureDependentWidths() {
+                let key = defaultValues.key.value
+                let value = defaultValues.value * mapView.pixelScale
+                widthsPerZoomLevel[key] = value
+            }
+        return widthsPerZoomLevel
     }
 
     private func logManeuverInstructions(section: Section) {

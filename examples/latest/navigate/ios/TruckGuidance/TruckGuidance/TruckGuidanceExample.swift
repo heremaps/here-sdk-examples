@@ -194,29 +194,38 @@ class TruckGuidanceExample: TapDelegate,
     func onTap(origin: heresdk.Point2D) {
         // You can also use a larger area to include multiple carto POIs.
         let rectangle2D = Rectangle2D(origin: origin, size: Size2D(width: 50, height: 50))
-
-        mapView.pickMapContent(inside: rectangle2D) { pickMapContentResult in
-            guard let pickMapContentResult = pickMapContentResult else {
+        // Creates a list of map content type from which the results will be picked.
+        // The content type values can be mapContent, mapItems and customLayerData.
+        var contentTypesToPickFrom = Array<MapScene.MapPickFilter.ContentType>();
+        
+        // mapContent is used when picking embedded carto POIs, traffic incidents, vehicle restriction etc.
+        // mapItems is used when picking map items such as MapMarker, MapPolyline, MapPolygon etc.
+        // Currently we need map contents so adding the mapContent filter.
+        contentTypesToPickFrom.append(MapScene.MapPickFilter.ContentType.mapContent);
+        let filter = MapScene.MapPickFilter(filter: contentTypesToPickFrom);
+        mapView.pick(filter: filter, inside: rectangle2D) { pickMapResult in
+            guard let pickMapResult = pickMapResult else {
                 // An error occurred while performing the pick operation.
                 return
             }
-
+            guard let pickMapContentResult = pickMapResult.mapContent else {
+                // An error occurred while performing the pick operation.
+                return
+            }
             let cartoPOIList = pickMapContentResult.pickedPlaces
             let trafficPOIList = pickMapContentResult.trafficIncidents
             let vehicleRestrictionResultList = pickMapContentResult.vehicleRestrictions
-
             // Note that pick here only the topmost icon and ignore others that may be underneath.
             if cartoPOIList.count > 0 {
                 let topmostContent = cartoPOIList[0]
                 print("Carto POI picked: \(topmostContent.name), Place category: \(topmostContent.placeCategoryId)")
-
                 // Use the search engine to retrieve more details.
                 self.searchEngine.searchPickedPlace(pickedPlace: topmostContent, languageCode: .enUs) { searchError, place in
                     if let searchError = searchError {
                         print("searchPickedPlace() resulted in an error: \(searchError)")
                         return
                     }
-
+                    
                     if let place = place {
                         let address = place.address.addressText
                         var categories = ""
@@ -229,13 +238,12 @@ class TruckGuidanceExample: TapDelegate,
                     }
                 }
             }
-
             if trafficPOIList.count > 0 {
                 let topmostContent = trafficPOIList[0]
                 self.showDialog(title: "Traffic incident picked", message: "Type: \(topmostContent.type.rawValue)")
                 // Optionally, you can now use the TrafficEngine to retrieve more details for this incident.
             }
-
+            
             if vehicleRestrictionResultList.count > 0 {
                 let topmostContent = vehicleRestrictionResultList[0]
                 // Note that the text property is empty for general truck restrictions.
@@ -243,7 +251,6 @@ class TruckGuidanceExample: TapDelegate,
             }
         }
     }
-
     // Conform to LongPressDelegate.
     func onLongPress(state: heresdk.GestureState, origin: heresdk.Point2D) {
         guard let geoCoordinates = mapView.viewToGeoCoordinates(viewCoordinates: origin) else {

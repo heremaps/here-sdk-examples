@@ -26,7 +26,7 @@ For an overview of the existing features, please check the _Developer Guide_ for
 
 > For now, the _Navigate Edition_ is only available upon request. Please contact your HERE representative to receive access including a set of evaluation credentials.
 
-## List of Available Example Apps (Version 4.19.0.0)
+## List of Available Example Apps (Version 4.19.1.0)
 
 - **HelloMap**: Shows the classic 'Hello World'.
 - **HelloMapKotlin**: Shows the classic 'Hello World' using Kotlin language (Android only).

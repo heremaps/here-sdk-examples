@@ -52,8 +52,9 @@ class AppLogic {
     _setLongPressGestureHandler();
     _updateMessageState("Long press to set start/destination or use random ones.");
 
-    // Enable traffic flow and 3D landmarks, by default.
+    // Enable traffic flow, low speed zones and 3D landmarks, by default.
     hereMapController.mapScene.enableFeatures({MapFeatures.trafficFlow: MapFeatureModes.trafficFlowWithFreeFlow});
+    hereMapController.mapScene.enableFeatures({MapFeatures.lowSpeedZones: MapFeatureModes.lowSpeedZonesAll});
     hereMapController.mapScene.enableFeatures({MapFeatures.landmarks: MapFeatureModes.landmarksTextured});
   }
 

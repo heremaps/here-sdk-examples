@@ -6,7 +6,7 @@ You can test this app with the emulator. In emulator options, select "Displays":
 
 Note that you may need to update to a newer Android Studio version. The secondary screen feature can be used only on devices with Android 8 or higher.
 
-This app is meant for multi-display purposes. Showing multiple map view instances on the same display / activity is not covered here - for this you just need to add two `MapView`'s to your layout and handle them as separate instances. Note that foldable devices are only supported, if they can [show two separate displays at the same time](https://insights.samsung.com/2019/01/14/how-to-optimize-apps-for-folding-devices-developing-for-the-multiscreen-form-factor/). The app requires a 2nd display that is active at the same time as the main display. Otherwise, the app will behave like a single-screen app.
+This app is meant for multi-display purposes. Showing multiple map view instances on the same display / activity is not covered here - for this you just need to add two `MapView`'s to your layout and handle them as separate instances. Note that foldable devices are only supported, if they can [show two separate displays at the same time](https://insights.samsung.com/2019/01/14/how-to-optimize-apps-for-folding-devices-developing-for-the-multiscreen-form-factor/). The app requires a second display that is active at the same time as the main display. Otherwise, the app will behave like a single-screen app.
 
 Build instructions:
 -------------------

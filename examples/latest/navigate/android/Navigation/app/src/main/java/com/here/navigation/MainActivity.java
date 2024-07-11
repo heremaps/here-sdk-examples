@@ -169,6 +169,7 @@ public class MainActivity extends AppCompatActivity {
                     // Enable traffic flows and 3D landmarks, by default.
                     Map<String, String> mapFeatures = new HashMap<>();
                     mapFeatures.put(MapFeatures.TRAFFIC_FLOW, MapFeatureModes.TRAFFIC_FLOW_WITH_FREE_FLOW);
+                    mapFeatures.put(MapFeatures.LOW_SPEED_ZONES, MapFeatureModes.LOW_SPEED_ZONES_ALL);
                     mapFeatures.put(MapFeatures.LANDMARKS, MapFeatureModes.LANDMARKS_TEXTURED);
                     mapView.getMapScene().enableFeatures(mapFeatures);
                 } else {

@@ -53,6 +53,7 @@ import com.here.sdk.routing.SectionNotice;
 import com.here.sdk.routing.Span;
 import com.here.sdk.routing.Toll;
 import com.here.sdk.routing.TollFare;
+import com.here.sdk.routing.TrafficOptimizationMode;
 import com.here.sdk.routing.TrafficSpeed;
 import com.here.sdk.routing.Waypoint;
 
@@ -74,6 +75,7 @@ public class RoutingExample {
     private final RoutingEngine routingEngine;
     private GeoCoordinates startGeoCoordinates;
     private GeoCoordinates destinationGeoCoordinates;
+    private boolean trafficDisabled;
 
     public RoutingExample(Context context, MapView mapView) {
         this.context = context;
@@ -99,12 +101,9 @@ public class RoutingExample {
         List<Waypoint> waypoints =
                 new ArrayList<>(Arrays.asList(startWaypoint, destinationWaypoint));
 
-        CarOptions carOptions = new CarOptions();
-        carOptions.routeOptions.enableTolls = true;
-
         routingEngine.calculateRoute(
                 waypoints,
-                carOptions,
+                getCarOptions(),
                 new CalculateRouteCallback() {
                     @Override
                     public void onRouteCalculated(@Nullable RoutingError routingError, @Nullable List<Route> routes) {
@@ -140,6 +139,11 @@ public class RoutingExample {
             }
         }
     }
+
+    public void toggleTrafficOptimization() {
+        trafficDisabled = !trafficDisabled;
+    }
+
 
     private String toString(GeoCoordinates geoCoordinates) {
         return geoCoordinates.latitude + ", " + geoCoordinates.longitude;
@@ -284,7 +288,7 @@ public class RoutingExample {
 
         routingEngine.calculateRoute(
                 waypoints,
-                new CarOptions(),
+                getCarOptions(),
                 new CalculateRouteCallback() {
                     @Override
                     public void onRouteCalculated(@Nullable RoutingError routingError, @Nullable List<Route> routes) {
@@ -303,6 +307,17 @@ public class RoutingExample {
                         }
                     }
                 });
+    }
+
+    private CarOptions getCarOptions() {
+        CarOptions carOptions = new CarOptions();
+        carOptions.routeOptions.enableTolls = true;
+        // Disabled - Traffic optimization is completely disabled, including long-term road closures. It helps in producing stable routes.
+        // Time dependent - Traffic optimization is enabled, the shape of the route will be adjusted according to the traffic situation which depends on departure time and arrival time.
+        carOptions.routeOptions.trafficOptimizationMode = trafficDisabled ?
+                TrafficOptimizationMode.DISABLED :
+                TrafficOptimizationMode.TIME_DEPENDENT;
+        return carOptions;
     }
 
     public void clearMap() {
