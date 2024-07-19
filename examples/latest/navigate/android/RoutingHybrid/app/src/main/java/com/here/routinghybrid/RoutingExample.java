@@ -188,8 +188,8 @@ public class RoutingExample {
 
         // Show route as polyline.
         GeoPolyline routeGeoPolyline = route.getGeometry();
-        Color polylineColor = Color.valueOf(0, 0.56f, 0.54f, 0.63f);
-        Color outlineColor = Color.valueOf(0, 0.56f, 0.54f, 0.63f);
+        Color polylineColor = Color.valueOf(0.051f, 0.380f, 0.871f, 1.0f);
+        Color outlineColor = Color.valueOf(0.043f, 0.325f, 0.749f, 1.0f);
         MapPolyline routeMapPolyline = null;
         try {
             // Below, we're creating an instance of MapMeasureDependentRenderSize. This instance will use the scaled width values to render the route polyline.

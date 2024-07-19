@@ -46,6 +46,7 @@ import com.here.sdk.routing.Maneuver;
 import com.here.sdk.routing.ManeuverAction;
 import com.here.sdk.routing.PaymentMethod;
 import com.here.sdk.routing.Route;
+import com.here.sdk.routing.RouteRailwayCrossing;
 import com.here.sdk.routing.RoutingEngine;
 import com.here.sdk.routing.RoutingError;
 import com.here.sdk.routing.Section;
@@ -111,6 +112,7 @@ public class RoutingExample {
                             Route route = routes.get(0);
                             showRouteDetails(route);
                             showRouteOnMap(route);
+                            logRouteRailwayCrossingDetails(route);
                             logRouteSectionDetails(route);
                             logRouteViolations(route);
                             logTollDetails(route);
@@ -162,6 +164,22 @@ public class RoutingExample {
                     + dateFormat.format(section.getArrivalLocationTime().localTime));
             Log.d(TAG, "Route Section length : " + section.getLengthInMeters() + " m");
             Log.d(TAG, "Route Section duration : " + section.getDuration().getSeconds() + " s");
+        }
+    }
+
+    private void logRouteRailwayCrossingDetails(Route route) {
+        for (RouteRailwayCrossing routeRailwayCrossing : route.getRailwayCrossings()) {
+            // Coordinates of the route offset
+            GeoCoordinates routeOffsetCoordinates = routeRailwayCrossing.coordinates;
+            // Index of the corresponding route section. The start of the section indicates the start of the offset.
+            int routeOffsetSectionIndex = routeRailwayCrossing.routeOffset.sectionIndex;
+            // Offset from the start of the specified section to the specified location along the route.
+            double routeOffsetInMeters = routeRailwayCrossing.routeOffset.offsetInMeters;
+
+            Log.d(TAG, "A railway crossing of type " + routeRailwayCrossing.type.name() +
+                    "is situated " +
+                    routeOffsetInMeters + " m away from start of section: " +
+                    routeOffsetSectionIndex);
         }
     }
 

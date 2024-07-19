@@ -68,6 +68,7 @@ import com.here.sdk.mapview.MapView;
 import com.here.sdk.venue.VenueEngine;
 import com.here.sdk.venue.control.Venue;
 import com.here.sdk.venue.control.VenueErrorCode;
+import com.here.sdk.venue.control.VenueInfoListListener;
 import com.here.sdk.venue.control.VenueMap;
 import com.here.sdk.venue.control.VenueSelectionListener;
 import com.here.sdk.venue.data.VenueGeometry;
@@ -322,6 +323,7 @@ public class MainActivity extends AppCompatActivity {
         service.add(serviceListener);
         service.add(venueListener);
         venueMap.add(venueSelectionListener);
+        venueMap.add(venueInfoListListener);
 
         // Create a venue tap controller and connect VenueMap to it.
         venueTapController = new VenueTapController(venueEngine, mapView, this, sheetBehavior, recyclerView);
@@ -359,11 +361,8 @@ public class MainActivity extends AppCompatActivity {
         public void onInitializationCompleted(@NonNull VenueServiceInitStatus result) {
             if (result == VenueServiceInitStatus.ONLINE_SUCCESS) {
                 try{
-                    venueInfo = venueEngine.getVenueMap().getVenueInfoList(MainActivity.this::onVenueLoadError);
-                    recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
-                    recyclerView.setAdapter(new VenueAdapter(MainActivity.this, venueInfo, MainActivity.this));
-                    recyclerView.setVisibility(View.VISIBLE);
-                    progressBarBottom.setVisibility(View.GONE);
+                    venueEngine.getVenueMap().getVenueInfoListAsync(MainActivity.this ::onVenueLoadError);
+                    progressBarBottom.setVisibility(View.VISIBLE);
                 }
                 catch (Exception e) {
                     Log.d(TAG, e.toString());
@@ -378,6 +377,18 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onVenueServiceStopped() {}
+    };
+
+    // Listener for the venue info list
+    private final VenueInfoListListener venueInfoListListener = new VenueInfoListListener() {
+        @Override
+        public void onVenueInfoListLoad(@NonNull final List<VenueInfo> venueInfoList) {
+            venueInfo = venueInfoList;
+            recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+            recyclerView.setAdapter(new VenueAdapter(MainActivity.this, venueInfo, MainActivity.this));
+            recyclerView.setVisibility(View.VISIBLE);
+            progressBarBottom.setVisibility(View.GONE);
+        }
     };
 
     // Listener for the venue loading event.
@@ -410,8 +421,9 @@ public class MainActivity extends AppCompatActivity {
     private final VenueSelectionListener venueSelectionListener =
             (deselectedVenue, selectedVenue) -> {
                 if (selectedVenue != null) {
+                    VenueModel venueModel = selectedVenue.getVenueModel();
                     // Move camera to the selected venue.
-                    GeoCoordinates venueCenter = selectedVenue.getVenueModel().getCenter();
+                    GeoCoordinates venueCenter = venueModel.getCenter();
                     double distanceInMeters = 500;
                     MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
                     mapView.getCamera().lookAt(
@@ -423,6 +435,16 @@ public class MainActivity extends AppCompatActivity {
                     // to be able to select another venue.
                     progressBar.setVisibility(View.GONE);
                     mapLoadDone = true;
+                    geometryList = venueModel.getGeometriesByName();
+                    venueTapController.setGeometries(geometryList);
+                    recyclerView.setAdapter(new SpaceAdapter(getApplicationContext(), geometryList, MainActivity.this));
+                    venue_search.setHint("Search for Spaces");
+                    String venue_name = "";
+                    for(VenueInfo venue : venueInfo) {
+                        if(venue.getVenueId() == venueModel.getId())
+                            venue_name = venue.getVenueName();
+                    }
+                    venueName.setText(venue_name);
                     header.setVisibility(View.VISIBLE);
                     if(!selectedVenue.getVenueModel().getTopologies().isEmpty())
                         topologyButton.setVisibility(View.VISIBLE);
@@ -520,6 +542,13 @@ public class MainActivity extends AppCompatActivity {
             mapView.getGestures().setLongPressListener(null);
         }
         if(venueEngine != null) {
+            VenueService service = venueEngine.getVenueService();
+            VenueMap venueMap = venueEngine.getVenueMap();
+            // remove added listeners
+            service.remove(serviceListener);
+            service.remove(venueListener);
+            venueMap.remove(venueSelectionListener);
+            venueMap.remove(venueInfoListListener);
             venueEngine.destroy();
         }
         mapView.onDestroy();
@@ -549,16 +578,38 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void removeVenue() {
+        venueTapController.setGeometries(null);
+        recyclerView.setAdapter(null);
         recyclerView.setAdapter(new VenueAdapter(getApplicationContext(), venueInfo, this));
         mapLoadDone = false;
         venue_search.setHint("Search for Venues");
-        loadMapScene();
+        loadBaseMap();
         header.setVisibility(View.GONE);
         topologyButton.setVisibility(View.GONE);
         levelSwitcher.setVisible(false);
         drawingSwitcher.setVisible(false);
         VenueMap venueMap = venueEngine.getVenueMap();
         venueMap.removeVenue(venueMap.getSelectedVenue());
+    }
+
+    private void loadBaseMap() {
+        // Load a scene from the HERE SDK to render the map with a map scheme.
+        mapView.getMapScene().loadScene(MapScheme.NORMAL_DAY, mapError -> {
+            if (mapError == null) {
+                setWatermark(1800);
+                double distanceInMeters = 1000 * 10;
+                MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
+                mapView.getCamera().lookAt(
+                        new GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
+
+                // Hide the extruded building layer, so that it does not overlap with the venues.
+                List<String> mapFeatures = new ArrayList<>();
+                mapFeatures.add(MapFeatures.EXTRUDED_BUILDINGS);
+                mapView.getMapScene().disableFeatures(mapFeatures);
+            } else {
+                Log.d(TAG, "Loading map failed: mapError: " + mapError.name());
+            }
+        });
     }
 
     @Override

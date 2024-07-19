@@ -35,10 +35,12 @@ class RoutingExample {
   final HereMapController _hereMapController;
   List<MapPolyline> _mapPolylines = [];
   late RoutingEngine _routingEngine;
+  bool _trafficOptimization = true;
   final ShowDialogFunction _showDialog;
   final _BERLIN_HQ_GEO_COORDINATES = GeoCoordinates(52.530971, 13.385088);
 
-  RoutingExample(ShowDialogFunction showDialogCallback, HereMapController hereMapController)
+  RoutingExample(ShowDialogFunction showDialogCallback,
+      HereMapController hereMapController)
       : _showDialog = showDialogCallback,
         _hereMapController = hereMapController {
     double distanceToEarthInMeters = 10000;
@@ -62,6 +64,10 @@ class RoutingExample {
 
     CarOptions carOptions = CarOptions();
     carOptions.routeOptions.enableTolls = true;
+    // Disabled - Traffic optimization is completely disabled, including long-term road closures. It helps in producing stable routes.
+    // Time dependent - Traffic optimization is enabled, the shape of the route will be adjusted according to the traffic situation which depends on departure time and arrival time.
+    carOptions.routeOptions.trafficOptimizationMode =
+        _trafficOptimization ? TrafficOptimizationMode.timeDependent : TrafficOptimizationMode.disabled;
 
     _routingEngine.calculateCarRoute(waypoints, carOptions,
         (RoutingError? routingError, List<here.Route>? routeList) async {
@@ -70,6 +76,7 @@ class RoutingExample {
         here.Route route = routeList!.first;
         _showRouteDetails(route);
         _showRouteOnMap(route);
+        _logRouteRailwayCrossingDetails(route);
         _logRouteSectionDetails(route);
         _logRouteViolations(route);
         _logTollDetails(route);
@@ -79,6 +86,10 @@ class RoutingExample {
         _showDialog('Error', 'Error while calculating a route: $error');
       }
     });
+  }
+
+  void toggleTrafficOptimization() {
+    _trafficOptimization = !_trafficOptimization;
   }
 
   // A route may contain several warnings, for example, when a certain route option could not be fulfilled.
@@ -94,13 +105,14 @@ class RoutingExample {
           SectionNotice spanSectionNotice = section.sectionNotices[index];
           // The violation code such as "violatedVehicleRestriction".
           var violationCode = spanSectionNotice.code.toString();
-          print("The violation  $violationCode starts at  ${_toString(violationStartPoint)} and ends at ${_toString(violationEndPoint)} .");
+          print(
+              "The violation  $violationCode starts at  ${_toString(violationStartPoint)} and ends at ${_toString(violationEndPoint)} .");
         }
       }
     }
   }
 
-  String _toString(GeoCoordinates geoCoordinates){
+  String _toString(GeoCoordinates geoCoordinates) {
     return "${geoCoordinates.latitude},  ${geoCoordinates.longitude}";
   }
 
@@ -145,10 +157,25 @@ class RoutingExample {
       Section section = route.sections.elementAt(i);
 
       print("Route Section : " + (i + 1).toString());
-      print("Route Section Departure Time : " + dateFormat.format(section.departureLocationTime!.localTime));
-      print("Route Section Arrival Time : " + dateFormat.format(section.arrivalLocationTime!.localTime));
-      print("Route Section length : " + section.lengthInMeters.toString() + " m");
-      print("Route Section duration : " + section.duration.inSeconds.toString() + " s");
+      print("Route Section Departure Time: " + dateFormat.format(section.departureLocationTime!.localTime));
+      print("Route Section Arrival Time: " + dateFormat.format(section.arrivalLocationTime!.localTime));
+      print("Route Section length: " + section.lengthInMeters.toString() + " m");
+      print("Route Section duration: " + section.duration.inSeconds.toString() + " s");
+    }
+  }
+
+  void _logRouteRailwayCrossingDetails(here.Route route) {
+    for (var routeRailwayCrossing in route.railwayCrossings) {
+      // Coordinates of the route offset
+      var routeOffsetCoordinates = routeRailwayCrossing.coordinates;
+      // Index of the corresponding route section. The start of the section indicates the start of the offset.
+      var routeOffsetSectionIndex = routeRailwayCrossing.routeOffset.sectionIndex;
+      // Offset from the start of the specified section to the specified location along the route.
+      var routeOffsetInMeters = routeRailwayCrossing.routeOffset.offsetInMeters;
+
+      print('A railway crossing of type ${routeRailwayCrossing.type.name} '
+          'is situated $routeOffsetInMeters '
+          'meters away from start of section: $routeOffsetSectionIndex');
     }
   }
 
