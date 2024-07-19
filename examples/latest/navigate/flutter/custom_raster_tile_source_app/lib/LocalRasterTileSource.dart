@@ -1,0 +1,116 @@
+/*
+ * Copyright (C) 2024 HERE Europe B.V.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License")
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ * License-Filename: LICENSE
+ */
+
+import 'dart:async';
+import 'dart:core';
+import 'dart:typed_data';
+import 'dart:ui';
+import 'package:flutter/material.dart';
+import 'package:here_sdk/mapview.datasource.dart';
+
+class LocalRasterTileSource implements RasterTileSource {
+  // Tile source data version. A single version is supported for this example.
+  final TileSourceDataVersion dataVersion = TileSourceDataVersion(1, 0);
+
+  // Local tile data (auto-generated).
+  var tileData = <Uint8List>[];
+
+  Future<void> setupSource() async {
+    // Create a set of images to provide as tile data.
+    List<Uint8List?> generatedTileData = [
+      await createTileData(512, 512, Colors.red),
+      await createTileData(512, 512, Colors.blue),
+      await createTileData(512, 512, Colors.green),
+      await createTileData(512, 512, Colors.black),
+      await createTileData(512, 512, Colors.white),
+      await createTileData(512, 512, Colors.yellow),
+      await createTileData(512, 512, Colors.cyan),
+      await createTileData(512, 512, Colors.purple)
+    ];
+
+    tileData = generatedTileData.whereType<Uint8List>().toList();
+  }
+
+  @override
+  TileSourceLoadTileRequestHandle? loadTile(
+      TileKey tileKey, RasterTileSourceLoadResultHandler completionHandler) {
+    // Pick one of the local tile images, based on the tile key x component.
+
+    completionHandler.loaded(tileKey, tileData[tileKey.x % tileData.length],
+        TileSourceTileMetadata(dataVersion, DateTime(0)));
+
+    // No request handle is returned here since there is no asynchronous loading happening.
+    return null;
+  }
+
+  @override
+  TileSourceDataVersion getDataVersion(TileKey tileKey) {
+    // Latest version of the tile data.
+    return dataVersion;
+  }
+
+  @override
+  void addListener(TileSourceListener listener) {
+    // Not needed by this implementation.
+    // Listener can be used to signal the data source the update of data version.
+  }
+
+  @override
+  void removeListener(TileSourceListener listener) {
+    // Not used by this implementation.
+  }
+
+  // Tile source supported tiling scheme.
+  @override
+  final TilingScheme tilingScheme = TilingScheme.quadTreeMercator;
+
+  // Tile source supported data levels.
+  @override
+  final List<int> storageLevels = [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16
+  ];
+
+  Future<Uint8List?> createTileData(int width, int height, Color color) async {
+    PictureRecorder recorder = new PictureRecorder();
+    Canvas canvas = new Canvas(recorder);
+    Paint paint = Paint();
+    paint.color = color;
+    canvas.drawPaint(paint);
+    Picture picture = recorder.endRecording();
+    var pngBytes = await picture
+        .toImageSync(width, height)
+        .toByteData(format: ImageByteFormat.png);
+    return pngBytes?.buffer.asUint8List();
+  }
+}

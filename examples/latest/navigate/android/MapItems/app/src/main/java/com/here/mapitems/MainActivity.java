@@ -193,6 +193,9 @@ public class MainActivity extends AppCompatActivity {
             case R.id.centered_2D_menu_item:
                 mapItemsExample.showCenteredMapMarkers();
                 return true;
+            case R.id.map_marker_with_text:
+                mapItemsExample.showMapMarkerWithText();
+                return true;
             case R.id.map_marker_cluster_menu_item:
                 mapItemsExample.showMapMarkerCluster();
                 return true;

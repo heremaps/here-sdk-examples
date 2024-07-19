@@ -222,8 +222,8 @@ class RoutingExample {
   _showRouteOnMap(here.Route route) {
     // Show route as polyline.
     GeoPolyline routeGeoPolyline = route.geometry;
-    Color polylineColor = const Color.fromARGB(160, 0, 144, 138);
-    Color outlineColor = const Color.fromARGB(160, 0, 144, 138);
+    Color polylineColor = const Color.fromARGB(255, 13, 97, 222);
+    Color outlineColor = const Color.fromARGB(255, 11, 83, 191);
     MapPolyline routeMapPolyline;
     try {
       // Below, we're creating an instance of MapMeasureDependentRenderSize. This instance will use the scaled width values to render the route polyline.

@@ -51,12 +51,12 @@
             android:visibility="gone"
             />
         <ProgressBar
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
             android:id="@+id/progress_bar_bottom"
             android:layout_centerVertical="true"
             android:layout_centerHorizontal="true"
-            android:elevation="10dp"
+            android:elevation="20dp"
             android:indeterminateDrawable="@drawable/progress_bar" />
         <androidx.recyclerview.widget.RecyclerView
             android:layout_width="match_parent"

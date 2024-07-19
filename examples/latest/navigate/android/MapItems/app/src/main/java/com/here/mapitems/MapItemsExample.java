@@ -105,6 +105,51 @@ public class MapItemsExample {
         addCircleMapMarker(geoCoordinates);
     }
 
+    public void showMapMarkerWithText() {
+        MapImage mapImage = MapImageFactory.fromResource(context.getResources(), R.drawable.poi);
+
+        // The bottom, middle position should point to the location.
+        // By default, the anchor point is set to 0.5, 0.5.
+        Anchor2D anchor2D = new Anchor2D(0.5F, 1);
+        GeoCoordinates geoCoordinates = createRandomGeoCoordinatesAroundMapCenter();
+        MapMarker mapMarker = new MapMarker(geoCoordinates, mapImage, anchor2D);
+
+        MapMarker.TextStyle textStyleCurrent = mapMarker.getTextStyle();
+        MapMarker.TextStyle textStyleNew = mapMarker.getTextStyle();
+        double textSizeInPixels = 30;
+        double textOutlineSizeInPixels = 5;
+        // Placement priority is based on order. It is only effective when
+        // overlap is disallowed. The below setting will show the text
+        // at the bottom of the marker, but when the marker or the text overlaps
+        // then the text will swap to the top before the marker disappears completely.
+        // Note: By default, markers do not disappear when they overlap.
+        List<MapMarker.TextStyle.Placement> placements = new ArrayList<>();
+        placements.add(MapMarker.TextStyle.Placement.BOTTOM);
+        placements.add(MapMarker.TextStyle.Placement.TOP);
+        mapMarker.setOverlapAllowed(false);
+        try {
+            textStyleNew = new MapMarker.TextStyle(
+                    textSizeInPixels,
+                    textStyleCurrent.getTextColor(),
+                    textOutlineSizeInPixels,
+                    textStyleCurrent.getTextOutlineColor(),
+                    placements
+                    );
+        } catch (MapMarker.TextStyle.InstantiationException e) {
+            // An error code will indicate what went wrong, for example, when negative values are set for text size.
+            Log.e("TextStyle", "Error code: " + e.error.name());
+        }
+        mapMarker.setText("Hello Text");
+        mapMarker.setTextStyle(textStyleNew);
+
+        Metadata metadata = new Metadata();
+        metadata.setString("key_poi_text", "This is a POI with text.");
+        mapMarker.setMetadata(metadata);
+
+        mapView.getMapScene().addMapMarker(mapMarker);
+        mapMarkerList.add(mapMarker);
+    }
+
     public void showMapMarkerCluster() {
         MapImage clusterMapImage = MapImageFactory.fromResource(context.getResources(), R.drawable.green_square);
 
@@ -413,6 +458,13 @@ public class MapItemsExample {
                     String string = metadata.getString("key_poi");
                     if (string != null) {
                         message = string;
+                    }
+
+                    String stringMarkerText = metadata.getString("key_poi_text");
+                    if (stringMarkerText != null) {
+                        // You can update text for a marker on-the-fly.
+                        topmostMapMarker.setText("Marker was picked.");
+                        message = stringMarkerText;
                     }
 
                     showDialog("Map marker picked", message);

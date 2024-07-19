@@ -40,7 +40,8 @@ void _initializeHERESDK() async {
   // Set your credentials for the HERE SDK.
   String accessKeyId = "YOUR_ACCESS_KEY_ID";
   String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
-  SDKOptions sdkOptions = SDKOptions.withAccessKeySecret(accessKeyId, accessKeySecret);
+  SDKOptions sdkOptions =
+      SDKOptions.withAccessKeySecret(accessKeyId, accessKeySecret);
 
   try {
     await SDKNativeEngine.makeSharedInstance(sdkOptions);
@@ -57,6 +58,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   RoutingExample? _routingExample;
   HereMapController? _hereMapController;
+  final List<bool> _selectedTrafficOptimization = <bool>[true];
 
   @override
   Widget build(BuildContext context) {
@@ -67,11 +69,47 @@ class _MyAppState extends State<MyApp> {
       body: Stack(
         children: [
           HereMap(onMapCreated: _onMapCreated),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          Column(
             children: [
-              button('Add Route', _addRouteButtonClicked),
-              button('Clear Map', _clearMapButtonClicked),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  button('Add Route', _addRouteButtonClicked),
+                  button('Clear Map', _clearMapButtonClicked),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  ToggleButtons(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(8.0),
+                          decoration: BoxDecoration(
+                            color: Colors.lightBlueAccent,
+                            borderRadius: BorderRadius.circular(16.0),
+                          ),
+                          child: Text(
+                            _selectedTrafficOptimization[0]
+                                ? 'Traffic Optimization-On'
+                                : 'Traffic Optimization-OFF',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18.0,
+                            ),
+                          ),
+                        ),
+                      ],
+                      onPressed: (int index) {
+                        _toggleTrafficOptimization();
+                        setState(() {
+                          _selectedTrafficOptimization[index] =
+                              !_selectedTrafficOptimization[index];
+                        });
+                      },
+                      isSelected: _selectedTrafficOptimization),
+                ],
+              ),
             ],
           ),
         ],
@@ -81,14 +119,20 @@ class _MyAppState extends State<MyApp> {
 
   void _onMapCreated(HereMapController hereMapController) {
     _hereMapController = hereMapController;
-    _hereMapController?.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
+    _hereMapController?.mapScene.loadSceneForMapScheme(MapScheme.normalDay,
+        (MapError? error) {
       if (error == null) {
-        _hereMapController?.mapScene.enableFeatures({MapFeatures.lowSpeedZones: MapFeatureModes.lowSpeedZonesAll});
+        _hereMapController?.mapScene.enableFeatures(
+            {MapFeatures.lowSpeedZones: MapFeatureModes.lowSpeedZonesAll});
         _routingExample = RoutingExample(_showDialog, hereMapController);
       } else {
         print("Map scene not loaded. MapError: " + error.toString());
       }
     });
+  }
+
+  void _toggleTrafficOptimization() {
+    _routingExample?.toggleTrafficOptimization();
   }
 
   void _addRouteButtonClicked() {
