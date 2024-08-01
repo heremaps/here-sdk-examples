@@ -17,6 +17,7 @@
         app:layout_constraintTop_toTopOf="parent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:id="@+id/firstRow"
         android:orientation="horizontal">
         <Button
             android:layout_width="0dp"
@@ -38,6 +39,20 @@
             android:layout_weight="1"
             android:text="Clear Map"
             android:onClick="clearMapButtonClicked" />
+    </LinearLayout>
+    <LinearLayout
+        app:layout_constraintTop_toBottomOf="@id/firstRow"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <ToggleButton
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textOff="Traffic optimization -On"
+            android:textOn="Traffic optimization -Off"
+            android:onClick="toggleTrafficOptimization" />
     </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>

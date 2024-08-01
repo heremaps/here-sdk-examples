@@ -23,7 +23,7 @@ import UIKit
 class ViewController: UIViewController {
 
     var mapView : MapView!
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -31,21 +31,20 @@ class ViewController: UIViewController {
         mapView = MapView(frame: view.bounds)
         view.addSubview(mapView)
 
+        // The camera can be configured before or after a scene is loaded.
+        let camera = mapView.camera
+        let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 10)
+        camera.lookAt(point: GeoCoordinates(latitude: 52.518043, longitude: 13.405991), zoom: distanceInMeters)
+
         // Load the map scene using a map scheme to render the map with.
         mapView.mapScene.loadScene(mapScheme: MapScheme.normalDay, completion: onLoadScene)
     }
 
     // Completion handler when loading a map scene.
     private func onLoadScene(mapError: MapError?) {
-        guard mapError == nil else {
-            print("Error: Map scene not loaded, \(String(describing: mapError))")
-            return
+        if let error = mapError {
+            print("Error: Map scene not loaded, \(error)")
         }
-
-        // Configure the map.
-        let camera = mapView.camera
-        let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 10)
-        camera.lookAt(point: GeoCoordinates(latitude: 52.518043, longitude: 13.405991), zoom: distanceInMeters)
     }
 
     override func didReceiveMemoryWarning() {

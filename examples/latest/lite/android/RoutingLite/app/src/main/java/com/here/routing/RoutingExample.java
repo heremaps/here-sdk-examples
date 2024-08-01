@@ -45,6 +45,7 @@ import com.here.sdk.routing.Route;
 import com.here.sdk.routing.RoutingEngine;
 import com.here.sdk.routing.RoutingError;
 import com.here.sdk.routing.Section;
+import com.here.sdk.routing.TrafficOptimizationMode;
 import com.here.sdk.routing.Waypoint;
 
 import java.util.ArrayList;
@@ -63,6 +64,7 @@ public class RoutingExample {
     private RoutingEngine routingEngine;
     private GeoCoordinates startGeoCoordinates;
     private GeoCoordinates destinationGeoCoordinates;
+    private boolean trafficDisabled;
 
     public RoutingExample(Context context, MapViewLite mapView) {
         this.context = context;
@@ -89,7 +91,7 @@ public class RoutingExample {
 
         routingEngine.calculateRoute(
                 waypoints,
-                new CarOptions(),
+                getCarOptions(),
                 new CalculateRouteCallback() {
                     @Override
                     public void onRouteCalculated(@Nullable RoutingError routingError, @Nullable List<Route> routes) {
@@ -106,10 +108,12 @@ public class RoutingExample {
 
     private void showRouteDetails(Route route) {
         long estimatedTravelTimeInSeconds = route.getDuration().getSeconds();
+        long estimatedTrafficDelayInSeconds = route.getTrafficDelay().getSeconds();
         int lengthInMeters = route.getLengthInMeters();
 
         String routeDetails =
                 "Travel Time: " + formatTime(estimatedTravelTimeInSeconds)
+                + ", Traffic delay: " + formatTime(estimatedTrafficDelayInSeconds)
                 + ", Length: " + formatLength(lengthInMeters);
 
         showDialog("Route Details", routeDetails);
@@ -158,6 +162,21 @@ public class RoutingExample {
         }
     }
 
+    public void toggleTrafficOptimization() {
+        trafficDisabled = !trafficDisabled;
+    }
+
+    private CarOptions getCarOptions() {
+        CarOptions carOptions = new CarOptions();
+        carOptions.routeOptions.enableTolls = true;
+        // Disabled - Traffic optimization is completely disabled, including long-term road closures. It helps in producing stable routes.
+        // Time dependent - Traffic optimization is enabled, the shape of the route will be adjusted according to the traffic situation which depends on departure time and arrival time.
+        carOptions.routeOptions.trafficOptimizationMode = trafficDisabled ?
+                TrafficOptimizationMode.DISABLED :
+                TrafficOptimizationMode.TIME_DEPENDENT;
+        return carOptions;
+    }
+
     private void logManeuverInstructions(Section section) {
         Log.d(TAG, "Log maneuver instructions per route section:");
         List<Maneuver> maneuverInstructions = section.getManeuvers();
@@ -185,7 +204,7 @@ public class RoutingExample {
 
         routingEngine.calculateRoute(
                 waypoints,
-                new CarOptions(),
+                getCarOptions(),
                 new CalculateRouteCallback() {
                     @Override
                     public void onRouteCalculated(@Nullable RoutingError routingError, @Nullable List<Route> routes) {

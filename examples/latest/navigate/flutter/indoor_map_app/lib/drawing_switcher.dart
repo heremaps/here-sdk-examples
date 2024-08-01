@@ -46,55 +46,86 @@ class DrawingSwitcherState extends State<DrawingSwitcher> {
 
   @override
   Widget build(BuildContext context) {
-    // Don't show the drawing switcher if no venue is selected or there is only
-    // one drawing in the venue.
-    if (_selectedDrawing == null || _selectedVenue!.venueModel.drawings.length < 2) {
+    if (_selectedDrawing == null) {
       return SizedBox.shrink();
     }
 
     // Create a list view with drawings.
-    Widget listView = ListView(
-      padding: EdgeInsets.zero,
-      shrinkWrap: true,
-      reverse: true,
-      itemExtent: kMinInteractiveDimension,
-      children: _selectedVenue!.venueModel.drawings.map((VenueDrawing drawing) {
-        return _drawingItemBuilder(context, drawing);
-      }).toList(),
+    Widget listView = Padding(
+      padding: EdgeInsets.only(bottom: 82), // Adjust the top padding as needed
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+        ),
+        child: ListView(
+          padding: EdgeInsets.zero,
+          shrinkWrap: true,
+          reverse: true,
+          itemExtent: kMinInteractiveDimension,
+          children: _selectedVenue!.venueModel.drawings.map((VenueDrawing drawing) {
+            return _drawingItemBuilder(context, drawing);
+          }).toList(),
+        ),
+      ),
     );
 
-    return Align(
-      alignment: Alignment.topRight,
-      child: Container(
-        margin: EdgeInsets.only(top: 5, right: 0),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          Align(
-            alignment: Alignment.topCenter,
-            child: SizedBox(
-              width: 200,
-              height: _selectedVenue!.venueModel.drawings.length * kMinInteractiveDimension,
-              child: _isOpen ? listView : null,
+    double getTextWidth(String text, TextStyle style) {
+      final TextPainter textPainter = TextPainter(
+        text: TextSpan(text: text, style: style),
+        maxLines: 1,
+        textDirection: TextDirection.ltr,
+      )..layout(minWidth: 0, maxWidth: double.infinity);
+
+      return textPainter.width;
+    }
+
+    return Stack(
+      children: [
+        Positioned(
+          right: 2,
+          bottom: _selectedVenue!.venueModel.drawings.length == 1 ? 280 : 280,
+          child: GestureDetector(
+            onTap: () {
+              // Hide or show the list with drawings.
+              setState(() {
+                _isOpen = !_isOpen;
+              });
+            },
+            child: Image.asset(
+              'assets/structure-switcher.png',
+              width: 70,
+              height: 70,
             ),
           ),
-          Container(
-            alignment: Alignment.topCenter,
-            width: kMinInteractiveDimension,
-            child: TextButton(
-              style: TextButton.styleFrom(
-                  padding: EdgeInsets.zero
-              ),
-              child:
-                  Icon(Icons.menu, color: _isOpen ? Colors.blue : Colors.black, size: kMinInteractiveDimension * 0.75),
-              onPressed: () {
-                // Hide or show the list with drawings.
-                setState(() {
-                  _isOpen = !_isOpen;
-                });
-              },
+        ),
+        Positioned(
+          right: 65,
+          bottom: _selectedVenue!.venueModel.drawings.length == 1
+              ? 210
+              : _selectedVenue!.venueModel.drawings.length == 2
+              ? 185
+              : 150,
+          child: Container(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: SizedBox(
+                    width: 200,
+                    height: _selectedVenue!.venueModel.drawings.length == 1
+                        ? 130
+                        : _selectedVenue!.venueModel.drawings.length == 2
+                        ? 170
+                        : 280,
+                    child: _isOpen ? listView : null,
+                  ),
+                ),
+              ],
             ),
           ),
-        ]),
-      ),
+        ),
+      ],
     );
   }
 
@@ -104,14 +135,15 @@ class DrawingSwitcherState extends State<DrawingSwitcher> {
     Property? nameProp = drawing.properties["name"];
     return TextButton(
       style: TextButton.styleFrom(
-          foregroundColor: isSelectedDrawing ? Colors.blue : Colors.white,
-          padding: EdgeInsets.zero
+        backgroundColor: Colors.white, // Set background color to white
+        foregroundColor: Colors.black, // Set text color to black
+        padding: EdgeInsets.zero,
       ),
       child: Text(
         nameProp != null ? nameProp.asString : "",
-        textAlign: TextAlign.center,
+        textAlign: TextAlign.left,
         style: TextStyle(
-          color: isSelectedDrawing ? Colors.white : Colors.black,
+          color: isSelectedDrawing ? Colors.blue : Colors.black,
           fontWeight: isSelectedDrawing ? FontWeight.bold : FontWeight.normal,
         ),
       ),
@@ -120,6 +152,7 @@ class DrawingSwitcherState extends State<DrawingSwitcher> {
         _isOpen = false;
         // Select a drawing, if the user clicks on the item.
         _selectedVenue!.selectedDrawing = drawing;
+        setState(() {});
       },
     );
   }

@@ -38,7 +38,8 @@ class LevelSwitcherState extends State<LevelSwitcher> {
   Venue? _selectedVenue;
   VenueDrawing? _selectedDrawing;
   VenueLevel? _selectedLevel;
-  final int _maxNumberOfVisibleLevels = 5;
+  final int _maxNumberOfVisibleLevels = 3;
+  ScrollController _scrollController = ScrollController();
 
   onLevelsChanged(Venue? selectedVenue) {
     setState(() {
@@ -55,9 +56,8 @@ class LevelSwitcherState extends State<LevelSwitcher> {
 
   @override
   Widget build(BuildContext context) {
-    // Don't show the level switcher if no venue is selected or there is only
-    // one level in the drawing.
-    if (_selectedDrawing == null || _selectedDrawing!.levels.length < 2 || _selectedLevel == null) {
+    // Don't show the level switcher if no venue is selected.
+    if (_selectedDrawing == null || _selectedLevel == null) {
       return SizedBox.shrink();
     }
 
@@ -66,6 +66,15 @@ class LevelSwitcherState extends State<LevelSwitcher> {
     final scrollIndex = _getScrollIndex();
     final scrollPosition = max(0, scrollIndex * kMinInteractiveDimension);
     final scrollController = new ScrollController();
+    double _marginBottom = 594;
+
+    if( _selectedDrawing!.levels.length == 1) {
+      _marginBottom = _marginBottom-(2*visibleHeight);
+    }
+
+    if( _selectedDrawing!.levels.length == 2) {
+      _marginBottom = 545;
+    }
 
     // Create a list view with levels.
     Widget listView = ListView(
@@ -88,43 +97,105 @@ class LevelSwitcherState extends State<LevelSwitcher> {
       });
     }
 
-    return Align(
+    return Stack(
       alignment: Alignment.bottomRight,
-      child: Container(
-        margin: EdgeInsets.only(bottom: 60, right: 5),
-        decoration: BoxDecoration(
-          color: Colors.black12,
-          border: Border.all(color: Colors.black12),
-        ),
-        child: SizedBox(
+      children: [
+        Container(
           width: kMinInteractiveDimension,
-          height: _getVisibleHeight(_selectedDrawing!.levels.length),
-          child: listView,
+          margin: EdgeInsets.only(bottom: _marginBottom, right: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+          ),
+          child: GestureDetector(
+            onTap: () {
+              int currentIndex = _selectedDrawing!.levels.indexOf(_selectedLevel!);
+              if (currentIndex >= 0) {
+                VenueLevel levelAbove = _selectedDrawing!.levels[currentIndex + 1];
+                setState(() {
+                  _selectedVenue!.selectedLevel = levelAbove;
+                });
+              }
+            },
+            child: Image.asset(
+              'assets/indoor_up-arrow-level-switcher.png',
+              width: 40,
+              height: 40,
+            ),
+          ),
         ),
-      ),
+        Align(
+          alignment: Alignment.bottomRight,
+          child: Container(
+            margin: EdgeInsets.only(bottom:450, right: 12),
+            decoration: BoxDecoration(
+              color: Colors.black12,
+            ),
+            child: SizedBox(
+              width: kMinInteractiveDimension,
+              height: _getVisibleHeight(_selectedDrawing!.levels.length),
+              child: listView,
+            ),
+          ),
+        ),
+        Container(
+          width: kMinInteractiveDimension,
+          margin: EdgeInsets.only(bottom: 410, right: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(20),
+              bottomRight: Radius.circular(20),
+            ),
+          ),
+          child: GestureDetector(
+            onTap: () {
+              int currentIndex = _selectedDrawing!.levels.indexOf(_selectedLevel!);
+              int lastIndex = _selectedDrawing!.levels.length - 1;
+              if (currentIndex <= lastIndex) {
+                VenueLevel levelBelow = _selectedDrawing!.levels[currentIndex - 1];
+                setState(() {
+                  _selectedVenue!.selectedLevel = levelBelow;
+                });
+              }
+            },
+            child: Image.asset(
+              'assets/indoor_down-arrow-level-switcher.png',
+              width: 40,
+              height: 40,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
   // Create a list view item from the level.
   Widget _levelItemBuilder(BuildContext context, VenueLevel level) {
     bool isSelectedLevel = level.identifier == _selectedLevel!.identifier;
-    return TextButton(
-      style: TextButton.styleFrom(
-          foregroundColor: isSelectedLevel ? Colors.blue : Colors.white,
-          padding: EdgeInsets.zero
-      ),
-      child: Text(
-        level.shortName,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          color: isSelectedLevel ? Colors.white : Colors.black,
-          fontWeight: isSelectedLevel ? FontWeight.bold : FontWeight.normal,
+
+    return Container(
+      color: isSelectedLevel ? Colors.grey : Colors.white,
+      child: TextButton(
+        style: TextButton.styleFrom(
+          foregroundColor: isSelectedLevel ? Colors.white : Colors.black,
+          padding: EdgeInsets.zero,
         ),
+        child: Text(
+          level.shortName,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontWeight: isSelectedLevel ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+        onPressed: () {
+          // Select a level, if the user clicks on the item.
+          _selectedVenue!.selectedLevel = level;
+        },
       ),
-      onPressed: () {
-        // Select a level, if the user clicks on the item.
-        _selectedVenue!.selectedLevel = level;
-      },
     );
   }
 

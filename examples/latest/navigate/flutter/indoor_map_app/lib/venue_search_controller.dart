@@ -24,6 +24,7 @@ import 'package:flutter/material.dart';
 import 'package:here_sdk/venue.control.dart';
 import 'package:here_sdk/venue.data.dart';
 import 'package:indoor_map_app/venue_tap_controller.dart';
+import 'events.dart';
 
 class VenueSearchController extends StatefulWidget {
   final VenueSearchControllerState state;
@@ -40,9 +41,11 @@ class VenueSearchControllerState extends State<VenueSearchController> {
   bool _isOpen = false;
   TextEditingController _filterController = TextEditingController();
   VenueGeometryFilterType? _filterType = VenueGeometryFilterType.name;
-  late List<String> _itemsList = ["Select Item"];
+  late List<String> itemsList = ["Select Item"];
   late String _dropdownValue = "Select Item";
   late List<VenueGeometry> _searchResult;
+
+  List<VenueGeometry> get searchResult => _searchResult;
   var _iconMap = new Map();
   int _rowStrLength = 40;
 
@@ -64,8 +67,8 @@ class VenueSearchControllerState extends State<VenueSearchController> {
     setState(() {
       _venue = venue;
       _filterType = VenueGeometryFilterType.name;
-      if(_itemsList.length > 1) {
-        _itemsList.removeRange(1, _itemsList.length);
+      if(itemsList.length > 1) {
+        itemsList.removeRange(1, itemsList.length);
         _dropdownValue = "Select Item";
       }
       int duplicateCount = 0;
@@ -79,14 +82,14 @@ class VenueSearchControllerState extends State<VenueSearchController> {
         }
         var geometryLevel = _searchResult[i].level.name;
         var name = geometryName + "," + geometryLevel;
-        if(_itemsList.contains(name)) {
+        if(itemsList.contains(name)) {
           duplicateCount += 1;
           name += " $duplicateCount";
-          _itemsList.insert(i + 1, name);
+          itemsList.insert(i + 1, name);
         }
         else {
           duplicateCount = 0;
-          _itemsList.insert(i + 1, name);
+          itemsList.insert(i + 1, name);
         }
       }
     });
@@ -119,8 +122,8 @@ class VenueSearchControllerState extends State<VenueSearchController> {
               onChanged: (VenueGeometryFilterType? filterType) {
                 setState(() {
                   _filterType = filterType;
-                  if(_itemsList.length > 1) {
-                    _itemsList.removeRange(1, _itemsList.length);
+                  if(itemsList.length > 1) {
+                    itemsList.removeRange(1, itemsList.length);
                   }
                   if(_filterType!.name == "name") {
                     int duplicateCount = 0;
@@ -134,14 +137,14 @@ class VenueSearchControllerState extends State<VenueSearchController> {
                       }
                       var geometryLevel = _searchResult[i].level.name;
                       var name = geometryName + ", " + geometryLevel;
-                      if(_itemsList.contains(name)) {
+                      if(itemsList.contains(name)) {
                         duplicateCount += 1;
                         name += " $duplicateCount";
-                        _itemsList.insert(i + 1, name);
+                        itemsList.insert(i + 1, name);
                       }
                       else {
                         duplicateCount = 0;
-                        _itemsList.insert(i + 1, name);
+                        itemsList.insert(i + 1, name);
                       }
                     }
                   }
@@ -159,14 +162,14 @@ class VenueSearchControllerState extends State<VenueSearchController> {
                       var geometryLevel = _searchResult[i].level.name;
                       var name = geometryName + ", " + geometryLevel;
                       name += "\n(Icon: " + _searchResult[i].labelName + ")";
-                      if(_itemsList.contains(name)) {
+                      if(itemsList.contains(name)) {
                         duplicateCount += 1;
                         name += " $duplicateCount";
-                        _itemsList.insert(i+1, name);
+                        itemsList.insert(i+1, name);
                       }
                       else {
                         duplicateCount = 0;
-                        _itemsList.insert(i+1, name);
+                        itemsList.insert(i+1, name);
                       }
                     }
                   }
@@ -185,21 +188,21 @@ class VenueSearchControllerState extends State<VenueSearchController> {
                       var name = geometryName + ", " + geometryLevel;
                       var address = "";
                       if(geometryAddress != null) {
-                          address = geometryAddress!.address;
+                        address = geometryAddress!.address;
                       }
                       name += "\n(Address: " + address + ")";
-                      if(_itemsList.contains(name)) {
+                      if(itemsList.contains(name)) {
                         duplicateCount += 1;
                         name += " $duplicateCount";
-                        _itemsList.insert(i + 1, name);
+                        itemsList.insert(i + 1, name);
                       }
                       else {
                         duplicateCount = 0;
-                        _itemsList.insert(i + 1, name);
-                      }
+                        itemsList.insert(i + 1, name);
                       }
                     }
-                  _dropdownValue = _itemsList[0];
+                  }
+                  _dropdownValue = itemsList[0];
                 });
               },
               items: VenueGeometryFilterType.values.map((VenueGeometryFilterType type) {
@@ -219,7 +222,7 @@ class VenueSearchControllerState extends State<VenueSearchController> {
           child: DropdownButton(
             // Initial Value
             value: _dropdownValue,
-            items: _itemsList.map((String items) {
+            items: itemsList.map((String items) {
               return DropdownMenuItem(
                 value: items,
                 child: Text(items),
@@ -228,7 +231,7 @@ class VenueSearchControllerState extends State<VenueSearchController> {
             onChanged: (value) {
               setState(() {
                 _dropdownValue = value!;
-                final index = _itemsList.indexOf(_dropdownValue)-1;
+                final index = itemsList.indexOf(_dropdownValue)-1;
                 _tapController!.selectGeometry(_searchResult[index], _searchResult[index].center, true);
                 setOpen(false);
               });
@@ -286,3 +289,4 @@ class VenueSearchControllerState extends State<VenueSearchController> {
     );
   }
 }
+

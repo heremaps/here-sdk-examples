@@ -35,6 +35,79 @@ import 'events.dart';
 import 'geometry_info.dart';
 import 'package:here_sdk/venue.style.dart';
 
+class CustomAlertDialog extends StatelessWidget {
+  final String errorMsg;
+
+  const CustomAlertDialog({Key? key, required this.errorMsg}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    // Calculate the height based on the text size of the errorMsg
+    double contentHeight = (errorMsg.length / 40) * 30; // Assuming 50 characters per line and 30px per line height
+
+    return SizedBox(
+      height: double.infinity,
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 580),
+          child: AlertDialog(
+            backgroundColor: Colors.red,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            insetPadding: EdgeInsets.symmetric(vertical: 30),
+            content: Container(
+              width: double.infinity,
+              height: contentHeight,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Text(
+                      errorMsg,
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                  SizedBox(width: 40),
+                  Container(
+                    width: 25,
+                    height: 25,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                    ),
+                    child: Center(
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        iconSize: 18,
+                        icon: Icon(Icons.close, color: Colors.red),
+                        onPressed: () {
+                          Navigator.of(context, rootNavigator: true).pop('dialog');
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+void showCustomDialog(BuildContext context, String errorMsg) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return CustomAlertDialog(errorMsg: errorMsg);
+    },
+    barrierDismissible: false,
+  );
+}
+
 class VenueEngineWidget extends StatefulWidget {
   final VenueEngineState state;
 
@@ -55,12 +128,14 @@ class VenueEngineState extends State<VenueEngineWidget> {
   late VenueDrawingSelectionListener _drawingSelectionListener;
   late VenueLevelSelectionListener _levelSelectionListener;
   late VenueLifecycleListenerImpl _venueLifecycleListener;
+  late VenueInfoListListener _venueInfoListListener;
   late VenueListener _venueListener;
-  VenueTapController? _venueTapController;
+  VenueTapController? venueTapController;
   VenueTapListenerImpl? _tapListener;
   final _drawingSwitcherState = DrawingSwitcherState();
   final _levelSwitcherState = LevelSwitcherState();
   final _venueSearchState = VenueSearchControllerState();
+  late List<String> geometryList = ["Item"];
 
   // Set value for hrn with your platform catalog HRN value if you want to load non default collection.
   String HRN = "YOUR_CATALOG_HRN";
@@ -94,6 +169,15 @@ class VenueEngineState extends State<VenueEngineWidget> {
   VenueSearchControllerState getVenueSearchState() {
     return _venueSearchState;
   }
+
+  LevelSwitcherState getLevelSwitcherState() {
+    return _levelSwitcherState;
+  }
+
+  DrawingSwitcherState getDrawingSwitcherState() {
+    return _drawingSwitcherState;
+  }
+
 
   set(HereMapController hereMapController, VenueEngine venueEngine,
       GeometryInfoState geometryInfoState) {
@@ -139,28 +223,7 @@ class VenueEngineState extends State<VenueEngineWidget> {
             errorMsg = "Unknown Error encountered";
         }
 
-        // set up the button
-        Widget okButton = TextButton(
-          child: Text("OK"),
-          onPressed: () { Navigator.of(context, rootNavigator: true).pop('dialog'); },
-        );
-
-        // set up the AlertDialog
-        AlertDialog alert = AlertDialog(
-          title: Text("Attention"),
-          content: Text(errorMsg),
-          actions: [
-            okButton,
-          ],
-        );
-
-        // show the dialog
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return alert;
-          },
-        );
+        showCustomDialog(context, errorMsg);
 
       });
     }
@@ -175,20 +238,23 @@ class VenueEngineState extends State<VenueEngineWidget> {
     _drawingSelectionListener = DrawingSelectionListenerImpl(this);
     _levelSelectionListener = LevelSelectionListenerImpl(this);
     _venueLifecycleListener = VenueLifecycleListenerImpl(this);
+    _venueInfoListListener = VenueInfoListListenerImpl(this);
     venueMap.addVenueSelectionListener(_venueSelectionListener);
     venueMap.addDrawingSelectionListener(_drawingSelectionListener);
     venueMap.addLevelSelectionListener(_levelSelectionListener);
     venueMap.addVenueLifecycleListener(_venueLifecycleListener);
+    venueMap.addVenueInfoListListener(_venueInfoListListener);
     _venueListener = VenueListenerImpl(this);
     _venueEngine!.venueService.addVenueListener(_venueListener);
     // Create a venue tap controller.
-    _venueTapController = VenueTapController(
+    venueTapController = VenueTapController(
         hereMapController: _hereMapController, venueMap: venueMap, geometryInfoState: _geometryInfoState);
-    _tapListener = VenueTapListenerImpl(_venueTapController);
+    _tapListener = VenueTapListenerImpl(venueTapController);
 
     // Set a tap listener.
     _hereMapController!.gestures.tapListener = _tapListener;
-    _venueSearchState.set(_venueTapController);
+    _venueSearchState.set(venueTapController);
+    venueEngine!.venueService.loadTopologies();
     // Start VenueEngine. Once authentication is done, the authentication
     // callback will be triggered. Afterwards, VenueEngine will start
     // VenueService. Once VenueService is initialized,
@@ -215,6 +281,7 @@ class VenueEngineState extends State<VenueEngineWidget> {
     if (selectedVenue != null) {
       // Move camera to the selected venue.
       _hereMapController!.camera.lookAtPoint(selectedVenue.venueModel.center);
+      geometryList = _venueSearchState.itemsList;
     }
     // Update the selected drawing with a new selected venue.
     onDrawingSelectionChanged(selectedVenue);
@@ -232,19 +299,47 @@ class VenueEngineState extends State<VenueEngineWidget> {
     // Update the LevelSwitcherState.
     _levelSwitcherState.onLevelsChanged(selectedVenue);
     // Deselect the geometry in case of a selection of a level.
-    _venueTapController!.onLevelChanged(selectedVenue);
+    venueTapController!.onLevelChanged(selectedVenue);
   }
 
   onVenuesChanged() {
     onVenueSelectionChanged(_venueEngine!.venueMap.selectedVenue);
     mapLoading.isMapLoading.value = true;
+    geometryList = _venueSearchState.itemsList;
   }
+}
+
+class VenueInfoListListenerImpl implements VenueInfoListListener {
+
+  late List<String> list = <String>["Venue Id"];
+  late List<String> nameList = <String>["Venue Name"];
+
+  VenueInfoListListenerImpl(VenueEngineState venueEngineState);
+
+  @override
+  void onVenueInfoListLoad(List<VenueInfo> venueInfoList) {
+    // TODO: implement onVenueInfoListLoad
+    for (int i = 0; i < venueInfoList.length; i++) {
+      int venueId = venueInfoList[i].venueId;
+      var updatedVenueIdList = venueInfoList[i].venueIdentifier.substring(venueInfoList[i].venueIdentifier.length - 5);
+      var updatedVenueNameList = venueInfoList[i].venueName;
+      list.insert(i + 1, updatedVenueIdList);
+      nameList.insert(i+1, updatedVenueNameList);
+      print("list = " + list[i + 1]);
+      print("Venue Identifier: " + venueInfoList[i].venueIdentifier + " Venue Id: $venueId" + " Venue Name: " + venueInfoList[i].venueName);
+    }
+    listEventHandler.updatedList.value = list;
+    nameListEventHandler.updatedNameList.value = nameList;
+    print("listEventHandler value = ${listEventHandler.updatedList.value}");
+  }
+  
 }
 
 // Listener for the VenueService event.
 class VenueServiceListenerImpl implements VenueServiceListener {
   late VenueEngineState _venueEngineState;
   late List<String> list = <String>["Venue Id"];
+  late List<String> nameList = <String>["Venue Name"];
 
   VenueServiceListenerImpl(VenueEngineState venueEngineState) {
     _venueEngineState = venueEngineState;
@@ -253,9 +348,7 @@ class VenueServiceListenerImpl implements VenueServiceListener {
   @override
   onInitializationCompleted(VenueServiceInitStatus result) {
     if (result == VenueServiceInitStatus.onlineSuccess) {
-      //Get List of venues info
-      List<VenueInfo> venueInfo =
-      _venueEngineState!._venueEngine!.venueMap.getVenueInfoListWithErrors((VenueErrorCode? venueLoadError) {
+      _venueEngineState!._venueEngine!.venueMap.getVenueInfoListAsyncWithErrors((VenueErrorCode? venueLoadError) {
         String errorMsg;
         switch(venueLoadError) {
           case VenueErrorCode.noNetwork:
@@ -292,15 +385,6 @@ class VenueServiceListenerImpl implements VenueServiceListener {
             errorMsg = "Unknown Error encountered";
         }
       });
-      for (int i = 0; i < venueInfo.length; i++) {
-        int venueId = venueInfo[i].venueId;
-        var updatedVenueIdList = venueInfo[i].venueIdentifier.substring(venueInfo[i].venueIdentifier.length - 5);
-        list.insert(i + 1, updatedVenueIdList);
-        print("list = " + list[i + 1]);
-        print("Venue Identifier: " + venueInfo[i].venueIdentifier + " Venue Id: $venueId" + " Venue Name: " + venueInfo[i].venueName);
-      }
-      listEventHandler.updatedList.value = list;
-      print("listEventHandler value = ${listEventHandler.updatedList.value}");
     } else {
       print("VenueService failed to initialize!");
     }
