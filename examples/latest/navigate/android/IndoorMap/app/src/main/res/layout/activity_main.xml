@@ -95,7 +95,35 @@
                 android:orientation="vertical"
                 android:elevation="3dp"
                 />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:orientation="vertical"
+                android:layout_alignParentBottom="true"
+                android:background="@drawable/bottom_sheet_background"
+                android:elevation="10dp"
+                android:id="@+id/topologyLayout"
+                android:visibility="gone"
+                >
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/topology_id"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/black"
+                    android:layout_marginTop="30dp"
+                    android:layout_marginLeft="20dp"/>
+                <androidx.recyclerview.widget.RecyclerView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/TopologyDirection"
+                    android:layout_marginTop="5dp"
+                    android:layout_below="@id/topology_id"
+                    />
+            </LinearLayout>
         </RelativeLayout>
+
     </LinearLayout>
     <include layout="@layout/bottom_sheet"/>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -106,15 +106,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadMapScene() {
+        // The camera can be configured before or after a scene is loaded.
+        double distanceInMeters = 1000 * 10;
+        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
+        mapView.getCamera().lookAt(new GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
+
         // Load a scene from the HERE SDK to render the map with a map scheme.
         mapView.getMapScene().loadScene(MapScheme.NORMAL_DAY, new MapScene.LoadSceneCallback() {
             @Override
             public void onLoadScene(@Nullable MapError mapError) {
-                if (mapError == null) {
-                    double distanceInMeters = 1000 * 10;
-                    MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
-                    mapView.getCamera().lookAt(new GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
-                } else {
+                if (mapError != null) {
                     Log.d(TAG, "Loading map failed: mapError: " + mapError.name());
                 }
             }
@@ -145,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
         mapView.onSaveInstanceState(outState);
         super.onSaveInstanceState(outState);
     }
-    
+
     private void disposeHERESDK() {
         // Free HERE SDK resources before the application shuts down.
         // Usually, this should be called only on application termination.

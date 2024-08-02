@@ -25,11 +25,14 @@ import 'package:here_sdk/venue.data.dart';
 import 'package:here_sdk/venue.style.dart';
 import 'package:indoor_map_app/geometry_info.dart';
 import 'package:indoor_map_app/image_helper.dart';
+import 'events.dart';
 
 class VenueTapController {
   final HereMapController? hereMapController;
   final VenueMap venueMap;
   final GeometryInfoState? geometryInfoState;
+  String tappedSpaceName = "";
+  int clickCount = 0;
 
   MapImage? _markerImage;
   MapMarker? _marker;
@@ -60,8 +63,14 @@ class VenueTapController {
     // Get a VenueGeometry under the tapped position.
     VenueGeometry? geometry = venueMap.getGeometry(position);
     if (geometry != null) {
+      spaceTapped.isSpaceTapped.value = false;
+      spaceTapped.isSpaceTapped.value = true;
+      clickCount = 1;
       selectGeometry(geometry, position, false);
+      tappedSpaceName = geometry.name+ ", "+geometry.level.name;
+      print('tappedSpaceName : $tappedSpaceName');
     } else {
+      spaceTapped.isSpaceTapped.value = false;
       // If no geometry was tapped, check if there is a not-selected venue under
       // the tapped position. If there is one, select it.
       Venue? venue = venueMap.getVenue(position);

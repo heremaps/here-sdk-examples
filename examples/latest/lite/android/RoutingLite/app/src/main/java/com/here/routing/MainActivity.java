@@ -118,6 +118,9 @@ public class MainActivity extends AppCompatActivity {
         routingExample.clearMap();
     }
 
+    public void toggleTrafficOptimization(View view) {
+        routingExample.toggleTrafficOptimization();
+    }
     @Override
     protected void onPause() {
         mapView.onPause();
