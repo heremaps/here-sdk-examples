@@ -205,6 +205,7 @@ public class MainActivity extends AppCompatActivity {
                         venueEngine.getVenueMap().getSelectedVenue().setTopologyVisible(true);
                     } else {
                         venueEngine.getVenueMap().getSelectedVenue().setTopologyVisible(false);
+                        venueTapController.deselectTopolgy();
                     }
             }
         });

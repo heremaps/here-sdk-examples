@@ -22,7 +22,6 @@ import UIKit
 
 class RoutingExample {
     
-    private var viewController: UIViewController
     private var mapView: MapView
     private var mapMarkers = [MapMarker]()
     private var mapPolylineList = [MapPolyline]()
@@ -31,18 +30,31 @@ class RoutingExample {
     private var destinationGeoCoordinates: GeoCoordinates?
     private var disableOptimization = false
     
-    init(viewController: UIViewController, mapView: MapView) {
-        self.viewController = viewController
+    init(_ mapView: MapView) {
         self.mapView = mapView
+
+        do {
+            try routingEngine = RoutingEngine()
+        } catch let engineInstantiationError {
+            fatalError("Failed to initialize routing engine. Cause: \(engineInstantiationError)")
+        }
+        
+        // Configure the map.
         let camera = mapView.camera
         let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 10)
         camera.lookAt(point: GeoCoordinates(latitude: 52.520798, longitude: 13.409408),
                       zoom: distanceInMeters)
         
-        do {
-            try routingEngine = RoutingEngine()
-        } catch let engineInstantiationError {
-            fatalError("Failed to initialize routing engine. Cause: \(engineInstantiationError)")
+        mapView.mapScene.enableFeatures([MapFeatures.lowSpeedZones : MapFeatureModes.lowSpeedZonesAll]);
+        
+        // Load the map scene using a map scheme to render the map with.
+        mapView.mapScene.loadScene(mapScheme: MapScheme.normalDay, completion: onLoadScene)
+    }
+    
+    // Completion handler for loadScene().
+    private func onLoadScene(mapError: MapError?) {
+        if let mapError = mapError {
+            print("Error: Map scene not loaded, \(String(describing: mapError))")
         }
     }
     
@@ -390,8 +402,19 @@ class RoutingExample {
     }
     
     private func showDialog(title: String, message: String) {
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-        viewController.present(alertController, animated: true, completion: nil)
+        if let topController = UIApplication.shared.windows.first?.rootViewController {
+            let alert = UIAlertController(
+                title: title,
+                message: message,
+                preferredStyle: .alert
+            )
+            
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+                // Handle OK button action.
+                alert.dismiss(animated: true, completion: nil)
+            }))
+            
+            topController.present(alert, animated: true, completion: nil)
+        }
     }
 }

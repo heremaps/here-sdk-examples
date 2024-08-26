@@ -27,35 +27,56 @@ class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         // Load the map scene using a map scheme to render the map with.
-        mapView.mapScene.loadScene(mapScheme: MapScheme.satellite, completion: onLoadScene)
+        mapView.mapScene.loadScene(mapScheme: MapScheme.topoDay, completion: onLoadScene)
     }
-    
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
+
         let message = "For this example app, an outdoor layer from thunderforest.com is used. Without setting a valid API key, these raster tiles will show a watermark (terms of usage: https://www.thunderforest.com/terms/).\n Attribution for the outdoor layer: \n Maps © www.thunderforest.com, \n Data © www.osm.org/copyright."
         showDialog(title: "Note", message: message)
     }
-    
+
     // Completion handler when loading a map scene.
     private func onLoadScene(mapError: MapError?) {
         if let error = mapError {
             print("Error: Map scene not loaded, \(error)")
         } else {
             hikingApp = HikingApp(mapView: mapView)
+            enableMapFeatures()
         }
+    }
+
+    // Enhance the scene with map features suitable for hiking trips.
+    private func enableMapFeatures() {
+        mapView.mapScene.enableFeatures([MapFeatures.terrain: MapFeatureModes.terrain3d,
+                                         MapFeatures.contours: MapFeatureModes.contoursAll,
+                                         MapFeatures.buildingFootprints : MapFeatureModes.buildingFootprintsAll,
+                                         MapFeatures.extrudedBuildings : MapFeatureModes.extrudedBuildingsAll,
+                                         MapFeatures.landmarks : MapFeatureModes.landmarksTextured])
+    }
+    
+    // When a custom raster outdoor layer is shown, we do not need to load hidden map features to save bandwidth.
+    private func disableMapFeatures() {
+        mapView.mapScene.disableFeatures([MapFeatures.terrain,
+                                          MapFeatures.contours,
+                                          MapFeatures.buildingFootprints,
+                                          MapFeatures.extrudedBuildings,
+                                          MapFeatures.landmarks])
     }
     
     @IBAction func schemaSwitch(_ sender: UISwitch) {
         if sender.isOn {
+            disableMapFeatures()
             hikingApp?.enableOutdoorRasterLayer()
         } else if !sender.isOn {
+            enableMapFeatures()
             hikingApp?.disableOutdoorRasterLayer()
         }
     }
-    
+
     @IBAction func onEnableButtonClicked(_ sender: Any) {
         hikingApp?.onStartHikingButtonClicked()
     }
@@ -77,25 +98,25 @@ class ViewController: UIViewController {
             performSegue(withIdentifier: "showMenu", sender: mapView)
         }
     }
-    
+
     // Open the menu.
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showMenu" {
             let menuViewController = segue.destination as? MenuViewController
-            
+
             menuViewController?.entryKeys = hikingApp?.getMenuEntryKeys() ?? []
             menuViewController?.entryText = hikingApp?.getMenuEntryDescriptions() ?? []
-            
+
             menuViewController?.setSelectedIndexListener { index in
                 self.hikingApp?.loadDiaryEntry(index: index)
             }
-            
+
             menuViewController?.setDeletedIndexListener { index in
                 self.hikingApp?.deleteDiaryEntry(index: index)
             }
         }
     }
-    
+
     func showDialog(title: String, message: String) {
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
 

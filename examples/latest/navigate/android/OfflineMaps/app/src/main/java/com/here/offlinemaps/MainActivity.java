@@ -21,9 +21,11 @@ package com.here.offlinemaps;
 
 import android.content.Context;
 import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.util.Log;
 import android.view.View;
 
@@ -41,10 +43,13 @@ public class MainActivity extends AppCompatActivity {
     private PermissionsRequestor permissionsRequestor;
     private MapView mapView;
     private OfflineMapsExample offlineMapsExample;
+    private LayerConfigurationExample layerConfigurationExample;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        layerConfigurationExample = new LayerConfigurationExample();
 
         // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
         initializeHERESDK();
@@ -63,6 +68,15 @@ public class MainActivity extends AppCompatActivity {
         String accessKeyID = "YOUR_ACCESS_KEY_ID";
         String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
         SDKOptions options = new SDKOptions(accessKeyID, accessKeySecret);
+
+        // Uncomment this to add a feature -
+        // layerConfigurationExample.addFeature(LayerConfiguration.Feature.TERRAIN);
+        // Uncomment this to disable a feature -
+        // layerConfigurationExample.disableFeature(LayerConfiguration.Feature.TRAFFIC);
+        // LayerConfiguration can only be updated before HERE SDK initialization.
+        options.layerConfiguration = layerConfigurationExample.getCustomLayerConfiguration();
+        layerConfigurationExample.printCurrentFeatures();
+
         try {
             Context context = this;
             SDKNativeEngine.makeSharedInstance(context, options);
@@ -73,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void handleAndroidPermissions() {
         permissionsRequestor = new PermissionsRequestor(this);
-        permissionsRequestor.request(new PermissionsRequestor.ResultListener(){
+        permissionsRequestor.request(new PermissionsRequestor.ResultListener() {
 
             @Override
             public void permissionsGranted() {
@@ -130,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
         mapView.onSaveInstanceState(outState);
         super.onSaveInstanceState(outState);
     }
-    
+
     private void disposeHERESDK() {
         // Free HERE SDK resources before the application shuts down.
         // Usually, this should be called only on application termination.

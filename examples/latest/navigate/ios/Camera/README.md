@@ -1,4 +1,4 @@
-The Canera example app shows how to change the target anchor point and how to move to another location using animations. You can find how this is done in [CameraExample.swift](Camera/CameraExample.swift).
+The Camera example app shows how to change the target anchor point and how to move to another location using animations. You can find how this is done in [CameraExample.swift](Camera/CameraExample.swift).
 
 Build instructions:
 -------------------

@@ -57,7 +57,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   static const methodChannel = MethodChannel('com.here.sdk.example/spatialAudioExample');
-  late HERE.SpatialManeuverAudioCuePanning audioCuePanning;
+  late HERE.SpatialAudioCuePanning spatialAudioCuePanning;
 
   HereMapController? _hereMapController;
 
@@ -153,19 +153,18 @@ class _MyAppState extends State<MyApp> {
     // This enables a navigation view including a rendered navigation arrow.
     _visualNavigator!.startRendering(_hereMapController!);
 
-    // Hook in one of the many listeners. Here we set up a listener to get instructions on the spatial maneuvers to take while driving.
-    _visualNavigator!.spatialManeuverNotificationListener = HERE.SpatialManeuverNotificationListener(
-        (HERE.SpatialManeuver spatialManeuver, HERE.SpatialManeuverAudioCuePanning audioCuePanning) {
-      String maneuverText = spatialManeuver.voiceText;
-      print("SpatialManeuverNotification: $maneuverText");
-      synthesizeAudioCueAndPlay(spatialManeuver, audioCuePanning);
-    });
+    // Event text options can be used for enabling the trigger for spatial audio details.
+    HERE.EventTextOptions eventTextOptions = HERE.EventTextOptions();
+    eventTextOptions.enableSpatialAudio = true;
 
-    _visualNavigator!.spatialManeuverAzimuthListener =
-        HERE.SpatialManeuverAzimuthListener((HERE.SpatialTrajectoryData spatialTrajectoryData) {
-      double azimuthInDegrees = spatialTrajectoryData.azimuthInDegrees;
-      print("SpatialManeuverAzimuthNotification: $azimuthInDegrees");
-      notifyAzimuth(spatialTrajectoryData);
+    _visualNavigator!.eventTextOptions = eventTextOptions;
+
+    _visualNavigator!.eventTextListener = HERE.EventTextListener((eventText) {
+      String maneuverText = eventText.text;
+      print("SpatialManeuverNotification: $maneuverText");
+      if (eventText.spatialNotificationDetails != null) {
+        synthesizeSpatialAudioCueAndPlay(eventText);
+      }
     });
 
     // Set a route to follow. This leaves tracking mode.
@@ -224,12 +223,14 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  Future synthesizeAudioCueAndPlay(
-      HERE.SpatialManeuver spatialManeuver, HERE.SpatialManeuverAudioCuePanning audioCuePanning) async {
-    this.audioCuePanning = audioCuePanning;
-
-    await methodChannel.invokeMethod('synthesizeAudioCueAndPlay',
-        {'audioCue': spatialManeuver.maneuver.text, 'initialAzimuth': spatialManeuver.initialAzimuthInDegrees});
+  Future synthesizeSpatialAudioCueAndPlay(HERE.EventText eventText) async {
+    this.spatialAudioCuePanning =
+        eventText.spatialNotificationDetails!.audioCuePanning;
+    await methodChannel.invokeMethod('synthesizeAudioCueAndPlay', {
+      'audioCue': eventText.text,
+      'initialAzimuth':
+          eventText.spatialNotificationDetails!.initialAzimuthInDegrees
+    });
   }
 
   Future notifyAzimuth(HERE.SpatialTrajectoryData spatialTrajectoryData) async {
@@ -247,9 +248,13 @@ class _MyAppState extends State<MyApp> {
         // Use the length obtained platform based in order to improve the audio cue duration estimation.
         final lengthMs = call.arguments as int;
         Duration duration = new Duration(milliseconds: lengthMs);
-        HERE.CustomPanningData customPanningData = new HERE.CustomPanningData(duration, null, null);
-
-        audioCuePanning.startPanning(customPanningData);
+        HERE.CustomPanningData customPanningData =
+            new HERE.CustomPanningData(duration, null, null);
+        spatialAudioCuePanning.startAngularPanning(customPanningData,
+            (spatialTrajectoryData) {
+          notifyAzimuth(spatialTrajectoryData);
+        });
+        // audioCuePanning.startPanning(customPanningData);
         break;
     }
   }

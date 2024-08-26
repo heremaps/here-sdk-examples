@@ -21,7 +21,7 @@ import heresdk
 import Foundation
 import UIKit
 
-class SpatialNavigationExample: SpatialManeuverNotificationDelegate, SpatialManeuverAzimuthDelegate {
+class SpatialNavigationExample: EventTextDelegate {
     private var spatialAudioExample: SpatialAudioExample?
     private var visualNavigator: VisualNavigator?
     private var locationSimulator: LocationSimulator?
@@ -64,8 +64,13 @@ class SpatialNavigationExample: SpatialManeuverNotificationDelegate, SpatialMane
         }
     }
     
-    func onSpatialManeuverNotification(spatialManeuver: SpatialManeuver, audioCuePanning: SpatialManeuverAudioCuePanning) {
-        spatialAudioExample?.playSpatialAudioCue(audioCue: spatialManeuver.voiceText, initialAzimuthInDegrees: Float(spatialManeuver.initialAzimuthInDegrees), audioCuePanning: audioCuePanning)
+    func onEventTextUpdated(_ eventText: heresdk.EventText) {
+        let azimuthCallback : SpatialAudioCuePanning.onSpatialAzimuthStarterHandler = { str in
+            self.onAzimuthNotification(nextSpatialTrajectoryData: str)
+        }
+        if (eventText.spatialNotificationDetails != nil ) {
+            spatialAudioExample?.playSpatialAudioCue(audioCue: eventText.text, initialAzimuthInDegrees:Float(eventText.spatialNotificationDetails!.initialAzimuthInDegrees), audioCuePanning: eventText.spatialNotificationDetails!.audioCuePanning,azimuthCallback: azimuthCallback)
+        }
     }
     
     func onAzimuthNotification(nextSpatialTrajectoryData: SpatialTrajectoryData) {
@@ -90,15 +95,17 @@ class SpatialNavigationExample: SpatialManeuverNotificationDelegate, SpatialMane
         
         spatialAudioExample?.setupVoiceGuidance(visualNavigator: visualNavigator!)
         
+        // Event text options can be used for enabling the trigger for spatial audio details.
+        let eventTextOptions = EventTextOptions(enableSpatialAudio: true)
+    
+        visualNavigator!.eventTextOptions = eventTextOptions
+        
         // This enables a navigation view including a rendered navigation arrow.
         visualNavigator!.startRendering(mapView: mapView!)
         
         // Hook in one of the many listeners. Here we set up a listener to get instructions on the spatial maneuvers to take while driving.
         // For more details, please check the "Navigation" example app and the Developer's Guide.
-        visualNavigator!.spatialManeuverNotificationDelegate = self
-        
-        // Here we set up a listener to get the next azimuth to be apply in order to follow the spatial audio trajectory
-        visualNavigator!.spatialManeuverAzimuthDelegate = self
+        visualNavigator!.eventTextDelegate = self
         
         // Set a route to follow. This leaves tracking mode.
         visualNavigator!.route = route

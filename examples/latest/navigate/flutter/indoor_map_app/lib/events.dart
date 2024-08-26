@@ -29,3 +29,9 @@ class SpeceTapped with ChangeNotifier {
 }
 
 SpeceTapped spaceTapped = new SpeceTapped();
+
+class TopologyLineTapped with ChangeNotifier {
+  ValueNotifier<bool> isTopologyLineTapped = ValueNotifier<bool>(false);
+}
+
+TopologyLineTapped topologyLineTapped = new TopologyLineTapped();

@@ -39,7 +39,8 @@ void main() {
   runApp(
     MaterialApp(
       // Enable localizations for the ConsentEngine's dialog widget.
-      localizationsDelegates: HereSdkConsentLocalizations.localizationsDelegates,
+      localizationsDelegates:
+          HereSdkConsentLocalizations.localizationsDelegates,
       supportedLocales: HereSdkConsentLocalizations.supportedLocales,
       home: MyApp(messageNotifier: MessageNotifier()),
     ),
@@ -52,8 +53,10 @@ void _initializeHERESDK() async {
 
   // Set your credentials for the HERE SDK.
   String accessKeyId = "YOUR_ACCESS_KEY_ID";
-  String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
-  SDKOptions sdkOptions = SDKOptions.withAccessKeySecret(accessKeyId, accessKeySecret);
+  String accessKeySecret =
+      "YOUR_ACCESS_KEY_SECRET";
+  SDKOptions sdkOptions =
+      SDKOptions.withAccessKeySecret(accessKeyId, accessKeySecret);
 
   try {
     await SDKNativeEngine.makeSharedInstance(sdkOptions);
@@ -64,6 +67,7 @@ void _initializeHERESDK() async {
 
 class MyApp extends StatefulWidget {
   final MessageNotifier messageNotifier;
+
   MyApp({required this.messageNotifier});
 
   @override
@@ -81,6 +85,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   // Note that this is only needed when running on Android devices.
   ConsentEngine? _consentEngine;
   String _consentState = "Pending ...";
+
+  HereMapController? _hereMapController;
 
   @override
   void initState() {
@@ -125,7 +131,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             IconButton(
               icon: Icon(Icons.menu),
               onPressed: () {
-                if (hikingApp != null && hikingApp!.gpxManager.gpxDocument.tracks.isNotEmpty) {
+                if (hikingApp != null &&
+                    hikingApp!.gpxManager.gpxDocument.tracks.isNotEmpty) {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -157,10 +164,15 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               onChanged: (bool value) {
                 setState(() {
                   _mapLayerSwitch = value;
-
                   if (hikingApp != null && _isLocationPermissionGranted) {
-                  value == true ? hikingApp!.enableOutdoorRasterLayer() : hikingApp!.disableOutdoorRasterLayer();
-                }
+                    if (_mapLayerSwitch) {
+                      _enableMapFeatures();
+                      hikingApp!.enableOutdoorRasterLayer();
+                    } else {
+                      _disableMapFeatures();
+                      hikingApp!.disableOutdoorRasterLayer();
+                    }
+                  }
                 });
               },
               activeColor: Colors.lightBlueAccent,
@@ -202,7 +214,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
-              margin: EdgeInsets.only(bottom: MediaQuery.of(context).size.height * 0.05),
+              margin: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).size.height * 0.05),
               width: MediaQuery.of(context).size.width * 0.6,
               height: MediaQuery.of(context).size.height * 0.085,
               decoration: BoxDecoration(
@@ -243,12 +256,17 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       throw ("Initialization of ConsentEngine failed.");
     }
 
-    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) async {
+    _hereMapController = hereMapController;
+
+    // Load the map scene using a map scheme to render the map with.
+    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.topoDay,
+        (MapError? error) async {
       _updateMessageState("Loading MapView ...");
       if (error == null) {
         // 1. Before we start the app we want to ensure that the required permissions are handled.
         if (!await _requestPermissions()) {
-          await _showDialog("Error", "Cannot start app: Location service and permissions are needed for this app.");
+          await _showDialog("Error",
+              "Cannot start app: Location service and permissions are needed for this app.");
           // Let the user set the permissions from the system settings as fallback.
           openAppSettings();
           SystemNavigator.pop();
@@ -264,14 +282,17 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
         // 3. User has granted required permissions and made a consent decision.
         _updateMessageState("MapView loaded");
-        
-        String message = "For this example app, an outdoor layer from thunderforest.com is used. " +
-            "Without setting a valid API key, these raster tiles will show a watermark (terms of usage: https://www.thunderforest.com/terms/)." +
-            "\n Attribution for the outdoor layer: \n Maps © www.thunderforest.com, \n Data © www.osm.org/copyright.";
+
+        String message =
+            "For this example app, an outdoor layer from thunderforest.com is used. " +
+                "Without setting a valid API key, these raster tiles will show a watermark (terms of usage: https://www.thunderforest.com/terms/)." +
+                "\n Attribution for the outdoor layer: \n Maps © www.thunderforest.com, \n Data © www.osm.org/copyright.";
 
         _showDialog("Note", message);
 
-        hikingApp = HikingApp(context, hereMapController, widget.messageNotifier);
+        hikingApp =
+            HikingApp(context, hereMapController, widget.messageNotifier);
+        _enableMapFeatures();
 
         setState(() {
           _isLocationPermissionGranted = true;
@@ -280,6 +301,36 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         print("Map scene not loaded. MapError: " + error.toString());
       }
     });
+  }
+
+  // Enhance the scene with map features suitable for hiking trips.
+  void _enableMapFeatures() {
+    _hereMapController?.mapScene
+        .enableFeatures({MapFeatures.terrain: MapFeatureModes.terrain3d});
+    _hereMapController?.mapScene
+        .enableFeatures({MapFeatures.contours: MapFeatureModes.contoursAll});
+    _hereMapController?.mapScene.enableFeatures({
+      MapFeatures.buildingFootprints: MapFeatureModes.buildingFootprintsAll
+    });
+    _hereMapController?.mapScene.enableFeatures(
+        {MapFeatures.extrudedBuildings: MapFeatureModes.extrudedBuildingsAll});
+    _hereMapController?.mapScene.enableFeatures(
+        {MapFeatures.landmarks: MapFeatureModes.landmarksTextured});
+  }
+
+  // When a custom raster outdoor layer is shown, we do not need to load hidden map features to save bandwidth.
+  void _disableMapFeatures() {
+    _hereMapController?.mapScene
+        .enableFeatures({MapFeatures.terrain: MapFeatureModes.terrain3d});
+    _hereMapController?.mapScene
+        .enableFeatures({MapFeatures.contours: MapFeatureModes.contoursAll});
+    _hereMapController?.mapScene.enableFeatures({
+      MapFeatures.buildingFootprints: MapFeatureModes.buildingFootprintsAll
+    });
+    _hereMapController?.mapScene.enableFeatures(
+        {MapFeatures.extrudedBuildings: MapFeatureModes.extrudedBuildingsAll});
+    _hereMapController?.mapScene.enableFeatures(
+        {MapFeatures.landmarks: MapFeatureModes.landmarksTextured});
   }
 
   // Request permissions with the permission_handler plugin. Set the required permissions here:
@@ -316,11 +367,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void _updateConsentState() {
     String stateMessage;
     if (Platform.isIOS) {
-      stateMessage = "Info: On iOS no consent is required as on iOS no data is collected.";
+      stateMessage =
+          "Info: On iOS no consent is required as on iOS no data is collected.";
     } else if (_consentEngine?.userConsentState == ConsentUserReply.granted) {
-      stateMessage = "Positioning consent: You have granted consent to the data collection.";
+      stateMessage =
+          "Positioning consent: You have granted consent to the data collection.";
     } else {
-      stateMessage = "Positioning consent: You have denied consent to the data collection.";
+      stateMessage =
+          "Positioning consent: You have denied consent to the data collection.";
     }
 
     setState(() {

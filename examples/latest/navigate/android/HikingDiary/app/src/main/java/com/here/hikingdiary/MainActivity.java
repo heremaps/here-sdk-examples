@@ -50,11 +50,16 @@ import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.core.engine.SDKOptions;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.mapview.MapError;
+import com.here.sdk.mapview.MapFeatureModes;
+import com.here.sdk.mapview.MapFeatures;
 import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -89,8 +94,10 @@ public class MainActivity extends AppCompatActivity {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (hikingApp != null) {
                     if (isChecked) {
+                        disableMapFeatures();
                         hikingApp.enableOutdoorRasterLayer();
                     } else {
+                        enableMapFeatures();
                         hikingApp.disableOutdoorRasterLayer();
                     }
                 }
@@ -223,6 +230,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         permissionsRequestor.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
@@ -256,7 +264,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadMapScene() {
         // Load a scene from the HERE SDK to render the map with a map scheme.
-        mapView.getMapScene().loadScene(MapScheme.SATELLITE, new MapScene.LoadSceneCallback() {
+        mapView.getMapScene().loadScene(MapScheme.TOPO_DAY, new MapScene.LoadSceneCallback() {
             @Override
             public void onLoadScene(@Nullable MapError mapError) {
                 if (mapError == null) {
@@ -265,11 +273,35 @@ public class MainActivity extends AppCompatActivity {
                     mapView.getCamera().lookAt(new GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
                     hikingApp = new HikingApp(mapView, MainActivity.this);
                     hikingApp.hereBackgroundPositioningServiceProvider.startForegroundService();
+                    enableMapFeatures();
                 } else {
                     Log.d(TAG, "Loading map failed: mapError: " + mapError.name());
                 }
             }
         });
+    }
+
+    // Enhance the scene with map features suitable for hiking trips.
+    private void enableMapFeatures() {
+        Map<String, String> mapFeatures = new HashMap<>();
+        mapFeatures.put(MapFeatures.TERRAIN, MapFeatureModes.TERRAIN_3D);
+        mapFeatures.put(MapFeatures.CONTOURS, MapFeatureModes.CONTOURS_ALL);
+        mapFeatures.put(MapFeatures.BUILDING_FOOTPRINTS, MapFeatureModes.BUILDING_FOOTPRINTS_ALL);
+        mapFeatures.put(MapFeatures.EXTRUDED_BUILDINGS, MapFeatureModes.EXTRUDED_BUILDINGS_ALL);
+        mapFeatures.put(MapFeatures.LANDMARKS, MapFeatureModes.LANDMARKS_TEXTURED);
+        mapView.getMapScene().enableFeatures(mapFeatures);
+    }
+
+    // When a custom raster outdoor layer is shown, we do not need to load
+    // hidden map features to save bandwidth.
+    private void disableMapFeatures() {
+        List<String> mapFeatures = new ArrayList<>();
+        mapFeatures.add(MapFeatures.TERRAIN);
+        mapFeatures.add(MapFeatures.CONTOURS);
+        mapFeatures.add(MapFeatures.BUILDING_FOOTPRINTS);
+        mapFeatures.add(MapFeatures.EXTRUDED_BUILDINGS);
+        mapFeatures.add(MapFeatures.LANDMARKS);
+        mapView.getMapScene().disableFeatures(mapFeatures);
     }
 
     private void showDialog(String title, String message) {

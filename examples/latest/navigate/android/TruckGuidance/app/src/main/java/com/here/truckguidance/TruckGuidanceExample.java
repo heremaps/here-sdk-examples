@@ -872,7 +872,11 @@ public class TruckGuidanceExample {
         searchOptions.languageCode = LanguageCode.EN_US;
         searchOptions.maxItems = 30;
 
-        // Note that TruckAmenities require this custom setting.
+        // Note: TruckAmenities require a custom option when searching online.
+        // This is not necessary when using the OfflineSearchEngine.
+        // Additionally, this feature is released as closed-alpha, meaning a license must
+        // be obtained from the HERE SDK team for online searches.
+        // Otherwise, a SearchError.FORBIDDEN will occur.     
         searchEngine.setCustomOption("show", "truck");
 
         searchEngine.search(categoryQuery, searchOptions, new SearchCallback() {
@@ -892,6 +896,8 @@ public class TruckGuidanceExample {
         });
     }
 
+    // Note: This is a closed-alpha feature that requires an additional license.
+    // Refer to the comment in searchAlongARoute() for more details.
     private void logPlaceAmenities(Place place) {
         TruckAmenities truckAmenities = place.getDetails().truckAmenities;
         if (truckAmenities != null) {

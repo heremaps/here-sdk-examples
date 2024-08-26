@@ -235,9 +235,104 @@ class _MainPageState extends State<MainPage> {
               ],
             ),
           ),
+          ValueListenableBuilder<bool>(
+            valueListenable: topologyLineTapped.isTopologyLineTapped,
+            builder: (BuildContext context, bool isTapped, Widget? child) {
+              return Visibility(
+                visible: isTapped && _topologyPressed,
+                child: Positioned(
+                  bottom: 0,
+                  child: Container(
+                    width: MediaQuery.of(context).size.width,
+                    height: 250,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 10,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    padding: EdgeInsets.all(16),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (_venueEngineState.venueTapController?.topologyDetails != null)
+                          ..._buildRowsFromTopologyDetails(_venueEngineState.venueTapController!.topologyDetails),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
         ],
       ),
     );
+  }
+
+  List<Widget> _buildRowsFromTopologyDetails(String topologyDetails) {
+    List<Widget> rows = [];
+    List<String> lines = topologyDetails.split('\n');
+
+    for (String line in lines) {
+      List<Widget> rowItems = [];
+      List<String> parts = line.split(' ');
+      int pngCount = parts.where((part) => part.endsWith('.png')).length;
+
+      for (String part in parts) {
+        if (part.endsWith('.png')) {
+          rowItems.add(
+            Image.asset(
+              'assets/$part',
+              height: 30.0,
+              width: 30.0,
+            ),
+          );
+        } else {
+          rowItems.add(
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              child: Text(
+                part,
+                style: TextStyle(
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          );
+        }
+      }
+
+      if (pngCount > 0) {
+        double blankSpace = 0;
+        if (pngCount == 1) {
+          blankSpace = 150.0;
+        } else if (pngCount == 2) {
+          blankSpace = 122.0;
+        } else if (pngCount == 3) {
+          blankSpace = 92.0;
+        } else if (pngCount >= 4) {
+          blankSpace = 62.0;
+        }
+        rowItems.insert(pngCount, SizedBox(width: blankSpace));
+      }
+
+      rows.add(Column(
+        children: [
+          Row(children: rowItems),
+          SizedBox(height: 15.0),
+        ],
+      ));
+    }
+
+    return rows;
   }
 
   Widget _buildSlidingPanel() {

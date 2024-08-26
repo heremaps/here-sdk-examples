@@ -26,16 +26,15 @@ import UIKit
 class CameraExample: TapDelegate, MapCameraDelegate {
 
     private let defaultDistanceToEarthInMeters: Double = 8000
-    private let viewController: UIViewController
     private let mapView: MapView
     private let camera: MapCamera
     private var cameraTargetView: UIImageView
     private var poiMapCircle: MapPolygon!
 
-    init(viewController: UIViewController, mapView: MapView) {
-        self.viewController = viewController
+    init(_ mapView: MapView) {
         self.mapView = mapView
 
+        // Configure the map.
         camera = mapView.camera
         let distanceInMeters = MapMeasure(kind: .distance, value: defaultDistanceToEarthInMeters)
         camera.lookAt(point: GeoCoordinates(latitude: 52.750731,longitude: 13.007375),
@@ -56,9 +55,19 @@ class CameraExample: TapDelegate, MapCameraDelegate {
         mapView.gestures.tapDelegate = self
         mapView.camera.addDelegate(self)
 
+        // Load the map scene using a map scheme to render the map with.
+        mapView.mapScene.loadScene(mapScheme: MapScheme.normalDay, completion: onLoadScene)
+        
         showDialog(title: "Note", message: "Tap the map to set a new transform center.")
     }
 
+    // Completion handler for loadScene().
+    private func onLoadScene(mapError: MapError?) {
+        if let mapError = mapError {
+            print("Error: Map scene not loaded, \(String(describing: mapError))")
+        }
+    }
+    
     func onRotateButtonClicked() {
         rotateMap(bearingStepInDegrees: 10)
     }
@@ -164,8 +173,19 @@ class CameraExample: TapDelegate, MapCameraDelegate {
     }
 
     private func showDialog(title: String, message: String) {
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-        viewController.present(alertController, animated: true, completion: nil)
+        if let topController = UIApplication.shared.windows.first?.rootViewController {
+            let alert = UIAlertController(
+                title: title,
+                message: message,
+                preferredStyle: .alert
+            )
+            
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+                // Handle OK button action.
+                alert.dismiss(animated: true, completion: nil)
+            }))
+            
+            topController.present(alert, animated: true, completion: nil)
+        }
     }
 }

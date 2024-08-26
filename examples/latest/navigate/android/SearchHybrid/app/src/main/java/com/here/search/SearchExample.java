@@ -254,6 +254,9 @@ public class SearchExample {
                 // search results may not be available for all zoom levels.
                 // Please also note that it may take time until the required map data is loaded.
                 // Subsequently, the cache is filled when a user pans and zooms the map.
+                //
+                // For best results, it is recommended to permanently install offline region data and use the
+                // OfflineSearchEngine for areas where region data has been installed.
                 showDialog("Search", "Error: " + searchError.toString());
                 return;
             }

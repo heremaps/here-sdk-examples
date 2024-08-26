@@ -17,15 +17,23 @@
  * License-Filename: LICENSE
  */
 
+import 'dart:ffi';
+
 import 'package:flutter/cupertino.dart';
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/mapview.dart';
+import 'package:here_sdk/src/sdk/venue/routing/venue_transport_mode.dart';
 import 'package:here_sdk/venue.control.dart';
 import 'package:here_sdk/venue.data.dart';
 import 'package:here_sdk/venue.style.dart';
+import 'package:here_sdk/venue.dart';
 import 'package:indoor_map_app/geometry_info.dart';
 import 'package:indoor_map_app/image_helper.dart';
 import 'events.dart';
+import 'events.dart';
+
+enum TopologyDirectionality { toStart, fromStart, bidirectional, undefined }
+enum VenueTransportMode { auto, taxi, motorcycle, emergencyVehicle, pedestrian }
 
 class VenueTapController {
   final HereMapController? hereMapController;
@@ -33,17 +41,22 @@ class VenueTapController {
   final GeometryInfoState? geometryInfoState;
   String tappedSpaceName = "";
   int clickCount = 0;
+  int lineCount = 0;
+  String topologyDetails = "";
 
   MapImage? _markerImage;
   MapMarker? _marker;
   Venue? _selectedVenue;
   VenueGeometry? _selectedGeometry;
+  VenueTopology? _selectedTopology;
 
   // Create geometry and label styles for the selected geometry.
   final VenueGeometryStyle _geometryStyle =
       VenueGeometryStyle(Color.fromARGB(255, 72, 187, 245), Color.fromARGB(255, 30, 170, 235), 1);
   final VenueLabelStyle _labelStyle =
       VenueLabelStyle(Color.fromARGB(255, 255, 255, 255), Color.fromARGB(255, 0, 130, 195), 1, 28);
+  final VenueGeometryStyle _topologyStyle =
+      VenueGeometryStyle(Color.fromARGB(255, 72, 187, 245), Color.fromARGB(255, 90, 196, 193), 4);
 
   VenueTapController({required this.hereMapController, required this.venueMap, required this.geometryInfoState}) {
     // Get an image for MapMarker.
@@ -53,6 +66,7 @@ class VenueTapController {
 
   onTap(Point2D origin) {
     _deselectGeometry();
+    _deselectTopology();
 
     // Get geo coordinates of the tapped point.
     GeoCoordinates? position = hereMapController!.viewToGeoCoordinates(origin);
@@ -60,22 +74,27 @@ class VenueTapController {
       return;
     }
 
-    // Get a VenueGeometry under the tapped position.
-    VenueGeometry? geometry = venueMap.getGeometry(position);
-    if (geometry != null) {
-      spaceTapped.isSpaceTapped.value = false;
-      spaceTapped.isSpaceTapped.value = true;
-      clickCount = 1;
-      selectGeometry(geometry, position, false);
-      tappedSpaceName = geometry.name+ ", "+geometry.level.name;
-      print('tappedSpaceName : $tappedSpaceName');
+    VenueTopology? topology = venueMap.getTopology(position);
+    if (topology != null) {
+      selectTopology(topology, position);
     } else {
-      spaceTapped.isSpaceTapped.value = false;
-      // If no geometry was tapped, check if there is a not-selected venue under
-      // the tapped position. If there is one, select it.
-      Venue? venue = venueMap.getVenue(position);
-      if (venue != null) {
-        venueMap.selectedVenue = venue;
+      // Get a VenueGeometry under the tapped position.
+      VenueGeometry? geometry = venueMap.getGeometry(position);
+      if (geometry != null) {
+        spaceTapped.isSpaceTapped.value = false;
+        spaceTapped.isSpaceTapped.value = true;
+        clickCount = 1;
+        selectGeometry(geometry, position, false);
+        tappedSpaceName = geometry.name + ", " + geometry.level.name;
+        print('tappedSpaceName : $tappedSpaceName');
+      } else {
+        spaceTapped.isSpaceTapped.value = false;
+        // If no geometry was tapped, check if there is a not-selected venue under
+        // the tapped position. If there is one, select it.
+        Venue? venue = venueMap.getVenue(position);
+        if (venue != null) {
+          venueMap.selectedVenue = venue;
+        }
       }
     }
   }
@@ -87,6 +106,91 @@ class VenueTapController {
       return;
     }
     _deselectGeometry();
+  }
+
+  selectTopology(VenueTopology topology, GeoCoordinates position) {
+    topologyDetails = getTopologyInfo(topology);
+    _selectedTopology = topology;
+    if(_selectedTopology != null) {
+      topologyLineTapped.isTopologyLineTapped.value = true;
+      _selectedVenue!.setCustomStyleToTopology([topology], _topologyStyle);
+    }
+    _selectedTopology = topology;
+
+    hereMapController!.camera.lookAtPoint(position);
+  }
+
+  String getTopologyInfo(VenueTopology topology) {
+    StringBuffer result = StringBuffer();
+    Map<String, List<String>> vehicleGroups = {};
+    String pedestrianDirectionality = " ";
+    lineCount = 0;
+
+    // First line: topology ID
+    result.writeln(topology.identifier);
+    lineCount++;
+
+    // Process accessibility
+    for (int i = 0; i < topology.accessibility.length; i++) {
+      var access = topology.accessibility[i];
+      var mode = access.mode;
+      String imageName = '';
+
+      switch (mode.name) {
+        case 'auto':
+          imageName = 'img_car';
+          break;
+        case 'taxi':
+          imageName = 'img_taxi';
+          break;
+        case 'motorcycle':
+          imageName = 'img_bike';
+          break;
+        case 'emergencyVehicle':
+          imageName = 'img_ambulance';
+          break;
+        case 'pedestrian':
+          imageName = 'img_pedestrian';
+          pedestrianDirectionality = access.direction.name;
+          break;
+      }
+
+      if (mode.name == 'pedestrian') {
+        // Second line: pedestrian image and directionality
+        result.write('img_pedestrian.png ');
+        if (pedestrianDirectionality.isNotEmpty) {
+          result.writeln(pedestrianDirectionality.toUpperCase());
+          lineCount++;
+        }
+      } else if (imageName.isNotEmpty) {
+        var direction = access.direction.name;
+
+        vehicleGroups.putIfAbsent(direction, () => []);
+        vehicleGroups[direction]!.add(imageName);
+      }
+    }
+
+    // Process vehicle groups
+    for (var direction in vehicleGroups.keys) {
+      var imageNames = vehicleGroups[direction];
+      if (imageNames != null && imageNames.isNotEmpty) {
+        for (var imageName in imageNames) {
+          result.write('$imageName.png ');
+        }
+        result.writeln(direction.toUpperCase());
+        lineCount++;
+      }
+    }
+
+    return result.toString();
+  }
+
+  _deselectTopology() {
+    if (_selectedVenue != null && _selectedTopology != null) {
+      _selectedVenue!.setCustomStyleToTopology([_selectedTopology!], null);
+      _selectedTopology = null;
+      topologyLineTapped.isTopologyLineTapped.value = false;
+    }
   }
 
   selectGeometry(VenueGeometry geometry, GeoCoordinates position, bool center) {

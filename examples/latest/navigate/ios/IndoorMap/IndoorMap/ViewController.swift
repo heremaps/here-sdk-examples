@@ -409,6 +409,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, VenueInfoLi
     @objc func topologyIconTapped() {
         topologyVisibility = !topologyVisibility
         venueEngine.venueMap.selectedVenue?.isTopologyVisible = topologyVisibility
+        if(!topologyVisibility) {
+            venueTapHandler?.deselectTopology()
+        }
 
         if(topologyVisibility) {
             topPannelTopology.image = UIImage(named: "topology-focused")
