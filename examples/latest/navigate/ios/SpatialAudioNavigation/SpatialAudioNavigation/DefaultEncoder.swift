@@ -30,13 +30,13 @@ class DefaultEncoder: EncoderInterface {
         avAudioPlayerNodeManager?.stopPlaying()
     }
     
-    func playAudioCue(audioCue: String, initialAzimuthInDegrees: Float, audioCuePanning: SpatialManeuverAudioCuePanning) {
+    func playAudioCue(audioCue: String, initialAzimuthInDegrees: Float, audioCuePanning: SpatialAudioCuePanning, azimuthCallback : @escaping SpatialAudioCuePanning.onSpatialAzimuthStarterHandler) {
         // Stops the previous audio cue if is still being played when a new one has been triggered
         avAudioPlayerNodeManager?.resetAudio()
         avAudioPlayerNodeManager?.configureAudio()
         // It is recommended to set the initial azimuth right after stopping the previous one (if still playing) and playing the current one to ensure that is played from the correct side at the beginning of the audio cue.
         setCurrentAzimuthDegrees(nextAzimuthInDegrees: initialAzimuthInDegrees)
-        avAudioPlayerNodeManager?.prepareSpatialAudioCue(audioCue: audioCue, audioCuePanning: audioCuePanning)
+        avAudioPlayerNodeManager?.prepareSpatialAudioCue(audioCue: audioCue, audioCuePanning: audioCuePanning, azimuthCallback: azimuthCallback)
     }
     
     // Basic encoder

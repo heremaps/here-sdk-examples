@@ -197,7 +197,7 @@ class TruckGuidanceExample: TapDelegate,
         // Creates a list of map content type from which the results will be picked.
         // The content type values can be mapContent, mapItems and customLayerData.
         var contentTypesToPickFrom = Array<MapScene.MapPickFilter.ContentType>();
-        
+
         // mapContent is used when picking embedded carto POIs, traffic incidents, vehicle restriction etc.
         // mapItems is used when picking map items such as MapMarker, MapPolyline, MapPolygon etc.
         // Currently we need map contents so adding the mapContent filter.
@@ -225,7 +225,7 @@ class TruckGuidanceExample: TapDelegate,
                         print("searchPickedPlace() resulted in an error: \(searchError)")
                         return
                     }
-                    
+
                     if let place = place {
                         let address = place.address.addressText
                         var categories = ""
@@ -243,7 +243,7 @@ class TruckGuidanceExample: TapDelegate,
                 self.showDialog(title: "Traffic incident picked", message: "Type: \(topmostContent.type.rawValue)")
                 // Optionally, you can now use the TrafficEngine to retrieve more details for this incident.
             }
-            
+
             if vehicleRestrictionResultList.count > 0 {
                 let topmostContent = vehicleRestrictionResultList[0]
                 // Note that the text property is empty for general truck restrictions.
@@ -758,7 +758,7 @@ class TruckGuidanceExample: TapDelegate,
         // within a max distance of xx meters from any point of the route.
         let halfWidthInMeters: Int32 = 200
         let routeVertices = route.geometry.vertices
-        
+
         // The areaCenter specifies a prioritized point within the corridor.
         // You can choose any coordinate given it's closer to the route and within the corridor.
         // Following route calculation, the first relevant point is expected to be the start of the route,
@@ -773,7 +773,11 @@ class TruckGuidanceExample: TapDelegate,
         searchOptions.languageCode = .enUs
         searchOptions.maxItems = 30
 
-        // Note that TruckAmenities require this custom setting.
+        // Note: TruckAmenities require a custom option when searching online.
+        // This is not necessary when using the OfflineSearchEngine.
+        // Additionally, this feature is released as closed-alpha, meaning a license must
+        // be obtained from the HERE SDK team for online searches.
+        // Otherwise, a SearchError.FORBIDDEN will occur.
         _ = searchEngine.setCustomOption(name: "show", value: "truck")
 
         searchEngine.search(categoryQuery: categoryQuery, options: searchOptions, completion: { (searchError, items) in
@@ -790,6 +794,8 @@ class TruckGuidanceExample: TapDelegate,
         })
     }
 
+    // Note: This is a closed-alpha feature that requires an additional license.
+    // Refer to the comment in searchAlongARoute() for more details.
     private func logPlaceAmenities(_ place: Place) {
         let truckAmenities = place.details.truckAmenities
         if let truckAmenities = truckAmenities {

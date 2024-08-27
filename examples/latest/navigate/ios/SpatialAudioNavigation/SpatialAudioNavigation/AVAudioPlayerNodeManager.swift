@@ -34,8 +34,9 @@ public final class AVAudioPlayerNodeManager: NSObject{
     private let monoOutputFormat : AVAudioFormat
     private var locale = Locale(identifier: "en-US")
     private var bufferList = [AVAudioPCMBuffer]()
-    private var audioCuePanning: SpatialManeuverAudioCuePanning?
+    private var audioCuePanning: SpatialAudioCuePanning?
     private let preferredAudioFormat: AVAudioCommonFormat
+    private var azimuthCallback : SpatialAudioCuePanning.onSpatialAzimuthStarterHandler?
     
     fileprivate let cd = AudioComponentDescription(
         componentType: kAudioUnitType_Effect,
@@ -97,13 +98,16 @@ public final class AVAudioPlayerNodeManager: NSObject{
         self.locale = locale
     }
     
+   
     /// Set all the requirements for spatialising the audio cue
     ///
     /// - Parameter audioCue:  String containing the audio cue to be spatialised
     /// - Parameter audioCuePanning: Object which starts the angular panning notifications
-    public func prepareSpatialAudioCue(audioCue: String, audioCuePanning: SpatialManeuverAudioCuePanning) {
+    /// - Parameter azimuthCallback: Calllback for azimuth notifications
+    public func prepareSpatialAudioCue(audioCue: String, audioCuePanning: SpatialAudioCuePanning, azimuthCallback : @escaping SpatialAudioCuePanning.onSpatialAzimuthStarterHandler) {
         self.audioCuePanning = audioCuePanning
-
+        self.azimuthCallback = azimuthCallback
+        
         // Set voice message
         let utterance = AVSpeechUtterance(string: audioCue)
         utterance.pitchMultiplier = speechPitch
@@ -187,13 +191,19 @@ public final class AVAudioPlayerNodeManager: NSObject{
     func startAudioEngineAndPlay(bufferLengthInMs: Double) {
         // Start audio engine
         do {
-                try engine.start()
-                play()
-                startAngularPanning(bufferLengthInMs: bufferLengthInMs)
+            try engine.start()
+            play()
+            startAngularPanning()
         } catch let error {
             AudioSessionManager.shared.setAudioSessionState(activated: false)
             print("An error has occurred while starting the engine. \(error.localizedDescription)")
         }
+    }
+
+    func startAngularPanning(){
+        var customPanningData = CustomPanningData()
+        customPanningData.estimatedAudioCueDuration = 2.62
+        audioCuePanning?.startAngularPanning(nextCustomPanningData: customPanningData, azimuthCallback: azimuthCallback!)
     }
     
     func getBufferLengthInMs(buffer: AVAudioPCMBuffer) -> TimeInterval {
@@ -202,13 +212,6 @@ public final class AVAudioPlayerNodeManager: NSObject{
       return TimeInterval(framecount / samplerate)
     }
     
-    func startAngularPanning(bufferLengthInMs: Double) {
-        var nextCustomPanningData = CustomPanningData()
-        var test: Double = 2.62
-        nextCustomPanningData.estimatedAudioCueDuration = test
-        print("Next buffer length \(bufferLengthInMs)")
-        audioCuePanning?.startPanning(nextCustomPanningData: nextCustomPanningData)
-    }
 }
 
 extension AVAudioPlayerNodeManager: AVSpeechSynthesizerDelegate {

@@ -280,7 +280,7 @@ class RoutingExample {
         let isolineOptions = IsolineOptions(calculationOptions: calculationOptions,
                                             evCarOptions: getEVCarOptions())
 
-        routingEngine.calculateIsoline(center: Waypoint(coordinates: startGeoCoordinates),
+        isolineRoutingEngine.calculateIsoline(center: Waypoint(coordinates: startGeoCoordinates),
                                        isolineOptions: isolineOptions) { (routingError, isolines) in
 
             if let error = routingError {

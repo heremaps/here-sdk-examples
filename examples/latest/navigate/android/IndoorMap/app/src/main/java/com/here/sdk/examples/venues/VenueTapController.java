@@ -346,7 +346,7 @@ public class VenueTapController {
             recyclerView.setAdapter(new SpaceAdapter(context, geometryList, (MainActivity) context));
     }
 
-    private void deselectTopolgy() {
+    public void deselectTopolgy() {
         topologyLayout.setVisibility(View.GONE);
         sheetBehavior.setPeekHeight(300);
         // If there is a selected geometry, reset its style.

@@ -40,8 +40,8 @@ class SpatialAudioExample {
         return navigating
     }
     
-    public func playSpatialAudioCue(audioCue: String, initialAzimuthInDegrees: Float, audioCuePanning: SpatialManeuverAudioCuePanning){
-        encoder!.playAudioCue(audioCue: audioCue, initialAzimuthInDegrees: initialAzimuthInDegrees, audioCuePanning: audioCuePanning)
+    public func playSpatialAudioCue(audioCue: String, initialAzimuthInDegrees: Float, audioCuePanning: SpatialAudioCuePanning, azimuthCallback : @escaping SpatialAudioCuePanning.onSpatialAzimuthStarterHandler){
+        encoder!.playAudioCue(audioCue: audioCue, initialAzimuthInDegrees: initialAzimuthInDegrees, audioCuePanning: audioCuePanning,azimuthCallback: azimuthCallback)
     }
     
     public func updatePanning(azimuthInDegrees: Float) {
