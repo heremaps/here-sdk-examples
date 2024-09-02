@@ -37,6 +37,7 @@ class RoutingExample {
   late RoutingEngine _routingEngine;
   bool _trafficOptimization = true;
   final ShowDialogFunction _showDialog;
+  List<Waypoint> waypoints = [];
   final _BERLIN_HQ_GEO_COORDINATES = GeoCoordinates(52.530971, 13.385088);
 
   RoutingExample(ShowDialogFunction showDialogCallback,
@@ -60,36 +61,41 @@ class RoutingExample {
     var startWaypoint = Waypoint.withDefaults(startGeoCoordinates);
     var destinationWaypoint = Waypoint.withDefaults(destinationGeoCoordinates);
 
-    List<Waypoint> waypoints = [startWaypoint, destinationWaypoint];
-
-    CarOptions carOptions = CarOptions();
-    carOptions.routeOptions.enableTolls = true;
-    // Disabled - Traffic optimization is completely disabled, including long-term road closures. It helps in producing stable routes.
-    // Time dependent - Traffic optimization is enabled, the shape of the route will be adjusted according to the traffic situation which depends on departure time and arrival time.
-    carOptions.routeOptions.trafficOptimizationMode =
-        _trafficOptimization ? TrafficOptimizationMode.timeDependent : TrafficOptimizationMode.disabled;
-
-    _routingEngine.calculateCarRoute(waypoints, carOptions,
-        (RoutingError? routingError, List<here.Route>? routeList) async {
-      if (routingError == null) {
-        // When error is null, then the list guaranteed to be not null.
-        here.Route route = routeList!.first;
-        _showRouteDetails(route);
-        _showRouteOnMap(route);
-        _logRouteRailwayCrossingDetails(route);
-        _logRouteSectionDetails(route);
-        _logRouteViolations(route);
-        _logTollDetails(route);
-        _animateToRoute(route);
-      } else {
-        var error = routingError.toString();
-        _showDialog('Error', 'Error while calculating a route: $error');
-      }
-    });
+    waypoints = [startWaypoint, destinationWaypoint];
+    _calculateRoute(waypoints);
   }
 
   void toggleTrafficOptimization() {
     _trafficOptimization = !_trafficOptimization;
+    if (waypoints.isNotEmpty) {
+      _calculateRoute(waypoints);
+    }
+  }
+
+  void _calculateRoute(List<Waypoint> waypoints){
+    CarOptions carOptions = CarOptions();
+    carOptions.routeOptions.enableTolls = true;
+    // Disabled - Traffic optimization is completely disabled, including long-term road closures. It helps in producing stable routes.
+    // Time dependent - Traffic optimization is enabled, the shape of the route will be adjusted according to the traffic situation which depends on departure time and arrival time.
+    carOptions.routeOptions.trafficOptimizationMode = _trafficOptimization ? TrafficOptimizationMode.timeDependent : TrafficOptimizationMode.disabled;
+
+    _routingEngine.calculateCarRoute(waypoints, carOptions,
+            (RoutingError? routingError, List<here.Route>? routeList) async {
+          if (routingError == null) {
+            // When error is null, then the list guaranteed to be not null.
+            here.Route route = routeList!.first;
+            _showRouteDetails(route);
+            _showRouteOnMap(route);
+            _logRouteRailwayCrossingDetails(route);
+            _logRouteSectionDetails(route);
+            _logRouteViolations(route);
+            _logTollDetails(route);
+            _animateToRoute(route);
+          } else {
+            var error = routingError.toString();
+            _showDialog('Error', 'Error while calculating a route: $error');
+          }
+        });
   }
 
   // A route may contain several warnings, for example, when a certain route option could not be fulfilled.
@@ -210,6 +216,7 @@ class RoutingExample {
   }
 
   _showRouteOnMap(here.Route route) {
+    clearMap();
     // Show route as polyline.
     GeoPolyline routeGeoPolyline = route.geometry;
     double widthInPixels = 20;

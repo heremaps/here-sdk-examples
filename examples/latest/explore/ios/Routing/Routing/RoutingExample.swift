@@ -28,7 +28,8 @@ class RoutingExample {
     private var routingEngine: RoutingEngine
     private var startGeoCoordinates: GeoCoordinates?
     private var destinationGeoCoordinates: GeoCoordinates?
-    private var disableOptimization = false
+    private var disableOptimization = true
+    private var waypoints: Array<Waypoint> = Array()
     
     init(_ mapView: MapView) {
         self.mapView = mapView
@@ -61,9 +62,13 @@ class RoutingExample {
     func addRoute() {
         startGeoCoordinates = createRandomGeoCoordinatesAroundMapCenter()
         destinationGeoCoordinates = createRandomGeoCoordinatesAroundMapCenter()
-        
-        routingEngine.calculateRoute(with: [Waypoint(coordinates: startGeoCoordinates!),
-                                            Waypoint(coordinates: destinationGeoCoordinates!)],
+        waypoints = [Waypoint(coordinates: startGeoCoordinates!),
+                     Waypoint(coordinates: destinationGeoCoordinates!)]
+        calculateRoute(waypoints: waypoints)
+    }
+    
+    private func calculateRoute(waypoints: Array<Waypoint>){
+        routingEngine.calculateRoute(with: waypoints,
                                      carOptions: getCaroptions()) { (routingError, routes) in
             
             if let error = routingError {
@@ -79,6 +84,7 @@ class RoutingExample {
             self.logRouteSectionDetails(route: route!)
             self.logRouteViolations(route: route!)
             self.logTollDetails(route: route!)
+            self.showWaypointsOnMap()
         }
     }
     
@@ -120,6 +126,9 @@ class RoutingExample {
     
     func toggleTrafficOptimization(){
         disableOptimization = !disableOptimization
+        if !waypoints.isEmpty {
+            calculateRoute(waypoints: waypoints)
+        }
     }
     
     private func toString(geoCoordinates: GeoCoordinates) -> String {
@@ -234,13 +243,6 @@ class RoutingExample {
         // Please note that this is not the recommended way. It is recommeded to display the default traffic polylines adjacent to route polyline.
         showTrafficOnRoute(route)
         
-        let startPoint = route.sections.first!.departurePlace.mapMatchedCoordinates
-        let destination = route.sections.last!.arrivalPlace.mapMatchedCoordinates
-        
-        // Draw a circle to indicate starting point and destination.
-        addCircleMapMarker(geoCoordinates: startPoint, imageName: "green_dot.png")
-        addCircleMapMarker(geoCoordinates: destination, imageName: "green_dot.png")
-        
         // Log maneuver instructions per route leg / sections.
         let sections = route.sections
         for section in sections {
@@ -271,28 +273,21 @@ class RoutingExample {
         
         let waypoint1GeoCoordinates = createRandomGeoCoordinatesAroundMapCenter()
         let waypoint2GeoCoordinates = createRandomGeoCoordinatesAroundMapCenter()
-        let waypoints = [Waypoint(coordinates: startGeoCoordinates),
+        waypoints = [Waypoint(coordinates: startGeoCoordinates),
                          Waypoint(coordinates: waypoint1GeoCoordinates),
                          Waypoint(coordinates: waypoint2GeoCoordinates),
                          Waypoint(coordinates: destinationGeoCoordinates)]
+        calculateRoute(waypoints: waypoints)
+    }
+    
+    private func showWaypointsOnMap(){
+        // Draw a green circle to indicate starting point and destination.
+        addCircleMapMarker(geoCoordinates: waypoints.first!.coordinates, imageName: "green_dot.png")
+        addCircleMapMarker(geoCoordinates: waypoints.last!.coordinates, imageName: "green_dot.png")
         
-        routingEngine.calculateRoute(with: waypoints,
-                                     carOptions: getCaroptions()) { (routingError, routes) in
-            
-            if let error = routingError {
-                self.showDialog(title: "Error while calculating a route:", message: "\(error)")
-                return
-            }
-            
-            let route = routes!.first
-            self.showRouteDetails(route: route!)
-            self.showRouteOnMap(route: route!)
-            self.logRouteSectionDetails(route: route!)
-            self.logRouteViolations(route: route!)
-            
+        for i in 1...waypoints.count-1{
             // Draw a circle to indicate the location of the waypoints.
-            self.addCircleMapMarker(geoCoordinates: waypoint1GeoCoordinates, imageName: "red_dot.png")
-            self.addCircleMapMarker(geoCoordinates: waypoint2GeoCoordinates, imageName: "red_dot.png")
+            addCircleMapMarker(geoCoordinates: waypoints[i].coordinates, imageName: "red_dot.png")
         }
     }
     

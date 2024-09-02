@@ -21,6 +21,7 @@ package com.here.routing;
 
 import android.content.Context;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -77,6 +78,7 @@ public class RoutingExample {
     private GeoCoordinates startGeoCoordinates;
     private GeoCoordinates destinationGeoCoordinates;
     private boolean trafficDisabled;
+    List<Waypoint> waypoints = new ArrayList<>();
 
     public RoutingExample(Context context, MapView mapView) {
         this.context = context;
@@ -99,9 +101,12 @@ public class RoutingExample {
         Waypoint startWaypoint = new Waypoint(startGeoCoordinates);
         Waypoint destinationWaypoint = new Waypoint(destinationGeoCoordinates);
 
-        List<Waypoint> waypoints =
+        waypoints =
                 new ArrayList<>(Arrays.asList(startWaypoint, destinationWaypoint));
+        calculateRoute(waypoints);
+    }
 
+    private void calculateRoute(List<Waypoint> waypoints) {
         routingEngine.calculateRoute(
                 waypoints,
                 getCarOptions(),
@@ -116,6 +121,7 @@ public class RoutingExample {
                             logRouteSectionDetails(route);
                             logRouteViolations(route);
                             logTollDetails(route);
+                            showWaypointsOnMap(waypoints);
                         } else {
                             showDialog("Error while calculating a route:", routingError.toString());
                         }
@@ -144,6 +150,10 @@ public class RoutingExample {
 
     public void toggleTrafficOptimization() {
         trafficDisabled = !trafficDisabled;
+        if (!waypoints.isEmpty()) {
+            calculateRoute(waypoints);
+        }
+        Toast.makeText(context, "Traffic optimization is " + (trafficDisabled ? "Disabled" : "Enabled"), Toast.LENGTH_LONG).show();
     }
 
 
@@ -264,19 +274,24 @@ public class RoutingExample {
         // Optionally, render traffic on route.
         showTrafficOnRoute(route);
 
-        GeoCoordinates startPoint =
-                route.getSections().get(0).getDeparturePlace().mapMatchedCoordinates;
-        GeoCoordinates destination =
-                route.getSections().get(route.getSections().size() - 1).getArrivalPlace().mapMatchedCoordinates;
-
-        // Draw a circle to indicate starting point and destination.
-        addCircleMapMarker(startPoint, R.drawable.green_dot);
-        addCircleMapMarker(destination, R.drawable.green_dot);
-
         // Log maneuver instructions per route section.
         List<Section> sections = route.getSections();
         for (Section section : sections) {
             logManeuverInstructions(section);
+        }
+    }
+
+    private void showWaypointsOnMap(List<Waypoint> waypoints) {
+        int n = waypoints.size();
+        for (int i = 0; i < n; i++) {
+            GeoCoordinates currentGeoCoordinates = waypoints.get(i).coordinates;
+            if (i == 0 || i == n - 1) {
+                // Draw a green circle to indicate starting point and destination.
+                addCircleMapMarker(currentGeoCoordinates, R.drawable.green_dot);
+            } else {
+                // Draw a red circle to indicate intermediate waypoints, if any.
+                addCircleMapMarker(currentGeoCoordinates, R.drawable.red_dot);
+            }
         }
     }
 
@@ -301,30 +316,9 @@ public class RoutingExample {
 
         Waypoint waypoint1 = new Waypoint(createRandomGeoCoordinatesAroundMapCenter());
         Waypoint waypoint2 = new Waypoint(createRandomGeoCoordinatesAroundMapCenter());
-        List<Waypoint> waypoints = new ArrayList<>(Arrays.asList(new Waypoint(startGeoCoordinates),
+        waypoints = new ArrayList<>(Arrays.asList(new Waypoint(startGeoCoordinates),
                 waypoint1, waypoint2, new Waypoint(destinationGeoCoordinates)));
-
-        routingEngine.calculateRoute(
-                waypoints,
-                getCarOptions(),
-                new CalculateRouteCallback() {
-                    @Override
-                    public void onRouteCalculated(@Nullable RoutingError routingError, @Nullable List<Route> routes) {
-                        if (routingError == null) {
-                            Route route = routes.get(0);
-                            showRouteDetails(route);
-                            showRouteOnMap(route);
-                            logRouteSectionDetails(route);
-                            logRouteViolations(route);
-
-                            // Draw a circle to indicate the location of the waypoints.
-                            addCircleMapMarker(waypoint1.coordinates, R.drawable.red_dot);
-                            addCircleMapMarker(waypoint2.coordinates, R.drawable.red_dot);
-                        } else {
-                            showDialog("Error while calculating a route:", routingError.toString());
-                        }
-                    }
-                });
+        calculateRoute(waypoints);
     }
 
     private CarOptions getCarOptions() {
