@@ -66,7 +66,7 @@ class VenueTapController {
 
   onTap(Point2D origin) {
     _deselectGeometry();
-    _deselectTopology();
+    deselectTopology();
 
     // Get geo coordinates of the tapped point.
     GeoCoordinates? position = hereMapController!.viewToGeoCoordinates(origin);
@@ -109,6 +109,7 @@ class VenueTapController {
   }
 
   selectTopology(VenueTopology topology, GeoCoordinates position) {
+    _selectedVenue = venueMap.selectedVenue;
     topologyDetails = getTopologyInfo(topology);
     _selectedTopology = topology;
     if(_selectedTopology != null) {
@@ -185,12 +186,12 @@ class VenueTapController {
     return result.toString();
   }
 
-  _deselectTopology() {
+  deselectTopology() {
     if (_selectedVenue != null && _selectedTopology != null) {
       _selectedVenue!.setCustomStyleToTopology([_selectedTopology!], null);
       _selectedTopology = null;
-      topologyLineTapped.isTopologyLineTapped.value = false;
     }
+    topologyLineTapped.isTopologyLineTapped.value = false;
   }
 
   selectGeometry(VenueGeometry geometry, GeoCoordinates position, bool center) {

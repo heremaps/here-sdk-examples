@@ -84,7 +84,7 @@ public class VenueTapHandler {
         // Get geo coordinates of the tapped point.
         if let position = mapView.viewToGeoCoordinates(viewCoordinates: origin) {
             if let selectedVenue = venueMap.selectedVenue, let topology = venueMap.getTopology(position: position) {
-                selectTopology(topology: topology, position: position)
+                selectTopology(venue: selectedVenue, topology: topology, position: position)
             } else {
                 // If the tap point was inside a selected venue, try to pick a geometry inside.
                 // Otherwise try to select an another venue, if the tap point was on top of one of them.
@@ -237,12 +237,13 @@ public class VenueTapHandler {
         }
     }
 
-    public func selectTopology(topology: VenueTopology, position: GeoCoordinates) {
+    public func selectTopology(venue: Venue, topology: VenueTopology, position: GeoCoordinates) {
 
         let attributedTexts = getTopologyInfo(topology: topology)
         deselectTopology()
         showTopologyPopup(with: attributedTexts)
         self.selectedTopology = topology
+        self.selectedVenue = venue
 
         if (self.selectedTopology != nil) {
             selectedVenue?.setCustomStyle(topologies: [topology], style: topologyStyle)

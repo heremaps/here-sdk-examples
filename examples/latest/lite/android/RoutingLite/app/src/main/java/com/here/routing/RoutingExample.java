@@ -64,7 +64,6 @@ public class RoutingExample {
     private RoutingEngine routingEngine;
     private GeoCoordinates startGeoCoordinates;
     private GeoCoordinates destinationGeoCoordinates;
-    private boolean trafficDisabled;
 
     public RoutingExample(Context context, MapViewLite mapView) {
         this.context = context;
@@ -162,18 +161,12 @@ public class RoutingExample {
         }
     }
 
-    public void toggleTrafficOptimization() {
-        trafficDisabled = !trafficDisabled;
-    }
-
     private CarOptions getCarOptions() {
         CarOptions carOptions = new CarOptions();
         carOptions.routeOptions.enableTolls = true;
         // Disabled - Traffic optimization is completely disabled, including long-term road closures. It helps in producing stable routes.
         // Time dependent - Traffic optimization is enabled, the shape of the route will be adjusted according to the traffic situation which depends on departure time and arrival time.
-        carOptions.routeOptions.trafficOptimizationMode = trafficDisabled ?
-                TrafficOptimizationMode.DISABLED :
-                TrafficOptimizationMode.TIME_DEPENDENT;
+        carOptions.routeOptions.trafficOptimizationMode = TrafficOptimizationMode.TIME_DEPENDENT;
         return carOptions;
     }
 
