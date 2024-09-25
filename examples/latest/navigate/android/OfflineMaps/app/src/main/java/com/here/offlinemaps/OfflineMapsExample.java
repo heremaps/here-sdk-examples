@@ -19,6 +19,7 @@
 
 package com.here.offlinemaps;
 
+import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -28,8 +29,10 @@ import com.google.android.material.snackbar.Snackbar;
 import com.here.sdk.core.GeoBox;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.LanguageCode;
+import com.here.sdk.core.engine.LayerConfiguration;
 import com.here.sdk.core.engine.SDKBuildInformation;
 import com.here.sdk.core.engine.SDKNativeEngine;
+import com.here.sdk.core.engine.SDKOptions;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.maploader.CatalogUpdateInfo;
 import com.here.sdk.maploader.CatalogUpdateProgressListener;
@@ -42,6 +45,7 @@ import com.here.sdk.maploader.MapDownloaderConstructionCallback;
 import com.here.sdk.maploader.MapDownloaderTask;
 import com.here.sdk.maploader.MapLoaderError;
 import com.here.sdk.maploader.MapLoaderException;
+import com.here.sdk.maploader.MapUpdateProgressListener;
 import com.here.sdk.maploader.MapUpdater;
 import com.here.sdk.maploader.MapUpdaterConstructionCallback;
 import com.here.sdk.maploader.MapVersionHandle;
@@ -50,6 +54,8 @@ import com.here.sdk.maploader.PersistentMapStatus;
 import com.here.sdk.maploader.Region;
 import com.here.sdk.maploader.RegionId;
 import com.here.sdk.maploader.RepairPersistentMapCallback;
+import com.here.sdk.maploader.SDKCache;
+import com.here.sdk.maploader.SDKCacheCallback;
 import com.here.sdk.mapview.MapCamera;
 import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapView;
@@ -75,6 +81,9 @@ public class OfflineMapsExample {
     private List<Region> downloadableRegions = new ArrayList<>();
     private final List<MapDownloaderTask> mapDownloaderTasks = new ArrayList<>();
     private final Snackbar snackbar;
+    private final String TAG = OfflineMapsExample.class.getSimpleName();
+    private boolean offlineSearchLayerEnabled = true;
+    private boolean switchOffline = false;
 
     public OfflineMapsExample(MapView mapView) {
 
@@ -82,7 +91,7 @@ public class OfflineMapsExample {
         MapCamera camera = mapView.getCamera();
         double distanceInMeters = 1000 * 7;
         MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
-        camera.lookAt(new GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
+        camera.lookAt(new GeoCoordinates(46.94843, 7.44046), mapMeasureZoom);
 
         this.mapView = mapView;
 
@@ -101,7 +110,7 @@ public class OfflineMapsExample {
 
         // Note that the default storage path can be adapted when creating a new SDKNativeEngine.
         String storagePath = sdkNativeEngine.getOptions().cachePath;
-        Log.d("",  "StoragePath: " + storagePath);
+        Log.d("", "StoragePath: " + storagePath);
 
         // In case you want to set a custom path for cache and map data, you can replace the
         // above initializtion of SDKNativeEngine with the code below using SDKOptions:
@@ -136,46 +145,11 @@ public class OfflineMapsExample {
             // You can use Android's API call to Context.getExternalFilesDir(), but that does not
             // always provide the path to external storage.
          */
-
-        MapDownloader.fromEngineAsync(sdkNativeEngine, new MapDownloaderConstructionCallback() {
-            @Override
-            public void onMapDownloaderConstructedCompleted(@NonNull MapDownloader mapDownloader) {
-                OfflineMapsExample.this.mapDownloader = mapDownloader;
-
-                // Checks the status of already downloaded map data and eventually repairs it.
-                // Important: For production-ready apps, it is recommended to not do such operations silently in
-                // the background and instead inform the user.
-                checkInstallationStatus();
-            }
-        });
-
-        MapUpdater.fromEngineAsync(sdkNativeEngine, new MapUpdaterConstructionCallback() {
-            @Override
-            public void onMapUpdaterConstructe(@NonNull MapUpdater mapUpdater) {
-                OfflineMapsExample.this.mapUpdater = mapUpdater;
-                performUpdateChecks();
-            }
-        });
-
+        initMapDownloader(sdkNativeEngine);
+        initMapUpdater(sdkNativeEngine);
         String info = "This example allows to download the region Switzerland.";
         snackbar = Snackbar.make(mapView, info, Snackbar.LENGTH_INDEFINITE);
         snackbar.show();
-    }
-
-    private void performUpdateChecks() {
-        logHERESDKVersion();
-        logCurrentMapVersion();
-
-        // Checks if map updates are available for any of the already downloaded maps.
-        // If a new map download is started via MapDownloader during an update process,
-        // a NOT_READY error is indicated.
-        // Note that this example only shows how to download one region.
-        // Important: For production-ready apps, it is recommended to ask users whether
-        // it's okay for them to update now and to give an indication when the process has completed.
-        // - Since all regions are updated in one rush, a large amount of data may be downloaded.
-        // - By default, the update process should not be done while an app runs in background as then the
-        // download can be interrupted by the OS.
-        checkForMapUpdates();
     }
 
     public void onDownloadListClicked() {
@@ -209,7 +183,7 @@ public class OfflineMapsExample {
                     for (Region childRegion : childRegions) {
                         long sizeOnDiskInMB = childRegion.sizeOnDiskInBytes / (1024 * 1024);
                         String logMessage = "Child region: " + childRegion.name +
-                                ", ID: "+ childRegion.regionId.id +
+                                ", ID: " + childRegion.regionId.id +
                                 ", Size: " + sizeOnDiskInMB + " MB";
                         Log.d("RegionsCallback", logMessage);
                     }
@@ -234,7 +208,7 @@ public class OfflineMapsExample {
         String swizNameInGerman = "Schweiz";
         Region region = findRegion(swizNameInGerman);
 
-        if (region == null ) {
+        if (region == null) {
             String message = "Error: The Swiz region was not found. Click 'Regions' first.";
             snackbar.setText(message).show();
             return;
@@ -261,7 +235,7 @@ public class OfflineMapsExample {
                     @Override
                     public void onProgress(@NonNull RegionId regionId, int percentage) {
                         String message = "Download for Switzerland. ID: " + regionId.id +
-                            ". Progress: " + percentage + "%.";
+                                ". Progress: " + percentage + "%.";
                         snackbar.setText(message).show();
                     }
 
@@ -319,13 +293,15 @@ public class OfflineMapsExample {
         mapDownloaderTasks.clear();
     }
 
-    public void onSwitchOnlineButtonClicked() {
-        SDKNativeEngine.getSharedInstance().setOfflineMode(false);
-        snackbar.setText("The app is allowed to go online.").show();
-    }
-    public void onSwitchOfflineButtonClicked() {
-        SDKNativeEngine.getSharedInstance().setOfflineMode(true);
-        snackbar.setText("The app is radio-silence.").show();
+    public void toggleOfflineMode() {
+        switchOffline = !switchOffline;
+        if (switchOffline) {
+            SDKNativeEngine.getSharedInstance().setOfflineMode(true);
+            snackbar.setText("The app is radio-silence.").show();
+        } else {
+            SDKNativeEngine.getSharedInstance().setOfflineMode(false);
+            snackbar.setText("The app is allowed to go online.").show();
+        }
     }
 
     // A test call that shows that, for example, search is possible on downloaded regions.
@@ -457,8 +433,42 @@ public class OfflineMapsExample {
                 // the internal catalog data that is needed to download, update or delete
                 // existing `Region` data. It is required to do this at least once
                 // before doing a new download, update or delete operation.
-            }});
+            }
+        });
     }
+
+    // It is recommended to perform feature update after feature configuration changes.
+    // This will delete cached map data and subsequently update it. Also, the downloaded regions will be updated to reflect the changes.
+    // Note: Calling performFeatureUpdate() will do nothing when there is no region installed.
+    private void performFeatureUpdate() {
+        Log.d(TAG, "Map feature update called");
+        mapUpdater.performFeatureUpdate(new MapUpdateProgressListener() {
+            @Override
+            public void onProgress(@NonNull RegionId regionId, int i) {
+                Log.d(TAG, "Map feature update progress for " + regionId.toString() + " " + i);
+            }
+
+            @Override
+            public void onPause(@Nullable MapLoaderError mapLoaderError) {
+                Log.d(TAG, "Map feature update progress paused: " + mapLoaderError.name());
+            }
+
+            @Override
+            public void onComplete(@Nullable MapLoaderError mapLoaderError) {
+                if (mapLoaderError == null) {
+                    Log.d(TAG, "Map feature update progress completed: ");
+                } else {
+                    Log.d(TAG, "Map feature update progress error: " + mapLoaderError.name());
+                }
+            }
+
+            @Override
+            public void onResume() {
+                Log.d(TAG, "Map feature update progress resumed.");
+            }
+        });
+    }
+
 
     private void checkInstallationStatus() {
         if (mapDownloader == null) {
@@ -494,6 +504,108 @@ public class OfflineMapsExample {
         }
     }
 
+    public void toggleLayerConfiguration(String accessKeyID, String accessKeySecret, Context context) {
+        // Cached map data persists until the Least Recently Used (LRU) eviction policy is triggered.
+        // After modifying the "FeatureConfiguration" calling performFeatureUpdate()
+        // will also clear the cache if at least one region has been installed.
+        // This app allows the user to install one region for testing purposes.
+        // In order to simplify testing when no region has been installed, we 
+        // explicitly clear the cache. 
+        // If the cache is not cleared, the HERE SDK will look for cached data, for example,
+        // when using the OfflineSearchEngine.
+        SDKNativeEngine sdkNativeEngine;
+        try {
+            SDKOptions options = new SDKOptions(accessKeyID, accessKeySecret);
+            // Toggle the layer configuration.
+            offlineSearchLayerEnabled = !offlineSearchLayerEnabled;
+            // LayerConfiguration can only be updated before HERE SDK initialization.
+            if (offlineSearchLayerEnabled) {
+                options.layerConfiguration = getLayerConfigurationWithOfflineSearch();
+                snackbar.setText("Enabled minimal layer configuration with OFFLINE_SEARCH layer.");
+            } else {
+                options.layerConfiguration = getLayerConfigurationWithoutOfflineSearch();
+                snackbar.setText("Enabled minimal layer configuration without OFFLINE_SEARCH layer.");
+            }
+            sdkNativeEngine = new SDKNativeEngine(context, options);
+            SDKNativeEngine.setSharedInstance(sdkNativeEngine);
+            initMapUpdater(sdkNativeEngine);
+            initMapDownloader(sdkNativeEngine);
+        } catch (InstantiationErrorException e) {
+            throw new RuntimeException("ReInitialization of HERE SDK failed: " + e.error.name());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void initMapUpdater(SDKNativeEngine sdkNativeEngine) {
+        MapUpdater.fromEngineAsync(sdkNativeEngine, new MapUpdaterConstructionCallback() {
+            @Override
+            public void onMapUpdaterConstructe(@NonNull MapUpdater mapUpdater) {
+                OfflineMapsExample.this.mapUpdater = mapUpdater;
+                performUpdateChecks();
+            }
+        });
+    }
+
+    private void performUpdateChecks() {
+        logHERESDKVersion();
+        logCurrentMapVersion();
+
+        // Checks if map updates are available for any of the already downloaded maps.
+        // If a new map download is started via MapDownloader during an update process,
+        // a NOT_READY error is indicated.
+        // Note that this example only shows how to download one region.
+        // Important: For production-ready apps, it is recommended to ask users whether
+        // it's okay for them to update now and to give an indication when the process has completed.
+        // - Since all regions are updated in one rush, a large amount of data may be downloaded.
+        // - By default, the update process should not be done while an app runs in background as then the
+        // download can be interrupted by the OS.
+        checkForMapUpdates();
+
+        // Checks and updates in cases of map feature configuration changes.
+        performFeatureUpdate();
+
+    }
+
+    private void initMapDownloader(SDKNativeEngine sdkNativeEngine) {
+        MapDownloader.fromEngineAsync(sdkNativeEngine, new MapDownloaderConstructionCallback() {
+            @Override
+            public void onMapDownloaderConstructedCompleted(@NonNull MapDownloader mapDownloader) {
+                OfflineMapsExample.this.mapDownloader = mapDownloader;
+
+                // Checks the status of already downloaded map data and eventually repairs it.
+                // Important: For production-ready apps, it is recommended to not do such operations silently in
+                // the background and instead inform the user.
+                checkInstallationStatus();
+            }
+        });
+    }
+
+    // With this layer configuration we enable only the listed layers.
+    // All the other layers including the default layers will be disabled.
+    private LayerConfiguration getLayerConfigurationWithOfflineSearch() {
+        ArrayList<LayerConfiguration.Feature> features = new ArrayList<>();
+        features.add(LayerConfiguration.Feature.DETAIL_RENDERING);
+        features.add(LayerConfiguration.Feature.RENDERING);
+        features.add(LayerConfiguration.Feature.OFFLINE_SEARCH);
+        LayerConfiguration layerConfiguration = new LayerConfiguration();
+        layerConfiguration.enabledFeatures = features;
+        return layerConfiguration;
+    }
+
+    // Here we disable the OFFLINE_SEARCH layer to show what happens when we search offline:
+    // When the layer is enabled then the OfflineSearchEngine can find results in the cached map data or installed regions.
+    // When the layer is disabled then the OfflineSearchEngine will not find any results
+    // unless there is still data from the OFFLINE_SEARCH layer in the cache.
+    private LayerConfiguration getLayerConfigurationWithoutOfflineSearch() {
+        ArrayList<LayerConfiguration.Feature> features = new ArrayList<>();
+        features.add(LayerConfiguration.Feature.DETAIL_RENDERING);
+        features.add(LayerConfiguration.Feature.RENDERING);
+        LayerConfiguration layerConfiguration = new LayerConfiguration();
+        layerConfiguration.enabledFeatures = features;
+        return layerConfiguration;
+    }
+
     private void logHERESDKVersion() {
         Log.d("HERE SDK version: ", SDKBuildInformation.sdkVersion().versionName);
     }
@@ -513,5 +625,20 @@ public class OfflineMapsExample {
             MapLoaderError mapLoaderError = e.error;
             Log.e("MapLoaderError", "Fetching current map version failed: " + mapLoaderError.toString());
         }
+    }
+
+    // Cached map data will not be removed until the least recently used (LRU) strategy is applied.
+    // Therefore, we can manually clear the cache to remove any outdated entries.
+    public void clearCache() {
+        SDKCache.fromEngine(SDKNativeEngine.getSharedInstance()).clearCache(new SDKCacheCallback() {
+            @Override
+            public void onCompleted(@Nullable MapLoaderError mapLoaderError) {
+                if (mapLoaderError != null) {
+                    snackbar.setText("Cache clear error " + mapLoaderError.name());
+                } else {
+                    snackbar.setText("Cache clear succeeded.");
+                }
+            }
+        });
     }
 }

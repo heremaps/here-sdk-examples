@@ -29,6 +29,7 @@ import androidx.appcompat.app.AlertDialog;
 import com.here.sdk.core.Color;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.GeoPolyline;
+import com.here.sdk.core.LocationTime;
 import com.here.sdk.core.Point2D;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.mapview.LineCap;
@@ -63,8 +64,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 public class RoutingExample {
 
@@ -78,6 +79,7 @@ public class RoutingExample {
     private GeoCoordinates startGeoCoordinates;
     private GeoCoordinates destinationGeoCoordinates;
     private boolean trafficDisabled;
+    private final TimeUtils timeUtils;
     List<Waypoint> waypoints = new ArrayList<>();
 
     public RoutingExample(Context context, MapView mapView) {
@@ -87,7 +89,7 @@ public class RoutingExample {
         double distanceInMeters = 1000 * 10;
         MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
         camera.lookAt(new GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
-
+        timeUtils = new TimeUtils();
         try {
             routingEngine = new RoutingEngine();
         } catch (InstantiationErrorException e) {
@@ -226,25 +228,19 @@ public class RoutingExample {
         long estimatedTrafficDelayInSeconds = route.getTrafficDelay().getSeconds();
         int lengthInMeters = route.getLengthInMeters();
 
-        String routeDetails = "Travel Time: " + formatTime(estimatedTravelTimeInSeconds)
-                + ", traffic delay: " + formatTime(estimatedTrafficDelayInSeconds)
-                + ", Length: " + formatLength(lengthInMeters);
+        // Timezones can vary depending on the device's geographic location.
+        // For instance, when calculating a route, the device's current timezone may differ from that of the destination.
+        // Consider a scenario where a user calculates a route from Berlin to London — each city operates in a different timezone.
+        // To address this, you can display the Estimated Time of Arrival (ETA) in multiple timezones: the device's current timezone (Berlin), the destination's timezone (London), and UTC (Coordinated Universal Time), which serves as a global reference.
+        String routeDetails =
+                "Travel Duration: " + timeUtils.formatTime(estimatedTravelTimeInSeconds) +
+                        "\nTraffic delay: " + timeUtils.formatTime(estimatedTrafficDelayInSeconds)
+                        + "\nRoute length (m): " + timeUtils.formatLength(lengthInMeters) +
+                        "\nETA in device timezone: " + timeUtils.getETAinDeviceTimeZone(route) +
+                        "\nETA in destination timezone: " + timeUtils.getETAinDestinationTimeZone(route) +
+                        "\nETA in UTC: " + timeUtils.getEstimatedTimeOfArrivalInUTC(route);
 
         showDialog("Route Details", routeDetails);
-    }
-
-    private String formatTime(long sec) {
-        int hours = (int) (sec / 3600);
-        int minutes = (int) ((sec % 3600) / 60);
-
-        return String.format(Locale.getDefault(), "%02d:%02d", hours, minutes);
-    }
-
-    private String formatLength(int meters) {
-        int kilometers = meters / 1000;
-        int remainingMeters = meters % 1000;
-
-        return String.format(Locale.getDefault(), "%02d.%02d km", kilometers, remainingMeters);
     }
 
     private void showRouteOnMap(Route route) {

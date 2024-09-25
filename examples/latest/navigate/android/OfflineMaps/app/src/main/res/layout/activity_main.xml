@@ -2,87 +2,109 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/parentLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.here.mapobjects.MainActivity">
+    tools:context="com.here.offlinemaps.MainActivity">
 
     <com.here.sdk.mapview.MapView
         android:id="@+id/map_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-    </com.here.sdk.mapview.MapView>
+        android:layout_height="match_parent"/>
 
     <LinearLayout
-        app:layout_constraintTop_toTopOf="parent"
         android:id="@+id/first_button_row"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        app:layout_constraintTop_toTopOf="parent">
+
         <Button
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:backgroundTint="@android:color/holo_blue_light"
-            android:textColor="@android:color/white"
-            android:textSize="8sp"
+            android:onClick="onDownloadListClicked"
             android:text="Regions"
-            android:onClick="onDownloadListClicked" />
+            android:textColor="@android:color/white"
+            android:textSize="8sp" />
 
         <Button
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:backgroundTint="@android:color/holo_blue_light"
-            android:textColor="@android:color/white"
-            android:textSize="8sp"
+            android:onClick="onDownloadMapClicked"
             android:text="Download"
-            android:onClick="onDownloadMapClicked" />
+            android:textColor="@android:color/white"
+            android:textSize="8sp" />
 
         <Button
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:backgroundTint="@android:color/holo_blue_light"
-            android:textColor="@android:color/white"
-            android:textSize="8sp"
+            android:onClick="onCancelMapDownloadClicked"
             android:text="Cancel"
-            android:onClick="onCancelMapDownloadClicked" />
-
-        <Button
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:backgroundTint="@android:color/holo_blue_light"
             android:textColor="@android:color/white"
-            android:textSize="8sp"
-            android:text="Test"
-            android:onClick="onSearchPlaceClicked" />
+            android:textSize="8sp" />
+
     </LinearLayout>
 
     <LinearLayout
-        app:layout_constraintTop_toBottomOf="@+id/first_button_row"
+        android:id="@+id/switchRow"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <Button
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:backgroundTint="@android:color/holo_blue_light"
-            android:textColor="@android:color/white"
-            android:textSize="8sp"
-            android:text="Switch Online"
-            android:onClick="switchOnlineButtonClicked" />
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@+id/first_button_row">
 
         <Button
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:backgroundTint="@android:color/holo_blue_light"
+            android:onClick="onSearchPlaceClicked"
+            android:text="Test offline search"
+            android:textColor="@android:color/white"
+            android:textSize="8sp" />
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:backgroundTint="@android:color/holo_blue_light"
+            android:onClick="clearCache"
+            android:text="Clear cache"
+            android:textColor="@android:color/white"
+            android:textSize="8sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@+id/switchRow">
+
+        <ToggleButton
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:backgroundTint="@android:color/holo_blue_light"
+            android:onClick="toggleConfiguration"
             android:textColor="@android:color/white"
             android:textSize="8sp"
-            android:text="Switch Offline"
-            android:onClick="switchOfflineButtonClicked" />
+            android:textOff="OFFLINE_SEARCH layer: ON"
+            android:textOn="OFFLINE_SEARCH layer: OFF" />
+        <ToggleButton
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:backgroundTint="@android:color/holo_blue_light"
+            android:onClick="toggleOfflineMode"
+            android:textColor="@android:color/white"
+            android:textSize="8sp"
+            android:textOff="Offline mode: OFF"
+            android:textOn="Offline mode: ON" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

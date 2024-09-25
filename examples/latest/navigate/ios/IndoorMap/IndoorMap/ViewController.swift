@@ -283,6 +283,18 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, VenueInfoLi
         handleView.isHidden = true
         topPannelTopology.isHidden = true
 
+        topPannelTopology.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            topPannelTopology.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            topPannelTopology.widthAnchor.constraint(lessThanOrEqualToConstant: 41),
+            topPannelTopology.heightAnchor.constraint(equalToConstant: 52)
+        ])
+
+        NSLayoutConstraint.activate([
+            handleView.widthAnchor.constraint(equalToConstant: UIScreen.main.bounds.width),
+            handleView.heightAnchor.constraint(equalToConstant: 30),
+        ])
+
         let imageTap = UITapGestureRecognizer(target: self, action: #selector(structureSwitcherTapped(sender:)))
         imageTap.delegate = self
         structureSwitcher.addGestureRecognizer(imageTap)
@@ -339,6 +351,14 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, VenueInfoLi
         bottomDrawerHeightConstraint = bottomDrawerView.heightAnchor.constraint(equalToConstant: 105)
         bottomDrawerHeightConstraint.isActive = true
         bottomDrawerView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+
+        bottomDrawerView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            bottomDrawerView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
+            bottomDrawerView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
+            bottomDrawerHeightConstraint,
+            bottomDrawerView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
 
         // Add a pan gesture recognizer to the bottom drawer view
         let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture(_:)))
@@ -401,8 +421,17 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, VenueInfoLi
     }
     
     public func setWatermarkLocation() {
+        let screenSize = UIScreen.main.bounds.size
         let anchor = Anchor2D(horizontal: 0.0, vertical: 0.0)
-        let offset = Point2D(x: 0.0, y: 1250.0)
+
+        let offsetY: CGFloat
+        if screenSize.height <= 700.0 {
+            offsetY = 850.0
+        } else {
+            offsetY = 1250.0
+        }
+
+        let offset = Point2D(x: 0.0, y: offsetY)
         mapView.setWatermarkLocation(anchor: anchor, offset: offset)
     }
 

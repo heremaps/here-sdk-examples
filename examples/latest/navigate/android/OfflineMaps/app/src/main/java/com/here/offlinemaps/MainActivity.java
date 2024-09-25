@@ -28,7 +28,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.util.Log;
 import android.view.View;
-
 import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.core.engine.SDKOptions;
 import com.here.sdk.core.errors.InstantiationErrorException;
@@ -37,19 +36,19 @@ import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
 
+
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private PermissionsRequestor permissionsRequestor;
     private MapView mapView;
     private OfflineMapsExample offlineMapsExample;
-    private LayerConfigurationExample layerConfigurationExample;
+    String accessKeyID;
+    String accessKeySecret;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        layerConfigurationExample = new LayerConfigurationExample();
 
         // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
         initializeHERESDK();
@@ -65,17 +64,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void initializeHERESDK() {
         // Set your credentials for the HERE SDK.
-        String accessKeyID = "YOUR_ACCESS_KEY_ID";
-        String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
+        accessKeyID = "YOUR_ACCESS_KEY_ID";
+        accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
         SDKOptions options = new SDKOptions(accessKeyID, accessKeySecret);
-
-        // Uncomment this to add a feature -
-        // layerConfigurationExample.addFeature(LayerConfiguration.Feature.TERRAIN);
-        // Uncomment this to disable a feature -
-        // layerConfigurationExample.disableFeature(LayerConfiguration.Feature.TRAFFIC);
-        // LayerConfiguration can only be updated before HERE SDK initialization.
-        options.layerConfiguration = layerConfigurationExample.getCustomLayerConfiguration();
-        layerConfigurationExample.printCurrentFeatures();
 
         try {
             Context context = this;
@@ -174,11 +165,15 @@ public class MainActivity extends AppCompatActivity {
         offlineMapsExample.onSearchPlaceClicked();
     }
 
-    public void switchOnlineButtonClicked(View view) {
-        offlineMapsExample.onSwitchOnlineButtonClicked();
+    public void clearCache(View view){
+        offlineMapsExample.clearCache();
     }
 
-    public void switchOfflineButtonClicked(View view) {
-        offlineMapsExample.onSwitchOfflineButtonClicked();
+    public void toggleConfiguration(View view) {
+        offlineMapsExample.toggleLayerConfiguration(accessKeyID, accessKeySecret, getApplicationContext());
+    }
+
+    public void toggleOfflineMode(View view){
+        offlineMapsExample.toggleOfflineMode();
     }
 }

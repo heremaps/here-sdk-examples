@@ -786,6 +786,7 @@ class _MainPageState extends State<MainPage> {
     _venueEngineState.venueEngine?.venueMap.removeVenue(_venueEngineState.venueEngine!.venueMap.selectedVenue!);
     _venueEngineState.getLevelSwitcherState().onLevelsChanged(null);
     _venueEngineState.getDrawingSwitcherState().onDrawingsChanged(null);
+    _venueEngineState.venueTapController?.deselectTopology();
 
     _buildSlidingPanel();
 
