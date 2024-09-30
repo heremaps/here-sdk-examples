@@ -30,9 +30,11 @@ class RoutingExample {
     private var destinationGeoCoordinates: GeoCoordinates?
     private var disableOptimization = true
     private var waypoints: Array<Waypoint> = Array()
+    private var timeUtils: TimeUtils
     
     init(_ mapView: MapView) {
         self.mapView = mapView
+        self.timeUtils = TimeUtils()
 
         do {
             try routingEngine = RoutingEngine()
@@ -195,9 +197,16 @@ class RoutingExample {
         let estimatedTrafficDelayInSeconds = route.trafficDelay
         let lengthInMeters = route.lengthInMeters
         
-        let routeDetails = "Travel Time (h:m): " + formatTime(sec: estimatedTravelTimeInSeconds)
-        + ", Traffic Delay (h:m): " + formatTime(sec: estimatedTrafficDelayInSeconds)
-        + ", Length: " + formatLength(meters: lengthInMeters)
+        // Timezones can vary depending on the device's geographic location.
+        // For instance, when calculating a route, the device's current timezone may differ from that of the destination.
+        // Consider a scenario where a user calculates a route from Berlin to London — each city operates in a different timezone.
+        // To address this, you can display the Estimated Time of Arrival (ETA) in multiple timezones: the device's current timezone (Berlin), the destination's timezone (London), and UTC (Coordinated Universal Time), which serves as a global reference.
+        let routeDetails = "Travel Time (h:m): " + timeUtils.formatTime(sec: estimatedTravelTimeInSeconds)
+        + ", Traffic Delay (h:m): " + timeUtils.formatTime(sec: estimatedTrafficDelayInSeconds)
+        + ", Length: " + timeUtils.formatLength(meters: lengthInMeters)
+        + "\nETA in device timezone: " + timeUtils.getETAinDeviceTimeZone(route: route)
+        + "\nETA in destination timezone: " + timeUtils.getETAinDestinationTimeZone(route: route)
+        + "\nETA in UTC: "+timeUtils.getEstimatedTimeOfArrivalInUTC(route: route)
         
         showDialog(title: "Route Details", message: routeDetails)
     }

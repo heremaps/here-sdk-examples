@@ -1,7 +1,7 @@
 import UIKit
 import Flutter
 
-@main
+@UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate, BufferCompletionDelegate {
     var flutterChannel: FlutterMethodChannel? = nil
     // Create an object of AVAudioPlayerNodeManager to avoid creating multiple delegates, and send it as a parameter

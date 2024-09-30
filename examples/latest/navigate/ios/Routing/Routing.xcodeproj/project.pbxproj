@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8339C0032CA6956000689509 /* TimeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8339C0022CA6956000689509 /* TimeUtils.swift */; };
 		83C837BC2C207F340004F54E /* RoutingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C837BB2C207F340004F54E /* RoutingApp.swift */; };
 		83C837BE2C207F340004F54E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C837BD2C207F340004F54E /* ContentView.swift */; };
 		83C837C02C207F360004F54E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 83C837BF2C207F360004F54E /* Assets.xcassets */; };
@@ -31,6 +32,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		8339C0022CA6956000689509 /* TimeUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TimeUtils.swift; sourceTree = "<group>"; };
 		83C837B82C207F340004F54E /* Routing.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Routing.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		83C837BB2C207F340004F54E /* RoutingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutingApp.swift; sourceTree = "<group>"; };
 		83C837BD2C207F340004F54E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -75,6 +77,7 @@
 				83C837BB2C207F340004F54E /* RoutingApp.swift */,
 				83C837BD2C207F340004F54E /* ContentView.swift */,
 				83C837D02C20EFA70004F54E /* RoutingExample.swift */,
+				8339C0022CA6956000689509 /* TimeUtils.swift */,
 				83C837BF2C207F360004F54E /* Assets.xcassets */,
 				83C837C12C207F360004F54E /* Preview Content */,
 			);
@@ -170,6 +173,7 @@
 			files = (
 				83C837BE2C207F340004F54E /* ContentView.swift in Sources */,
 				83C837BC2C207F340004F54E /* RoutingApp.swift in Sources */,
+				8339C0032CA6956000689509 /* TimeUtils.swift in Sources */,
 				83C837D12C20EFA70004F54E /* RoutingExample.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
