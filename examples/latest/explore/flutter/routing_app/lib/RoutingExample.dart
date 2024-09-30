@@ -27,6 +27,7 @@ import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/routing.dart';
 import 'package:here_sdk/routing.dart' as here;
 import 'package:intl/intl.dart';
+import 'package:routing_app/TimeUtils.dart';
 
 // A callback to notify the hosting widget.
 typedef ShowDialogFunction = void Function(String title, String message);
@@ -39,6 +40,7 @@ class RoutingExample {
   final ShowDialogFunction _showDialog;
   List<Waypoint> waypoints = [];
   final _BERLIN_HQ_GEO_COORDINATES = GeoCoordinates(52.530971, 13.385088);
+  final _timeUtils = TimeUtils();
 
   RoutingExample(ShowDialogFunction showDialogCallback,
       HereMapController hereMapController)
@@ -191,28 +193,24 @@ class RoutingExample {
     int estimatedTrafficDelayInSeconds = route.trafficDelay.inSeconds;
     int lengthInMeters = route.lengthInMeters;
 
+    // Timezones can vary depending on the device's geographic location.
+    // For instance, when calculating a route, the device's current timezone may differ from that of the destination.
+    // Consider a scenario where a user calculates a route from Berlin to London — each city operates in a different timezone.
+    // To address this, you can display the Estimated Time of Arrival (ETA) in multiple timezones: the device's current timezone (Berlin), the destination's timezone (London), and UTC (Coordinated Universal Time), which serves as a global reference.
     String routeDetails = 'Travel Time: ' +
-        _formatTime(estimatedTravelTimeInSeconds) +
+        _timeUtils.formatTime(estimatedTravelTimeInSeconds) +
         ', Traffic Delay: ' +
-        _formatTime(estimatedTrafficDelayInSeconds) +
+        _timeUtils.formatTime(estimatedTrafficDelayInSeconds) +
         ', Length: ' +
-        _formatLength(lengthInMeters);
+        _timeUtils.formatLength(lengthInMeters) +
+        '\nETA in device timezone: ' +
+        _timeUtils.getETAinDeviceTimeZone(route) +
+        '\nETA in destination timezone: ' +
+        _timeUtils.getETAinDestinationTimeZone(route) +
+        '\nETA in UTC: ' +
+        _timeUtils.getEstimatedTimeOfArrivalInUTC(route);
 
     _showDialog('Route Details', '$routeDetails');
-  }
-
-  String _formatTime(int sec) {
-    int hours = sec ~/ 3600;
-    int minutes = (sec % 3600) ~/ 60;
-
-    return '$hours:$minutes min';
-  }
-
-  String _formatLength(int meters) {
-    int kilometers = meters ~/ 1000;
-    int remainingMeters = meters % 1000;
-
-    return '$kilometers.$remainingMeters km';
   }
 
   _showRouteOnMap(here.Route route) {
