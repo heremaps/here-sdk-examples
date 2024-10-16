@@ -21,7 +21,9 @@ package com.here.navigation;
 
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.routing.CalculateRouteCallback;
+import com.here.sdk.routing.CalculateTrafficOnRouteCallback;
 import com.here.sdk.routing.CarOptions;
+import com.here.sdk.routing.Route;
 import com.here.sdk.routing.RoutingEngine;
 import com.here.sdk.routing.Waypoint;
 

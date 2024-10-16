@@ -32,7 +32,6 @@ class ReroutingExample: LongPressDelegate,
                         OffRoadProgressDelegate,
                         OffRoadDestinationReachedDelegate {
 
-    private var viewController: UIViewController
     private let mapView: MapView
     private var routingEngine: RoutingEngine
     private var visualNavigator: VisualNavigator
@@ -52,8 +51,11 @@ class ReroutingExample: LongPressDelegate,
     private var isGuidance = false
     private var deviationCounter = 0
     
-    // Reference to the UICallback delegate.
-    weak var uiCallback: UICallback?
+    // The model class to provide data via binding to the ManeuverView.
+    private var maneuverModel: ManeuverModel
+    
+    // A helper class to provide the necessary maneuver icons.
+    private var maneuverIconProvider: ManeuverIconProvider!
     
     // A route in Berlin - can be changed via longtap.
     private var startWaypoint = Waypoint(coordinates: GeoCoordinates(latitude: 52.49047222554655, longitude: 13.296884483959285))
@@ -64,16 +66,10 @@ class ReroutingExample: LongPressDelegate,
     private var startMapMarker: MapMarker!
     private var destinationMapMarker: MapMarker!
     
-    init(viewController: UIViewController, mapView: MapView) {
-        self.viewController = viewController
+    init(_ mapView: MapView, _ maneuverModel: ManeuverModel) {
         self.mapView = mapView
-        
-        // Center map in Berlin.
-        let camera = mapView.camera
-        let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 90)
-        camera.lookAt(point: GeoCoordinates(latitude: 52.520798, longitude: 13.409408),
-                      zoom: distanceInMeters)
-       
+        self.maneuverModel = maneuverModel
+               
         do {
             try routingEngine = RoutingEngine()
         } catch let engineInstantiationError {
@@ -86,7 +82,12 @@ class ReroutingExample: LongPressDelegate,
             fatalError("Failed to initialize VisualNavigator. Cause: \(engineInstantiationError)")
         }
        
+        // For RoadShields icons.
         iconProvider = IconProvider(mapView.mapContext)
+        
+        // For maneuver icons.
+        maneuverIconProvider = ManeuverIconProvider()
+        maneuverIconProvider.loadManeuverIcons()
         
         // A class to receive simulated location events.
         herePositioningSimulator = HEREPositioningSimulator()
@@ -124,13 +125,25 @@ class ReroutingExample: LongPressDelegate,
         visualNavigator.offRoadProgressDelegate = self
         visualNavigator.offRoadDestinationReachedDelegate = self
         
+        // Center map in Berlin.
+        let camera = mapView.camera
+        let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 90)
+        camera.lookAt(point: GeoCoordinates(latitude: 52.520798, longitude: 13.409408),
+                      zoom: distanceInMeters)
+       
+        // Load the map scene using a map scheme to render the map with.
+        mapView.mapScene.loadScene(mapScheme: MapScheme.normalDay, completion: onLoadScene)
+        
         showDialog(title: "Note",
                    message: "Do a long press to change start and destination coordinates.")
     }
     
-    // Function to set the UICallback delegate.
-    func setUICallback(_ callback: UICallback?) {
-        uiCallback = callback
+    // Completion handler for loadScene().
+    private func onLoadScene(mapError: MapError?) {
+        if let mapError = mapError {
+            print("Error: Map scene not loaded, \(String(describing: mapError))")
+            return
+        }
     }
     
     func onShowRouteButtonClicked() {
@@ -203,7 +216,7 @@ class ReroutingExample: LongPressDelegate,
         previousManeuver = nil
         visualNavigator.stopRendering()
         herePositioningSimulator.stopLocating()
-        uiCallback?.onHideManeuverPanel()
+        onHideManeuverPanel()
         untiltUnrotateMap()
     }
     
@@ -340,7 +353,7 @@ class ReroutingExample: LongPressDelegate,
         previousManeuver = nextManeuver;
         
         // A new maneuver takes places. Hide the existing road shield icon, if any.
-        uiCallback?.onHideRoadShieldIcon()
+        onHideRoadShieldIcon()
         
         guard let maneuverSpan = getSpanForManeuver(route: visualNavigator.route!,
                                                     maneuver: nextManeuver!) else {
@@ -401,18 +414,17 @@ class ReroutingExample: LongPressDelegate,
         if lastSection.arrivalPlace.isOffRoad() {
             print("End of navigable route reached.")
             let message1 = "Your destination is off-road."
-            let message2 = "Follow the dashed line with caution."
-            // Note that for this example we inform the user via UI.
-            uiCallback?.onManeuverEvent(action: ManeuverAction.arrive,
-                                       message1: message1,
-                                       message2: message2)
+            let message2 = "Follow the dashed line with caution."            
+            onManeuverEvent(action: ManeuverAction.arrive,
+                            message1: message1,
+                            message2: message2)
         } else {
             print("Destination reached.")
             let distanceText = "0 m"
             let message = "You have reached your destination."
-            uiCallback?.onManeuverEvent(action: ManeuverAction.arrive,
-                                       message1: distanceText,
-                                       message2: message)
+            onManeuverEvent(action: ManeuverAction.arrive,
+                            message1: distanceText,
+                            message2: message)
         }
     }
     
@@ -430,9 +442,9 @@ class ReroutingExample: LongPressDelegate,
         // For example, when the top of the screen points to true north, then 180° means that
         // the destination lies in south direction. 315° would mean the user has to head north-west, and so on.
         let message = "Direction of your destination: \(round(offRoadProgress.bearingInDegrees))°"
-        uiCallback?.onManeuverEvent(action: ManeuverAction.arrive,
-                                    message1: distanceText,
-                                    message2: message)
+        onManeuverEvent(action: ManeuverAction.arrive,
+                        message1: distanceText,
+                        message2: message)
     }
     
     // Conform to OffRoadDestinationReachedDelegate.
@@ -441,9 +453,9 @@ class ReroutingExample: LongPressDelegate,
         print("Off-road destination reached.")
         let distanceText = "0 m"
         let message = "You have reached your off-road destination."
-        uiCallback?.onManeuverEvent(action: ManeuverAction.arrive,
-                                    message1: distanceText,
-                                    message2: message)
+        onManeuverEvent(action: ManeuverAction.arrive,
+                        message1: distanceText,
+                        message2: message)
     }
     
     // For more warners and events during guidance, please check the Navigation example app, available on GitHub.
@@ -521,9 +533,9 @@ class ReroutingExample: LongPressDelegate,
         let maneuverText = "Action: \(String(describing: action)) on \(roadName) in \(distanceText)"
 
         // Notify UI to show the next maneuver data.
-        uiCallback?.onManeuverEvent(action: action,
-                                    message1: distanceText,
-                                    message2: roadName)
+        onManeuverEvent(action: action,
+                        message1: distanceText,
+                        message2: roadName)
         return maneuverText
     }
 
@@ -653,9 +665,9 @@ class ReroutingExample: LongPressDelegate,
             shieldText: shieldText
         )
 
-        // Set the desired constraints. The icon will fit in while preserving its aspect ratio.
-        let widthConstraintInPixels: UInt32 = ManeuverView.roadShieldDimConstraints
-        let heightConstraintInPixels: UInt32 = ManeuverView.roadShieldDimConstraints
+        // Set the desired default constraints. The icon will fit in while preserving its aspect ratio.
+        let widthConstraintInPixels: UInt32 = 100
+        let heightConstraintInPixels: UInt32 = 100
 
         // Create the icon offline. Several icons could be created in parallel, but in reality, the road shield
         // will not change very quickly, so that a previous icon will not be overwritten by a parallel call.
@@ -685,7 +697,7 @@ class ReroutingExample: LongPressDelegate,
 
         // An implementation can now decide to show the icon, for example, together with the
         // next maneuver actions.
-        uiCallback?.onRoadShieldEvent(roadShieldIcon: roadShieldIcon)
+        onRoadShieldEvent(roadShieldIcon: roadShieldIcon)
     }
 
     // Conform to the LongPressDelegate protocol.
@@ -779,9 +791,43 @@ class ReroutingExample: LongPressDelegate,
         return mapMarker
     }
 
+    // Update the maneuver view via data binding.
+    private func onManeuverEvent(action: ManeuverAction, message1: String, message2: String) {
+        maneuverModel.isManeuverPanelVisible = true
+        maneuverModel.distanceText = message1
+        maneuverModel.maneuverText = message2
+        maneuverModel.maneuverIcon = maneuverIconProvider.getManeuverIconForAction(action)
+    }
+    
+    // Update the maneuver view via data binding.
+    func onRoadShieldEvent(roadShieldIcon: UIImage) {
+        maneuverModel.roadShieldImage = roadShieldIcon
+    }
+
+    // Update the maneuver view via data binding.
+    func onHideRoadShieldIcon() {
+        maneuverModel.roadShieldImage = nil
+    }
+
+    // Update the maneuver view via data binding.
+    func onHideManeuverPanel() {
+        maneuverModel.isManeuverPanelVisible = false
+    }
+    
     private func showDialog(title: String, message: String) {
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-        viewController.present(alertController, animated: true, completion: nil)
+        if let topController = UIApplication.shared.windows.first?.rootViewController {
+            let alert = UIAlertController(
+                title: title,
+                message: message,
+                preferredStyle: .alert
+            )
+
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+                // Handle OK button action.
+                alert.dismiss(animated: true, completion: nil)
+            }))
+
+            topController.present(alert, animated: true, completion: nil)
+        }
     }
 }

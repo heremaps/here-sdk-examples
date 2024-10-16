@@ -20,6 +20,7 @@
 package com.here.offlinemaps;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -57,7 +58,10 @@ import com.here.sdk.maploader.RepairPersistentMapCallback;
 import com.here.sdk.maploader.SDKCache;
 import com.here.sdk.maploader.SDKCacheCallback;
 import com.here.sdk.mapview.MapCamera;
+import com.here.sdk.mapview.MapError;
 import com.here.sdk.mapview.MapMeasure;
+import com.here.sdk.mapview.MapScene;
+import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
 import com.here.sdk.search.OfflineSearchEngine;
 import com.here.sdk.search.Place;
@@ -77,7 +81,7 @@ public class OfflineMapsExample {
     private MapDownloader mapDownloader;
     @Nullable
     private MapUpdater mapUpdater;
-    private final OfflineSearchEngine offlineSearchEngine;
+    private OfflineSearchEngine offlineSearchEngine;
     private List<Region> downloadableRegions = new ArrayList<>();
     private final List<MapDownloaderTask> mapDownloaderTasks = new ArrayList<>();
     private final Snackbar snackbar;
@@ -88,12 +92,8 @@ public class OfflineMapsExample {
     public OfflineMapsExample(MapView mapView) {
 
         // Configure the map.
-        MapCamera camera = mapView.getCamera();
-        double distanceInMeters = 1000 * 7;
-        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
-        camera.lookAt(new GeoCoordinates(46.94843, 7.44046), mapMeasureZoom);
-
         this.mapView = mapView;
+        repositionCamera();
 
         try {
             // Adding offline search engine to show that we can search on downloaded regions.
@@ -504,7 +504,7 @@ public class OfflineMapsExample {
         }
     }
 
-    public void toggleLayerConfiguration(String accessKeyID, String accessKeySecret, Context context) {
+    public void toggleLayerConfiguration(String accessKeyID, String accessKeySecret, Context context, Bundle savedInstanceState) {
         // Cached map data persists until the Least Recently Used (LRU) eviction policy is triggered.
         // After modifying the "FeatureConfiguration" calling performFeatureUpdate()
         // will also clear the cache if at least one region has been installed.
@@ -513,7 +513,6 @@ public class OfflineMapsExample {
         // explicitly clear the cache. 
         // If the cache is not cleared, the HERE SDK will look for cached data, for example,
         // when using the OfflineSearchEngine.
-        SDKNativeEngine sdkNativeEngine;
         try {
             SDKOptions options = new SDKOptions(accessKeyID, accessKeySecret);
             // Toggle the layer configuration.
@@ -526,15 +525,38 @@ public class OfflineMapsExample {
                 options.layerConfiguration = getLayerConfigurationWithoutOfflineSearch();
                 snackbar.setText("Enabled minimal layer configuration without OFFLINE_SEARCH layer.");
             }
-            sdkNativeEngine = new SDKNativeEngine(context, options);
-            SDKNativeEngine.setSharedInstance(sdkNativeEngine);
-            initMapUpdater(sdkNativeEngine);
-            initMapDownloader(sdkNativeEngine);
+            // Invoking makeSharedInstance will invalidate any existing references to the previous instance of SDKNativeEngine.
+            SDKNativeEngine.makeSharedInstance(context, options);
+            // Update the current MapView instance to recreate the rendering surface that was invalidated by the invocation of makeSharedInstance.
+            updateMapView(savedInstanceState);
+            // Reinitialize the map updater and perform feature update to "normalize" the new layer configuration.
+            initMapUpdaterAndPerformFeatureUpdate(SDKNativeEngine.getSharedInstance());
+            // Reinitialize the map downloader using the new instance of SDKNativeEngine.
+            initMapDownloader(SDKNativeEngine.getSharedInstance());
+            offlineSearchEngine = new OfflineSearchEngine();
         } catch (InstantiationErrorException e) {
             throw new RuntimeException("ReInitialization of HERE SDK failed: " + e.error.name());
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void updateMapView(Bundle savedInstanceState) {
+        // Needs to be called after recreation of SDKNativeEngine, even when savedInstanceState is null.
+        // Otherwise, the map view will keep using the previous SDKNativeEngine instance.
+        mapView.onCreate(savedInstanceState);
+        // Since mapview.onCreate() results in a new rendering surface, the map scene must be reloaded to ensure proper rendering.
+        mapView.getMapScene().loadScene(MapScheme.NORMAL_DAY, new MapScene.LoadSceneCallback() {
+            @Override
+            public void onLoadScene(@Nullable MapError mapError) {
+                if (mapError == null) {
+                    Log.d(TAG, "onLoadScene Succeeded.");
+                    repositionCamera();
+                } else {
+                    Log.d(TAG, "onLoadScene failed: " + mapError.toString());
+                }
+            }
+        });
     }
 
     private void initMapUpdater(SDKNativeEngine sdkNativeEngine) {
@@ -543,6 +565,17 @@ public class OfflineMapsExample {
             public void onMapUpdaterConstructe(@NonNull MapUpdater mapUpdater) {
                 OfflineMapsExample.this.mapUpdater = mapUpdater;
                 performUpdateChecks();
+            }
+        });
+    }
+
+    private void initMapUpdaterAndPerformFeatureUpdate(SDKNativeEngine sdkNativeEngine) {
+        MapUpdater.fromEngineAsync(sdkNativeEngine, new MapUpdaterConstructionCallback() {
+            @Override
+            public void onMapUpdaterConstructe(@NonNull MapUpdater mapUpdater) {
+                OfflineMapsExample.this.mapUpdater = mapUpdater;
+                // Checks and updates in cases of map feature configuration changes.
+                performFeatureUpdate();
             }
         });
     }
@@ -562,9 +595,6 @@ public class OfflineMapsExample {
         // download can be interrupted by the OS.
         checkForMapUpdates();
 
-        // Checks and updates in cases of map feature configuration changes.
-        performFeatureUpdate();
-
     }
 
     private void initMapDownloader(SDKNativeEngine sdkNativeEngine) {
@@ -583,7 +613,7 @@ public class OfflineMapsExample {
 
     // With this layer configuration we enable only the listed layers.
     // All the other layers including the default layers will be disabled.
-    private LayerConfiguration getLayerConfigurationWithOfflineSearch() {
+    public static LayerConfiguration getLayerConfigurationWithOfflineSearch() {
         ArrayList<LayerConfiguration.Feature> features = new ArrayList<>();
         features.add(LayerConfiguration.Feature.DETAIL_RENDERING);
         features.add(LayerConfiguration.Feature.RENDERING);
@@ -595,8 +625,7 @@ public class OfflineMapsExample {
 
     // Here we disable the OFFLINE_SEARCH layer to show what happens when we search offline:
     // When the layer is enabled then the OfflineSearchEngine can find results in the cached map data or installed regions.
-    // When the layer is disabled then the OfflineSearchEngine will not find any results
-    // unless there is still data from the OFFLINE_SEARCH layer in the cache.
+    // When the layer is disabled, the OfflineSearchEngine will yield either no results or very few limited results.
     private LayerConfiguration getLayerConfigurationWithoutOfflineSearch() {
         ArrayList<LayerConfiguration.Feature> features = new ArrayList<>();
         features.add(LayerConfiguration.Feature.DETAIL_RENDERING);
@@ -640,5 +669,12 @@ public class OfflineMapsExample {
                 }
             }
         });
+    }
+
+    private void repositionCamera(){
+        MapCamera camera = mapView.getCamera();
+        double distanceInMeters = 1000 * 7;
+        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
+        camera.lookAt(new GeoCoordinates(46.94843, 7.44046), mapMeasureZoom);
     }
 }

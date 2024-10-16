@@ -52,7 +52,7 @@ final class ViewController: UIViewController {
         let searchOptions = SearchOptions(languageCode: LanguageCode.enUs,
                                           maxItems: 30)
 
-        _ = searchEngine.search(categoryQuery: categoryQuery,
+        _ = searchEngine.searchByCategory(categoryQuery,
                                 options: searchOptions,
                                 completion: onSearchCompleted)
     }

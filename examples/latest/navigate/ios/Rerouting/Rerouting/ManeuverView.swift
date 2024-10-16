@@ -17,231 +17,107 @@
  * License-Filename: LICENSE
  */
 
-import UIKit
+import SwiftUI
 
-// A simple view to show the next maneuver event.
-class ManeuverView: UIView {
+// A model class to be used for data binding. The example class will use this model to update
+// maneuevr data while traversing along a route. The data will be shown by the ManeuverView panel.
+// By default, the panel is not visible.
+class ManeuverModel: ObservableObject {
+    @Published var distanceText: String
+    @Published var maneuverText: String
+    @Published var maneuverIcon: UIImage?
+    @Published var roadShieldImage: UIImage?
+    @Published var isManeuverPanelVisible: Bool
     
-    // The default w/h constraint we use to create the icon with IconProvider.
-    static var roadShieldDimConstraints: UInt32 = 100
-    
-    var distanceText: String? {
-        didSet {
-            setNeedsDisplay()
-        }
+    init(distanceText: String = "",
+         maneuverText: String = "",
+         maneuverIcon: UIImage? = nil,
+         roadShieldImage: UIImage? = nil,
+         isManeuverPanelVisible: Bool = false) {
+        self.distanceText = distanceText
+        self.maneuverText = maneuverText
+        self.maneuverIcon = maneuverIcon
+        self.roadShieldImage = roadShieldImage
+        self.isManeuverPanelVisible = isManeuverPanelVisible
     }
+}
+
+// A custom view to show maneuver information when travelling along a route.
+struct ManeuverView: View {
     
-    var maneuverText: String? {
-        didSet {
-            setNeedsDisplay()
-        }
-    }
-    
-    var maneuverIcon: UIImage? {
-        didSet {
-            setNeedsDisplay()
-        }
-    }
-    
-    var roadShieldImage: UIImage? {
-        didSet {
-            setNeedsDisplay()
-        }
-    }
+    // The model which is updated by the example class when new maneuver data is provided by the VisualNavigator.
+    @ObservedObject var model: ManeuverModel
     
     private let margin: CGFloat = 8
     private let cornerRadius: CGFloat = 8.0
-    private var customBackgroundColor = UIColor(red: 18/255, green: 109/255, blue: 249/255, alpha: 1)
+    private let customBackgroundColor = Color(red: 18/255, green: 109/255, blue: 249/255)
     
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        backgroundColor = .clear // Set the background color to transparent
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    private func drawRectangleOutlines(_ rect: CGRect) {
-        let rectanglePath = UIBezierPath(rect: rect)
-        rectanglePath.stroke()
-    }
-    
-    // Renders image centered in given rectangle while preserving it's aspect ratio.
-    private func drawImage(_ image: UIImage, rect: CGRect) {
-        // Calculate the scaled size of the image to fit inside the given rectangle while preserving its aspect ratio.
-        let imageSize = image.size
-        let aspectRatio = imageSize.width / imageSize.height
-        let targetSize = CGSize(width: rect.width, height: rect.height)
-        let scaledSize = targetSize.aspectFit(aspectRatio: aspectRatio)
-
-        // Calculate the origin point to center the image inside the given rectangle.
-        let originX = rect.origin.x + (rect.width - scaledSize.width) / 2
-        let originY = rect.origin.y + (rect.height - scaledSize.height) / 2
-
-        // Draw the image at the calculated origin point and scaled size.
-        let imageRect = CGRect(origin: CGPoint(x: originX, y: originY), size: scaledSize)
-        image.draw(in: imageRect)
-    }
-    
-    // Renders text vertically centered in given rectangle.
-    // Too long text will be truncated with an ellipsis.
-    private func drawTextLeftAligned(_ text: String, rect: CGRect, leftMargin: CGFloat, fontSize: CGFloat) {
-        // Set the font and paragraph style for the text.
-        let font = UIFont.boldSystemFont(ofSize: fontSize)
-        let paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.alignment = .left
-        paragraphStyle.lineBreakMode = .byTruncatingTail
-
-        // Set the attributes for the text with a white color.
-        let attributes: [NSAttributedString.Key: Any] = [
-            .font: font,
-            // Use white color for text.
-            .foregroundColor: UIColor.white,
-            .paragraphStyle: paragraphStyle
-        ]
-
-        // Calculate the available width for the text based on the leftMargin.
-        let availableWidth = rect.width - leftMargin
-
-        // Calculate the size of the text to be drawn, considering the available width and truncation options.
-        let textSize = (text as NSString).boundingRect(
-            with: CGSize(width: availableWidth, height: .greatestFiniteMagnitude),
-            options: [.usesLineFragmentOrigin, .usesFontLeading],
-            attributes: attributes,
-            context: nil
-        ).size
-
-        // Calculate the y-coordinate to vertically center the text inside the given rectangle.
-        let centerY = rect.origin.y + (rect.height - textSize.height) / 2
-
-        // Calculate the x-coordinate for the left-aligned text with the left margin.
-        let startX = rect.origin.x + leftMargin
-
-        // Create a rectangle for the text based on the calculated position and size.
-        let textRect = CGRect(x: startX, y: centerY, width: textSize.width, height: textSize.height)
-
-        // Draw the text in the calculated rectangle with truncation.
-        text.draw(in: textRect, withAttributes: attributes)
-    }
-    
-    private var maneuverIconRect = CGRect(x: 0, y: 0, width: 0, height: 0)
-    private var distanceTextRect = CGRect(x: 0, y: 0, width: 0, height: 0)
-    private var roadNameTextRect = CGRect(x: 0, y: 0, width: 0, height: 0)
-    private var roadShieldIconRect = CGRect(x: 0, y: 0, width: 0, height: 0)
-    
-    private func setupViewBounds() {
-        // The maneuver panel.
-        let backgroundX = bounds.origin.x
-        let backgroundY = bounds.origin.y
-        let backgroundW = bounds.width
-        let backgroundH = bounds.height
-
-        // The maneuver icon. Shown left-aligned.
-        let maneuverIconX = backgroundX + margin
-        let maneuverIconY = backgroundY + margin
-        let maneuverIconW = backgroundH - margin * 2
-        let maneuverIconH = maneuverIconW
-        maneuverIconRect = CGRect(x: maneuverIconX, y: maneuverIconY,
-                                  width: maneuverIconW, height: maneuverIconH)
-        
-        // The distance text. Shown left of maneuver icon, above road name text.
-        let distanceTextX = maneuverIconX + maneuverIconW + margin
-        let distanceTextY = maneuverIconY
-        var distanceTextW = backgroundW - distanceTextX - margin
-        let distanceTextH = maneuverIconH / 2
-        distanceTextRect = CGRect(x: distanceTextX, y: distanceTextY,
-                                  width: distanceTextW, height: distanceTextH)
-        
-        // The road name text. Shown below distance text.
-        let roadNameX = distanceTextX
-        let roadNameY = distanceTextY + distanceTextH + margin
-        var roadNameW = distanceTextW
-        let roadNameH = distanceTextH - margin
-        roadNameTextRect = CGRect(x: roadNameX, y: roadNameY,
-                                  width: roadNameW, height: roadNameH)
-        
-        // The road shield icon. Shown right-aligned.
-        let roadShieldX = roadNameX + roadNameW - maneuverIconW + margin
-        let roadShieldY = distanceTextY
-        let roadShieldW = maneuverIconW - margin
-        let roadShieldH = maneuverIconH
-        roadShieldIconRect = CGRect(x: roadShieldX, y: roadShieldY,
-                                  width: roadShieldW, height: roadShieldH)
-        
-        ManeuverView.roadShieldDimConstraints = UInt32(roadShieldH)
-        
-        // Reduce available space if no road shield icon is shown.
-        if roadShieldImage != nil {
-            roadNameW = roadNameW - roadShieldW - margin
-            distanceTextW = roadNameW
-            
-            roadNameTextRect = CGRect(x: roadNameX, y: roadNameY,
-                                      width: roadNameW, height: roadNameH)
-            distanceTextRect = CGRect(x: distanceTextX, y: distanceTextY,
-                                      width: distanceTextW, height: distanceTextH)
-        }
-        
-        // Use this to debug your view's layout.
-        // drawRectangleOutlines(maneuverIconRect)
-        // drawRectangleOutlines(distanceTextRect)
-        // drawRectangleOutlines(roadNameTextRect)
-        // drawRectangleOutlines(roadShieldIconRect)
-    }
-    
-    override func draw(_ rect: CGRect) {
-        super.draw(rect)
-
-        // Create a rounded rectangle path for the background of our view.
-        let backgroundPath = UIBezierPath(roundedRect: bounds, cornerRadius: cornerRadius)
-
-        // Set the background color and fill the path.
-        customBackgroundColor.setFill()
-        backgroundPath.fill()
-
-        setupViewBounds()
-        
-        if let image = maneuverIcon {
-            drawImage(image, rect: maneuverIconRect)
-        }
-        
-        if let text = distanceText, !text.isEmpty {
-            drawTextLeftAligned(text, rect: distanceTextRect, leftMargin: 0, fontSize: 18)
-        }
-        
-        if let secondaryText = maneuverText, !secondaryText.isEmpty {
-            drawTextLeftAligned(secondaryText, rect: roadNameTextRect, leftMargin: 0, fontSize: 14)
-        }
-        
-        if let image = roadShieldImage {
-            drawImage(image, rect: roadShieldIconRect)
+    var body: some View {
+        if model.isManeuverPanelVisible {            
+            ZStack {
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .fill(customBackgroundColor)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                
+                HStack(alignment: .top, spacing: margin) {
+                    
+                    // Maneuver Icon
+                    if let maneuverIcon = model.maneuverIcon {
+                        Image(uiImage: maneuverIcon)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 50, height: 50)
+                    }
+                    
+                    VStack(alignment: .leading, spacing: margin / 2) {
+                        
+                        // Distance Text
+                        Text(model.distanceText)
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(.white)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                        
+                        // Maneuver Text
+                        Text(model.maneuverText)
+                            .font(.system(size: 14, weight: .regular))
+                            .foregroundColor(.white)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                    }
+                    
+                    Spacer()
+                    
+                    // Road Shield Icon (if available)
+                    if let roadShieldImage = model.roadShieldImage {
+                        Image(uiImage: roadShieldImage)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 50, height: 50)
+                    }
+                }
+                .padding(margin)
+            }
+            .frame(height: 80) // Adjust height as needed
         }
     }
 }
 
-extension CGSize {
-    /// Calculates the size that maintains the given aspect ratio while fitting within this size.
-    ///
-    /// - Parameters:
-    ///   - aspectRatio: The desired aspect ratio (width / height).
-    /// - Returns: A new `CGSize` that maintains the aspect ratio while fitting within the original size.
-    func aspectFit(aspectRatio: CGFloat) -> CGSize {
-        // Calculate the width and height for the new size based on the given aspect ratio.
-
-        // The target width remains the same as the original width.
-        let targetWidth = width
+struct ManeuverView_Previews: PreviewProvider {
+    static var previews: some View {
+        // Create a sample model for the preview
+        let sampleModel = ManeuverModel(
+            distanceText: "500 m",
+            maneuverText: "Turn Right",
+            maneuverIcon: UIImage(systemName: "arrow.right"),
+            roadShieldImage: UIImage(systemName: "car")
+        )
         
-        // Calculate the target height based on the target width and the aspect ratio.
-        let targetHeight = width / aspectRatio
-
-        // If the target height is greater than the original height, it means the new size would be too tall.
-        if targetHeight > height {
-            // In this case, we adjust the width so that the height fits within the original size.
-            let adjustedWidth = height * aspectRatio
-            return CGSize(width: adjustedWidth, height: height)
-        } else {
-            // If the target height fits within the original size, we use the original width and the calculated height.
-            return CGSize(width: targetWidth, height: targetHeight)
+        return Group {
+            ManeuverView(model: sampleModel)
+                .previewLayout(.sizeThatFits)
+                .padding()
+                .previewDisplayName("ManeuverView Preview")
         }
     }
 }

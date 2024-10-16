@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
         searchOptions.languageCode = LanguageCode.EN_US;
         searchOptions.maxItems = 30;
 
-        searchEngine.search(categoryQuery, searchOptions, new SearchCallback() {
+        searchEngine.searchByCategory(categoryQuery, searchOptions, new SearchCallback() {
             @Override
             public void onSearchCompleted(SearchError searchError, List<Place> list) {
                 if (searchError != null) {

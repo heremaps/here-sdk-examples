@@ -23,6 +23,7 @@ import android.content.Context;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Handler;
 import android.util.Log;
 import android.widget.TextView;
 
@@ -31,6 +32,7 @@ import androidx.annotation.NonNull;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.LanguageCode;
 import com.here.sdk.core.UnitSystem;
+import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.navigation.AspectRatio;
 import com.here.sdk.navigation.BorderCrossingWarning;
 import com.here.sdk.navigation.BorderCrossingWarningListener;
@@ -101,12 +103,14 @@ import com.here.sdk.navigation.TruckRestrictionWarning;
 import com.here.sdk.navigation.TruckRestrictionsWarningListener;
 import com.here.sdk.navigation.VisualNavigator;
 import com.here.sdk.navigation.WeightRestrictionType;
+import com.here.sdk.routing.CalculateTrafficOnRouteCallback;
 import com.here.sdk.routing.Maneuver;
 import com.here.sdk.routing.ManeuverAction;
 import com.here.sdk.routing.PaymentMethod;
 import com.here.sdk.routing.RoadTexts;
 import com.here.sdk.routing.RoadType;
 import com.here.sdk.routing.Route;
+import com.here.sdk.routing.RoutingEngine;
 import com.here.sdk.trafficawarenavigation.DynamicRoutingEngine;
 import com.here.sdk.transport.GeneralVehicleSpeedLimits;
 
@@ -126,6 +130,13 @@ public class NavigationEventHandler {
     private MapMatchedLocation lastMapMatchedLocation;
     private final VoiceAssistant voiceAssistant;
     private final TextView messageView;
+    private final TimeUtils timeUtils;
+    private final RoutingEngine routingEngine;
+    private int traveledDistanceOnLastSectionInMeters;
+    private int lastTraveledSectionIndex;
+    private Route currentRoute;
+    private Handler trafficOnRouteUpdateHandler;
+    private Runnable trafficUpdateRunnable;
 
     public NavigationEventHandler(Context context, TextView messageView) {
         this.context = context;
@@ -133,6 +144,12 @@ public class NavigationEventHandler {
 
         // A helper class for TTS.
         voiceAssistant = new VoiceAssistant(context);
+        timeUtils = new TimeUtils();
+        try {
+            routingEngine = new RoutingEngine();
+        } catch (InstantiationErrorException e) {
+            throw new RuntimeException("Initialization of RoutingEngine failed: " + e.error.name());
+        }
     }
 
     public void setupListeners(VisualNavigator visualNavigator, DynamicRoutingEngine dynamicRoutingEngine) {
@@ -147,8 +164,14 @@ public class NavigationEventHandler {
                 List<SectionProgress> sectionProgressList = routeProgress.sectionProgress;
                 // sectionProgressList is guaranteed to be non-empty.
                 SectionProgress lastSectionProgress = sectionProgressList.get(sectionProgressList.size() - 1);
+                traveledDistanceOnLastSectionInMeters = visualNavigator.getRoute().getLengthInMeters() - lastSectionProgress.remainingDistanceInMeters;
+                lastTraveledSectionIndex = routeProgress.sectionIndex;
+                currentRoute = visualNavigator.getRoute();
+                String currentETAString = "ETA: " + timeUtils.getETAinDeviceTimeZone((int) lastSectionProgress.remainingDuration.toSeconds());
                 Log.d(TAG, "Distance to destination in meters: " + lastSectionProgress.remainingDistanceInMeters);
                 Log.d(TAG, "Traffic delay ahead in seconds: " + lastSectionProgress.trafficDelay.getSeconds());
+                // Logs current ETA.
+                Log.d(TAG, currentETAString);
 
                 // Contains the progress for the next maneuver ahead and the next-next maneuvers, if any.
                 List<ManeuverProgress> nextManeuverList = routeProgress.maneuverProgress;
@@ -192,11 +215,12 @@ public class NavigationEventHandler {
                 }
 
                 if (previousManeuverIndex != nextManeuverIndex) {
-                    messageView.setText("New maneuver: " + logMessage);
+                    currentETAString = currentETAString + "\nNew maneuver: " + logMessage;
                 } else {
                     // A maneuver update contains a different distance to reach the next maneuver.
-                    messageView.setText("Maneuver update: " + logMessage);
+                    currentETAString = currentETAString + "\nManeuver update: " + logMessage;
                 }
+                messageView.setText(currentETAString);
 
                 previousManeuverIndex = nextManeuverIndex;
 
@@ -227,17 +251,14 @@ public class NavigationEventHandler {
             public void onMilestoneStatusUpdated(@NonNull Milestone milestone, @NonNull MilestoneStatus milestoneStatus) {
                 if (milestone.waypointIndex != null && milestoneStatus == MilestoneStatus.REACHED) {
                     Log.d(TAG, "A user-defined waypoint was reached, index of waypoint: " + milestone.waypointIndex);
-                    Log.d(TAG,"Original coordinates: " + milestone.originalCoordinates);
-                }
-                else if (milestone.waypointIndex != null && milestoneStatus == MilestoneStatus.MISSED) {
+                    Log.d(TAG, "Original coordinates: " + milestone.originalCoordinates);
+                } else if (milestone.waypointIndex != null && milestoneStatus == MilestoneStatus.MISSED) {
                     Log.d(TAG, "A user-defined waypoint was missed, index of waypoint: " + milestone.waypointIndex);
-                    Log.d(TAG,"Original coordinates: " + milestone.originalCoordinates);
-                }
-                else if (milestone.waypointIndex == null && milestoneStatus == MilestoneStatus.REACHED) {
+                    Log.d(TAG, "Original coordinates: " + milestone.originalCoordinates);
+                } else if (milestone.waypointIndex == null && milestoneStatus == MilestoneStatus.REACHED) {
                     // For example, when transport mode changes due to a ferry a system-defined waypoint may have been added.
                     Log.d(TAG, "A system-defined waypoint was reached at: " + milestone.mapMatchedCoordinates);
-                }
-                else if (milestone.waypointIndex == null && milestoneStatus == MilestoneStatus.MISSED) {
+                } else if (milestone.waypointIndex == null && milestoneStatus == MilestoneStatus.MISSED) {
                     // For example, when transport mode changes due to a ferry a system-defined waypoint may have been added.
                     Log.d(TAG, "A system-defined waypoint was missed at: " + milestone.mapMatchedCoordinates);
                 }
@@ -249,15 +270,15 @@ public class NavigationEventHandler {
             @Override
             public void onSafetyCameraWarningUpdated(@NonNull SafetyCameraWarning safetyCameraWarning) {
                 if (safetyCameraWarning.distanceType == DistanceType.AHEAD) {
-                    Log.d(TAG,"Safety camera warning " + safetyCameraWarning.type.name() + " ahead in: "
+                    Log.d(TAG, "Safety camera warning " + safetyCameraWarning.type.name() + " ahead in: "
                             + safetyCameraWarning.distanceToCameraInMeters + "with speed limit ="
                             + safetyCameraWarning.speedLimitInMetersPerSecond + "m/s");
                 } else if (safetyCameraWarning.distanceType == DistanceType.PASSED) {
-                    Log.d(TAG,"Safety camera warning " + safetyCameraWarning.type.name() + " passed: "
+                    Log.d(TAG, "Safety camera warning " + safetyCameraWarning.type.name() + " passed: "
                             + safetyCameraWarning.distanceToCameraInMeters + "with speed limit ="
                             + safetyCameraWarning.speedLimitInMetersPerSecond + "m/s");
                 } else if (safetyCameraWarning.distanceType == DistanceType.REACHED) {
-                    Log.d(TAG,"Safety camera warning " + safetyCameraWarning.type.name() + " reached at: "
+                    Log.d(TAG, "Safety camera warning " + safetyCameraWarning.type.name() + " reached at: "
                             + safetyCameraWarning.distanceToCameraInMeters + "with speed limit ="
                             + safetyCameraWarning.speedLimitInMetersPerSecond + "m/s");
                 }
@@ -319,12 +340,12 @@ public class NavigationEventHandler {
                 }
 
                 if (lastMapMatchedLocation.isDrivingInTheWrongWay) {
-                    Log.d(TAG,"User is driving in the wrong direction of the route.");
+                    Log.d(TAG, "User is driving in the wrong direction of the route.");
                 }
 
                 Double speed = currentNavigableLocation.originalLocation.speedInMetersPerSecond;
                 Double accuracy = currentNavigableLocation.originalLocation.speedAccuracyInMetersPerSecond;
-                Log.d(TAG, "Driving speed (m/s): " + speed + "plus/minus an accuracy of: " +accuracy);
+                Log.d(TAG, "Driving speed (m/s): " + speed + "plus/minus an accuracy of: " + accuracy);
             }
         });
 
@@ -519,7 +540,7 @@ public class NavigationEventHandler {
                 // The list is guaranteed to be non-empty.
                 for (TruckRestrictionWarning truckRestrictionWarning : list) {
                     if (truckRestrictionWarning.distanceType == DistanceType.AHEAD) {
-                        Log.d(TAG, "TruckRestrictionWarning ahead in: "+ truckRestrictionWarning.distanceInMeters + " meters.");
+                        Log.d(TAG, "TruckRestrictionWarning ahead in: " + truckRestrictionWarning.distanceInMeters + " meters.");
                         if (truckRestrictionWarning.timeRule != null && !truckRestrictionWarning.timeRule.appliesTo(new Date())) {
                             // For example, during a specific time period of a day, some truck restriction warnings do not apply.
                             // If truckRestrictionWarning.timeRule is null, the warning applies at anytime.
@@ -713,7 +734,7 @@ public class NavigationEventHandler {
                 // Note that DistanceType.REACHED is not used for Signposts and junction views
                 // as a junction is identified through a location instead of an area.
                 if (distanceType == DistanceType.AHEAD) {
-                    Log.d(TAG, "A RealisticView ahead in: "+ distance + " meters.");
+                    Log.d(TAG, "A RealisticView ahead in: " + distance + " meters.");
                 } else if (distanceType == DistanceType.PASSED) {
                     Log.d(TAG, "A RealisticView just passed.");
                 }
@@ -755,11 +776,11 @@ public class NavigationEventHandler {
                     List<PaymentMethod> paymentMethods = tollBooth.paymentMethods;
                     // The supported collection methods like ticket or automatic / electronic.
                     for (TollCollectionMethod collectionMethod : tollCollectionMethods) {
-                        Log.d(TAG,"This toll stop supports collection via: " + collectionMethod.name());
+                        Log.d(TAG, "This toll stop supports collection via: " + collectionMethod.name());
                     }
                     // The supported payment methods like cash or credit card.
                     for (PaymentMethod paymentMethod : paymentMethods) {
-                        Log.d(TAG,"This toll stop supports payment via: " + paymentMethod.name());
+                        Log.d(TAG, "This toll stop supports payment via: " + paymentMethod.name());
                     }
                 }
             }
@@ -843,25 +864,25 @@ public class NavigationEventHandler {
         // Note that all values can be null if no data is available.
 
         // The regular speed limit if available. In case of unbounded speed limit, the value is zero.
-        Log.d(TAG,"speedLimitInMetersPerSecond: " + speedLimit.speedLimitInMetersPerSecond);
+        Log.d(TAG, "speedLimitInMetersPerSecond: " + speedLimit.speedLimitInMetersPerSecond);
 
         // A conditional school zone speed limit as indicated on the local road signs.
-        Log.d(TAG,"schoolZoneSpeedLimitInMetersPerSecond: " + speedLimit.schoolZoneSpeedLimitInMetersPerSecond);
+        Log.d(TAG, "schoolZoneSpeedLimitInMetersPerSecond: " + speedLimit.schoolZoneSpeedLimitInMetersPerSecond);
 
         // A conditional time-dependent speed limit as indicated on the local road signs.
         // It is in effect considering the current local time provided by the device's clock.
-        Log.d(TAG,"timeDependentSpeedLimitInMetersPerSecond: " + speedLimit.timeDependentSpeedLimitInMetersPerSecond);
+        Log.d(TAG, "timeDependentSpeedLimitInMetersPerSecond: " + speedLimit.timeDependentSpeedLimitInMetersPerSecond);
 
         // A conditional non-legal speed limit that recommends a lower speed,
         // for example, due to bad road conditions.
-        Log.d(TAG,"advisorySpeedLimitInMetersPerSecond: " + speedLimit.advisorySpeedLimitInMetersPerSecond);
+        Log.d(TAG, "advisorySpeedLimitInMetersPerSecond: " + speedLimit.advisorySpeedLimitInMetersPerSecond);
 
         // A weather-dependent speed limit as indicated on the local road signs.
         // The HERE SDK cannot detect the current weather condition, so a driver must decide
         // based on the situation if this speed limit applies.
-        Log.d(TAG,"fogSpeedLimitInMetersPerSecond: " + speedLimit.fogSpeedLimitInMetersPerSecond);
-        Log.d(TAG,"rainSpeedLimitInMetersPerSecond: " + speedLimit.rainSpeedLimitInMetersPerSecond);
-        Log.d(TAG,"snowSpeedLimitInMetersPerSecond: " + speedLimit.snowSpeedLimitInMetersPerSecond);
+        Log.d(TAG, "fogSpeedLimitInMetersPerSecond: " + speedLimit.fogSpeedLimitInMetersPerSecond);
+        Log.d(TAG, "rainSpeedLimitInMetersPerSecond: " + speedLimit.rainSpeedLimitInMetersPerSecond);
+        Log.d(TAG, "snowSpeedLimitInMetersPerSecond: " + speedLimit.snowSpeedLimitInMetersPerSecond);
 
         // For convenience, this returns the effective (lowest) speed limit between
         // - speedLimitInMetersPerSecond
@@ -880,17 +901,17 @@ public class NavigationEventHandler {
             // but not to the maneuver after the next maneuver, while the highly recommended lane also leads
             // to this next next maneuver.
             if (lane.recommendationState == LaneRecommendationState.RECOMMENDED) {
-                Log.d(TAG,"Lane " + laneNumber + " leads to next maneuver, but not to the next next maneuver.");
+                Log.d(TAG, "Lane " + laneNumber + " leads to next maneuver, but not to the next next maneuver.");
             }
 
             // If laneAssistance.lanesForNextNextManeuver is not empty, this lane leads also to the
             // maneuver after the next maneuver.
             if (lane.recommendationState == LaneRecommendationState.HIGHLY_RECOMMENDED) {
-                Log.d(TAG,"Lane " + laneNumber + " leads to next maneuver and eventually to the next next maneuver.");
+                Log.d(TAG, "Lane " + laneNumber + " leads to next maneuver and eventually to the next next maneuver.");
             }
 
             if (lane.recommendationState == LaneRecommendationState.NOT_RECOMMENDED) {
-                Log.d(TAG,"Do not take lane " + laneNumber + " to follow the route.");
+                Log.d(TAG, "Do not take lane " + laneNumber + " to follow the route.");
             }
 
             logLaneDetails(laneNumber, lane);
@@ -907,16 +928,16 @@ public class NavigationEventHandler {
         // You can use this information like in a bitmask to visualize the possible directions
         // with a set of image overlays.
         LaneDirectionCategory laneDirectionCategory = lane.directionCategory;
-        Log.d(TAG,"Directions for lane " + laneNumber);
-        Log.d(TAG,"laneDirectionCategory.straight: " + laneDirectionCategory.straight);
-        Log.d(TAG,"laneDirectionCategory.slightlyLeft: " + laneDirectionCategory.slightlyLeft);
-        Log.d(TAG,"laneDirectionCategory.quiteLeft: " + laneDirectionCategory.quiteLeft);
-        Log.d(TAG,"laneDirectionCategory.hardLeft: " + laneDirectionCategory.hardLeft);
-        Log.d(TAG,"laneDirectionCategory.uTurnLeft: " + laneDirectionCategory.uTurnLeft);
-        Log.d(TAG,"laneDirectionCategory.slightlyRight: " + laneDirectionCategory.slightlyRight);
-        Log.d(TAG,"laneDirectionCategory.quiteRight: " + laneDirectionCategory.quiteRight);
-        Log.d(TAG,"laneDirectionCategory.hardRight: " + laneDirectionCategory.hardRight);
-        Log.d(TAG,"laneDirectionCategory.uTurnRight: " + laneDirectionCategory.uTurnRight);
+        Log.d(TAG, "Directions for lane " + laneNumber);
+        Log.d(TAG, "laneDirectionCategory.straight: " + laneDirectionCategory.straight);
+        Log.d(TAG, "laneDirectionCategory.slightlyLeft: " + laneDirectionCategory.slightlyLeft);
+        Log.d(TAG, "laneDirectionCategory.quiteLeft: " + laneDirectionCategory.quiteLeft);
+        Log.d(TAG, "laneDirectionCategory.hardLeft: " + laneDirectionCategory.hardLeft);
+        Log.d(TAG, "laneDirectionCategory.uTurnLeft: " + laneDirectionCategory.uTurnLeft);
+        Log.d(TAG, "laneDirectionCategory.slightlyRight: " + laneDirectionCategory.slightlyRight);
+        Log.d(TAG, "laneDirectionCategory.quiteRight: " + laneDirectionCategory.quiteRight);
+        Log.d(TAG, "laneDirectionCategory.hardRight: " + laneDirectionCategory.hardRight);
+        Log.d(TAG, "laneDirectionCategory.uTurnRight: " + laneDirectionCategory.uTurnRight);
 
         // More information on each lane is available in these bitmasks (boolean):
         // LaneType provides lane properties such as if parking is allowed.
@@ -927,16 +948,37 @@ public class NavigationEventHandler {
     }
 
     private void logLaneAccess(int laneNumber, LaneAccess laneAccess) {
-        Log.d(TAG,"Lane access for lane " + laneNumber);
-        Log.d(TAG,"Automobiles are allowed on this lane: " + laneAccess.automobiles);
-        Log.d(TAG,"Buses are allowed on this lane: " + laneAccess.buses);
-        Log.d(TAG,"Taxis are allowed on this lane: " + laneAccess.taxis);
-        Log.d(TAG,"Carpools are allowed on this lane: " + laneAccess.carpools);
-        Log.d(TAG,"Pedestrians are allowed on this lane: " + laneAccess.pedestrians);
-        Log.d(TAG,"Trucks are allowed on this lane: " + laneAccess.trucks);
-        Log.d(TAG,"ThroughTraffic is allowed on this lane: " + laneAccess.throughTraffic);
-        Log.d(TAG,"DeliveryVehicles are allowed on this lane: " + laneAccess.deliveryVehicles);
-        Log.d(TAG,"EmergencyVehicles are allowed on this lane: " + laneAccess.emergencyVehicles);
-        Log.d(TAG,"Motorcycles are allowed on this lane: " + laneAccess.motorcycles);
+        Log.d(TAG, "Lane access for lane " + laneNumber);
+        Log.d(TAG, "Automobiles are allowed on this lane: " + laneAccess.automobiles);
+        Log.d(TAG, "Buses are allowed on this lane: " + laneAccess.buses);
+        Log.d(TAG, "Taxis are allowed on this lane: " + laneAccess.taxis);
+        Log.d(TAG, "Carpools are allowed on this lane: " + laneAccess.carpools);
+        Log.d(TAG, "Pedestrians are allowed on this lane: " + laneAccess.pedestrians);
+        Log.d(TAG, "Trucks are allowed on this lane: " + laneAccess.trucks);
+        Log.d(TAG, "ThroughTraffic is allowed on this lane: " + laneAccess.throughTraffic);
+        Log.d(TAG, "DeliveryVehicles are allowed on this lane: " + laneAccess.deliveryVehicles);
+        Log.d(TAG, "EmergencyVehicles are allowed on this lane: " + laneAccess.emergencyVehicles);
+        Log.d(TAG, "Motorcycles are allowed on this lane: " + laneAccess.motorcycles);
+    }
+
+    // Starts periodic updates of the traffic on the route.
+    public void startPeriodicTrafficUpdateOnRoute(CalculateTrafficOnRouteCallback calculateTrafficOnRouteCallback, long updateIntervalInSeconds){
+        trafficOnRouteUpdateHandler = new Handler();
+        trafficUpdateRunnable = new Runnable() {
+            @Override
+            public void run() {
+                routingEngine.calculateTrafficOnRoute(currentRoute, lastTraveledSectionIndex, traveledDistanceOnLastSectionInMeters, calculateTrafficOnRouteCallback);
+                trafficOnRouteUpdateHandler.postDelayed(this,updateIntervalInSeconds);
+            }
+        };
+        // Refresh traffic after the specified interval.
+        trafficOnRouteUpdateHandler.post(trafficUpdateRunnable);
+    }
+
+    // Stops periodic updates of the traffic on the route.
+    public void stopPeriodicTrafficUpdateOnRoute() {
+        if (trafficOnRouteUpdateHandler != null) {
+            trafficOnRouteUpdateHandler.removeCallbacks(trafficUpdateRunnable);
+        }
     }
 }

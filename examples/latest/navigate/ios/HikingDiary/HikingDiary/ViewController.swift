@@ -27,7 +27,7 @@ class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         // Load the map scene using a map scheme to render the map with.
         mapView.mapScene.loadScene(mapScheme: MapScheme.topoDay, completion: onLoadScene)
     }
@@ -55,7 +55,8 @@ class ViewController: UIViewController {
                                          MapFeatures.contours: MapFeatureModes.contoursAll,
                                          MapFeatures.buildingFootprints : MapFeatureModes.buildingFootprintsAll,
                                          MapFeatures.extrudedBuildings : MapFeatureModes.extrudedBuildingsAll,
-                                         MapFeatures.landmarks : MapFeatureModes.landmarksTextured])
+                                         MapFeatures.landmarks : MapFeatureModes.landmarksTextured,
+                                         MapFeatures.ambientOcclusion : MapFeatureModes.ambientOcclusionAll])
     }
     
     // When a custom raster outdoor layer is shown, we do not need to load hidden map features to save bandwidth.
@@ -64,7 +65,8 @@ class ViewController: UIViewController {
                                           MapFeatures.contours,
                                           MapFeatures.buildingFootprints,
                                           MapFeatures.extrudedBuildings,
-                                          MapFeatures.landmarks])
+                                          MapFeatures.landmarks,
+                                          MapFeatures.ambientOcclusion])
     }
     
     @IBAction func schemaSwitch(_ sender: UISwitch) {

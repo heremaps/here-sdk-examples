@@ -289,6 +289,7 @@ public class MainActivity extends AppCompatActivity {
         mapFeatures.put(MapFeatures.BUILDING_FOOTPRINTS, MapFeatureModes.BUILDING_FOOTPRINTS_ALL);
         mapFeatures.put(MapFeatures.EXTRUDED_BUILDINGS, MapFeatureModes.EXTRUDED_BUILDINGS_ALL);
         mapFeatures.put(MapFeatures.LANDMARKS, MapFeatureModes.LANDMARKS_TEXTURED);
+        mapFeatures.put(MapFeatures.AMBIENT_OCCLUSION, MapFeatureModes.AMBIENT_OCCLUSION_ALL);
         mapView.getMapScene().enableFeatures(mapFeatures);
     }
 
@@ -301,6 +302,7 @@ public class MainActivity extends AppCompatActivity {
         mapFeatures.add(MapFeatures.BUILDING_FOOTPRINTS);
         mapFeatures.add(MapFeatures.EXTRUDED_BUILDINGS);
         mapFeatures.add(MapFeatures.LANDMARKS);
+        mapFeatures.add(MapFeatures.AMBIENT_OCCLUSION);
         mapView.getMapScene().disableFeatures(mapFeatures);
     }
 

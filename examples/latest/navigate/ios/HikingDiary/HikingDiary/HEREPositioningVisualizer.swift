@@ -26,7 +26,6 @@ class HEREPositioningVisualizer {
     private var mapView: MapView
     private var locationIndicator = LocationIndicator()
     private var mapCircles = [MapPolygon]()
-    private var mapPolyline: MapPolyline?
     private var geoCoordinatesList: [GeoCoordinates] = []
     private let accuracyRadiusThresholdInMeters = 10.0
 
@@ -63,16 +62,9 @@ class HEREPositioningVisualizer {
         addLocationCircle(center: location.coordinates,
                           radiusInMeters: 1,
                           fillColor: fillColor)
-
-        updateMapPolyline(location)
     }
 
     func clearMap() {
-        if mapPolyline != nil {
-            mapView.mapScene.removeMapPolyline(mapPolyline!)
-            mapPolyline = nil
-        }
-
         for circle in mapCircles {
             mapView.mapScene.removeMapPolygon(circle)
         }
@@ -97,44 +89,6 @@ class HEREPositioningVisualizer {
             // Drawing too many items on the map view may slow down rendering, so we remove the oldest circle.
             mapView.mapScene.removeMapPolygon(mapCircles.first!)
             mapCircles.removeFirst()
-        }
-    }
-
-    private func updateMapPolyline(_ location: Location) {
-        geoCoordinatesList.append(location.coordinates)
-
-        if geoCoordinatesList.count < 2 {
-            return
-        }
-
-        // We are sure that the number of vertices is greater than 1 (see above), so it will not crash.
-        let geoPolyline = try! GeoPolyline(vertices: geoCoordinatesList)
-
-        // Add polyline to the map, if instance is nil.
-        guard let mapPolyline = mapPolyline else {
-            addMapPolyline(geoPolyline)
-            return
-        }
-
-        // Update the polyline shape that connects the raw location signals.
-        mapPolyline.geometry = geoPolyline
-    }
-
-    private func addMapPolyline(_ geoPolyline: GeoPolyline) {
-        let widthInPixels = 5.0
-        let polylineColor: UIColor = .black
-        do {
-            mapPolyline =  try MapPolyline(geometry: geoPolyline,
-                                                    representation: MapPolyline.SolidRepresentation(
-                                                        lineWidth: MapMeasureDependentRenderSize(
-                                                            sizeUnit: RenderSize.Unit.pixels,
-                                                            size: widthInPixels),
-                                                        color: polylineColor,
-                                                        capShape: LineCap.round))
-            
-            mapView.mapScene.addMapPolyline(mapPolyline!)
-        } catch let error {
-            fatalError("Failed to render MapPolyline. Cause: \(error)")
         }
     }
 }

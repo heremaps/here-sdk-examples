@@ -17,27 +17,57 @@
  * License-Filename: LICENSE
  */
 
-import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';  // For platform channels.
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/navigation.dart';
 import 'package:hiking_diary_app/positioning/HEREPositioningSimulator.dart';
 
 // A class to manage a GPXDocument containing multiple GPX tracks.
 class GPXManager {
-  GPXDocument gpxDocument = GPXDocument.withTracks([]);
-  String gpxDocumentFileName = "";
-  late BuildContext context;
+
+  // Define the method channel to interact with native code to get the path to writeable storage.
+  // For this example, we use the documents directory on iOS and the app's internal storage on Android.
+  // See also ios/Runner/AppDelegate.swift and android/app/src/main/java/.../MainActivity.java
+  // Alternatively, use a plugin such as path_provider.
+  static const methodChannel = MethodChannel('com.example.filepath');
+
+  GPXDocument _gpxDocument = GPXDocument.withTracks([]);
+  String _gpxFilePath = "";
+  // Needed only when you want to play back to loaded GPX trace.
   HerePositioningSimulator locationSimulator = HerePositioningSimulator();
 
-  GPXManager(String gpxDocumentFileName, BuildContext context) {
-    this.gpxDocumentFileName = gpxDocumentFileName;
-    this.context = context;
-    _initialize();
+  // Creates the manager and loads a stored GPXDocument, if any.
+  // gpxDocumentFileName example: "myGPXFile.gpx"
+  GPXManager(String gpxDocumentFileName) {
+    _initialize(gpxDocumentFileName);
   }
 
-  Future<GPXDocument?> loadGPXDocument(String gpxDocumentFileName) async {
+  Future<void> _initialize(String gpxDocumentFileName) async {
+    await _specifyFullFilePathPerPlatform(gpxDocumentFileName);
+    GPXDocument? loadedGPXDocument = await loadGPXDocument();
+    if (loadedGPXDocument != null) {
+      _gpxDocument = loadedGPXDocument;
+    }
+  }
+
+  // Specify the full path (including filename) from the platform (iOS or Android) via method channel.
+  Future<void> _specifyFullFilePathPerPlatform(String fileName) async {
+    _gpxFilePath = fileName;
     try {
-      GPXDocument gpxDocument = GPXDocument(gpxDocumentFileName, GPXOptions());
+      final String? fullPath = await methodChannel.invokeMethod('getFilePath', {'fileName': fileName});
+      if (fullPath != null) {
+        _gpxFilePath = fullPath;
+      } else {
+        print('Failed to get file path.');
+      }
+    } on PlatformException catch (e) {
+      print("Failed to get file path: '${e.message}'.");
+    }
+  }
+
+  Future<GPXDocument?> loadGPXDocument() async {
+    try {
+      GPXDocument gpxDocument = GPXDocument(_gpxFilePath, GPXOptions());
       return gpxDocument;
     } catch (e) {
       print("It seems no GPXDocument was stored yet: $e");
@@ -60,13 +90,13 @@ class GPXManager {
   }
 
   Future<bool> deleteGPXTrack(int index) async {
-    List<GPXTrack> gpxTracks = gpxDocument.tracks;
+    List<GPXTrack> gpxTracks = _gpxDocument.tracks;
     gpxTracks.removeAt(index);
 
     // Replace the existing document with the updated tracks list.
-    gpxDocument = GPXDocument.withTracks(gpxTracks);
+    _gpxDocument = GPXDocument.withTracks(gpxTracks);
 
-    return gpxDocument.save(gpxDocumentFileName);
+    return _gpxDocument.save(_gpxFilePath);
   }
 
   List<GeoCoordinates> getGeoCoordinatesList(GPXTrack track) {
@@ -78,16 +108,20 @@ class GPXManager {
     return geoCoordinatesList;
   }
 
+  List<GPXTrack> getGPXTracks() {
+    return _gpxDocument.tracks;
+  }
+
   GPXTrack? getGPXTrack(int index) {
-    if (gpxDocument.tracks.isEmpty) {
+    if (_gpxDocument.tracks.isEmpty) {
       return null;
     }
 
-    if (index < 0 || index > gpxDocument.tracks.length - 1) {
+    if (index < 0 || index > _gpxDocument.tracks.length - 1) {
       return null;
     }
 
-    return gpxDocument.tracks[index];
+    return _gpxDocument.tracks[index];
   }
 
   Future<bool> saveGPXTrack(GPXTrack gpxTrack) async {
@@ -103,9 +137,9 @@ class GPXManager {
       gpxTrack.description = getCurrentDate();
     }
 
-    gpxDocument.addTrack(gpxTrack);
+    _gpxDocument.addTrack(gpxTrack);
 
-    return gpxDocument.save(gpxDocumentFileName);
+    return _gpxDocument.save(_gpxFilePath);
   }
 
   void startGPXTrackPlayback(LocationListener locationListener, GPXTrack gpxTrack) {
@@ -114,12 +148,5 @@ class GPXManager {
 
   void stopGPXTrackPlayback() {
     locationSimulator.stopLocating();
-  }
-
-  Future<void> _initialize() async {
-    GPXDocument? loadedGPXDocument = await loadGPXDocument(gpxDocumentFileName);
-    if (loadedGPXDocument != null) {
-      gpxDocument = loadedGPXDocument;
-    }
   }
 }

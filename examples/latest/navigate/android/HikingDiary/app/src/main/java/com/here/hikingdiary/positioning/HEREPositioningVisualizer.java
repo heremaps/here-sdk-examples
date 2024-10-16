@@ -3,20 +3,13 @@ package com.here.hikingdiary.positioning;
 import android.util.Log;
 
 import com.here.sdk.core.Color;
-
 import com.here.sdk.core.GeoCircle;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.GeoPolygon;
-import com.here.sdk.core.GeoPolyline;
 import com.here.sdk.core.Location;
-import com.here.sdk.core.errors.InstantiationErrorException;
-import com.here.sdk.mapview.LineCap;
 import com.here.sdk.mapview.LocationIndicator;
-import com.here.sdk.mapview.MapMeasureDependentRenderSize;
 import com.here.sdk.mapview.MapPolygon;
-import com.here.sdk.mapview.MapPolyline;
 import com.here.sdk.mapview.MapView;
-import com.here.sdk.mapview.RenderSize;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +19,6 @@ public class HEREPositioningVisualizer {
     private MapView mapView;
     private LocationIndicator locationIndicator = new LocationIndicator();
     private List<MapPolygon> mapCircles = new ArrayList<>();
-    private MapPolyline mapPolyline;
     private List<GeoCoordinates> geoCoordinatesList = new ArrayList<>();
     private double accuracyRadiusThresholdInMeters = 10.0;
 
@@ -62,15 +54,9 @@ public class HEREPositioningVisualizer {
         }
 
         addLocationCircle(location.coordinates, 1, fillColor);
-        updateMapPolyline(location);
     }
 
     public void clearMap() {
-        if (mapPolyline != null) {
-            mapView.getMapScene().removeMapPolyline(mapPolyline);
-            mapPolyline = null;
-        }
-
         for (MapPolygon circle : mapCircles) {
             mapView.getMapScene().removeMapPolygon(circle);
         }
@@ -97,45 +83,4 @@ public class HEREPositioningVisualizer {
             mapCircles.remove(0);
         }
     }
-
-    private void updateMapPolyline(Location location) {
-        geoCoordinatesList.add(location.coordinates);
-
-        if (geoCoordinatesList.size() < 2) {
-            return;
-        }
-
-        // We are sure that the number of vertices is greater than 1 (see above), so it will not crash.
-        GeoPolyline geoPolyline;
-        try {
-            geoPolyline = new GeoPolyline(geoCoordinatesList);
-        } catch (InstantiationErrorException e) {
-            e.printStackTrace();
-            return;
-        }
-
-        // Add polyline to the map, if the instance is null.
-        if (mapPolyline == null) {
-            addMapPolyline(geoPolyline);
-            return;
-        }
-
-        // Update the polyline shape that connects the raw location signals.
-        mapPolyline.setGeometry(geoPolyline);
-    }
-
-    private void addMapPolyline(GeoPolyline geoPolyline) {
-        try {
-            mapPolyline = new MapPolyline(geoPolyline, new MapPolyline.SolidRepresentation(
-                    new MapMeasureDependentRenderSize(RenderSize.Unit.METERS, 5),
-                    Color.valueOf(android.graphics.Color.BLACK),
-                    LineCap.ROUND));
-        } catch (MapPolyline.Representation.InstantiationException e) {
-            Log.e("MapPolyline Representation Exception:", e.error.name());
-        } catch (MapMeasureDependentRenderSize.InstantiationException e) {
-            Log.e("MapMeasureDependentRenderSize Exception:", e.error.name());
-        }
-        mapView.getMapScene().addMapPolyline(mapPolyline);
-    }
-
 }
