@@ -83,4 +83,3 @@ class HEREPositioningSimulator: LocationDelegate {
         locationDelegate2?.onLocationUpdated(location)
     }
 }
-

@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
     private OfflineMapsExample offlineMapsExample;
     String accessKeyID;
     String accessKeySecret;
+    private Bundle savedInstanceState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
         // Get a MapView instance from layout
         mapView = findViewById(R.id.map_view);
         mapView.onCreate(savedInstanceState);
+        this.savedInstanceState = savedInstanceState;
 
         handleAndroidPermissions();
     }
@@ -67,7 +69,8 @@ public class MainActivity extends AppCompatActivity {
         accessKeyID = "YOUR_ACCESS_KEY_ID";
         accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
         SDKOptions options = new SDKOptions(accessKeyID, accessKeySecret);
-
+        // Enable a default layer configuration.
+        options.layerConfiguration = OfflineMapsExample.getLayerConfigurationWithOfflineSearch();
         try {
             Context context = this;
             SDKNativeEngine.makeSharedInstance(context, options);
@@ -133,6 +136,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         mapView.onSaveInstanceState(outState);
+        savedInstanceState = outState;
         super.onSaveInstanceState(outState);
     }
 
@@ -170,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void toggleConfiguration(View view) {
-        offlineMapsExample.toggleLayerConfiguration(accessKeyID, accessKeySecret, getApplicationContext());
+        offlineMapsExample.toggleLayerConfiguration(accessKeyID, accessKeySecret, getApplicationContext(), savedInstanceState);
     }
 
     public void toggleOfflineMode(View view){

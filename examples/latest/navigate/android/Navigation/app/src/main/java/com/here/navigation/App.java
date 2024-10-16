@@ -64,6 +64,7 @@ public class App {
     private final NavigationExample navigationExample;
     private final TextView messageView;
     private boolean isCameraTrackingEnabled = true;
+    private TimeUtils timeUtils;
 
     public App(Context context, MapView mapView, TextView messageView) {
         this.context = context;
@@ -76,6 +77,8 @@ public class App {
 
         navigationExample = new NavigationExample(context, mapView, messageView);
         navigationExample.startLocationProvider();
+
+        timeUtils = new TimeUtils();
 
         setLongPressGestureHandler();
 
@@ -161,24 +164,10 @@ public class App {
         int lengthInMeters = route.getLengthInMeters();
 
         String routeDetails =
-                "Travel Time: " + formatTime(estimatedTravelTimeInSeconds)
-                        + ", Length: " + formatLength(lengthInMeters);
+                "Travel Time: " + timeUtils.formatTime(estimatedTravelTimeInSeconds)
+                        + ", Length: " + timeUtils.formatLength(lengthInMeters);
 
         showStartNavigationDialog("Route Details", routeDetails, route, isSimulated);
-    }
-
-    private String formatTime(long sec) {
-        int hours = (int) (sec / 3600);
-        int minutes = (int) ((sec % 3600) / 60);
-
-        return String.format(Locale.getDefault(), "%02d:%02d", hours, minutes);
-    }
-
-    private String formatLength(int meters) {
-        int kilometers = meters / 1000;
-        int remainingMeters = meters % 1000;
-
-        return String.format(Locale.getDefault(), "%02d.%02d km", kilometers, remainingMeters);
     }
 
     private void showRouteOnMap(Route route) {

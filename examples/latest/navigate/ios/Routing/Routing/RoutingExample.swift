@@ -309,8 +309,8 @@ class RoutingExample {
         
         for section in route.sections {
             for span in section.spans {
-                let trafficSpeed = span.trafficSpeed
-                guard let lineColor = getTrafficColor(trafficSpeed.jamFactor) else {
+                let dynamicSpeedInfo : DynamicSpeedInfo? = span.dynamicSpeedInfo
+                guard let lineColor = getTrafficColor(dynamicSpeedInfo?.calculateJamFactor()) else {
                     // Skip rendering low traffic.
                     continue
                 }

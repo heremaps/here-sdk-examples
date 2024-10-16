@@ -125,7 +125,7 @@ class CartoPOIPickingExample: TapDelegate {
     private func fetchCartoPOIDetails(_ offlineSearchId: String) {
         // Set nil for LanguageCode to get the results in their local language.
         let languageCode: LanguageCode? = nil
-        offlineSearchEngine.search(placeIdQuery: PlaceIdQuery(offlineSearchId),
+        offlineSearchEngine.searchByPlaceId(PlaceIdQuery(offlineSearchId),
                                     languageCode: languageCode,
                                     completion: onSearchCompleted)
     }
@@ -153,25 +153,12 @@ class CartoPOIPickingExample: TapDelegate {
             return
         }
 
-        // The text is non-translated and will vary depending on the region.
-        // For example, for a height restriction the text might be "5.5m" in Germany and "12'5"" in the US for a
-        // restriction of type "HEIGHT". An example for a "WEIGHT" restriction: "15t".
-        // The text might be empty, for example, in case of type "GENERAL_TRUCK_RESTRICTION", indicated by a "no-truck" sign.
         let topmostVehicleRestriction = vehicleRestrictions.first!
-        var text = topmostVehicleRestriction.text
-        if text.isEmpty {
-            text = "General vehicle restriction."
-        }
 
         let lat = topmostVehicleRestriction.coordinates.latitude
         let lon = topmostVehicleRestriction.coordinates.longitude
-        // A textual normed representation of the type.
-        let type = topmostVehicleRestriction.restrictionType
         showDialog(title: "Vehicle restriction picked",
-                   message: "Text: \(text). Location: \(lat), \(lon). Type: \(type). See log for more place details.")
-
-        // GDF time domains format according to ISO 14825.
-        print("VR TimeIntervals: " + topmostVehicleRestriction.timeIntervals);
+                   message: " Location: \(lat), \(lon).")
     }
     
     private func showDialog(title: String, message: String) {

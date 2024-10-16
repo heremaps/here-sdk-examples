@@ -250,8 +250,8 @@ class RoutingExample {
 
     for (var section in route.sections) {
       for (var span in section.spans) {
-        TrafficSpeed trafficSpeed = span.trafficSpeed;
-        Color? lineColor = _getTrafficColor(trafficSpeed.jamFactor);
+        DynamicSpeedInfo? dynamicSpeed = span.dynamicSpeedInfo;
+        Color? lineColor = _getTrafficColor(dynamicSpeed?.calculateJamFactor());
         if (lineColor == null) {
           // We skip rendering low traffic.
           continue;

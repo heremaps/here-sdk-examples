@@ -16,11 +16,10 @@
  * SPDX-License-Identifier: Apache-2.0
  * License-Filename: LICENSE
  */
- 
+
 package com.here.hikingdiary;
 
 import android.content.Context;
-import android.os.Environment;
 
 import com.here.hikingdiary.positioning.HEREPositioningSimulator;
 import com.here.sdk.core.GeoCoordinates;
@@ -39,23 +38,28 @@ import java.util.List;
 
 // A class to manage a GPXDocument containing multiple GPX tracks.
 public class GPXManager {
+
     public GPXDocument gpxDocument = new GPXDocument(new ArrayList<>());
-    private String gpxDocumentFileName;
-    private Context context;
+    private String gpxFilePath;
     private HEREPositioningSimulator locationSimulator = new HEREPositioningSimulator();
 
+    // Creates the manager and loads a stored GPXDocument, if any.
+    // gpxDocumentFileName example: "myGPXFile.gpx"
     public GPXManager(String gpxDocumentFileName, Context context) {
-        this.gpxDocumentFileName = gpxDocumentFileName;
-        this.context = context;
-        GPXDocument loadedGPXDocument = loadGPXDocument(gpxDocumentFileName);
+        // For this example, we specify the absolute path to the internal storage
+        // owned by the app.
+        File file = new File(context.getFilesDir(), gpxDocumentFileName);
+        gpxFilePath = file.getAbsolutePath();
+
+        GPXDocument loadedGPXDocument = loadGPXDocument();
         if (loadedGPXDocument != null) {
             gpxDocument = loadedGPXDocument;
         }
     }
 
-    private GPXDocument loadGPXDocument(String gpxDocumentFileName) {
+    private GPXDocument loadGPXDocument() {
         try {
-            GPXDocument gpxDocument = new GPXDocument(gpxDocumentFileName, new GPXOptions());
+            GPXDocument gpxDocument = new GPXDocument(gpxFilePath, new GPXOptions());
             return gpxDocument;
         } catch (Exception instantiationError) {
             System.out.println("It seems no GPXDocument was stored yet: " + instantiationError);
@@ -86,7 +90,7 @@ public class GPXManager {
 
         gpxDocument.addTrack(gpxTrack);
 
-        return gpxDocument.save(gpxDocumentFileName);
+        return gpxDocument.save(gpxFilePath);
     }
 
     public GPXTrack getGPXTrack(int index) {
@@ -106,7 +110,7 @@ public class GPXManager {
 
         // Replace the existing document with the updated tracks list.
         gpxDocument = new GPXDocument(gpxTracks);
-        return gpxDocument.save(gpxDocumentFileName);
+        return gpxDocument.save(gpxFilePath);
     }
 
     public List<GeoCoordinates> getGeoCoordinatesList(GPXTrack track) {

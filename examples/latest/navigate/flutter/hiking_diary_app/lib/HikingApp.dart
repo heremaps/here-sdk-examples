@@ -40,7 +40,6 @@ class HikingApp implements LocationListener, LocationStatusListener {
   late HerePositioningVisualizer positioningVisualizer;
   late GPXManager gpxManager;
 
-  final BuildContext context;
   final HereMapController mapView;
   final MessageNotifier messageNotifier;
 
@@ -52,10 +51,10 @@ class HikingApp implements LocationListener, LocationStatusListener {
   OutdoorRasterLayer? outdoorRasterLayer;
   LocationFilterAbstract? locationFilter;
 
-  HikingApp(this.context, this.mapView, this.messageNotifier) {
+  HikingApp(this.mapView, this.messageNotifier) {
     herePositioningProvider = HEREPositioningProvider();
     locationFilter = DistanceAccuracyLocationFilter();
-    gpxManager = GPXManager("myGPXDocument.gpx", context);
+    gpxManager = GPXManager("myGPXDocument.gpx");
     positioningVisualizer = HerePositioningVisualizer(mapView);
     outdoorRasterLayer = OutdoorRasterLayer(mapView);
 
@@ -191,7 +190,8 @@ class HikingApp implements LocationListener, LocationStatusListener {
 
   List<String> getMenuEntryKeys() {
     List<String> entryKeys = [];
-    for (GPXTrack track in gpxManager.gpxDocument.tracks) {
+    List<GPXTrack> tracks = gpxManager.getGPXTracks();
+    for (GPXTrack track in tracks) {
       entryKeys.add(track.name);
     }
     return entryKeys;
@@ -199,8 +199,8 @@ class HikingApp implements LocationListener, LocationStatusListener {
 
   List<String> getMenuEntryDescriptions() {
     List<String> entryDescriptions = [];
-
-    for (GPXTrack track in gpxManager.gpxDocument.tracks) {
+    List<GPXTrack> tracks = gpxManager.getGPXTracks();
+    for (GPXTrack track in tracks) {
       entryDescriptions.add("Hike done on: " + track.description);
     }
     return entryDescriptions;
@@ -213,8 +213,7 @@ class HikingApp implements LocationListener, LocationStatusListener {
   void _addMapPolyline(GeoPolyline geoPolyline) {
     clearMap();
     double widthInPixels = 20.0;
-    Color polylineColor = const Color.fromARGB(0, 56, 54, 63);
-    MapPolyline myPathMapPolyline;
+    Color polylineColor = const Color.fromARGB(160, 0, 144, 138);
     try {
       myPathMapPolyline = MapPolyline.withRepresentation(
           geoPolyline,
@@ -222,12 +221,12 @@ class HikingApp implements LocationListener, LocationStatusListener {
               MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
               polylineColor,
               LineCap.round));
-      mapView.mapScene.addMapPolyline(myPathMapPolyline);
+      mapView.mapScene.addMapPolyline(myPathMapPolyline!);
     } on MapPolylineRepresentationInstantiationException catch (e) {
-      print("MapPolylineRepresentation Exception:" + e.error.name);
+      print("MapPolylineRepresentation exception:" + e.error.name);
       return;
     } on MapMeasureDependentRenderSizeInstantiationException catch (e) {
-      print("MapMeasureDependentRenderSize Exception:" + e.error.name);
+      print("MapMeasureDependentRenderSize exception:" + e.error.name);
       return;
     }
   }

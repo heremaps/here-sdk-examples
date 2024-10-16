@@ -171,7 +171,7 @@ class _MyAppState extends State<MyApp> {
   void _fetchCartoPOIDetails(String offlineSearchId) {
     // Set null to get the results in their local language.
     LanguageCode? languageCode;
-    _offlineSearchEngine!.searchByPlaceIdWithLanguageCode(PlaceIdQuery(offlineSearchId), languageCode,
+    _offlineSearchEngine!.searchByPlaceId(PlaceIdQuery(offlineSearchId), languageCode,
         (SearchError? searchError, Place? place) async {
       _handleSearchResult(searchError, place);
     });
@@ -200,25 +200,11 @@ class _MyAppState extends State<MyApp> {
       return;
     }
 
-    // The text is non-translated and will vary depending on the region.
-    // For example, for a height restriction the text might be "5.5m" in Germany and "12'5"" in the US for a
-    // restriction of type "HEIGHT". An example for a "WEIGHT" restriction: "15t".
-    // The text might be empty, for example, in case of type "GENERAL_TRUCK_RESTRICTION", indicated by a "no-truck" sign.
     PickVehicleRestrictionsResult topmostVehicleRestriction = vehicleRestrictions.first;
-    String text = topmostVehicleRestriction.text;
-    if (text.isEmpty) {
-      text = "General vehicle restriction";
-    }
-
     var lat = topmostVehicleRestriction.coordinates.latitude;
     var lon = topmostVehicleRestriction.coordinates.longitude;
-    // A textual normed representation of the type.
-    var type = topmostVehicleRestriction.restrictionType;
     _showDialog("Vehicle restriction picked",
-        "Text: $text. Location: $lat, $lon. Type: $type. See log for more place details.");
-
-    // GDF time domains format according to ISO 14825.
-    print("VR TimeIntervals: " + topmostVehicleRestriction.timeIntervals);
+        " Location: $lat, $lon.");
   }
 
   @override

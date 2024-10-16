@@ -52,6 +52,7 @@ import com.here.sdk.search.Place;
 import com.here.sdk.search.PlaceIdQuery;
 import com.here.sdk.search.PlaceIdSearchCallback;
 import com.here.sdk.search.SearchError;
+import com.here.sdk.transport.VehicleRestriction;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -217,7 +218,7 @@ public class MainActivity extends AppCompatActivity {
     private void fetchCartoPOIDetails(String offlineSearchId) {
         // Set null to get the results in their local language.
         LanguageCode languageCode = null;
-        offlineSearchEngine.search(new PlaceIdQuery(offlineSearchId), languageCode, new PlaceIdSearchCallback() {
+        offlineSearchEngine.searchByPlaceId(new PlaceIdQuery(offlineSearchId), languageCode, new PlaceIdSearchCallback() {
             @Override
             public void onPlaceIdSearchCompleted(@Nullable SearchError searchError, @Nullable Place place) {
                 if (searchError != null) {
@@ -242,25 +243,10 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // The text is non-translated and will vary depending on the region.
-        // For example, for a height restriction the text might be "5.5m" in Germany and "12'5"" in the US for a
-        // restriction of type "HEIGHT". An example for a "WEIGHT" restriction: "15t".
-        // The text might be empty, for example, in case of type "GENERAL_TRUCK_RESTRICTION", indicated by a "no-truck" sign.
         PickMapContentResult.VehicleRestrictionResult topmostVehicleRestriction = vehicleRestrictions.get(0);
-        String text = topmostVehicleRestriction.text;
-        if (text.isEmpty()) {
-            text = "General vehicle restriction.";
-        }
-
-        showDialog("Vehicle restriction picked:", text + ", Location: " +
+        showDialog("Vehicle restriction picked:", "Location: " +
                 topmostVehicleRestriction.coordinates.latitude + ", " +
-                topmostVehicleRestriction.coordinates.longitude + ". " +
-                // A textual normed representation of the type.
-                "Type: " + topmostVehicleRestriction.restrictionType +
-                ". See log for more details.");
-
-        // GDF time domains format according to ISO 14825.
-        Log.d("VR TimeIntervals", topmostVehicleRestriction.timeIntervals);
+                topmostVehicleRestriction.coordinates.longitude + ". " );
     }
 
     @Override

@@ -29,7 +29,6 @@ import androidx.appcompat.app.AlertDialog;
 import com.here.sdk.core.Color;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.GeoPolyline;
-import com.here.sdk.core.LocationTime;
 import com.here.sdk.core.Point2D;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.mapview.LineCap;
@@ -44,6 +43,7 @@ import com.here.sdk.mapview.MapView;
 import com.here.sdk.mapview.RenderSize;
 import com.here.sdk.routing.CalculateRouteCallback;
 import com.here.sdk.routing.CarOptions;
+import com.here.sdk.routing.DynamicSpeedInfo;
 import com.here.sdk.routing.Maneuver;
 import com.here.sdk.routing.ManeuverAction;
 import com.here.sdk.routing.PaymentMethod;
@@ -57,14 +57,12 @@ import com.here.sdk.routing.Span;
 import com.here.sdk.routing.Toll;
 import com.here.sdk.routing.TollFare;
 import com.here.sdk.routing.TrafficOptimizationMode;
-import com.here.sdk.routing.TrafficSpeed;
 import com.here.sdk.routing.Waypoint;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 public class RoutingExample {
@@ -356,8 +354,8 @@ public class RoutingExample {
 
         for (Section section : route.getSections()) {
             for (Span span : section.getSpans()) {
-                TrafficSpeed trafficSpeed = span.getTrafficSpeed();
-                Color lineColor = getTrafficColor(trafficSpeed.jamFactor);
+                DynamicSpeedInfo dynamicSpeed = span.getDynamicSpeedInfo();
+                Color lineColor = getTrafficColor(dynamicSpeed.calculateJamFactor());
                 if (lineColor == null) {
                     // We skip rendering low traffic.
                     continue;

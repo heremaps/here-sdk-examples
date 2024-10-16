@@ -29,7 +29,6 @@ class TruckGuidanceExample: TapDelegate,
                             TruckRestrictionsWarningDelegate,
                             EnvironmentalZoneWarningDelegate {
 
-    private var viewController: UIViewController
     private let mapView: MapView
     private var mapMarkers: [MapMarker] = []
     private var mapPolylines: [MapPolyline] = []
@@ -51,19 +50,18 @@ class TruckGuidanceExample: TapDelegate,
     private var lastCalculatedTruckRoute: Route?
     private var isGuidance = false
     private var isTracking = false
+    private let truckGuidanceUI: TruckGuidanceUI
 
     // Reference to the UICallback delegate.
     private weak var uiCallback: UICallback?
 
-    init(viewController: UIViewController, mapView: MapView) {
-        self.viewController = viewController
+    init(_ mapView: MapView) {
         self.mapView = mapView
 
-        // Center map in Berlin.
-        let camera = mapView.camera
-        let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 90)
-        camera.lookAt(point: GeoCoordinates(latitude: 52.520798, longitude: 13.409408),
-                      zoom: distanceInMeters)
+        // Adds views programmatically to the map view.
+        // This example class sends notifications to UI via callback protocoll.
+        truckGuidanceUI = TruckGuidanceUI(mapView)
+        uiCallback = truckGuidanceUI
 
         do {
             // We use the search engine to find places along a route.
@@ -111,11 +109,33 @@ class TruckGuidanceExample: TapDelegate,
         transportProfile.vehicleProfile = createVehicleProfile()
         visualNavigator.trackingTransportProfile = transportProfile
 
+        // Configure the map.
+        let camera = mapView.camera
+        let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 90)
+        camera.lookAt(point: GeoCoordinates(latitude: 52.520798, longitude: 13.409408),
+                      zoom: distanceInMeters)
+
+        // Load the map scene using a map scheme to render the map with.
+        mapView.mapScene.loadScene(mapScheme: MapScheme.normalDay, completion: onLoadScene)
+
         enableLayers()
         setGestureHandlers()
         setupListeners()
 
         showDialog(title: "Note", message: "Do a long press to change start and destination coordinates. Map icons are pickable.")
+    }
+
+    // Completion handler for loadScene().
+    private func onLoadScene(mapError: MapError?) {
+        if let mapError = mapError {
+            print("Error: Map scene not loaded, \(String(describing: mapError))")
+            return
+        }
+
+        // Add views programmatically to the map view.
+        truckGuidanceUI.setupUIComponents()
+        truckGuidanceUI.showSpeedViews()
+        truckGuidanceUI.listenForOrientationChanges()
     }
 
     // An immutable struct holding the definition of a truck.
@@ -162,10 +182,6 @@ class TruckGuidanceExample: TapDelegate,
         truckSpecifications.trailerCount = MyTruckSpecs.trailerCount
         truckSpecifications.truckType = MyTruckSpecs.truckType
         return truckSpecifications
-    }
-
-    func setUICallback(callback: UICallback) {
-            uiCallback = callback
     }
 
     // Enable layers that may be useful for truck drivers.
@@ -222,7 +238,7 @@ class TruckGuidanceExample: TapDelegate,
                 // Use the search engine to retrieve more details.
                 self.searchEngine.searchPickedPlace(pickedPlace: topmostContent, languageCode: .enUs) { searchError, place in
                     if let searchError = searchError {
-                        print("searchPickedPlace() resulted in an error: \(searchError)")
+                        self.showDialog(title: "Error", message: "searchPickedPlace() resulted in an error: \(searchError.rawValue)")
                         return
                     }
 
@@ -898,8 +914,19 @@ class TruckGuidanceExample: TapDelegate,
     }
 
     private func showDialog(title: String, message: String) {
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-        viewController.present(alertController, animated: true, completion: nil)
+        if let topController = UIApplication.shared.windows.first?.rootViewController {
+            let alert = UIAlertController(
+                title: title,
+                message: message,
+                preferredStyle: .alert
+            )
+
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+                // Handle OK button action.
+                alert.dismiss(animated: true, completion: nil)
+            }))
+
+            topController.present(alert, animated: true, completion: nil)
+        }
     }
 }

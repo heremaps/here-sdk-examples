@@ -24,20 +24,21 @@ import Foundation
 class GPXManager {
     
     public var gpxDocument = GPXDocument(tracks: [])
-    private var gpxDocumentFileName: String
+    private var gpxFileURL: String
     private let locationSimulator = HEREPositioningSimulator()
     
     // Creates an instance of this class and loads a GPXDocument with the given file name.
     // If no GPXDocument was found, then an empty GPXDocument is used.
+    // gpxDocumentFileName example: "myGPXFile.gpx"
     init(gpxDocumentFileName: String) {
-        self.gpxDocumentFileName = gpxDocumentFileName
-        gpxDocument = loadGPXDocument(gpxDocumentFileName) ?? gpxDocument
+        self.gpxFileURL = getDocumentsDirectory().appendingPathComponent(gpxDocumentFileName).relativePath
+        gpxDocument = loadGPXDocument() ?? gpxDocument
     }
     
     // Returns the stored GPXDocument or nil if no document was stored yet.
-    private func loadGPXDocument(_ gpxDocumentFileName: String) -> GPXDocument? {
+    public func loadGPXDocument() -> GPXDocument? {
         do {
-            let gpxDocument = try GPXDocument(gpxFilePath: gpxDocumentFileName,
+            let gpxDocument = try GPXDocument(gpxFilePath: gpxFileURL,
                                               options: GPXOptions())
             return gpxDocument
         } catch let instantiationError {
@@ -71,7 +72,12 @@ class GPXManager {
         
         gpxDocument.addTrack(trackToAdd: gpxTrack)
         
-        return gpxDocument.save(gpxFilePath: gpxDocumentFileName)
+        let result = gpxDocument.save(gpxFilePath: gpxFileURL)
+        if (result) {
+            print("Stored GPX file here: \(gpxFileURL)")
+        }
+        
+        return result
     }
     
     // Gets an exsting track from the GPXDocument, if available at the given index.
@@ -94,7 +100,7 @@ class GPXManager {
                 
         // Replace the existing document with the updated tracks list.
         gpxDocument = GPXDocument(tracks: gpxTracks)
-        return gpxDocument.save(gpxFilePath: gpxDocumentFileName)
+        return gpxDocument.save(gpxFilePath: gpxFileURL)
     }
     
     public func getGeoCoordinatesList(track: GPXTrack) -> [GeoCoordinates] {
@@ -120,3 +126,11 @@ class GPXManager {
         return "gpxTrack" + formatter.string(from: date)
     }
 }
+
+// Ensure that we're working in a directory where the app has write access, inside the app's sandbox,
+// such as the documents directory.
+func getDocumentsDirectory() -> URL {
+    let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+    return paths[0]
+}
+

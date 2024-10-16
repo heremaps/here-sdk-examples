@@ -85,6 +85,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   // Note that this is only needed when running on Android devices.
   ConsentEngine? _consentEngine;
   String _consentState = "Pending ...";
+  bool showConsentStateInfo = true;
 
   HereMapController? _hereMapController;
 
@@ -132,7 +133,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               icon: Icon(Icons.menu),
               onPressed: () {
                 if (hikingApp != null &&
-                    hikingApp!.gpxManager.gpxDocument.tracks.isNotEmpty) {
+                    hikingApp!.gpxManager.getGPXTracks().isNotEmpty) {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -166,10 +167,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                   _mapLayerSwitch = value;
                   if (hikingApp != null && _isLocationPermissionGranted) {
                     if (_mapLayerSwitch) {
-                      _enableMapFeatures();
+                      _disableMapFeatures();
                       hikingApp!.enableOutdoorRasterLayer();
                     } else {
-                      _disableMapFeatures();
+                      _enableMapFeatures();
                       hikingApp!.disableOutdoorRasterLayer();
                     }
                   }
@@ -233,15 +234,18 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               ),
             ),
           ),
-          Positioned(
-            top: 52.0,
-            left: 0.0,
-            right: 0.0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                multiLineButton(_consentState, _requestConsent),
-              ],
+          Visibility(
+            visible: showConsentStateInfo,
+            child: Positioned(
+              top: 52.0,
+              left: 0.0,
+              right: 0.0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  multiLineButton(_consentState, _requestConsent),
+                ],
+              ),
             ),
           ),
         ],
@@ -291,7 +295,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         _showDialog("Note", message);
 
         hikingApp =
-            HikingApp(context, hereMapController, widget.messageNotifier);
+            HikingApp(hereMapController, widget.messageNotifier);
         _enableMapFeatures();
 
         setState(() {
@@ -316,21 +320,15 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         {MapFeatures.extrudedBuildings: MapFeatureModes.extrudedBuildingsAll});
     _hereMapController?.mapScene.enableFeatures(
         {MapFeatures.landmarks: MapFeatureModes.landmarksTextured});
+    _hereMapController?.mapScene.enableFeatures(
+        {MapFeatures.ambientOcclusion: MapFeatureModes.ambientOcclusionAll});
   }
 
   // When a custom raster outdoor layer is shown, we do not need to load hidden map features to save bandwidth.
   void _disableMapFeatures() {
-    _hereMapController?.mapScene
-        .enableFeatures({MapFeatures.terrain: MapFeatureModes.terrain3d});
-    _hereMapController?.mapScene
-        .enableFeatures({MapFeatures.contours: MapFeatureModes.contoursAll});
-    _hereMapController?.mapScene.enableFeatures({
-      MapFeatures.buildingFootprints: MapFeatureModes.buildingFootprintsAll
-    });
-    _hereMapController?.mapScene.enableFeatures(
-        {MapFeatures.extrudedBuildings: MapFeatureModes.extrudedBuildingsAll});
-    _hereMapController?.mapScene.enableFeatures(
-        {MapFeatures.landmarks: MapFeatureModes.landmarksTextured});
+    _hereMapController?.mapScene.disableFeatures([
+      MapFeatures.terrain, MapFeatures.contours, MapFeatures.buildingFootprints,
+      MapFeatures.extrudedBuildings, MapFeatures.landmarks, MapFeatures.ambientOcclusion]);
   }
 
   // Request permissions with the permission_handler plugin. Set the required permissions here:
@@ -385,6 +383,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void _onStartHikeButtonPressed() {
     if (hikingApp != null) {
       hikingApp!.onStartHikingButtonClicked();
+      showConsentStateInfo = false;
     }
   }
 
