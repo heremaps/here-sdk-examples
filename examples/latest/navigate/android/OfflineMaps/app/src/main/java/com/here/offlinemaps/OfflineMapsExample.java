@@ -96,7 +96,7 @@ public class OfflineMapsExample {
         this.mapView = mapView;
 
         try {
-            // Adding offline search engine to show that we can search on downloaded regions.
+            // Adding offline search engine to show that we can search on installed regions.
             // Note that the engine cannot be used while a map update is in progress and an error will be indicated.
             offlineSearchEngine = new OfflineSearchEngine();
         } catch (InstantiationErrorException e) {
