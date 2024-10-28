@@ -107,11 +107,11 @@ class SearchHybridExample: TapDelegate,
                                           maxItems: 30)
 
         if isDeviceConnected {
-            _ = searchEngine.search(textQuery: textQuery,
+            _ = searchEngine.searchByText(textQuery,
                                     options: searchOptions,
                                     completion: onSearchCompleted)
         } else {
-            _ = offlineSearchEngine.search(textQuery: textQuery,
+            _ = offlineSearchEngine.searchByText(textQuery,
                                            options: searchOptions,
                                            completion: onSearchCompleted)
         }
@@ -166,28 +166,28 @@ class SearchHybridExample: TapDelegate,
 
         if isDeviceConnected {
             // Simulate a user typing a search term.
-            _ = searchEngine.suggest(textQuery: TextQuery("p", area: queryArea),
+            _ = searchEngine.suggestByText(TextQuery("p", area: queryArea),
                                      options: autosuggestOptions,
                                      completion: onSearchCompleted)
 
-            _ = searchEngine.suggest(textQuery: TextQuery("pi", area: queryArea),
+            _ = searchEngine.suggestByText(TextQuery("pi", area: queryArea),
                                      options: autosuggestOptions,
                                      completion: onSearchCompleted)
 
-            _ = searchEngine.suggest(textQuery: TextQuery("piz", area: queryArea),
+            _ = searchEngine.suggestByText(TextQuery("piz", area: queryArea),
                                      options: autosuggestOptions,
                                      completion: onSearchCompleted)
         } else {
             // Simulate a user typing a search term.
-            _ = offlineSearchEngine.suggest(textQuery: TextQuery("p", area: queryArea),
+            _ = offlineSearchEngine.suggestByText(TextQuery("p", area: queryArea),
                                      options: autosuggestOptions,
                                      completion: onSearchCompleted)
 
-            _ = offlineSearchEngine.suggest(textQuery: TextQuery("pi", area: queryArea),
+            _ = offlineSearchEngine.suggestByText(TextQuery("pi", area: queryArea),
                                      options: autosuggestOptions,
                                      completion: onSearchCompleted)
 
-            _ = offlineSearchEngine.suggest(textQuery: TextQuery("piz", area: queryArea),
+            _ = offlineSearchEngine.suggestByText(TextQuery("piz", area: queryArea),
                                      options: autosuggestOptions,
                                      completion: onSearchCompleted)
         }
@@ -230,11 +230,11 @@ class SearchHybridExample: TapDelegate,
                                              maxItems: 25)
 
         if isDeviceConnected {
-            _ = searchEngine.search(addressQuery: query,
+            _ = searchEngine.searchByAddress(query,
                                     options: geocodingOptions,
                                     completion: onGeocodingCompleted)
         } else {
-            _ = offlineSearchEngine.search(addressQuery: query,
+            _ = offlineSearchEngine.searchByAddress(query,
                                            options: geocodingOptions,
                                            completion: onGeocodingCompleted)
         }
@@ -322,11 +322,11 @@ class SearchHybridExample: TapDelegate,
         let reverseGeocodingOptions = SearchOptions(languageCode: LanguageCode.enGb,
                                                     maxItems: 1)
         if isDeviceConnected {
-            _ = searchEngine.search(coordinates: geoCoordinates,
+            _ = searchEngine.searchByCoordinates(geoCoordinates,
                                     options: reverseGeocodingOptions,
                                     completion: onReverseGeocodingCompleted)
         } else {
-            _ = offlineSearchEngine.search(coordinates: geoCoordinates,
+            _ = offlineSearchEngine.searchByCoordinates(geoCoordinates,
                                            options: reverseGeocodingOptions,
                                            completion: onReverseGeocodingCompleted)
         }

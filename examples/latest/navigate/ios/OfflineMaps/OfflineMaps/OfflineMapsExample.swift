@@ -331,7 +331,7 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
         let textQuery = TextQuery("restaurants", area: queryArea)
         let searchOptions = SearchOptions(languageCode: LanguageCode.enUs,
                                           maxItems: 30)
-        offlineSearchEngine.search(textQuery: textQuery,
+        offlineSearchEngine.searchByText(textQuery,
                                    options: searchOptions) { error, places in
             if let searchError = error {
                 self.showMessage("Search Error: \(searchError)")

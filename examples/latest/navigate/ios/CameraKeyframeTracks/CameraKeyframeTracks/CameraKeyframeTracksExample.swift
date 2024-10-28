@@ -17,20 +17,55 @@
  * License-Filename: LICENSE
  */
 
-import UIKit
 import heresdk
+import SwiftUI
 
-public class CameraKeyframeTracksExample: AnimationDelegate {
+/// `CameraKeyframeTracksExample` provides functionality for animating the map camera along a series of keyframes.
+class CameraKeyframeTracksExample: AnimationDelegate {
     private final let tag = String(describing: CameraKeyframeTracksExample.self)
     
-    private let viewController: UIViewController
-    private var mapView: MapView!
-    private var tracks: [MapCameraKeyframeTrack]!
     private let geoCoordinates = GeoCoordinates(latitude: 40.685869754854544, longitude: -74.02550202768754)
+    private var tracks: [MapCameraKeyframeTrack]!
+    private var mapView: MapView
+    private var disableOptimization = true
+    private var waypoints: Array<Waypoint> = Array()
     
-    init(viewController: UIViewController, mapView: MapView) {
-        self.viewController = viewController
+    init(_ mapView: MapView) {
         self.mapView = mapView
+
+        // Configure the map.
+        let camera = mapView.camera
+        let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 10)
+        camera.lookAt(point: GeoCoordinates(latitude: 52.520798, longitude: 13.409408),
+                      zoom: distanceInMeters)
+        
+        // Load the map scene using a map scheme to render the map with.
+        mapView.mapScene.loadScene(mapScheme: MapScheme.normalDay, completion: onLoadScene)
+    }
+    
+    // Completion handler for loadScene().
+    private func onLoadScene(mapError: MapError?) {
+        guard mapError == nil else {
+            print("Error: Map scene not loaded, \(String(describing: mapError))")
+            return
+        }
+    }
+    
+    func onAnimationStateChanged(state: heresdk.AnimationState) {
+        switch (state) {
+            case .started:
+                    print(tag + "Animation started.")
+                    break
+            case .cancelled:
+                    print(tag + "Animation cancelled.")
+                    break
+            case .completed:
+                    print(tag + "Animation finished.")
+                    break
+            default:
+                    print(tag + "An unknown error occured.")
+                    break
+        }
     }
     
     public func startTripToNYC() {
@@ -48,23 +83,6 @@ public class CameraKeyframeTracksExample: AnimationDelegate {
  
        // This animation can be started and replayed. When started, it will always start from the first keyframe.
        mapView.camera.startAnimation(mapCameraAnimation, animationDelegate: self)
-    }
-
-    public func onAnimationStateChanged(state: AnimationState) {
-        switch (state) {
-            case .started:
-                    print(tag + "Animation started.")
-                    break
-            case .cancelled:
-                    print(tag + "Animation cancelled.")
-                    break
-            case .completed:
-                    print(tag + "Animation finished.")
-                    break
-            default:
-                    print(tag + "An unknown error occured.")
-                    break
-        }
     }
     
     public func stopTripToNYCAnimation() {
@@ -165,9 +183,21 @@ public class CameraKeyframeTracksExample: AnimationDelegate {
         return geoOrientationKeyframe
     }
     
-    func showDialog(title: String, message: String) {
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-        viewController.present(alertController, animated: true, completion: nil)
+    private func showDialog(title: String, message: String) {
+        if let topController = UIApplication.shared.windows.first?.rootViewController {
+            let alert = UIAlertController(
+                title: title,
+                message: message,
+                preferredStyle: .alert
+            )
+            
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+                // Handle OK button action.
+                alert.dismiss(animated: true, completion: nil)
+            }))
+            
+            topController.present(alert, animated: true, completion: nil)
+        }
     }
 }
+

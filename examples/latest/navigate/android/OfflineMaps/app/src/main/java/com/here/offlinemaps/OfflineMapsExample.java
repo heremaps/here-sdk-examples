@@ -323,7 +323,7 @@ public class OfflineMapsExample {
         searchOptions.languageCode = LanguageCode.EN_US;
         searchOptions.maxItems = 30;
 
-        offlineSearchEngine.search(textQuery, searchOptions, new SearchCallback() {
+        offlineSearchEngine.searchByText(textQuery, searchOptions, new SearchCallback() {
             @Override
             public void onSearchCompleted(@Nullable SearchError searchError, @Nullable List<Place> list) {
                 if (searchError != null) {

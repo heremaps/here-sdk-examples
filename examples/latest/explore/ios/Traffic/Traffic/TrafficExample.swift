@@ -20,17 +20,16 @@
 import heresdk
 import UIKit
 
-class TrafficExample: TapDelegate {
-
-    private var viewController: UIViewController
+class TrafficExample : TapDelegate {
+    
     private var mapView: MapView
     private var trafficEngine: TrafficEngine
     // Visualizes traffic incidents found with the TrafficEngine.
     private var mapPolylineList = [MapPolyline]()
     private var tappedGeoCoordinates: GeoCoordinates = GeoCoordinates(latitude: -1, longitude: -1)
 
-    init(viewController: UIViewController, mapView: MapView) {
-        self.viewController = viewController
+
+    init(_ mapView: MapView) {
         self.mapView = mapView
         let camera = mapView.camera
         let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 10)
@@ -42,36 +41,38 @@ class TrafficExample: TapDelegate {
         } catch let engineInstantiationError {
             fatalError("Failed to initialize TrafficEngine. Cause: \(engineInstantiationError)")
         }
+      
+        // Load the map scene using a map scheme to render the map with.
+        mapView.mapScene.loadScene(mapScheme: MapScheme.normalDay, completion: onLoadScene)
 
         // Setting a tap handler to pick and search for traffic incidents around the tapped area.
         mapView.gestures.tapDelegate = self
-
+        
         showDialog(title: "Note",
                    message: "Tap on the map to pick a traffic incident.")
     }
 
-    func onEnableAllButtonClicked() {
-        // Show real-time traffic lines and incidents on the map.
-        enableTrafficVisualization()
+    // Completion handler for loadScene().
+    private func onLoadScene(mapError: MapError?) {
+        if let mapError = mapError {
+            print("Error: Map scene not loaded, \(String(describing: mapError))")
+        }
     }
 
-    func onDisableAllButtonClicked() {
-        disableTrafficVisualization()
-    }
-
-    private func enableTrafficVisualization() {
+    func enableTrafficVisualization() {
         // Once these layers are added to the map, they will be automatically updated while panning the map.
         mapView.mapScene.enableFeatures([MapFeatures.trafficFlow : MapFeatureModes.trafficFlowWithFreeFlow])
         // MapFeatures.trafficIncidents renders traffic icons and lines to indicate the location of incidents.
         mapView.mapScene.enableFeatures([MapFeatures.trafficIncidents: MapFeatureModes.defaultMode])
     }
-
-    private func disableTrafficVisualization() {
+    
+    func disableTrafficVisualization() {
         mapView.mapScene.disableFeatures([MapFeatures.trafficFlow, MapFeatures.trafficIncidents])
 
         // This clears only the custom visualization for incidents found with the TrafficEngine.
         clearTrafficIncidentsMapPolylines()
     }
+
 
     // Conforming to TapDelegate protocol.
     func onTap(origin: Point2D) {
@@ -86,7 +87,7 @@ class TrafficExample: TapDelegate {
             queryForIncidents(centerCoords: tappedGeoCoordinates)
         }
     }
-
+    
     // Traffic incidents can only be picked, when MapScene.Layers.trafficIncidents is visible.
     func pickTrafficIncident(touchPointInPixels: Point2D) {
         let originInPixels = Point2D(x: touchPointInPixels.x, y: touchPointInPixels.y)
@@ -103,7 +104,7 @@ class TrafficExample: TapDelegate {
         let filter = MapScene.MapPickFilter(filter: contentTypesToPickFrom);
         mapView.pick(filter:filter,inside: rectangle, completion: onPickMapContent)
     }
-
+    
     // MapViewBase.PickMapContentHandler to receive picked map content.
     func onPickMapContent(mapPickResults: MapPickResult?) {
         guard let mapPickResults = mapPickResults else {
@@ -139,7 +140,7 @@ class TrafficExample: TapDelegate {
                                      lookupOptions: trafficIncidentsLookupOptions,
                                      completion: onTrafficIncidentCompletion)
     }
-
+    
     // TrafficIncidentCompletionHandler to receive traffic incidents from ID.
     func onTrafficIncidentCompletion(trafficQueryError: TrafficQueryError?, trafficIncident: TrafficIncident?) {
         if trafficQueryError == nil {
@@ -170,7 +171,7 @@ class TrafficExample: TapDelegate {
             fatalError("Failed to render MapPolyline. Cause: \(error)")
         }
     }
-
+    
     private func queryForIncidents(centerCoords: GeoCoordinates) {
         let geoCircle = GeoCircle(center: centerCoords, radiusInMeters: 1000)
         let trafficIncidentsQueryOptions = TrafficIncidentsQueryOptions()
@@ -236,8 +237,19 @@ class TrafficExample: TapDelegate {
     }
 
     private func showDialog(title: String, message: String) {
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-        viewController.present(alertController, animated: true, completion: nil)
+        if let topController = UIApplication.shared.windows.first?.rootViewController {
+            let alert = UIAlertController(
+                title: title,
+                message: message,
+                preferredStyle: .alert
+            )
+
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+                // Handle OK button action.
+                alert.dismiss(animated: true, completion: nil)
+            }))
+
+            topController.present(alert, animated: true, completion: nil)
+        }
     }
 }

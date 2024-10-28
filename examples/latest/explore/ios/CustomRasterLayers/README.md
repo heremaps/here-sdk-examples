@@ -1,4 +1,4 @@
-This example app shows how to load custom raster layers. You can find how this is done in [CustomRasterLayersExample.swift](CustomRasterLayersExample/CustomRasterLayersExample.swift).
+The CustomRasterLayers example app shows how to calculate a route from A to B with a number of waypoints in between that is visualized on the map. You can find how this is done in [CustomRasterLayersExample.swift](CustomRasterLayers/CustomRasterLayersExample.swift).
 
 Build instructions:
 -------------------

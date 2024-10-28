@@ -141,7 +141,7 @@ class DrawingSwitcherState extends State<DrawingSwitcher> {
       ),
       child: Text(
         nameProp != null ? nameProp.asString : "",
-        textAlign: TextAlign.left,
+        textAlign: TextAlign.center,
         style: TextStyle(
           color: isSelectedDrawing ? Colors.blue : Colors.black,
           fontWeight: isSelectedDrawing ? FontWeight.bold : FontWeight.normal,

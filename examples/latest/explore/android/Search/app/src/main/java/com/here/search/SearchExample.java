@@ -148,7 +148,7 @@ public class SearchExample {
         reverseGeocodingOptions.languageCode = LanguageCode.EN_GB;
         reverseGeocodingOptions.maxItems = 1;
 
-        searchEngine.search(geoCoordinates, reverseGeocodingOptions, addressSearchCallback);
+        searchEngine.searchByCoordinates(geoCoordinates, reverseGeocodingOptions, addressSearchCallback);
     }
 
     private final SearchCallback addressSearchCallback = new SearchCallback() {
@@ -225,7 +225,7 @@ public class SearchExample {
         searchOptions.languageCode = LanguageCode.EN_US;
         searchOptions.maxItems = 30;
 
-        searchEngine.search(query, searchOptions, querySearchCallback);
+        searchEngine.searchByText(query, searchOptions, querySearchCallback);
     }
 
     private final SearchCallback querySearchCallback = new SearchCallback() {
@@ -298,19 +298,19 @@ public class SearchExample {
         TextQuery.Area queryArea = new TextQuery.Area(centerGeoCoordinates);
 
         // Simulate a user typing a search term.
-        searchEngine.suggest(
+        searchEngine.suggestByText(
                 new TextQuery("p", // User typed "p".
                         queryArea),
                 searchOptions,
                 autosuggestCallback);
 
-        searchEngine.suggest(
+        searchEngine.suggestByText(
                 new TextQuery("pi", // User typed "pi".
                         queryArea),
                 searchOptions,
                 autosuggestCallback);
 
-        searchEngine.suggest(
+        searchEngine.suggestByText(
                 new TextQuery("piz", // User typed "piz".
                         queryArea),
                 searchOptions,
@@ -326,7 +326,7 @@ public class SearchExample {
         options.languageCode = LanguageCode.DE_DE;
         options.maxItems = 30;
 
-        searchEngine.search(query, options, geocodeAddressSearchCallback);
+        searchEngine.searchByAddress(query, options, geocodeAddressSearchCallback);
     }
 
     private final SearchCallback geocodeAddressSearchCallback = new SearchCallback() {

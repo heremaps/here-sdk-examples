@@ -83,7 +83,7 @@ class SearchExample: TapDelegate,
         let textQuery = TextQuery(queryString, area: queryArea)
         let searchOptions = SearchOptions(languageCode: LanguageCode.enUs,
                                           maxItems: 30)
-        _ = searchEngine.search(textQuery: textQuery,
+        _ = searchEngine.searchByText(textQuery,
                                 options: searchOptions,
                                 completion: onSearchCompleted)
     }
@@ -129,15 +129,15 @@ class SearchExample: TapDelegate,
         let queryArea = TextQuery.Area(areaCenter: centerGeoCoordinates)
         
         // Simulate a user typing a search term.
-        _ = searchEngine.suggest(textQuery: TextQuery("p", area: queryArea),
+        _ = searchEngine.suggestByText(TextQuery("p", area: queryArea),
                                  options: autosuggestOptions,
                                  completion: onSearchCompleted)
 
-        _ = searchEngine.suggest(textQuery: TextQuery("pi", area: queryArea),
+        _ = searchEngine.suggestByText(TextQuery("pi", area: queryArea),
                                  options: autosuggestOptions,
                                  completion: onSearchCompleted)
 
-        _ = searchEngine.suggest(textQuery: TextQuery("piz", area: queryArea),
+        _ = searchEngine.suggestByText(TextQuery("piz", area: queryArea),
                                  options: autosuggestOptions,
                                  completion: onSearchCompleted)
     }
@@ -177,7 +177,7 @@ class SearchExample: TapDelegate,
         let query = AddressQuery(queryString, near: geoCoordinates)
         let geocodingOptions = SearchOptions(languageCode: LanguageCode.deDe,
                                              maxItems: 25)
-        _ = searchEngine.search(addressQuery: query,
+        _ = searchEngine.searchByAddress(query,
                                 options: geocodingOptions,
                                 completion: onGeocodingCompleted)
     }
@@ -263,7 +263,7 @@ class SearchExample: TapDelegate,
         // By default results are localized in EN_US.
         let reverseGeocodingOptions = SearchOptions(languageCode: LanguageCode.enGb,
                                                     maxItems: 1)
-        _ = searchEngine.search(coordinates: geoCoordinates,
+        _ = searchEngine.searchByCoordinates(geoCoordinates,
                                 options: reverseGeocodingOptions,
                                 completion: onReverseGeocodingCompleted)
     }
