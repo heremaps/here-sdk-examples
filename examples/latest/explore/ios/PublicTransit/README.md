@@ -1,4 +1,4 @@
-The Public Transit example app shows how to calculate a public transport route from A to B that is visualized on the map. You can find how this is done in [PublicTransportRoutingExample.swift](PublicTransit/PublicTransportRoutingExample.swift).
+The Public Transit example app shows how to calculate a public transport route from A to B that is visualized on the map. You can find how this is done in [PublicTransitExample.swift](PublicTransit/PublicTransitExample.swift).
 
 Build instructions:
 -------------------

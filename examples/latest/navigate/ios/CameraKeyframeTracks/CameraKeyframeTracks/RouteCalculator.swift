@@ -18,7 +18,7 @@
  */
 
 import heresdk
-import UIKit
+import SwiftUI
 
 // A class that creates car Routes with the HERE SDK.
 public class RouteCalculator {
@@ -75,3 +75,4 @@ public class RouteCalculator {
         }
     }
 }
+

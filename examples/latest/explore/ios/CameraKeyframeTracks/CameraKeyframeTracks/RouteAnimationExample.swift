@@ -17,12 +17,13 @@
  * License-Filename: LICENSE
  */
 
-import UIKit
+import SwiftUI
 import heresdk
 
+/// `RouteAnimationExample` is responsible for animating the camera along a predefined route on the HERE SDK map.
+/// This class provides functions to start and stop route animations, moving the camera to display a route with transitions.
 public class RouteAnimationExample {
-    
-    private let viewController: UIViewController
+ 
     private var mapView: MapView!
     private var tracks: [MapCameraKeyframeTrack]!
     private var mapPolylines: [MapPolyline] = []
@@ -30,8 +31,7 @@ public class RouteAnimationExample {
     private var route: Route?
     private let geoCoordinates = GeoCoordinates(latitude: 40.685869754854544, longitude: -74.02550202768754)
     
-    init(viewController: UIViewController, mapView: MapView) {
-        self.viewController = viewController
+    init(_ mapView: MapView) {
         self.mapView = mapView
         
         routeCalculator = RouteCalculator(mapView: mapView)
@@ -67,3 +67,4 @@ public class RouteAnimationExample {
         mapView.camera.startAnimation(animation)
     }
 }
+

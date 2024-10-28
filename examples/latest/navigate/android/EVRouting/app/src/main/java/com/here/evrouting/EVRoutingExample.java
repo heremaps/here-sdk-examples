@@ -309,7 +309,7 @@ public class EVRoutingExample {
         searchOptions.languageCode = LanguageCode.EN_US;
         searchOptions.maxItems = 30;
 
-        searchEngine.search(textQuery, searchOptions, new SearchCallback() {
+        searchEngine.searchByText(textQuery, searchOptions, new SearchCallback() {
             @Override
             public void onSearchCompleted(SearchError searchError, List<Place> items) {
                 if (searchError != null) {

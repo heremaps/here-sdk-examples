@@ -159,9 +159,9 @@ public class SearchExample {
         reverseGeocodingOptions.maxItems = 1;
 
         if (isDeviceConnected()) {
-            searchEngine.search(geoCoordinates, reverseGeocodingOptions, addressSearchCallback);
+            searchEngine.searchByCoordinates(geoCoordinates, reverseGeocodingOptions, addressSearchCallback);
         } else {
-            offlineSearchEngine.search(geoCoordinates, reverseGeocodingOptions, addressSearchCallback);
+            offlineSearchEngine.searchByCoordinates(geoCoordinates, reverseGeocodingOptions, addressSearchCallback);
         }
     }
 
@@ -240,9 +240,9 @@ public class SearchExample {
         searchOptions.maxItems = 30;
 
         if (isDeviceConnected()) {
-            searchEngine.search(query, searchOptions, querySearchCallback);
+            searchEngine.searchByText(query, searchOptions, querySearchCallback);
         } else {
-            offlineSearchEngine.search(query, searchOptions, querySearchCallback);
+            offlineSearchEngine.searchByText(query, searchOptions, querySearchCallback);
         }
     }
 
@@ -323,38 +323,38 @@ public class SearchExample {
 
         if (isDeviceConnected()) {
             // Simulate a user typing a search term.
-            searchEngine.suggest(
+            searchEngine.suggestByText(
                     new TextQuery("p", // User typed "p".
                             queryArea),
                     searchOptions,
                     autosuggestCallback);
 
-            searchEngine.suggest(
+            searchEngine.suggestByText(
                     new TextQuery("pi", // User typed "pi".
                             queryArea),
                     searchOptions,
                     autosuggestCallback);
 
-            searchEngine.suggest(
+            searchEngine.suggestByText(
                     new TextQuery("piz", // User typed "piz".
                             queryArea),
                     searchOptions,
                     autosuggestCallback);
         } else {
             // Simulate a user typing a search term.
-            offlineSearchEngine.suggest(
+            offlineSearchEngine.suggestByText(
                     new TextQuery("p", // User typed "p".
                             queryArea),
                     searchOptions,
                     autosuggestCallback);
 
-            offlineSearchEngine.suggest(
+            offlineSearchEngine.suggestByText(
                     new TextQuery("pi", // User typed "pi".
                             queryArea),
                     searchOptions,
                     autosuggestCallback);
 
-            offlineSearchEngine.suggest(
+            offlineSearchEngine.suggestByText(
                     new TextQuery("piz", // User typed "piz".
                             queryArea),
                     searchOptions,
@@ -372,9 +372,9 @@ public class SearchExample {
         options.maxItems = 30;
 
         if (isDeviceConnected()) {
-            searchEngine.search(query, options, geocodeAddressSearchCallback);
+            searchEngine.searchByAddress(query, options, geocodeAddressSearchCallback);
         } else {
-            offlineSearchEngine.search(query, options, geocodeAddressSearchCallback);
+            offlineSearchEngine.searchByAddress(query, options, geocodeAddressSearchCallback);
         }
     }
 

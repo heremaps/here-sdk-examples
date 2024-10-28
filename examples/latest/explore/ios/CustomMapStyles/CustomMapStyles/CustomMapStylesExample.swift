@@ -22,19 +22,28 @@ import UIKit
 
 class CustomMapStylesExample {
 
-    private let viewController: UIViewController
     private let mapView: MapView
 
-    init(viewController: UIViewController, mapView: MapView) {
-        self.viewController = viewController
+    init(_ mapView: MapView) {
         self.mapView = mapView
 
+        // Configure the map.
         let camera = mapView.camera
         let distanceInMeters = MapMeasure(kind: .distance, value: 200 * 1000)
         camera.lookAt(point: GeoCoordinates(latitude: 52.518043, longitude: 13.405991),
                       zoom: distanceInMeters)
+        
+        // Load the initial map scene using a map scheme to render the map with.
+        mapView.mapScene.loadScene(mapScheme: MapScheme.normalDay, completion: onLoadScene)
     }
-
+    
+    // Completion handler for loadScene().
+    private func onLoadScene(mapError: MapError?) {
+        if let mapError = mapError {
+            print("Error: Map scene not loaded, \(String(describing: mapError))")
+        }
+    }
+    
     func onLoadButtonClicked() {
         loadCustomMapStyle()
     }
@@ -45,28 +54,35 @@ class CustomMapStylesExample {
 
     // Drag & drop the assets folder including the JSON style onto Xcode's project navigator.
     private func loadCustomMapStyle() {
-        let jsonResourceString = getResourceStringFromBundle(name: "custom-dark-style-neon-rds",
+        let jsonResourceString = getResourceStringFromBundle(filename: "custom-dark-style-neon-rds",
                                                              type: "json")
         // Load the map scene using the path to the JSON resource.
         mapView.mapScene.loadScene(fromFile: jsonResourceString, completion: onLoadScene)
     }
 
-    private func getResourceStringFromBundle(name: String, type: String) -> String {
-        let bundle = Bundle(for: ViewController.self)
-        let resourceUrl = bundle.url(forResource: name,
-                                     withExtension: type)
-        guard let resourceString = resourceUrl?.path else {
+    private func getResourceStringFromBundle(filename: String, type: String) -> String {
+        let bundle = Bundle.main
+        guard let resourceUrl = bundle.url(forResource: filename, withExtension: type) else {
             fatalError("Error: Resource not found!")
         }
 
-        return resourceString
+        return resourceUrl.path
     }
     
-    // Completion handler when loading a map scene.
-    private func onLoadScene(mapError: MapError?) {
-        guard mapError == nil else {
-            print("Error: Map scene not loaded, \(String(describing: mapError))")
-            return
+    private func showDialog(title: String, message: String) {
+        if let topController = UIApplication.shared.windows.first?.rootViewController {
+            let alert = UIAlertController(
+                title: title,
+                message: message,
+                preferredStyle: .alert
+            )
+            
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+                // Handle OK button action.
+                alert.dismiss(animated: true, completion: nil)
+            }))
+            
+            topController.present(alert, animated: true, completion: nil)
         }
     }
 }

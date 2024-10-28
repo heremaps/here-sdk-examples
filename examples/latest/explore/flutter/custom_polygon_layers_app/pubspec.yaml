@@ -1,4 +1,4 @@
-name: custom_raster_layers_app
+name: custom_polygon_layers_app
 description: A new Flutter app that uses the HERE SDK for Flutter.
 
 # The following line prevents the package from being accidentally published to

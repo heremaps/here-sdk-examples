@@ -272,7 +272,7 @@ class SearchExample {
 
     if (useOnlineSearchEngine) {
       // Simulate a user typing a search term.
-      _onlineSearchEngine.suggest(
+      _onlineSearchEngine.suggestByText(
           TextQuery.withArea(
               "p", // User typed "p".
               queryArea),
@@ -280,7 +280,7 @@ class SearchExample {
         _handleSuggestionResults(searchError, list);
       });
 
-      _onlineSearchEngine.suggest(
+      _onlineSearchEngine.suggestByText(
           TextQuery.withArea(
               "pi", // User typed "pi".
               queryArea),
@@ -288,7 +288,7 @@ class SearchExample {
         _handleSuggestionResults(searchError, list);
       });
 
-      _onlineSearchEngine.suggest(
+      _onlineSearchEngine.suggestByText(
           TextQuery.withArea(
               "piz", // User typed "piz".
               queryArea),
@@ -297,7 +297,7 @@ class SearchExample {
       });
     } else {
       // Simulate a user typing a search term.
-      _offlineSearchEngine.suggest(
+      _offlineSearchEngine.suggestByText(
           TextQuery.withArea(
               "p", // User typed "p".
               queryArea),
@@ -305,7 +305,7 @@ class SearchExample {
         _handleSuggestionResults(searchError, list);
       });
 
-      _offlineSearchEngine.suggest(
+      _offlineSearchEngine.suggestByText(
           TextQuery.withArea(
               "pi", // User typed "pi".
               queryArea),
@@ -313,7 +313,7 @@ class SearchExample {
         _handleSuggestionResults(searchError, list);
       });
 
-      _offlineSearchEngine.suggest(
+      _offlineSearchEngine.suggestByText(
           TextQuery.withArea(
               "piz", // User typed "piz".
               queryArea),

@@ -236,7 +236,7 @@ class TruckGuidanceExample: TapDelegate,
                 let topmostContent = cartoPOIList[0]
                 print("Carto POI picked: \(topmostContent.name), Place category: \(topmostContent.placeCategoryId)")
                 // Use the search engine to retrieve more details.
-                self.searchEngine.searchPickedPlace(pickedPlace: topmostContent, languageCode: .enUs) { searchError, place in
+                self.searchEngine.searchByPickedPlace(topmostContent, languageCode: .enUs) { searchError, place in
                     if let searchError = searchError {
                         self.showDialog(title: "Error", message: "searchPickedPlace() resulted in an error: \(searchError.rawValue)")
                         return
@@ -262,8 +262,10 @@ class TruckGuidanceExample: TapDelegate,
 
             if vehicleRestrictionResultList.count > 0 {
                 let topmostContent = vehicleRestrictionResultList[0]
+                let lat = topmostContent.coordinates.latitude
+                let lon = topmostContent.coordinates.longitude
                 // Note that the text property is empty for general truck restrictions.
-                self.showDialog(title: "Vehicle restriction picked", message: "Type: \(topmostContent.restrictionType). \(topmostContent.text )")
+                self.showDialog(title: "Vehicle restriction picked", message: " Location: \(lat), \(lon).")
             }
         }
     }
@@ -796,7 +798,7 @@ class TruckGuidanceExample: TapDelegate,
         // Otherwise, a SearchError.FORBIDDEN will occur.
         _ = searchEngine.setCustomOption(name: "show", value: "truck")
 
-        searchEngine.search(categoryQuery: categoryQuery, options: searchOptions, completion: { (searchError, items) in
+        searchEngine.searchByCategory(categoryQuery, options: searchOptions, completion: { (searchError, items) in
             if let searchError = searchError {
                 print("No places found along the route. Error: \(searchError)")
                 return

@@ -301,7 +301,7 @@ public class TruckGuidanceExample {
                         ", Place category: " + pickedPlace.placeCategoryId);
 
                 // Optionally, you can now use the SearchEngine or the OfflineSearchEngine to retrieve more details.
-                searchEngine.searchPickedPlace(pickedPlace, LanguageCode.EN_US, new PlaceIdSearchCallback() {
+                searchEngine.searchByPickedPlace(pickedPlace, LanguageCode.EN_US, new PlaceIdSearchCallback() {
                     @Override
                     public void onPlaceIdSearchCompleted(@Nullable SearchError searchError, @Nullable Place place) {
                         if (searchError == null) {
@@ -331,8 +331,9 @@ public class TruckGuidanceExample {
             if (!vehicleRestrictionResultList.isEmpty()) {
                 PickMapContentResult.VehicleRestrictionResult topmostContent = vehicleRestrictionResultList.get(0);
                 // Note that the text property is empty for general truck restrictions.
-                showDialog("Vehicle restriction picked", "Type: " +
-                        topmostContent.restrictionType + ". " + topmostContent.text);
+                showDialog("Vehicle restriction picked:", "Location: " +
+                        topmostContent.coordinates.latitude + ", " +
+                        topmostContent.coordinates.longitude + ". " );
             }
         });
     }
@@ -879,7 +880,7 @@ public class TruckGuidanceExample {
         // Otherwise, a SearchError.FORBIDDEN will occur.     
         searchEngine.setCustomOption("show", "truck");
 
-        searchEngine.search(categoryQuery, searchOptions, new SearchCallback() {
+        searchEngine.searchByCategory(categoryQuery, searchOptions, new SearchCallback() {
             @Override
             public void onSearchCompleted(SearchError searchError, List<Place> items) {
                 if (searchError != null) {

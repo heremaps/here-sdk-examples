@@ -1,4 +1,4 @@
-The Routing example app shows how to calculate a route from A to B with a number of waypoints in between that is visualized on the map. It also shows how to calculate routes in offline mode, when there is no connectivity available. You can find how this is done in [RoutingExample.swift](RoutingHybrid/RoutingExample.swift).
+The RoutingHybrid example app shows how to calculate a route from A to B with a number of waypoints in between that is visualized on the map. It also shows how to calculate routes in offline mode, when there is no connectivity available. You can find how this is done in [RoutingHybridExample.swift](RoutingHybrid/RoutingHybridExample.swift).
 
 Build instructions:
 -------------------

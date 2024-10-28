@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2019-2024 HERE Europe B.V.
  *
- * Licensed under the Apache License, Version 2.0 (the "License")
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -18,7 +18,7 @@
  */
 
 import heresdk
-import UIKit
+import SwiftUI
 
 class CustomRasterLayersExample {
 
@@ -26,13 +26,20 @@ class CustomRasterLayersExample {
     private var rasterMapLayerStyle: MapLayer!
     private var rasterDataSourceStyle: RasterDataSource!
 
-    init(mapView: MapView) {
+    init(_ mapView: MapView) {
         self.mapView = mapView
 
+        // Configure the map.
         let camera = mapView.camera
         let distanceInMeters = MapMeasure(kind: .distance, value: 60 * 1000)
         camera.lookAt(point: GeoCoordinates(latitude: 52.518043, longitude: 13.405991),
                       zoom: distanceInMeters)
+        
+        // Load the map scene using a map scheme to render the map with.
+        mapView.mapScene.loadScene(mapScheme: MapScheme.normalDay, completion: onLoadScene)
+        
+        let message = "For this example app, an outdoor layer from thunderforest.com is used. Without setting a valid API key, these raster tiles will show a watermark (terms of usage: https://www.thunderforest.com/terms/).\n Attribution for the outdoor layer: \n Maps © www.thunderforest.com, \n Data © www.osm.org/copyright."
+        showDialog(title: "Note", message: message)
 
         let dataSourceName = "myRasterDataSourceStyle"
         rasterDataSourceStyle = createRasterDataSource(dataSourceName: dataSourceName)
@@ -43,6 +50,13 @@ class CustomRasterLayersExample {
 
         // Add a POI marker
         addPOIMapMarker(geoCoordinates: GeoCoordinates(latitude: 52.530932, longitude: 13.384915))
+    }
+    
+    // Completion handler for loadScene().
+    private func onLoadScene(mapError: MapError?) {
+        if let mapError = mapError {
+            print("Error: Map scene not loaded, \(String(describing: mapError))")
+        }
     }
 
     func onEnableButtonClicked() {
@@ -131,5 +145,22 @@ class CustomRasterLayersExample {
                                   anchor: anchorPoint)
 
         mapView.mapScene.addMapMarker(mapMarker)
+    }
+    
+    private func showDialog(title: String, message: String) {
+        if let topController = UIApplication.shared.windows.first?.rootViewController {
+            let alert = UIAlertController(
+                title: title,
+                message: message,
+                preferredStyle: .alert
+            )
+            
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+                // Handle OK button action.
+                alert.dismiss(animated: true, completion: nil)
+            }))
+            
+            topController.present(alert, animated: true, completion: nil)
+        }
     }
 }

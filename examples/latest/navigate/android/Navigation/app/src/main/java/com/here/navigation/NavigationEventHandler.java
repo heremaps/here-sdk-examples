@@ -39,7 +39,6 @@ import com.here.sdk.navigation.BorderCrossingWarningListener;
 import com.here.sdk.navigation.BorderCrossingWarningOptions;
 import com.here.sdk.navigation.DangerZoneWarning;
 import com.here.sdk.navigation.DangerZoneWarningListener;
-import com.here.sdk.navigation.DangerZoneWarningOptions;
 import com.here.sdk.navigation.DestinationReachedListener;
 import com.here.sdk.navigation.DimensionRestrictionType;
 import com.here.sdk.navigation.DistanceType;
@@ -54,7 +53,6 @@ import com.here.sdk.navigation.LaneRecommendationState;
 import com.here.sdk.navigation.LaneType;
 import com.here.sdk.navigation.LowSpeedZoneWarning;
 import com.here.sdk.navigation.LowSpeedZoneWarningListener;
-import com.here.sdk.navigation.LowSpeedZoneWarningOptions;
 import com.here.sdk.navigation.ManeuverNotificationOptions;
 import com.here.sdk.navigation.ManeuverProgress;
 import com.here.sdk.navigation.ManeuverViewLaneAssistance;
@@ -82,7 +80,6 @@ import com.here.sdk.navigation.RouteProgress;
 import com.here.sdk.navigation.RouteProgressListener;
 import com.here.sdk.navigation.SafetyCameraWarning;
 import com.here.sdk.navigation.SafetyCameraWarningListener;
-import com.here.sdk.navigation.SafetyCameraWarningOptions;
 import com.here.sdk.navigation.SchoolZoneWarning;
 import com.here.sdk.navigation.SchoolZoneWarningListener;
 import com.here.sdk.navigation.SchoolZoneWarningOptions;
@@ -102,6 +99,8 @@ import com.here.sdk.navigation.TollStopWarningListener;
 import com.here.sdk.navigation.TruckRestrictionWarning;
 import com.here.sdk.navigation.TruckRestrictionsWarningListener;
 import com.here.sdk.navigation.VisualNavigator;
+import com.here.sdk.navigation.WarningNotificationDistances;
+import com.here.sdk.navigation.WarningType;
 import com.here.sdk.navigation.WeightRestrictionType;
 import com.here.sdk.routing.CalculateTrafficOnRouteCallback;
 import com.here.sdk.routing.Maneuver;
@@ -284,15 +283,6 @@ public class NavigationEventHandler {
                 }
             }
         });
-
-        SafetyCameraWarningOptions safetyCameraWarningOptions = new SafetyCameraWarningOptions();
-        // Warning distance setting for highways, defaults to 1500 meters.
-        safetyCameraWarningOptions.highwayWarningDistanceInMeters = 1600;
-        // Warning distance setting for rural roads, defaults to 750 meters.
-        safetyCameraWarningOptions.ruralWarningDistanceInMeters = 800;
-        // Warning distance setting for urban roads, defaults to 500 meters.
-        safetyCameraWarningOptions.urbanWarningDistanceInMeters = 600;
-        visualNavigator.setSafetyCameraWarningOptions(safetyCameraWarningOptions);
 
         // Notifies when the current speed limit is exceeded.
         visualNavigator.setSpeedWarningListener(new SpeedWarningListener() {
@@ -504,12 +494,18 @@ public class NavigationEventHandler {
         RoadSignWarningOptions roadSignWarningOptions = new RoadSignWarningOptions();
         // Set a filter to get only shields relevant for TRUCKS and HEAVY_TRUCKS.
         roadSignWarningOptions.vehicleTypesFilter = Arrays.asList(RoadSignVehicleType.TRUCKS, RoadSignVehicleType.HEAVY_TRUCKS);
-        // Warning distance setting for highways, defaults to 1500 meters.
-        roadSignWarningOptions.highwayWarningDistanceInMeters = 1600;
-        // Warning distance setting for rural roads, defaults to 750 meters.
-        roadSignWarningOptions.ruralWarningDistanceInMeters = 800;
-        // Warning distance setting for urban roads, defaults to 500 meters.
-        roadSignWarningOptions.urbanWarningDistanceInMeters = 600;
+
+        // Get notification distances for road sign alerts from visual navigator.
+        WarningNotificationDistances warningNotificationDistances = visualNavigator.getWarningNotificationDistances(WarningType.ROAD_SIGN);
+        // The distance in meters for emitting warnings when the speed limit or current speed is fast. Defaults to 1500.
+        warningNotificationDistances.fastSpeedDistanceInMeters = 1600;
+        // The distance in meters for emitting warnings when the speed limit or current speed is regular. Defaults to 750.
+        warningNotificationDistances.regularSpeedDistanceInMeters = 800;
+        // The distance in meters for emitting warnings when the speed limit or current speed is slow. Defaults to 500.
+        warningNotificationDistances.slowSpeedDistanceInMeters = 600;
+
+        // Set the warning distances for road signs.
+        visualNavigator.setWarningNotificationDistances(WarningType.ROAD_SIGN, warningNotificationDistances);
         visualNavigator.setRoadSignWarningOptions(roadSignWarningOptions);
 
         // Notifies on road shields as they appear along the road.
@@ -640,8 +636,6 @@ public class NavigationEventHandler {
         // If the value is false, all border crossing notifications will be given for both
         // country borders and state borders. Defaults to false.
         borderCrossingWarningOptions.filterOutStateBorderWarnings = true;
-        // Warning distance setting for urban, in meters. Defaults to 500 meters.
-        borderCrossingWarningOptions.urbanWarningDistanceInMeters = 400;
         visualNavigator.setBorderCrossingWarningOptions(borderCrossingWarningOptions);
 
         // Notifies on danger zones.
@@ -669,11 +663,6 @@ public class NavigationEventHandler {
             }
         });
 
-        DangerZoneWarningOptions dangerZoneWarningOptions = new DangerZoneWarningOptions();
-        // Distance setting for urban, in meters. Defaults to 500 meters.
-        dangerZoneWarningOptions.urbanWarningDistanceInMeters = 400;
-        visualNavigator.setDangerZoneWarningOptions(dangerZoneWarningOptions);
-
         // Notifies on low speed zones ahead - as indicated also on the map when MapFeatures.LOW_SPEED_ZONE is set.
         visualNavigator.setLowSpeedZoneWarningListener(new LowSpeedZoneWarningListener() {
             @Override
@@ -690,11 +679,6 @@ public class NavigationEventHandler {
             }
         });
 
-        LowSpeedZoneWarningOptions lowSpeedZoneWarningOptions = new LowSpeedZoneWarningOptions();
-        // Distance setting for urban, in meters. Defaults to 500 meters.
-        lowSpeedZoneWarningOptions.urbanWarningDistanceInMeters = 400;
-        visualNavigator.setLowSpeedZoneWarningOptions(lowSpeedZoneWarningOptions);
-
         // Notifies whenever any textual attribute of the current road changes, i.e., the current road texts differ
         // from the previous one. This can be useful during tracking mode, when no maneuver information is provided.
         visualNavigator.setRoadTextsListener(new RoadTextsListener() {
@@ -707,12 +691,6 @@ public class NavigationEventHandler {
         RealisticViewWarningOptions realisticViewWarningOptions = new RealisticViewWarningOptions();
         realisticViewWarningOptions.aspectRatio = AspectRatio.ASPECT_RATIO_3_X_4;
         realisticViewWarningOptions.darkTheme = false;
-        // Warning distance setting for highways, defaults to 1500 meters.
-        realisticViewWarningOptions.highwayWarningDistanceInMeters = 1600;
-        // Warning distance setting for rural roads, defaults to 750 meters.
-        realisticViewWarningOptions.ruralWarningDistanceInMeters = 800;
-        // Warning distance setting for urban roads, defaults to 500 meters.
-        realisticViewWarningOptions.urbanWarningDistanceInMeters = 600;
         visualNavigator.setRealisticViewWarningOptions(realisticViewWarningOptions);
 
         // Notifies on signposts together with complex junction views.
@@ -798,7 +776,12 @@ public class NavigationEventHandler {
 
     private void setupVoiceGuidance(VisualNavigator visualNavigator) {
         LanguageCode ttsLanguageCode = getLanguageCodeForDevice(VisualNavigator.getAvailableLanguagesForManeuverNotifications());
-        visualNavigator.setManeuverNotificationOptions(new ManeuverNotificationOptions(ttsLanguageCode, UnitSystem.METRIC));
+        ManeuverNotificationOptions maneuverNotificationOptions = new ManeuverNotificationOptions();
+        // Set the language in which the notifications will be generated.
+        maneuverNotificationOptions.language = ttsLanguageCode;
+        // Set the measurement system used for distances.
+        maneuverNotificationOptions.unitSystem = UnitSystem.METRIC;
+        visualNavigator.setManeuverNotificationOptions(maneuverNotificationOptions);
         Log.d(TAG, "LanguageCode for maneuver notifications: " + ttsLanguageCode);
 
         // Set language to our TextToSpeech engine.

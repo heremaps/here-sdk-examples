@@ -235,7 +235,7 @@ class RoutingExample {
 
         let searchOptions = SearchOptions(languageCode: LanguageCode.enUs,
                                           maxItems: 30)
-        searchEngine.search(textQuery: textQuery,
+        searchEngine.searchByText(textQuery,
                             options: searchOptions,
                             completion: onSearchCompleted)
     }

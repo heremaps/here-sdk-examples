@@ -222,7 +222,7 @@ class SearchExample {
     TextQueryArea queryArea = TextQueryArea.withCenter(centerGeoCoordinates);
 
     // Simulate a user typing a search term.
-    _searchEngine.suggest(
+    _searchEngine.suggestByText(
         TextQuery.withArea(
             "p", // User typed "p".
             queryArea),
@@ -230,7 +230,7 @@ class SearchExample {
       _handleSuggestionResults(searchError, list);
     });
 
-    _searchEngine.suggest(
+    _searchEngine.suggestByText(
         TextQuery.withArea(
             "pi", // User typed "pi".
             queryArea),
@@ -238,7 +238,7 @@ class SearchExample {
       _handleSuggestionResults(searchError, list);
     });
 
-    _searchEngine.suggest(
+    _searchEngine.suggestByText(
         TextQuery.withArea(
             "piz", // User typed "piz".
             queryArea),
