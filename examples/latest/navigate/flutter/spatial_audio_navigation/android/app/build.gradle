@@ -23,6 +23,7 @@ if (flutterVersionName == null) {
 }
 
 android {
+    namespace "com.here.sdk.examples.spatial_audio_navigation"
     compileSdkVersion 34
 
     lintOptions {

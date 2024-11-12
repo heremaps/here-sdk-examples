@@ -23,6 +23,7 @@ if (flutterVersionName == null) {
 }
 
 android {
+    namespace "com.here.sdk.examples.traffic_app"
     compileSdkVersion 34
 
     lintOptions {

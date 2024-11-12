@@ -18,8 +18,7 @@
  */
 
 import heresdk
-import Network
-import UIKit
+import SwiftUI
 
 class RoutingHybridExample {
 
@@ -30,7 +29,6 @@ class RoutingHybridExample {
     private var onlineRoutingEngine: RoutingEngine
     private var offlineRoutingEngine: OfflineRoutingEngine
     private var isDeviceConnected = false
-    private let networkPathMonitor = NWPathMonitor()
     private var startGeoCoordinates: GeoCoordinates?
     private var destinationGeoCoordinates: GeoCoordinates?
 
@@ -194,7 +192,7 @@ class RoutingHybridExample {
         return widthsPerZoomLevel
     }
 
-    private func logManeuverInstructions(section: Section) {
+    private func logManeuverInstructions(section: heresdk.Section) {
         print("Log maneuver instructions per section:")
         let maneuverInstructions = section.maneuvers
         for maneuverInstruction in maneuverInstructions {
@@ -318,7 +316,9 @@ class RoutingHybridExample {
     }
 
     private func showDialog(title: String, message: String) {
-        if let topController = UIApplication.shared.windows.first?.rootViewController {
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootViewController = windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController {
+
             let alert = UIAlertController(
                 title: title,
                 message: message,
@@ -330,7 +330,7 @@ class RoutingHybridExample {
                 alert.dismiss(animated: true, completion: nil)
             }))
 
-            topController.present(alert, animated: true, completion: nil)
+            rootViewController.present(alert, animated: true, completion: nil)
         }
     }
 }

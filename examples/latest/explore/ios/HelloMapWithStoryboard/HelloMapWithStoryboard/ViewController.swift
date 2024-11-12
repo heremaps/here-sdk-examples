@@ -20,13 +20,19 @@
 import heresdk
 import UIKit
 
+// The MapView is added to the Main storyboard and initialized as IBOutlet.
 class ViewController: UIViewController {
 
     @IBOutlet var mapView: MapView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
+        // Alternatively, you can initialize the MapView programmatically without a storyboard / IBOutlet.
+        // This is shown in the next two commented out lines where we use the frame size of the parent view.
+        // mapView = MapView(frame: view.bounds)
+        // view.addSubview(mapView)
+        
         // Load the map scene using a map scheme to render the map with.
         mapView.mapScene.loadScene(mapScheme: MapScheme.normalDay, completion: onLoadScene)
     }

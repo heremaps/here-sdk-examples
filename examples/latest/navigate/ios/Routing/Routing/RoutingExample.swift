@@ -18,7 +18,7 @@
  */
 
 import heresdk
-import UIKit
+import SwiftUI
 
 class RoutingExample {
     
@@ -48,17 +48,19 @@ class RoutingExample {
         camera.lookAt(point: GeoCoordinates(latitude: 52.520798, longitude: 13.409408),
                       zoom: distanceInMeters)
         
-        mapView.mapScene.enableFeatures([MapFeatures.lowSpeedZones : MapFeatureModes.lowSpeedZonesAll]);
-        
         // Load the map scene using a map scheme to render the map with.
         mapView.mapScene.loadScene(mapScheme: MapScheme.normalDay, completion: onLoadScene)
     }
     
     // Completion handler for loadScene().
     private func onLoadScene(mapError: MapError?) {
-        if let mapError = mapError {
+        guard mapError == nil else {
             print("Error: Map scene not loaded, \(String(describing: mapError))")
+            return
         }
+
+        // Optionally, enable low speed zone map layer.
+        mapView.mapScene.enableFeatures([MapFeatures.lowSpeedZones : MapFeatureModes.lowSpeedZonesAll]);
     }
     
     func addRoute() {
@@ -259,7 +261,7 @@ class RoutingExample {
         }
     }
     
-    private func logManeuverInstructions(section: Section) {
+    private func logManeuverInstructions(section: heresdk.Section) {
         print("Log maneuver instructions per section:")
         let maneuverInstructions = section.maneuvers
         for maneuverInstruction in maneuverInstructions {
@@ -406,19 +408,21 @@ class RoutingExample {
     }
     
     private func showDialog(title: String, message: String) {
-        if let topController = UIApplication.shared.windows.first?.rootViewController {
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootViewController = windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController {
+
             let alert = UIAlertController(
                 title: title,
                 message: message,
                 preferredStyle: .alert
             )
-            
+
             alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
                 // Handle OK button action.
                 alert.dismiss(animated: true, completion: nil)
             }))
-            
-            topController.present(alert, animated: true, completion: nil)
+
+            rootViewController.present(alert, animated: true, completion: nil)
         }
     }
 }

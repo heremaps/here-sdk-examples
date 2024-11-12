@@ -18,7 +18,7 @@
  */
 
 import heresdk
-import UIKit
+import SwiftUI
 
 class OfflineMapsExample : DownloadRegionsStatusListener {
 
@@ -28,16 +28,18 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
     private let offlineSearchEngine: OfflineSearchEngine
     private var downloadableRegions = [Region]()
     private var mapDownloaderTasks = [MapDownloaderTask]()
+    private var showMessage: (String) -> Void
 
-    init(mapView: MapView) {
+    init(mapView: MapView, showMessageClosure: @escaping (String) -> Void) {
         self.mapView = mapView
-
+        self.showMessage = showMessageClosure
+        
         // Configure the map.
         let camera = mapView.camera
         let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 7)
         camera.lookAt(point: GeoCoordinates(latitude: 52.530932, longitude: 13.384915),
                       zoom: distanceInMeters)
-
+        
         do {
             // Adding offline search engine to show that we can search on downloaded regions.
             // Note that the engine cannot be used while a map update is in progress and an error will be indicated.
@@ -70,6 +72,16 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
 
             self.performUpdateChecks()
         })
+        
+        // Load the map scene using a map scheme to render the map with.
+        mapView.mapScene.loadScene(mapScheme: MapScheme.normalDay, completion: onLoadScene)
+    }
+    
+    // Completion handler for loadScene().
+    private func onLoadScene(mapError: MapError?) {
+        if let mapError = mapError {
+            print("Error: Map scene not loaded, \(String(describing: mapError))")
+        }
     }
 
     private func performUpdateChecks() {
@@ -102,7 +114,7 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
     // Completion handler to receive search results.
     func onDownloadableRegionsCompleted(error: MapLoaderError?, regions: [Region]?) {
         if let mapLoaderError = error {
-            self.showMessage("Downloadable regions error: \(mapLoaderError)")
+            showMessage("Downloadable regions error: \(mapLoaderError)")
             return
         }
 
@@ -122,7 +134,7 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
             }
         }
 
-        self.showMessage("Found \(downloadableRegions.count) continents with various countries. Full list: \(downloadableRegions.description).")
+        showMessage("Found \(downloadableRegions.count) continents with various countries. Full list: \(downloadableRegions.description).")
     }
 
     func onDownloadMapClicked() {
@@ -151,7 +163,7 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
     // Conform to the DownloadRegionsStatusListener protocol.
     func onDownloadRegionsComplete(error: MapLoaderError?, regions: [RegionId]?) {
         if let mapLoaderError = error {
-            self.showMessage("Download regions completion error: \(mapLoaderError)")
+            showMessage("Download regions completion error: \(mapLoaderError)")
             return
         }
 
@@ -323,7 +335,7 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
     // Keep in mind that the OfflineSearchEngine can also search on cached map data.
     func onSearchPlaceClicked() {
         guard let bbox = mapView.camera.boundingBox else {
-            self.showMessage("Invalid bounding box.")
+            showMessage("Invalid bounding box.")
             return
         }
 
@@ -350,12 +362,12 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
 
     func onSwitchOnlineClicked() {
         SDKNativeEngine.sharedInstance?.isOfflineMode = false
-        self.showMessage("The app is allowed to go online.")
+        showMessage("The app is allowed to go online.")
     }
 
     func onSwitchOfflineClicked() {
         SDKNativeEngine.sharedInstance?.isOfflineMode = true
-        self.showMessage("The app is radio-silence.")
+        showMessage("The app is radio-silence.")
     }
 
     private func checkInstallationStatus() {
@@ -389,23 +401,5 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
         // should be executed. It is recommended to inform your users to
         // perform the recommended action.
         print("RepairPersistentMap: Repair operation failed: \(String(describing: persistentMapRepairError))")
-    }
-
-    // A permanent view to show scrollablelog content.
-    private var messageTextView = UITextView()
-    private func showMessage(_ message: String) {
-        messageTextView.text = message
-        messageTextView.textColor = .white
-        messageTextView.backgroundColor = UIColor(red: 0, green: 144 / 255, blue: 138 / 255, alpha: 1)
-        messageTextView.layer.cornerRadius = 8
-        messageTextView.isEditable = false
-        messageTextView.textAlignment = NSTextAlignment.center
-        messageTextView.font = .systemFont(ofSize: 14)
-        messageTextView.frame = CGRect(x: 0, y: 0, width: mapView.frame.width * 0.9, height: mapView.frame.height * 0.3)
-        messageTextView.center = CGPoint(x: mapView.frame.width * 0.5, y: mapView.frame.height * 0.7)
-
-        UIView.transition(with: mapView, duration: 0.2, options: [.transitionCrossDissolve], animations: {
-            self.mapView.addSubview(self.messageTextView)
-        })
     }
 }

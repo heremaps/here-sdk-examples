@@ -18,15 +18,15 @@
  */
 
 import heresdk
-import UIKit
+import SwiftUI
 
 class CustomRasterTileSourceExample {
 
-    private let mapView: MapView
+    private var mapView: MapView
     private var rasterMapLayerStyle: MapLayer!
     private var rasterDataSourceStyle: RasterDataSource!
 
-    init(mapView: MapView) {
+    init(_ mapView: MapView) {
         self.mapView = mapView
 
         let camera = mapView.camera
@@ -34,6 +34,9 @@ class CustomRasterTileSourceExample {
         camera.lookAt(point: GeoCoordinates(latitude: 52.518043, longitude: 13.405991),
                       zoom: distanceInMeters)
 
+        // Load the map scene using a map scheme to render the map with.
+        mapView.mapScene.loadScene(mapScheme: MapScheme.normalDay, completion: onLoadScene)
+        
         let dataSourceName = "myRasterDataSourceStyle"
         rasterDataSourceStyle = createRasterDataSource(dataSourceName: dataSourceName)
         rasterMapLayerStyle = createMapLayer(dataSourceName: dataSourceName)
@@ -43,6 +46,14 @@ class CustomRasterTileSourceExample {
 
         // Add a POI marker
         addPOIMapMarker(geoCoordinates: GeoCoordinates(latitude: 52.530932, longitude: 13.384915))
+    }
+    
+    // Completion handler for loadScene().
+    private func onLoadScene(mapError: MapError?) {
+        guard mapError == nil else {
+            print("Error: Map scene not loaded, \(String(describing: mapError))")
+            return
+        }
     }
 
     func onEnableButtonClicked() {
@@ -65,7 +76,7 @@ class CustomRasterTileSourceExample {
         // The layer should be rendered on top of other layers except for the "labels" layer
         // so that we don't overlap the raster layer over POI markers.
         let priority = MapLayerPriorityBuilder().renderedBeforeLayer(named: "labels").build()
-        
+
         // And it should be visible for all zoom levels.
         let range = MapLayerVisibilityRange(minimumZoomLevel: 0, maximumZoomLevel: 22 + 1)
 
@@ -106,3 +117,4 @@ class CustomRasterTileSourceExample {
         mapView.mapScene.addMapMarker(mapMarker)
     }
 }
+

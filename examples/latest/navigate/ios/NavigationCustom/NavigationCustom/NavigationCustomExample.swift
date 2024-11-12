@@ -18,7 +18,7 @@
  */
 
 import heresdk
-import UIKit
+import SwiftUI
 
 // This example shows how to customize the navigation experience.
 class NavigationCustomExample: AnimationDelegate, LocationDelegate {
@@ -250,7 +250,7 @@ class NavigationCustomExample: AnimationDelegate, LocationDelegate {
     }
 
     // Conforming to AnimationDelegate.
-    func onAnimationStateChanged(state: AnimationState) {
+    func onAnimationStateChanged(state: heresdk.AnimationState) {
         if (state == AnimationState.completed
             || state == AnimationState.cancelled) {
             startGuidance(route: myRoute!);
@@ -376,19 +376,21 @@ class NavigationCustomExample: AnimationDelegate, LocationDelegate {
     }
 
     private func showDialog(title: String, message: String) {
-        if let topController = UIApplication.shared.windows.first?.rootViewController {
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootViewController = windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController {
+
             let alert = UIAlertController(
                 title: title,
                 message: message,
                 preferredStyle: .alert
             )
-            
+
             alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
                 // Handle OK button action.
                 alert.dismiss(animated: true, completion: nil)
             }))
-            
-            topController.present(alert, animated: true, completion: nil)
+
+            rootViewController.present(alert, animated: true, completion: nil)
         }
     }
 }

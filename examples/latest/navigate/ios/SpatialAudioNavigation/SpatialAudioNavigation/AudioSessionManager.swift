@@ -20,7 +20,6 @@
 import Foundation
 import AVFoundation
 
-
 class AudioSessionManager {
     
     var audioSessionIsActivated: Bool = false

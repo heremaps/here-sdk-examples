@@ -18,7 +18,7 @@
  */
 
 import heresdk
-import UIKit
+import SwiftUI
 
 // An example that shows how to handle rerouting during guidance alongside.
 // The simulated driver will follow the black line showing on the map - this is done with
@@ -815,7 +815,9 @@ class ReroutingExample: LongPressDelegate,
     }
     
     private func showDialog(title: String, message: String) {
-        if let topController = UIApplication.shared.windows.first?.rootViewController {
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootViewController = windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController {
+
             let alert = UIAlertController(
                 title: title,
                 message: message,
@@ -827,7 +829,7 @@ class ReroutingExample: LongPressDelegate,
                 alert.dismiss(animated: true, completion: nil)
             }))
 
-            topController.present(alert, animated: true, completion: nil)
+            rootViewController.present(alert, animated: true, completion: nil)
         }
     }
 }

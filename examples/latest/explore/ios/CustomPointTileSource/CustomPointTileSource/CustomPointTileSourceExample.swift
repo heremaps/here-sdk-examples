@@ -18,7 +18,7 @@
  */
 
 import heresdk
-import UIKit
+import SwiftUI
 
 class CustomPointTileSourceExample {
 
@@ -47,7 +47,7 @@ class CustomPointTileSourceExample {
     }
     """
 
-    init(mapView: MapView) {
+    init(_ mapView: MapView) {
         self.mapView = mapView
 
         let camera = mapView.camera
@@ -57,9 +57,20 @@ class CustomPointTileSourceExample {
 
         let dataSourceName = "MyPointDataSource"
         pointDataSource = createPointTileDataSource(dataSourceName: dataSourceName)
-        pointMapLayer = createMapLayer(dataSourceName: dataSourceName)        
+        pointMapLayer = createMapLayer(dataSourceName: dataSourceName)
+        
+        // Load the map scene using a map scheme to render the map with.
+        mapView.mapScene.loadScene(mapScheme: MapScheme.normalDay, completion: onLoadScene)
     }
 
+    // Completion handler for loadScene().
+    private func onLoadScene(mapError: MapError?) {
+        guard mapError == nil else {
+            print("Error: Map scene not loaded, \(String(describing: mapError))")
+            return
+        }
+    }
+    
     func onEnableButtonClicked() {
         pointMapLayer.setEnabled(true)
     }

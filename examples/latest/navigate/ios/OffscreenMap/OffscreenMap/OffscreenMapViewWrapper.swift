@@ -17,10 +17,8 @@
  * License-Filename: LICENSE
  */
 
-
-import Foundation
-import UIKit
 import heresdk
+import SwiftUI
 
 /// A simple wrapper over a `MapView` that allows generating images
 /// without adding a `MapView` to a view hierarchy.

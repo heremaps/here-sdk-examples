@@ -21,6 +21,7 @@ import Foundation
 import heresdk
 
 protocol EncoderInterface {
+    
     func stopPlayingAudioCue()
     func playAudioCue(audioCue: String, initialAzimuthInDegrees: Float, audioCuePanning: SpatialAudioCuePanning, azimuthCallback : @escaping SpatialAudioCuePanning.onSpatialAzimuthStarterHandler)
     func setCurrentAzimuthDegrees(nextAzimuthInDegrees: Float)

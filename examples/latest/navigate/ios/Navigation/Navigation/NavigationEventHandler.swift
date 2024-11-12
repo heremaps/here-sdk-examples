@@ -19,7 +19,7 @@
 
 import AVFoundation
 import heresdk
-import UIKit
+import SwiftUI
 
 // This class combines the various events that can be emitted during turn-by-turn navigation.
 // Note that this class does not show an exhaustive list of all possible events.
@@ -38,7 +38,7 @@ class NavigationEventHandler : NavigableLocationDelegate,
                                TollStopWarningDelegate,
                                ManeuverViewLaneAssistanceDelegate,
                                JunctionViewLaneAssistanceDelegate,
-                               RoadAttributesDelegate,                               
+                               RoadAttributesDelegate,
                                RoadSignWarningDelegate,
                                TruckRestrictionsWarningDelegate,
                                SchoolZoneWarningDelegate,
@@ -50,16 +50,13 @@ class NavigationEventHandler : NavigableLocationDelegate,
     private let voiceAssistant: VoiceAssistant
     private var lastMapMatchedLocation: MapMatchedLocation?
     private var previousManeuverIndex: Int32 = -1
-    private let messageTextView: UITextView
+    var textViewUpdateDelegate: TextViewUpdateDelegate?
     
     init(_ visualNavigator: VisualNavigator,
-         _ dynamicRoutingEngine: DynamicRoutingEngine,
-         _ messageTextView: UITextView) {
-        
+         _ dynamicRoutingEngine: DynamicRoutingEngine) {
         self.visualNavigator = visualNavigator
         self.dynamicRoutingEngine = dynamicRoutingEngine
-        self.messageTextView = messageTextView
-                
+        
         // A helper class for TTS.
         voiceAssistant = VoiceAssistant()
         
@@ -95,7 +92,7 @@ class NavigationEventHandler : NavigableLocationDelegate,
         setupRealisticViewWarnings()
         setupSchoolZoneWarnings()
     }
-        
+    
     // Conform to RouteProgressDelegate.
     // Notifies on the progress along the route including maneuver instructions.
     func onRouteProgressUpdated(_ routeProgress: RouteProgress) {
@@ -104,79 +101,79 @@ class NavigationEventHandler : NavigableLocationDelegate,
         print("Distance to destination in meters: \(distanceToDestination)")
         let trafficDelayAhead = routeProgress.sectionProgress.last!.trafficDelay
         print("Traffic delay ahead in seconds: \(trafficDelayAhead)")
-
+        
         // Contains the progress for the next maneuver ahead and the next-next maneuvers, if any.
         let nextManeuverList = routeProgress.maneuverProgress
         guard let nextManeuverProgress = nextManeuverList.first else {
             print("No next maneuver available.")
             return
         }
-
+        
         let nextManeuverIndex = nextManeuverProgress.maneuverIndex
         guard let nextManeuver = visualNavigator.getManeuver(index: nextManeuverIndex) else {
             // Should never happen as we retrieved the next maneuver progress above.
             return
         }
-
+        
         let action = nextManeuver.action
         let roadName = getRoadName(maneuver: nextManeuver)
         let logMessage = "'\(String(describing: action))' on \(roadName) in \(nextManeuverProgress.remainingDistanceInMeters) meters."
-
+        
         if previousManeuverIndex != nextManeuverIndex {
             // Log only new maneuvers and ignore changes in distance.
-            showMessage("New maneuver: " + logMessage)
+            updateMessage("New maneuver: " + logMessage)
         } else {
             // A maneuver update contains a different distance to reach the next maneuver.
-            showMessage("Maneuver update: " + logMessage)
+            updateMessage("Maneuver update: " + logMessage)
         }
-
+        
         previousManeuverIndex = nextManeuverIndex
-
+        
         if let lastMapMatchedLocation = lastMapMatchedLocation {
-           // Update the route based on the current location of the driver.
-           // We periodically want to search for better traffic-optimized routes.
+            // Update the route based on the current location of the driver.
+            // We periodically want to search for better traffic-optimized routes.
             dynamicRoutingEngine.updateCurrentLocation(
                 mapMatchedLocation: lastMapMatchedLocation,
                 sectionIndex: routeProgress.sectionIndex)
-       }
+        }
     }
-
+    
     func getRoadName(maneuver: Maneuver) -> String {
         let currentRoadTexts = maneuver.roadTexts
         let nextRoadTexts = maneuver.nextRoadTexts
-
+        
         let currentRoadName = currentRoadTexts.names.defaultValue()
         let currentRoadNumber = currentRoadTexts.numbersWithDirection.defaultValue()
         let nextRoadName = nextRoadTexts.names.defaultValue()
         let nextRoadNumber = nextRoadTexts.numbersWithDirection.defaultValue()
-
+        
         var roadName = nextRoadName == nil ? nextRoadNumber : nextRoadName
-
+        
         // On highways, we want to show the highway number instead of a possible road name,
         // while for inner city and urban areas road names are preferred over road numbers.
         if maneuver.nextRoadType == RoadType.highway {
             roadName = nextRoadNumber == nil ? nextRoadName : nextRoadNumber
         }
-
+        
         if maneuver.action == ManeuverAction.arrive {
             // We are approaching destination, so there's no next road.
             roadName = currentRoadName == nil ? currentRoadNumber : currentRoadName
         }
-
+        
         // Nil happens only in rare cases, when also the fallback above is nil.
         return roadName ?? "unnamed road"
     }
-
+    
     // Conform to DestinationReachedDelegate.
     // Notifies when the destination of the route is reached.
     func onDestinationReached() {
-        showMessage("Destination reached.")
+        updateMessage("Destination reached.")
         // Guidance has stopped. Now consider to, for example,
         // switch to tracking mode or stop rendering or locating or do anything else that may
         // be useful to support your app flow.
         // If the DynamicRoutingEngine was started before, consider to stop it now.
     }
-
+    
     // Conform to MilestoneStatusDelegate.
     // Notifies when a waypoint on the route is reached or missed.
     func onMilestoneStatusUpdated(milestone: Milestone, status: MilestoneStatus) {
@@ -206,7 +203,7 @@ class NavigationEventHandler : NavigableLocationDelegate,
             print("Safety camera warning \(safetyCameraWarning.type) reached at: \(safetyCameraWarning.distanceToCameraInMeters) with speed limit = \(safetyCameraWarning.speedLimitInMetersPerSecond)m/s")
         }
     }
-
+    
     // Conform to SpeedWarningDelegate.
     // Notifies when the current speed limit is exceeded.
     func onSpeedWarningStatusChanged(_ status: SpeedWarningStatus) {
@@ -216,17 +213,17 @@ class NavigationEventHandler : NavigableLocationDelegate,
             // Note that this may not include temporary special speed limits, see SpeedLimitDelegate.
             AudioServicesPlaySystemSound(SystemSoundID(1016))
         }
-
+        
         if status == SpeedWarningStatus.speedLimitRestored {
             print("Driver is again slower than current speed limit (plus an optional offset).")
         }
     }
-
+    
     // Conform to SpeedLimitDelegate.
     // Notifies on the current speed limit valid on the current road.
     func onSpeedLimitUpdated(_ speedLimit: SpeedLimit) {
         let speedLimit = getCurrentSpeedLimit(speedLimit)
-
+        
         if speedLimit == nil {
             print("Warning: Speed limits unknown, data could not be retrieved.")
         } else if speedLimit == 0 {
@@ -235,38 +232,38 @@ class NavigationEventHandler : NavigableLocationDelegate,
             print("Current speed limit (m/s): \(String(describing: speedLimit))")
         }
     }
-
+    
     private func getCurrentSpeedLimit(_ speedLimit: SpeedLimit) -> Double? {
         // Note that all values can be nil if no data is available.
-
+        
         // The regular speed limit if available. In case of unbounded speed limit, the value is zero.
         print("speedLimitInMetersPerSecond: \(String(describing: speedLimit.speedLimitInMetersPerSecond))")
-
+        
         // A conditional school zone speed limit as indicated on the local road signs.
         print("schoolZoneSpeedLimitInMetersPerSecond: \(String(describing: speedLimit.schoolZoneSpeedLimitInMetersPerSecond))")
-
+        
         // A conditional time-dependent speed limit as indicated on the local road signs.
         // It is in effect considering the current local time provided by the device's clock.
         print("timeDependentSpeedLimitInMetersPerSecond: \(String(describing: speedLimit.timeDependentSpeedLimitInMetersPerSecond))")
-
+        
         // A conditional non-legal speed limit that recommends a lower speed,
         // for example, due to bad road conditions.
         print("advisorySpeedLimitInMetersPerSecond: \(String(describing: speedLimit.advisorySpeedLimitInMetersPerSecond))")
-
+        
         // A weather-dependent speed limit as indicated on the local road signs.
         // The HERE SDK cannot detect the current weather condition, so a driver must decide
         // based on the situation if this speed limit applies.
         print("fogSpeedLimitInMetersPerSecond: \(String(describing: speedLimit.fogSpeedLimitInMetersPerSecond))")
         print("rainSpeedLimitInMetersPerSecond: \(String(describing: speedLimit.rainSpeedLimitInMetersPerSecond))")
         print("snowSpeedLimitInMetersPerSecond: \(String(describing: speedLimit.snowSpeedLimitInMetersPerSecond))")
-
+        
         // For convenience, this returns the effective (lowest) speed limit between
         // - speedLimitInMetersPerSecond
         // - schoolZoneSpeedLimitInMetersPerSecond
         // - timeDependentSpeedLimitInMetersPerSecond
         return speedLimit.effectiveSpeedLimitInMetersPerSecond()
     }
-
+    
     // Conform to NavigableLocationDelegate.
     // Notifies on the current map-matched location and other useful information while driving or walking.
     func onNavigableLocationUpdated(_ navigableLocation: NavigableLocation) {
@@ -274,9 +271,9 @@ class NavigationEventHandler : NavigableLocationDelegate,
             print("The currentNavigableLocation could not be map-matched. Are you off-road?")
             return
         }
-
+        
         lastMapMatchedLocation = navigableLocation.mapMatchedLocation!
-
+        
         if (lastMapMatchedLocation?.isDrivingInTheWrongWay == true) {
             print("User is driving in the wrong direction of the route.")
         }
@@ -285,7 +282,7 @@ class NavigationEventHandler : NavigableLocationDelegate,
         let accuracy = navigableLocation.originalLocation.speedAccuracyInMetersPerSecond
         print("Driving speed: \(String(describing: speed)) plus/minus accuracy of \(String(describing: accuracy)).")
     }
-
+    
     // Conform to RouteDeviationDelegate.
     // Notifies on a possible deviation from the route.
     func onRouteDeviation(_ routeDeviation: RouteDeviation) {
@@ -293,13 +290,13 @@ class NavigationEventHandler : NavigableLocationDelegate,
             // May happen in rare cases when route was set to nil inbetween.
             return
         }
-
+        
         // Get current geographic coordinates.
         var currentGeoCoordinates = routeDeviation.currentLocation.originalLocation.coordinates
         if let currentMapMatchedLocation = routeDeviation.currentLocation.mapMatchedLocation {
             currentGeoCoordinates = currentMapMatchedLocation.coordinates
         }
-
+        
         // Get last geographic coordinates on route.
         var lastGeoCoordinates: GeoCoordinates?
         if let lastLocationOnRoute = routeDeviation.lastLocationOnRoute {
@@ -311,15 +308,15 @@ class NavigationEventHandler : NavigableLocationDelegate,
             print("User was never following the route. So, we take the start of the route instead.")
             lastGeoCoordinates = route.sections.first?.departurePlace.originalCoordinates
         }
-
+        
         guard let lastGeoCoordinatesOnRoute = lastGeoCoordinates else {
             print("No lastGeoCoordinatesOnRoute found. Should never happen.")
             return
         }
-
+        
         let distanceInMeters = currentGeoCoordinates.distance(to: lastGeoCoordinatesOnRoute)
         print("RouteDeviation in meters is \(distanceInMeters)")
-
+        
         // Now, an application needs to decide if the user has deviated far enough and
         // what should happen next: For example, you can notify the user or simply try to
         // calculate a new route. When you calculate a new route, you can, for example,
@@ -350,7 +347,7 @@ class NavigationEventHandler : NavigableLocationDelegate,
     // thresholds as other warners and provides events with or without a route to follow.
     func onTollStopWarning(_ tollStop: TollStop) {
         let lanes = tollStop.lanes
-
+        
         // The lane at index 0 is the leftmost lane adjacent to the middle of the road.
         // The lane at the last index is the rightmost lane.
         let laneNumber = 0
@@ -370,14 +367,14 @@ class NavigationEventHandler : NavigableLocationDelegate,
             }
         }
     }
-
+    
     // Conform to the ManeuverViewLaneAssistanceDelegate.
     // Notifies which lane(s) lead to the next (next) maneuvers.
     func onLaneAssistanceUpdated(_ laneAssistance: ManeuverViewLaneAssistance) {
         // This lane list is guaranteed to be non-empty.
         let lanes = laneAssistance.lanesForNextManeuver
         logLaneRecommendations(lanes)
-
+        
         let nextLanes = laneAssistance.lanesForNextNextManeuver
         if !nextLanes.isEmpty {
             print("Attention, the next next maneuver is very close.")
@@ -385,19 +382,19 @@ class NavigationEventHandler : NavigableLocationDelegate,
             logLaneRecommendations(nextLanes)
         }
     }
-
+    
     // Conform to the JunctionViewLaneAssistanceDelegate.
     // Notfies which lane(s) allow to follow the route.
     func onLaneAssistanceUpdated(_ laneAssistance: JunctionViewLaneAssistance) {
         let lanes = laneAssistance.lanesForNextJunction
         if (lanes.isEmpty) {
-          print("You have passed the complex junction.")
+            print("You have passed the complex junction.")
         } else {
-          print("Attention, a complex junction is ahead.")
-          logLaneRecommendations(lanes)
+            print("Attention, a complex junction is ahead.")
+            logLaneRecommendations(lanes)
         }
     }
-
+    
     private func logLaneRecommendations(_ lanes: [Lane]) {
         // The lane at index 0 is the leftmost lane adjacent to the middle of the road.
         // The lane at the last index is the rightmost lane.
@@ -410,47 +407,47 @@ class NavigationEventHandler : NavigableLocationDelegate,
             if lane.recommendationState == .recommended {
                 print("Lane \(laneNumber) leads to next maneuver, but not to the next next maneuver.")
             }
-
+            
             // If laneAssistance.lanesForNextNextManeuver is not empty, this lane leads also to the
             // maneuver after the next maneuver.
             if lane.recommendationState == .highlyRecommended {
                 print("Lane \(laneNumber) leads to next maneuver and eventually to the next next maneuver.")
             }
-
+            
             if lane.recommendationState == .notRecommended {
                 print("Do not take lane \(laneNumber) to follow the route.")
             }
-
+            
             logLaneDetails(laneNumber, lane)
             
             laneNumber += 1
         }
     }
-
+    
     func logLaneDetails(_ laneNumber: Int, _ lane: Lane) {
-      // All directions can be true or false at the same time.
-      // The possible lane directions are valid independent of a route.
-      // If a lane leads to multiple directions and is recommended, then all directions lead to
-      // the next maneuver.
-      // You can use this information like in a bitmask to visualize the possible directions
-      // with a set of image overlays.
-      let laneDirectionCategory = lane.directionCategory
-      print("Directions for lane \(laneNumber):")
-      print("laneDirectionCategory.straight: \(laneDirectionCategory.straight)")
-      print("laneDirectionCategory.slightlyLeft: \(laneDirectionCategory.slightlyLeft)")
-      print("laneDirectionCategory.quiteLeft: \(laneDirectionCategory.quiteLeft)")
-      print("laneDirectionCategory.hardLeft: \(laneDirectionCategory.hardLeft)")
-      print("laneDirectionCategory.uTurnLeft: \(laneDirectionCategory.uTurnLeft)")
-      print("laneDirectionCategory.slightlyRight: \(laneDirectionCategory.slightlyRight)")
-      print("laneDirectionCategory.quiteRight: \(laneDirectionCategory.quiteRight)")
-      print("laneDirectionCategory.hardRight: \(laneDirectionCategory.hardRight)")
-      print("laneDirectionCategory.uTurnRight: \(laneDirectionCategory.uTurnRight)")
-
-      // More information on each lane is available in these bitmasks (boolean):
-      // LaneType provides lane properties such as if parking is allowed.
-      _ = lane.type
-      // LaneAccess provides which vehicle type(s) are allowed to access this lane.
-      logLaneAccess(laneNumber, lane.access)
+        // All directions can be true or false at the same time.
+        // The possible lane directions are valid independent of a route.
+        // If a lane leads to multiple directions and is recommended, then all directions lead to
+        // the next maneuver.
+        // You can use this information like in a bitmask to visualize the possible directions
+        // with a set of image overlays.
+        let laneDirectionCategory = lane.directionCategory
+        print("Directions for lane \(laneNumber):")
+        print("laneDirectionCategory.straight: \(laneDirectionCategory.straight)")
+        print("laneDirectionCategory.slightlyLeft: \(laneDirectionCategory.slightlyLeft)")
+        print("laneDirectionCategory.quiteLeft: \(laneDirectionCategory.quiteLeft)")
+        print("laneDirectionCategory.hardLeft: \(laneDirectionCategory.hardLeft)")
+        print("laneDirectionCategory.uTurnLeft: \(laneDirectionCategory.uTurnLeft)")
+        print("laneDirectionCategory.slightlyRight: \(laneDirectionCategory.slightlyRight)")
+        print("laneDirectionCategory.quiteRight: \(laneDirectionCategory.quiteRight)")
+        print("laneDirectionCategory.hardRight: \(laneDirectionCategory.hardRight)")
+        print("laneDirectionCategory.uTurnRight: \(laneDirectionCategory.uTurnRight)")
+        
+        // More information on each lane is available in these bitmasks (boolean):
+        // LaneType provides lane properties such as if parking is allowed.
+        _ = lane.type
+        // LaneAccess provides which vehicle type(s) are allowed to access this lane.
+        logLaneAccess(laneNumber, lane.access)
     }
     
     func logLaneAccess(_ laneNumber: Int, _ laneAccess: LaneAccess) {
@@ -474,74 +471,74 @@ class NavigationEventHandler : NavigableLocationDelegate,
         // If all attributes are unchanged, no new event is fired.
         // Note that a road can have more than one attribute at the same time.
         print("Received road attributes update.")
-
+        
         if (roadAttributes.isBridge) {
-          // Identifies a structure that allows a road, railway, or walkway to pass over another road, railway,
-          // waterway, or valley serving map display and route guidance functionalities.
+            // Identifies a structure that allows a road, railway, or walkway to pass over another road, railway,
+            // waterway, or valley serving map display and route guidance functionalities.
             print("Road attributes: This is a bridge.")
         }
         if (roadAttributes.isControlledAccess) {
-          // Controlled access roads are roads with limited entrances and exits that allow uninterrupted
-          // high-speed traffic flow.
+            // Controlled access roads are roads with limited entrances and exits that allow uninterrupted
+            // high-speed traffic flow.
             print("Road attributes: This is a controlled access road.")
         }
         if (roadAttributes.isDirtRoad) {
-          // Indicates whether the navigable segment is paved.
+            // Indicates whether the navigable segment is paved.
             print("Road attributes: This is a dirt road.")
         }
         if (roadAttributes.isDividedRoad) {
-          // Indicates if there is a physical structure or painted road marking intended to legally prohibit
-          // left turns in right-side driving countries, right turns in left-side driving countries,
-          // and U-turns at divided intersections or in the middle of divided segments.
+            // Indicates if there is a physical structure or painted road marking intended to legally prohibit
+            // left turns in right-side driving countries, right turns in left-side driving countries,
+            // and U-turns at divided intersections or in the middle of divided segments.
             print("Road attributes: This is a divided road.")
         }
         if (roadAttributes.isNoThrough) {
-          // Identifies a no through road.
+            // Identifies a no through road.
             print("Road attributes: This is a no through road.")
         }
         if (roadAttributes.isPrivate) {
-          // Private identifies roads that are not maintained by an organization responsible for maintenance of
-          // public roads.
+            // Private identifies roads that are not maintained by an organization responsible for maintenance of
+            // public roads.
             print("Road attributes: This is a private road.")
         }
         if (roadAttributes.isRamp) {
-          // Range is a ramp: connects roads that do not intersect at grade.
+            // Range is a ramp: connects roads that do not intersect at grade.
             print("Road attributes: This is a ramp.")
         }
         if (roadAttributes.isRightDrivingSide) {
-          // Indicates if vehicles have to drive on the right-hand side of the road or the left-hand side.
-          // For example, in New York it is always true and in London always false as the United Kingdom is
-          // a left-hand driving country.
+            // Indicates if vehicles have to drive on the right-hand side of the road or the left-hand side.
+            // For example, in New York it is always true and in London always false as the United Kingdom is
+            // a left-hand driving country.
             print("Road attributes: isRightDrivingSide = \(roadAttributes.isRightDrivingSide)")
         }
         if (roadAttributes.isRoundabout) {
-          // Indicates the presence of a roundabout.
+            // Indicates the presence of a roundabout.
             print("Road attributes: This is a roundabout.")
         }
         if (roadAttributes.isTollway) {
-          // Identifies a road for which a fee must be paid to use the road.
+            // Identifies a road for which a fee must be paid to use the road.
             print("Road attributes change: This is a road with toll costs.")
         }
         if (roadAttributes.isTunnel) {
-          // Identifies an enclosed (on all sides) passageway through or under an obstruction.
+            // Identifies an enclosed (on all sides) passageway through or under an obstruction.
             print("Road attributes: This is a tunnel.")
         }
     }
-
+    
     // Conform to the RoadShieldsWarningDelegate.
     // Notifies on road shields as they appear along the road.
     func onRoadSignWarningUpdated(_ roadSignWarning: RoadSignWarning) {
         print("Road sign distance (m): \(roadSignWarning.distanceToRoadSignInMeters)")
         print("Road sign type: \(roadSignWarning.type.rawValue)")
-
+        
         if let signValue = roadSignWarning.signValue {
             // Optional text as it is printed on the local road sign.
             print("Road sign text: " + signValue.text)
         }
-
+        
         // For more road sign attributes, please check the API Reference.
     }
-
+    
     // Conform to the TruckRestrictionsWarningDelegate.
     // Notifies truck drivers on road restrictions ahead. Called whenever there is a change.
     // For example, there can be a bridge ahead not high enough to pass a big truck
@@ -556,18 +553,18 @@ class NavigationEventHandler : NavigableLocationDelegate,
                 print("TruckRestrictionWarning ahead in \(truckRestrictionWarning.distanceInMeters) meters.")
                 if let timeRule = truckRestrictionWarning.timeRule {
                     if !timeRule.appliesTo(dateTime: Date()) {
-                    // For example, during a specific time period of a day, some truck restriction warnings do not apply.
-                    // If truckRestrictionWarning.timeRule is nil, the warning applies at anytime.
-                    print("Note that this truck restriction warning currently does not apply.")
+                        // For example, during a specific time period of a day, some truck restriction warnings do not apply.
+                        // If truckRestrictionWarning.timeRule is nil, the warning applies at anytime.
+                        print("Note that this truck restriction warning currently does not apply.")
+                    }
                 }
-              }
             } else if truckRestrictionWarning.distanceType == DistanceType.reached {
                 print("A restriction has been reached.")
             } else if truckRestrictionWarning.distanceType == DistanceType.passed {
                 // If not preceded by a "reached"-notification, this restriction was valid only for the passed location.
                 print("A restriction was just passed.")
             }
-
+            
             // One of the following restrictions applies, if more restrictions apply at the same time,
             // they are part of another TruckRestrictionWarning element contained in the list.
             if truckRestrictionWarning.weightRestriction != nil {
@@ -586,29 +583,29 @@ class NavigationEventHandler : NavigableLocationDelegate,
             }
         }
     }
-
+    
     // Conform to SchoolZoneWarningDelegate.
     // Notifies on school zones ahead.
     func onSchoolZoneWarningUpdated(_ schoolZoneWarnings: [heresdk.SchoolZoneWarning]) {
         // The list is guaranteed to be non-empty.
         for schoolZoneWarning in schoolZoneWarnings {
-          if schoolZoneWarning.distanceType == DistanceType.ahead {
-            print("A school zone ahead in: \(schoolZoneWarning.distanceToSchoolZoneInMeters) meters.")
-            // Note that this will be the same speed limit as indicated by SpeedLimitDelegate, unless
-            // already a lower speed limit applies, for example, because of a heavy truck load.
-            print("Speed limit restriction for this school zone: \(schoolZoneWarning.speedLimitInMetersPerSecond) m/s.")
-              if let timeRule = schoolZoneWarning.timeRule {
-                  if !timeRule.appliesTo(dateTime: Date()) {
-                  // For example, during night sometimes a school zone warning does not apply.
-                  // If schoolZoneWarning.timeRule is nil, the warning applies at anytime.
-                  print("Note that this school zone warning currently does not apply.")
-              }
+            if schoolZoneWarning.distanceType == DistanceType.ahead {
+                print("A school zone ahead in: \(schoolZoneWarning.distanceToSchoolZoneInMeters) meters.")
+                // Note that this will be the same speed limit as indicated by SpeedLimitDelegate, unless
+                // already a lower speed limit applies, for example, because of a heavy truck load.
+                print("Speed limit restriction for this school zone: \(schoolZoneWarning.speedLimitInMetersPerSecond) m/s.")
+                if let timeRule = schoolZoneWarning.timeRule {
+                    if !timeRule.appliesTo(dateTime: Date()) {
+                        // For example, during night sometimes a school zone warning does not apply.
+                        // If schoolZoneWarning.timeRule is nil, the warning applies at anytime.
+                        print("Note that this school zone warning currently does not apply.")
+                    }
+                }
+            } else if schoolZoneWarning.distanceType == DistanceType.reached {
+                print("A school zone has been reached.")
+            } else if schoolZoneWarning.distanceType == DistanceType.passed {
+                print("A school zone has been passed.")
             }
-          } else if schoolZoneWarning.distanceType == DistanceType.reached {
-            print("A school zone has been reached.")
-          } else if schoolZoneWarning.distanceType == DistanceType.passed {
-            print("A school zone has been passed.")
-          }
         }
     }
     
@@ -626,7 +623,7 @@ class NavigationEventHandler : NavigableLocationDelegate,
     func onRealisticViewWarningUpdated(_ realisticViewWarning: RealisticViewWarning) {
         let distance = realisticViewWarning.distanceToRealisticViewInMeters
         let distanceType: DistanceType = realisticViewWarning.distanceType
-
+        
         // Note that DistanceType.reached is not used for Signposts and junction views
         // as a junction is identified through a location instead of an area.
         if distanceType == DistanceType.ahead {
@@ -634,7 +631,7 @@ class NavigationEventHandler : NavigableLocationDelegate,
         } else if distanceType == DistanceType.passed {
             print("A RealisticView just passed.")
         }
-
+        
         let realisticView = realisticViewWarning.realisticViewVectorImage
         guard let signpostSvgImageContent = realisticView?.signpostSvgImageContent,
               let junctionViewSvgImageContent = realisticView?.junctionViewSvgImageContent
@@ -642,7 +639,7 @@ class NavigationEventHandler : NavigableLocationDelegate,
             print("A RealisticView just passed. No SVG data delivered.")
             return
         }
-
+        
         // The resolution-independent SVG data can now be used in an application to visualize the image.
         // Use a SVG library of your choice to create an SVG image out of the SVG string.
         // Both SVGs contain the same dimension and the signpostSvgImageContent should be shown on top of
@@ -705,7 +702,7 @@ class NavigationEventHandler : NavigableLocationDelegate,
             print("A danger zone has been passed.")
         }
     }
-
+    
     // Conform to LowSpeedZoneWarningDelegate.
     // Notifies on low speed zones ahead - as indicated also on the map when
     // MapFeatures.lowSpeedZones is set.
@@ -759,7 +756,7 @@ class NavigationEventHandler : NavigableLocationDelegate,
                                                 highSpeedBoundaryInMetersPerSecond: 25)
         visualNavigator.speedWarningOptions = SpeedWarningOptions(speedLimitOffset: speedLimitOffset)
     }
-
+    
     private func setupRoadSignWarnings() {
         var roadSignWarningOptions = RoadSignWarningOptions()
         // Set a filter to get only shields relevant for trucks and heavyTrucks.
@@ -783,7 +780,7 @@ class NavigationEventHandler : NavigableLocationDelegate,
         safetyCameraWarningOptions.urbanWarningDistanceInMeters = 600
         visualNavigator.safetyCameraWarningOptions = safetyCameraWarningOptions
     }
-
+    
     private func setupRealisticViewWarnings() {
         var realisticViewWarningOptions = RealisticViewWarningOptions(aspectRatio: AspectRatio.aspectRatio3X4, darkTheme: false)
         // Warning distance setting for highways, defaults to 1500 meters.
@@ -794,7 +791,7 @@ class NavigationEventHandler : NavigableLocationDelegate,
         realisticViewWarningOptions.urbanWarningDistanceInMeters = 600
         visualNavigator.realisticViewWarningOptions = realisticViewWarningOptions
     }
-
+    
     private func setupSchoolZoneWarnings() {
         var schoolZoneWarningOptions = SchoolZoneWarningOptions()
         schoolZoneWarningOptions.filterOutInactiveTimeDependentWarnings = true
@@ -805,10 +802,10 @@ class NavigationEventHandler : NavigableLocationDelegate,
     private func setupVoiceGuidance() {
         let ttsLanguageCode = getLanguageCodeForDevice(supportedVoiceSkins: VisualNavigator.availableLanguagesForManeuverNotifications())
         visualNavigator.maneuverNotificationOptions = ManeuverNotificationOptions(language: ttsLanguageCode,
-                                                                            unitSystem: UnitSystem.metric)
-
+                                                                                  unitSystem: UnitSystem.metric)
+        
         print("LanguageCode for maneuver notifications: \(ttsLanguageCode).")
-
+        
         // Set language to our TextToSpeech engine.
         let locale = LanguageCodeConverter.getLocale(languageCode: ttsLanguageCode)
         if voiceAssistant.setLanguage(locale: locale) {
@@ -817,10 +814,10 @@ class NavigationEventHandler : NavigableLocationDelegate,
             print("TextToSpeech engine does not support this language: \(locale)")
         }
     }
-
+    
     // Get the language preferrably used on this device.
     private func getLanguageCodeForDevice(supportedVoiceSkins: [heresdk.LanguageCode]) -> LanguageCode {
-
+        
         // 1. Determine if preferred device language is supported by our TextToSpeech engine.
         let identifierForCurrenDevice = Locale.preferredLanguages.first!
         var localeForCurrenDevice = Locale(identifier: identifierForCurrenDevice)
@@ -828,24 +825,18 @@ class NavigationEventHandler : NavigableLocationDelegate,
             print("TextToSpeech engine does not support: \(identifierForCurrenDevice), falling back to en-US.")
             localeForCurrenDevice = Locale(identifier: "en-US")
         }
-
+        
         // 2. Determine supported voice skins from HERE SDK.
         var languageCodeForCurrenDevice = LanguageCodeConverter.getLanguageCode(locale: localeForCurrenDevice)
         if !supportedVoiceSkins.contains(languageCodeForCurrenDevice) {
             print("No voice skins available for \(languageCodeForCurrenDevice), falling back to enUs.")
             languageCodeForCurrenDevice = LanguageCode.enUs
         }
-
+        
         return languageCodeForCurrenDevice
     }
     
-    // A permanent view to show log content.
-    private func showMessage(_ message: String) {
-        messageTextView.text = message
-        messageTextView.textColor = .white
-        messageTextView.layer.cornerRadius = 8
-        messageTextView.isEditable = false
-        messageTextView.textAlignment = NSTextAlignment.center
-        messageTextView.font = .systemFont(ofSize: 14)
+    private func updateMessage(_ message: String) {
+        textViewUpdateDelegate?.updateTextViewMessage(message)
     }
 }
