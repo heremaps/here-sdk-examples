@@ -19,9 +19,10 @@
 
 import heresdk
 import Foundation
-import UIKit
+import SwiftUI
 
 class SpatialNavigationExample: EventTextDelegate {
+    
     private var spatialAudioExample: SpatialAudioExample?
     private var visualNavigator: VisualNavigator?
     private var locationSimulator: LocationSimulator?

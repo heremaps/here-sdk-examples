@@ -234,8 +234,13 @@ public class MainActivity extends AppCompatActivity {
         if(this.voiceAssistant == null) {
             this.voiceAssistant = new VoiceAssistant(MainActivity.this);
 
+            ManeuverNotificationOptions maneuverNotificationOptions = new ManeuverNotificationOptions();
             LanguageCode ttsLanguageCode = getLanguageCodeForDevice(VisualNavigator.getAvailableLanguagesForManeuverNotifications());
-            visualNavigator.setManeuverNotificationOptions(new ManeuverNotificationOptions(ttsLanguageCode, UnitSystem.METRIC));
+            // Set the language in which the notifications will be generated.
+            maneuverNotificationOptions.language = ttsLanguageCode;
+            // Set the measurement system used for distances.
+            maneuverNotificationOptions.unitSystem = UnitSystem.METRIC;
+            visualNavigator.setManeuverNotificationOptions(maneuverNotificationOptions);
             Log.d(TAG, "LanguageCode for maneuver notifications: " + ttsLanguageCode);
 
             // Set language to our TextToSpeech engine.

@@ -17,9 +17,8 @@
  * License-Filename: LICENSE
  */
 
-import SwiftUI
 import heresdk
-import os
+import SwiftUI
 
 /// Encapsulates multiple offscreen map views for generating
 /// map images and exposing them to the UI.
@@ -151,17 +150,14 @@ struct OffscreenMapsExampleView: View {
                 OffscreenMapView(named: "Three", mapScheme: .hybridDay)
                 OffscreenMapView(named: "Four", mapScheme: .liteDay)
             }
-
         }
     }
 }
 
 struct ContentView: View {
-
     var body: some View {
         OffscreenMapsExampleView().environmentObject(OffscreenMapsModel())
     }
-
 }
 
 struct ContentView_Previews: PreviewProvider {

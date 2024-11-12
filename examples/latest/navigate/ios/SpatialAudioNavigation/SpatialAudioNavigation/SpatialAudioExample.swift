@@ -49,10 +49,13 @@ class SpatialAudioExample {
     }
     
     public func setupVoiceGuidance(visualNavigator: VisualNavigator) {
+        var maneuverNotificationOptions = ManeuverNotificationOptions()
         let ttsLanguageCode = getLanguageCodeForDevice(supportedVoiceSkins: VisualNavigator.availableLanguagesForManeuverNotifications())
-        visualNavigator.maneuverNotificationOptions = ManeuverNotificationOptions(language: ttsLanguageCode,
-                                                                                   unitSystem: UnitSystem.metric)
-        
+        // Set the language in which the notifications will be generated.
+        maneuverNotificationOptions.language = ttsLanguageCode
+        // Set the measurement system used for distances.
+        maneuverNotificationOptions.unitSystem = UnitSystem.metric
+        visualNavigator.maneuverNotificationOptions = maneuverNotificationOptions
         print("LanguageCode for maneuver notifications: \(ttsLanguageCode).")
         
         // Set language to our TextToSpeech engine.

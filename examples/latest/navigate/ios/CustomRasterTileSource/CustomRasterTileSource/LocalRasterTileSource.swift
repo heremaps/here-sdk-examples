@@ -18,7 +18,7 @@
  */
 
 import heresdk
-import UIKit
+import SwiftUI
 
 class LocalRasterTileSource : RasterTileSource {
     // Tile source supported tiling scheme.

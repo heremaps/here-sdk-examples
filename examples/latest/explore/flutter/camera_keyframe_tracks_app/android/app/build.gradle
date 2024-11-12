@@ -23,6 +23,7 @@ if (flutterVersionName == null) {
 }
 
 android {
+    namespace "com.here.examples.camera_keyframe_tracks_app"
     compileSdkVersion 34
 
     lintOptions {

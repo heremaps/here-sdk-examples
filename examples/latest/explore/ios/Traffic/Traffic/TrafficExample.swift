@@ -18,7 +18,7 @@
  */
 
 import heresdk
-import UIKit
+import SwiftUI
 
 class TrafficExample : TapDelegate {
     
@@ -237,7 +237,9 @@ class TrafficExample : TapDelegate {
     }
 
     private func showDialog(title: String, message: String) {
-        if let topController = UIApplication.shared.windows.first?.rootViewController {
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootViewController = windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController {
+
             let alert = UIAlertController(
                 title: title,
                 message: message,
@@ -249,7 +251,7 @@ class TrafficExample : TapDelegate {
                 alert.dismiss(animated: true, completion: nil)
             }))
 
-            topController.present(alert, animated: true, completion: nil)
+            rootViewController.present(alert, animated: true, completion: nil)
         }
     }
 }

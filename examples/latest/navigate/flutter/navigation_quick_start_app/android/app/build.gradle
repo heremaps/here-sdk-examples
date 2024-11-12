@@ -23,6 +23,7 @@ if (flutterVersionName == null) {
 }
 
 android {
+    namespace "com.here.sdk.examples.navigation_quick_start"
     compileSdkVersion 34
 
     lintOptions {

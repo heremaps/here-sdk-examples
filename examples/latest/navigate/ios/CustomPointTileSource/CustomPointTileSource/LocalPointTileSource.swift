@@ -17,8 +17,8 @@
  * License-Filename: LICENSE
  */
 
-import heresdk
 import Foundation
+import heresdk
 
 class LocalPointTileSource : PointTileSource {
     // Tile source supported tiling scheme.

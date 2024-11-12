@@ -23,6 +23,7 @@ if (flutterVersionName == null) {
 }
 
 android {
+    namespace "com.here.sdk.examples.carto_poi_picking"
     compileSdkVersion 34
 
     lintOptions {

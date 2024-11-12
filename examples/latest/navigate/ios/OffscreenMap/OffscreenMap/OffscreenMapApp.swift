@@ -17,18 +17,56 @@
  * License-Filename: LICENSE
  */
 
-import SwiftUI
 import heresdk
+import SwiftUI
 
+// This class is the entry point to an application.
+// HERE SDK initialization is done at start of app. When app is terminated, the HERE SDK is disposed.
 @main
 struct OffscreenMapApp: App {
-    /// The application delegate responsible for initializing the HERE SDK.
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     var body: some Scene {
         WindowGroup {
             ContentView()
         }
     }
+    
+    init() {
+        observeAppLifecycle()
+        
+        // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
+        initializeHERESDK()
+    }
+    
+    private func observeAppLifecycle() {
+        NotificationCenter.default.addObserver(forName: UIApplication.willTerminateNotification,
+                                               object: nil,
+                                               queue: nil) { _ in
+            // Perform cleanup or final tasks here.
+            print("App is about to terminate.")
+            disposeHERESDK()
+        }
+    }
+
+    private func initializeHERESDK() {
+        // Set your credentials for the HERE SDK.
+        let accessKeyID = "YOUR_ACCESS_KEY_ID"
+        let accessKeySecret = "YOUR_ACCESS_KEY_SECRET"
+        let options = SDKOptions(accessKeyId: accessKeyID, accessKeySecret: accessKeySecret)
+        do {
+            try SDKNativeEngine.makeSharedInstance(options: options)
+        } catch let engineInstantiationError {
+            fatalError("Failed to initialize the HERE SDK. Cause: \(engineInstantiationError)")
+        }
+    }
+    
+    private func disposeHERESDK() {
+        // Free HERE SDK resources before the application shuts down.
+        // Usually, this should be called only on application termination.
+        
+        // After this call, the HERE SDK is no longer usable unless it is initialized again.
+        SDKNativeEngine.sharedInstance = nil
+    }
 }
+
 

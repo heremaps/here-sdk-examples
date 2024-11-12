@@ -3,36 +3,36 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		C828DECA293FA014003A2586 /* heresdk.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = C828DEC9293FA014003A2586 /* heresdk.xcframework */; };
-		C828DECB293FA014003A2586 /* heresdk.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = C828DEC9293FA014003A2586 /* heresdk.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		C865244320B8138000392D48 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C865244220B8138000392D48 /* AppDelegate.swift */; };
-		C865244520B8138000392D48 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C865244420B8138000392D48 /* ViewController.swift */; };
-		C865244820B8138000392D48 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C865244620B8138000392D48 /* Main.storyboard */; };
-		C865244A20B8138200392D48 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C865244920B8138200392D48 /* Assets.xcassets */; };
-		C865244D20B8138200392D48 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C865244B20B8138200392D48 /* LaunchScreen.storyboard */; };
-		FF5CCF902893C05C007DBE99 /* AVAudioPlayerNodeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF5CCF8F2893C05C007DBE99 /* AVAudioPlayerNodeManager.swift */; };
-		FF5CCF922893C07A007DBE99 /* EncoderInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF5CCF912893C07A007DBE99 /* EncoderInterface.swift */; };
-		FF5CCF942893C091007DBE99 /* SpatialNavigationExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF5CCF932893C091007DBE99 /* SpatialNavigationExample.swift */; };
-		FF5CCF962893C0A6007DBE99 /* DefaultEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF5CCF952893C0A6007DBE99 /* DefaultEncoder.swift */; };
-		FF5CCF982893C0BB007DBE99 /* Mach1Encoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF5CCF972893C0BB007DBE99 /* Mach1Encoder.swift */; };
-		FFA77D782869A0DC0036F595 /* AudioSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFA77D772869A0DC0036F595 /* AudioSessionManager.swift */; };
-		FFA77D7C2869A0EF0036F595 /* LanguageCodeConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFA77D7B2869A0EF0036F595 /* LanguageCodeConverter.swift */; };
-		FFA77D7E2869A0F50036F595 /* VoiceAssistant.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFA77D7D2869A0F50036F595 /* VoiceAssistant.swift */; };
-		FFA77D802869A3AC0036F595 /* SpatialAudioExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFA77D7F2869A3AC0036F595 /* SpatialAudioExample.swift */; };
+		83AB15512CD542C000615BA9 /* DefaultEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83AB15482CD542C000615BA9 /* DefaultEncoder.swift */; };
+		83AB15522CD542C000615BA9 /* SpatialAudioExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83AB15492CD542C000615BA9 /* SpatialAudioExample.swift */; };
+		83AB15532CD542C000615BA9 /* Mach1Encoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83AB154A2CD542C000615BA9 /* Mach1Encoder.swift */; };
+		83AB15542CD542C000615BA9 /* LanguageCodeConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83AB154B2CD542C000615BA9 /* LanguageCodeConverter.swift */; };
+		83AB15552CD542C000615BA9 /* AVAudioPlayerNodeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83AB154C2CD542C000615BA9 /* AVAudioPlayerNodeManager.swift */; };
+		83AB15562CD542C000615BA9 /* VoiceAssistant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83AB154D2CD542C000615BA9 /* VoiceAssistant.swift */; };
+		83AB15572CD542C000615BA9 /* EncoderInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83AB154E2CD542C000615BA9 /* EncoderInterface.swift */; };
+		83AB15582CD542C000615BA9 /* SpatialNavigationExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83AB154F2CD542C000615BA9 /* SpatialNavigationExample.swift */; };
+		83AB15592CD542C000615BA9 /* AudioSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83AB15502CD542C000615BA9 /* AudioSessionManager.swift */; };
+		83AB155B2CD5435400615BA9 /* SpatialAudioNavigationExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83AB155A2CD5435400615BA9 /* SpatialAudioNavigationExample.swift */; };
+		83C837BC2C207F340004F54E /* SpatialAudioNavigationApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C837BB2C207F340004F54E /* SpatialAudioNavigationApp.swift */; };
+		83C837BE2C207F340004F54E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C837BD2C207F340004F54E /* ContentView.swift */; };
+		83C837C02C207F360004F54E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 83C837BF2C207F360004F54E /* Assets.xcassets */; };
+		83C837C32C207F360004F54E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 83C837C22C207F360004F54E /* Preview Assets.xcassets */; };
+		83C837CB2C20AAE50004F54E /* heresdk.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 83C837CA2C20AAE50004F54E /* heresdk.xcframework */; };
+		83C837CC2C20AAE50004F54E /* heresdk.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 83C837CA2C20AAE50004F54E /* heresdk.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		C8CE86F52236D58700701A47 /* Embed Frameworks */ = {
+		83C837CD2C20AAE50004F54E /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				C828DECB293FA014003A2586 /* heresdk.xcframework in Embed Frameworks */,
+				83C837CC2C20AAE50004F54E /* heresdk.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -40,82 +40,86 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		C828DEC9293FA014003A2586 /* heresdk.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = heresdk.xcframework; sourceTree = "<group>"; };
-		C865243F20B8138000392D48 /* SpatialAudioNavigation.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpatialAudioNavigation.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		C865244220B8138000392D48 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		C865244420B8138000392D48 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
-		C865244720B8138000392D48 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		C865244920B8138200392D48 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		C865244C20B8138200392D48 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		C865244E20B8138200392D48 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		FF5CCF8D2893BDCC007DBE99 /* heresdk.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = heresdk.xcframework; path = ../../../../../../../heresdk/frameworks/heresdk.xcframework; sourceTree = "<group>"; };
-		FF5CCF8F2893C05C007DBE99 /* AVAudioPlayerNodeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AVAudioPlayerNodeManager.swift; sourceTree = "<group>"; };
-		FF5CCF912893C07A007DBE99 /* EncoderInterface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncoderInterface.swift; sourceTree = "<group>"; };
-		FF5CCF932893C091007DBE99 /* SpatialNavigationExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpatialNavigationExample.swift; sourceTree = "<group>"; };
-		FF5CCF952893C0A6007DBE99 /* DefaultEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultEncoder.swift; sourceTree = "<group>"; };
-		FF5CCF972893C0BB007DBE99 /* Mach1Encoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mach1Encoder.swift; sourceTree = "<group>"; };
-		FFA77D772869A0DC0036F595 /* AudioSessionManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudioSessionManager.swift; sourceTree = "<group>"; };
-		FFA77D7B2869A0EF0036F595 /* LanguageCodeConverter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LanguageCodeConverter.swift; sourceTree = "<group>"; };
-		FFA77D7D2869A0F50036F595 /* VoiceAssistant.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VoiceAssistant.swift; sourceTree = "<group>"; };
-		FFA77D7F2869A3AC0036F595 /* SpatialAudioExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpatialAudioExample.swift; sourceTree = "<group>"; };
+		83AB15482CD542C000615BA9 /* DefaultEncoder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultEncoder.swift; sourceTree = "<group>"; };
+		83AB15492CD542C000615BA9 /* SpatialAudioExample.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpatialAudioExample.swift; sourceTree = "<group>"; };
+		83AB154A2CD542C000615BA9 /* Mach1Encoder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Mach1Encoder.swift; sourceTree = "<group>"; };
+		83AB154B2CD542C000615BA9 /* LanguageCodeConverter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LanguageCodeConverter.swift; sourceTree = "<group>"; };
+		83AB154C2CD542C000615BA9 /* AVAudioPlayerNodeManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AVAudioPlayerNodeManager.swift; sourceTree = "<group>"; };
+		83AB154D2CD542C000615BA9 /* VoiceAssistant.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VoiceAssistant.swift; sourceTree = "<group>"; };
+		83AB154E2CD542C000615BA9 /* EncoderInterface.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EncoderInterface.swift; sourceTree = "<group>"; };
+		83AB154F2CD542C000615BA9 /* SpatialNavigationExample.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpatialNavigationExample.swift; sourceTree = "<group>"; };
+		83AB15502CD542C000615BA9 /* AudioSessionManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudioSessionManager.swift; sourceTree = "<group>"; };
+		83AB155A2CD5435400615BA9 /* SpatialAudioNavigationExample.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpatialAudioNavigationExample.swift; sourceTree = "<group>"; };
+		83C837B82C207F340004F54E /* SpatialAudioNavigation.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpatialAudioNavigation.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		83C837BB2C207F340004F54E /* SpatialAudioNavigationApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpatialAudioNavigationApp.swift; sourceTree = "<group>"; };
+		83C837BD2C207F340004F54E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		83C837BF2C207F360004F54E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		83C837C22C207F360004F54E /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		83C837CA2C20AAE50004F54E /* heresdk.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = heresdk.xcframework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		C865243C20B8138000392D48 /* Frameworks */ = {
+		83C837B52C207F340004F54E /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C828DECA293FA014003A2586 /* heresdk.xcframework in Frameworks */,
+				83C837CB2C20AAE50004F54E /* heresdk.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		C865243620B8138000392D48 = {
+		83C837AF2C207F340004F54E = {
 			isa = PBXGroup;
 			children = (
-				C865244120B8138000392D48 /* SpatialAudioNavigation */,
-				C865244020B8138000392D48 /* Products */,
-				C88C016C23CDFC9600043918 /* Frameworks */,
+				83C837BA2C207F340004F54E /* SpatialAudioNavigation */,
+				83C837B92C207F340004F54E /* Products */,
+				83C837C92C20AAE50004F54E /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
-		C865244020B8138000392D48 /* Products */ = {
+		83C837B92C207F340004F54E /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				C865243F20B8138000392D48 /* SpatialAudioNavigation.app */,
+				83C837B82C207F340004F54E /* SpatialAudioNavigation.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		C865244120B8138000392D48 /* SpatialAudioNavigation */ = {
+		83C837BA2C207F340004F54E /* SpatialAudioNavigation */ = {
 			isa = PBXGroup;
 			children = (
-				FFA77D7D2869A0F50036F595 /* VoiceAssistant.swift */,
-				FFA77D7B2869A0EF0036F595 /* LanguageCodeConverter.swift */,
-				C865244220B8138000392D48 /* AppDelegate.swift */,
-				C865244420B8138000392D48 /* ViewController.swift */,
-				FF5CCF932893C091007DBE99 /* SpatialNavigationExample.swift */,
-				FFA77D7F2869A3AC0036F595 /* SpatialAudioExample.swift */,
-				FFA77D772869A0DC0036F595 /* AudioSessionManager.swift */,
-				FF5CCF8F2893C05C007DBE99 /* AVAudioPlayerNodeManager.swift */,
-				FF5CCF912893C07A007DBE99 /* EncoderInterface.swift */,
-				FF5CCF972893C0BB007DBE99 /* Mach1Encoder.swift */,
-				FF5CCF952893C0A6007DBE99 /* DefaultEncoder.swift */,
-				C865244620B8138000392D48 /* Main.storyboard */,
-				C865244920B8138200392D48 /* Assets.xcassets */,
-				C865244B20B8138200392D48 /* LaunchScreen.storyboard */,
-				C865244E20B8138200392D48 /* Info.plist */,
+				83C837BB2C207F340004F54E /* SpatialAudioNavigationApp.swift */,
+				83C837BD2C207F340004F54E /* ContentView.swift */,
+				83AB155A2CD5435400615BA9 /* SpatialAudioNavigationExample.swift */,
+				83AB154F2CD542C000615BA9 /* SpatialNavigationExample.swift */,
+				83AB15492CD542C000615BA9 /* SpatialAudioExample.swift */,
+				83AB154D2CD542C000615BA9 /* VoiceAssistant.swift */,
+				83AB15502CD542C000615BA9 /* AudioSessionManager.swift */,
+				83AB154C2CD542C000615BA9 /* AVAudioPlayerNodeManager.swift */,
+				83AB154E2CD542C000615BA9 /* EncoderInterface.swift */,
+				83AB15482CD542C000615BA9 /* DefaultEncoder.swift */,
+				83AB154A2CD542C000615BA9 /* Mach1Encoder.swift */,
+				83AB154B2CD542C000615BA9 /* LanguageCodeConverter.swift */,
+				83C837BF2C207F360004F54E /* Assets.xcassets */,
+				83C837C12C207F360004F54E /* Preview Content */,
 			);
 			path = SpatialAudioNavigation;
 			sourceTree = "<group>";
 		};
-		C88C016C23CDFC9600043918 /* Frameworks */ = {
+		83C837C12C207F360004F54E /* Preview Content */ = {
 			isa = PBXGroup;
 			children = (
-				C828DEC9293FA014003A2586 /* heresdk.xcframework */,
-				FF5CCF8D2893BDCC007DBE99 /* heresdk.xcframework */,
+				83C837C22C207F360004F54E /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		83C837C92C20AAE50004F54E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				83C837CA2C20AAE50004F54E /* heresdk.xcframework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -123,120 +127,100 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		C865243E20B8138000392D48 /* SpatialAudioNavigation */ = {
+		83C837B72C207F340004F54E /* SpatialAudioNavigation */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = C865245120B8138200392D48 /* Build configuration list for PBXNativeTarget "SpatialAudioNavigation" */;
+			buildConfigurationList = 83C837C62C207F360004F54E /* Build configuration list for PBXNativeTarget "SpatialAudioNavigation" */;
 			buildPhases = (
-				C865243B20B8138000392D48 /* Sources */,
-				C865243C20B8138000392D48 /* Frameworks */,
-				C865243D20B8138000392D48 /* Resources */,
-				C8CE86F52236D58700701A47 /* Embed Frameworks */,
+				83C837B42C207F340004F54E /* Sources */,
+				83C837B52C207F340004F54E /* Frameworks */,
+				83C837B62C207F340004F54E /* Resources */,
+				83C837CD2C20AAE50004F54E /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			name = SpatialAudioNavigation;
-			productName = NavigationQuickStart;
-			productReference = C865243F20B8138000392D48 /* SpatialAudioNavigation.app */;
+			productName = SpatialAudioNavigation;
+			productReference = 83C837B82C207F340004F54E /* SpatialAudioNavigation.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		C865243720B8138000392D48 /* Project object */ = {
+		83C837B02C207F340004F54E /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 0930;
-				LastUpgradeCheck = 0930;
-				ORGANIZATIONNAME = HERE;
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
 				TargetAttributes = {
-					C865243E20B8138000392D48 = {
-						CreatedOnToolsVersion = 9.3;
-						LastSwiftMigration = 1020;
+					83C837B72C207F340004F54E = {
+						CreatedOnToolsVersion = 15.0.1;
 					};
 				};
 			};
-			buildConfigurationList = C865243A20B8138000392D48 /* Build configuration list for PBXProject "SpatialAudioNavigation" */;
-			compatibilityVersion = "Xcode 8.0";
+			buildConfigurationList = 83C837B32C207F340004F54E /* Build configuration list for PBXProject "SpatialAudioNavigation" */;
+			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
 			);
-			mainGroup = C865243620B8138000392D48;
-			productRefGroup = C865244020B8138000392D48 /* Products */;
+			mainGroup = 83C837AF2C207F340004F54E;
+			productRefGroup = 83C837B92C207F340004F54E /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				C865243E20B8138000392D48 /* SpatialAudioNavigation */,
+				83C837B72C207F340004F54E /* SpatialAudioNavigation */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		C865243D20B8138000392D48 /* Resources */ = {
+		83C837B62C207F340004F54E /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C865244D20B8138200392D48 /* LaunchScreen.storyboard in Resources */,
-				C865244A20B8138200392D48 /* Assets.xcassets in Resources */,
-				C865244820B8138000392D48 /* Main.storyboard in Resources */,
+				83C837C32C207F360004F54E /* Preview Assets.xcassets in Resources */,
+				83C837C02C207F360004F54E /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		C865243B20B8138000392D48 /* Sources */ = {
+		83C837B42C207F340004F54E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FF5CCF902893C05C007DBE99 /* AVAudioPlayerNodeManager.swift in Sources */,
-				FF5CCF942893C091007DBE99 /* SpatialNavigationExample.swift in Sources */,
-				FF5CCF962893C0A6007DBE99 /* DefaultEncoder.swift in Sources */,
-				FF5CCF982893C0BB007DBE99 /* Mach1Encoder.swift in Sources */,
-				FFA77D7E2869A0F50036F595 /* VoiceAssistant.swift in Sources */,
-				FF5CCF922893C07A007DBE99 /* EncoderInterface.swift in Sources */,
-				FFA77D802869A3AC0036F595 /* SpatialAudioExample.swift in Sources */,
-				C865244520B8138000392D48 /* ViewController.swift in Sources */,
-				FFA77D782869A0DC0036F595 /* AudioSessionManager.swift in Sources */,
-				FFA77D7C2869A0EF0036F595 /* LanguageCodeConverter.swift in Sources */,
-				C865244320B8138000392D48 /* AppDelegate.swift in Sources */,
+				83AB15572CD542C000615BA9 /* EncoderInterface.swift in Sources */,
+				83AB15592CD542C000615BA9 /* AudioSessionManager.swift in Sources */,
+				83AB15552CD542C000615BA9 /* AVAudioPlayerNodeManager.swift in Sources */,
+				83AB15562CD542C000615BA9 /* VoiceAssistant.swift in Sources */,
+				83AB15582CD542C000615BA9 /* SpatialNavigationExample.swift in Sources */,
+				83AB15522CD542C000615BA9 /* SpatialAudioExample.swift in Sources */,
+				83AB15512CD542C000615BA9 /* DefaultEncoder.swift in Sources */,
+				83C837BE2C207F340004F54E /* ContentView.swift in Sources */,
+				83AB15532CD542C000615BA9 /* Mach1Encoder.swift in Sources */,
+				83C837BC2C207F340004F54E /* SpatialAudioNavigationApp.swift in Sources */,
+				83AB155B2CD5435400615BA9 /* SpatialAudioNavigationExample.swift in Sources */,
+				83AB15542CD542C000615BA9 /* LanguageCodeConverter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
-/* Begin PBXVariantGroup section */
-		C865244620B8138000392D48 /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				C865244720B8138000392D48 /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
-		C865244B20B8138200392D48 /* LaunchScreen.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				C865244C20B8138200392D48 /* Base */,
-			);
-			name = LaunchScreen.storyboard;
-			sourceTree = "<group>";
-		};
-/* End PBXVariantGroup section */
-
 /* Begin XCBuildConfiguration section */
-		C865244F20B8138200392D48 /* Debug */ = {
+		83C837C42C207F360004F54E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
@@ -255,18 +239,19 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -281,22 +266,24 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
-				MTL_ENABLE_DEBUG_INFO = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
-		C865245020B8138200392D48 /* Release */ = {
+		83C837C52C207F360004F54E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
@@ -315,18 +302,19 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
@@ -335,61 +323,70 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
 		};
-		C865245220B8138200392D48 /* Debug */ = {
+		83C837C72C207F360004F54E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"SpatialAudioNavigation/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
-				ENABLE_BITCODE = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)",
-				);
-				INFOPLIST_FILE = SpatialAudioNavigation/Info.plist;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.here.sdk.example;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.here.sdk.examples;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
-		C865245320B8138200392D48 /* Release */ = {
+		83C837C82C207F360004F54E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"SpatialAudioNavigation/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
-				ENABLE_BITCODE = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)",
-				);
-				INFOPLIST_FILE = SpatialAudioNavigation/Info.plist;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.here.sdk.example;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.here.sdk.examples;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -398,25 +395,25 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		C865243A20B8138000392D48 /* Build configuration list for PBXProject "SpatialAudioNavigation" */ = {
+		83C837B32C207F340004F54E /* Build configuration list for PBXProject "SpatialAudioNavigation" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				C865244F20B8138200392D48 /* Debug */,
-				C865245020B8138200392D48 /* Release */,
+				83C837C42C207F360004F54E /* Debug */,
+				83C837C52C207F360004F54E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C865245120B8138200392D48 /* Build configuration list for PBXNativeTarget "SpatialAudioNavigation" */ = {
+		83C837C62C207F360004F54E /* Build configuration list for PBXNativeTarget "SpatialAudioNavigation" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				C865245220B8138200392D48 /* Debug */,
-				C865245320B8138200392D48 /* Release */,
+				83C837C72C207F360004F54E /* Debug */,
+				83C837C82C207F360004F54E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = C865243720B8138000392D48 /* Project object */;
+	rootObject = 83C837B02C207F340004F54E /* Project object */;
 }

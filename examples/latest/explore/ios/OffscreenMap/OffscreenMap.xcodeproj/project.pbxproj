@@ -3,11 +3,10 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		8648E8872C19FF470051104F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8648E8862C19FF470051104F /* AppDelegate.swift */; };
 		8648E8892C19FFAC0051104F /* OffscreenMapApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8648E8882C19FFAC0051104F /* OffscreenMapApp.swift */; };
 		FA3580DB2AD938170021D831 /* OffscreenMapViewWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA3580DA2AD938170021D831 /* OffscreenMapViewWrapper.swift */; };
 		FA6B7FBF2AD81FA200BE5BED /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA6B7FBE2AD81FA200BE5BED /* ContentView.swift */; };
@@ -32,9 +31,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		8648E8862C19FF470051104F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		8648E8882C19FFAC0051104F /* OffscreenMapApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffscreenMapApp.swift; sourceTree = "<group>"; };
-		8669C75D2C1CB51F0033B271 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FA3580DA2AD938170021D831 /* OffscreenMapViewWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffscreenMapViewWrapper.swift; sourceTree = "<group>"; };
 		FA6B7FB92AD81FA200BE5BED /* OffscreenMap.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OffscreenMap.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA6B7FBE2AD81FA200BE5BED /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -83,13 +80,11 @@
 		FA6B7FBB2AD81FA200BE5BED /* OffscreenMap */ = {
 			isa = PBXGroup;
 			children = (
-				8648E8862C19FF470051104F /* AppDelegate.swift */,
+				8648E8882C19FFAC0051104F /* OffscreenMapApp.swift */,
 				FA6B7FBE2AD81FA200BE5BED /* ContentView.swift */,
 				FA3580DA2AD938170021D831 /* OffscreenMapViewWrapper.swift */,
-				8648E8882C19FFAC0051104F /* OffscreenMapApp.swift */,
 				FA6B7FC02AD81FA400BE5BED /* Assets.xcassets */,
 				FA6B7FC22AD81FA400BE5BED /* Preview Content */,
-				8669C75D2C1CB51F0033B271 /* Info.plist */,
 			);
 			path = OffscreenMap;
 			sourceTree = "<group>";
@@ -131,7 +126,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1420;
-				LastUpgradeCheck = 1420;
+				LastUpgradeCheck = 1500;
 				TargetAttributes = {
 					FA6B7FB82AD81FA200BE5BED = {
 						CreatedOnToolsVersion = 14.2;
@@ -173,7 +168,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8648E8872C19FF470051104F /* AppDelegate.swift in Sources */,
 				FA3580DB2AD938170021D831 /* OffscreenMapViewWrapper.swift in Sources */,
 				FA6B7FBF2AD81FA200BE5BED /* ContentView.swift in Sources */,
 				8648E8892C19FFAC0051104F /* OffscreenMapApp.swift in Sources */,
@@ -187,6 +181,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -219,6 +214,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -247,6 +243,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -279,6 +276,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -307,12 +305,12 @@
 				DEVELOPMENT_ASSET_PATHS = "OffscreenMap/Preview\\ Content";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = OffscreenMap/Info.plist;
+				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -337,12 +335,12 @@
 				DEVELOPMENT_ASSET_PATHS = "OffscreenMap/Preview\\ Content";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = OffscreenMap/Info.plist;
+				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

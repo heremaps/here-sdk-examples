@@ -23,6 +23,7 @@ import heresdk
 
 /// This class setups and controlls the AVAudioPalyerNode which enables the buffer methodlogy which synthesises the audio cue 'String' into the next audio message.
 public final class AVAudioPlayerNodeManager: NSObject{
+    
     private lazy var avSpeechSynthesizer = AVSpeechSynthesizer()
     private lazy var voiceAssistant: VoiceAssistant = VoiceAssistant()
     

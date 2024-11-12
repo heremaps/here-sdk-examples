@@ -18,7 +18,7 @@
  */
 
 import heresdk
-import UIKit
+import SwiftUI
 
 class CustomPolygonLayersExample {
 
@@ -54,7 +54,7 @@ class CustomPolygonLayersExample {
     }
     """
 
-    init(mapView: MapView) {
+    init(_ mapView: MapView) {
         self.mapView = mapView
 
         mapView.camera.lookAt(point: GeoCoordinates(latitude: Self.LATITUDE, longitude: Self.LONGITUDE),
@@ -65,8 +65,19 @@ class CustomPolygonLayersExample {
         polygonMapLayer = createMapLayer(dataSourceName: dataSourceName)
 
         addRandomPolygons(numberOfPolygons: 100);
+        
+        // Load the map scene using a map scheme to render the map with.
+        mapView.mapScene.loadScene(mapScheme: MapScheme.normalDay, completion: onLoadScene)
     }
 
+    // Completion handler for loadScene().
+    private func onLoadScene(mapError: MapError?) {
+        guard mapError == nil else {
+            print("Error: Map scene not loaded, \(String(describing: mapError))")
+            return
+        }
+    }
+    
     func onEnableButtonClicked() {
         polygonMapLayer.setEnabled(true)
     }
@@ -76,7 +87,6 @@ class CustomPolygonLayersExample {
     }
 
     private func createPolygonDataSource(dataSourceName: String) -> PolygonDataSource {
-
         return PolygonDataSourceBuilder(mapView.mapContext)
             .withName(dataSourceName)
             .build()

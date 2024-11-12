@@ -21,6 +21,7 @@ import Foundation
 import heresdk
 
 class DefaultEncoder: EncoderInterface {
+    
     private lazy var avAudioPlayerNodeManager: AVAudioPlayerNodeManager? = AVAudioPlayerNodeManager(())
     
     init() {
