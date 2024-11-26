@@ -56,6 +56,14 @@ class HEREPositioningProvider : NSObject,
         locationManager.requestAlwaysAuthorization()
     }
 
+    // Make sure to add the required location permissions in the "Info.plist" file.
+    // Xcode contains already "Info.plist values" in the "Build Settings" tab.
+    // You can add new ones in a separate file (these will be combined with the existing values):
+    // 1. In Xcode, click on your project in the Project Navigator.
+    // 2. Under Targets, select the "Info" tab.
+    // 3. Expand "URL Types (1)" and click on the "+" button.
+    // 4. A new Info.plist file will appear in the project. You can edit now the values.
+
     // Conforms to the CLLocationManagerDelegate protocol.
     // Handles the result of the native authorization request.
     func locationManager(_ manager: CLLocationManager,

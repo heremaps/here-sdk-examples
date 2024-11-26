@@ -47,7 +47,7 @@ import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
 import com.here.sdk.mapview.PickMapContentResult;
-import com.here.sdk.search.OfflineSearchEngine;
+import com.here.sdk.search.SearchEngine;
 import com.here.sdk.search.Place;
 import com.here.sdk.search.PlaceIdQuery;
 import com.here.sdk.search.PlaceIdSearchCallback;
@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
     private PermissionsRequestor permissionsRequestor;
     private MapView mapView;
 
-    private OfflineSearchEngine offlineSearchEngine;
+    private SearchEngine searchEngine;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -144,10 +144,10 @@ public class MainActivity extends AppCompatActivity {
         enableVehicleRestrictionsOnMap();
 
         try {
-            // Allows to search on already downloaded or cached map data.
-            offlineSearchEngine = new OfflineSearchEngine();
+            // Allows to search online.
+            searchEngine = new SearchEngine();
         } catch (InstantiationErrorException e) {
-            throw new RuntimeException("Initialization of OfflineSearchEngine failed: " + e.error.name());
+            throw new RuntimeException("Initialization of searchEngine failed: " + e.error.name());
         }
 
         // Setting a tap handler to pick embedded map content.
@@ -208,17 +208,16 @@ public class MainActivity extends AppCompatActivity {
                 topmostPickedPlace.coordinates.longitude + ". " +
                 "See log for more place details.");
 
-        // Now you can use the SearchEngine (via PickedPlace) or the OfflineSearchEngine, when available for your edition,
-        // (via PickedPlace or offlineSearchId) to retrieve the Place object containing more details.
-        // Below we use the offlineSearchId.
-        fetchCartoPOIDetails(topmostPickedPlace.offlineSearchId);
+        // Now you can use the SearchEngine (via PickedPlace)
+        // (via PickedPlace or placeCategoryId) to retrieve the Place object containing more details.
+        // Below we use the placeCategoryId.
+        fetchCartoPOIDetails(topmostPickedPlace.placeCategoryId);
     }
 
-    // The ID is only given for cached or downloaded maps data.
-    private void fetchCartoPOIDetails(String offlineSearchId) {
+    private void fetchCartoPOIDetails(String placeCategoryId) {
         // Set null to get the results in their local language.
         LanguageCode languageCode = null;
-        offlineSearchEngine.searchByPlaceId(new PlaceIdQuery(offlineSearchId), languageCode, new PlaceIdSearchCallback() {
+        searchEngine.searchByPlaceId(new PlaceIdQuery(placeCategoryId), languageCode, new PlaceIdSearchCallback() {
             @Override
             public void onPlaceIdSearchCompleted(@Nullable SearchError searchError, @Nullable Place place) {
                 if (searchError != null) {

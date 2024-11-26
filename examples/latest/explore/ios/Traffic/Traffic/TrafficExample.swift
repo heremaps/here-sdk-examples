@@ -20,8 +20,9 @@
 import heresdk
 import SwiftUI
 
+// This example shows how to query traffic info on incidents with the TrafficEngine.
 class TrafficExample : TapDelegate {
-    
+
     private var mapView: MapView
     private var trafficEngine: TrafficEngine
     // Visualizes traffic incidents found with the TrafficEngine.
@@ -31,23 +32,27 @@ class TrafficExample : TapDelegate {
 
     init(_ mapView: MapView) {
         self.mapView = mapView
+
+        // Configure the map.
         let camera = mapView.camera
         let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 10)
         camera.lookAt(point: GeoCoordinates(latitude: 52.520798, longitude: 13.409408),
                       zoom: distanceInMeters)
 
         do {
+            // The traffic engine can be used to request additional information about
+            // the current traffic situation anywhere on the road network.
             try trafficEngine = TrafficEngine()
         } catch let engineInstantiationError {
             fatalError("Failed to initialize TrafficEngine. Cause: \(engineInstantiationError)")
         }
       
         // Load the map scene using a map scheme to render the map with.
-        mapView.mapScene.loadScene(mapScheme: MapScheme.normalDay, completion: onLoadScene)
+        mapView.mapScene.loadScene(mapScheme: MapScheme.liteDay, completion: onLoadScene)
 
         // Setting a tap handler to pick and search for traffic incidents around the tapped area.
         mapView.gestures.tapDelegate = self
-        
+
         showDialog(title: "Note",
                    message: "Tap on the map to pick a traffic incident.")
     }
@@ -60,12 +65,23 @@ class TrafficExample : TapDelegate {
     }
 
     func enableTrafficVisualization() {
+        // Try to refresh the trafficFlow vector tiles every minute.
+        // If MapFeatures.trafficFlow is disabled, no requests are made.
+        do {
+            // Set the traffic flow refresh period to 60 seconds (1 minute).
+            try MapContentSettings.setTrafficRefreshPeriod(60.0)
+        } catch let error as MapContentSettings.TrafficRefreshPeriodError {
+            print("TrafficRefreshPeriodError: \(error)")
+        } catch {
+            print("An unexpected error occurred: \(error)")
+        }
+
         // Once these layers are added to the map, they will be automatically updated while panning the map.
         mapView.mapScene.enableFeatures([MapFeatures.trafficFlow : MapFeatureModes.trafficFlowWithFreeFlow])
         // MapFeatures.trafficIncidents renders traffic icons and lines to indicate the location of incidents.
         mapView.mapScene.enableFeatures([MapFeatures.trafficIncidents: MapFeatureModes.defaultMode])
     }
-    
+
     func disableTrafficVisualization() {
         mapView.mapScene.disableFeatures([MapFeatures.trafficFlow, MapFeatures.trafficIncidents])
 
@@ -87,7 +103,7 @@ class TrafficExample : TapDelegate {
             queryForIncidents(centerCoords: tappedGeoCoordinates)
         }
     }
-    
+
     // Traffic incidents can only be picked, when MapScene.Layers.trafficIncidents is visible.
     func pickTrafficIncident(touchPointInPixels: Point2D) {
         let originInPixels = Point2D(x: touchPointInPixels.x, y: touchPointInPixels.y)
@@ -96,7 +112,7 @@ class TrafficExample : TapDelegate {
         // Creates a list of map content type from which the results will be picked.
         // The content type values can be mapContent, mapItems and customLayerData.
         var contentTypesToPickFrom = Array<MapScene.MapPickFilter.ContentType>();
-        
+
         // mapContent is used when picking embedded carto POIs, traffic incidents, vehicle restriction etc.
         // mapItems is used when picking map items such as MapMarker, MapPolyline, MapPolygon etc.
         // Currently we need traffic incidents so adding the mapContent filter.
@@ -104,7 +120,7 @@ class TrafficExample : TapDelegate {
         let filter = MapScene.MapPickFilter(filter: contentTypesToPickFrom);
         mapView.pick(filter:filter,inside: rectangle, completion: onPickMapContent)
     }
-    
+
     // MapViewBase.PickMapContentHandler to receive picked map content.
     func onPickMapContent(mapPickResults: MapPickResult?) {
         guard let mapPickResults = mapPickResults else {
@@ -140,7 +156,7 @@ class TrafficExample : TapDelegate {
                                      lookupOptions: trafficIncidentsLookupOptions,
                                      completion: onTrafficIncidentCompletion)
     }
-    
+
     // TrafficIncidentCompletionHandler to receive traffic incidents from ID.
     func onTrafficIncidentCompletion(trafficQueryError: TrafficQueryError?, trafficIncident: TrafficIncident?) {
         if trafficQueryError == nil {
@@ -164,14 +180,14 @@ class TrafficExample : TapDelegate {
                                                     size: widthInPixels),
                                                 color: polylineColor,
                                                 capShape: LineCap.round))
-            
+
             mapView.mapScene.addMapPolyline(mapPolyline)
             mapPolylineList.append(mapPolyline)
         } catch let error {
             fatalError("Failed to render MapPolyline. Cause: \(error)")
         }
     }
-    
+
     private func queryForIncidents(centerCoords: GeoCoordinates) {
         let geoCircle = GeoCircle(center: centerCoords, radiusInMeters: 1000)
         let trafficIncidentsQueryOptions = TrafficIncidentsQueryOptions()

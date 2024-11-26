@@ -18,11 +18,10 @@
  */
 
 import heresdk
-import UIKit
+import SwiftUI
 
 class MapItemsExample: TapDelegate {
-
-    private let viewController: UIViewController
+    
     private let mapView: MapView
     private var mapMarkers = [MapMarker]()
     private var mapMarkers3D = [MapMarker3D]()
@@ -30,8 +29,7 @@ class MapItemsExample: TapDelegate {
     private var locationIndicators = [LocationIndicator]()
     private let mapCenterGeoCoordinates = GeoCoordinates(latitude: 52.51760485151816, longitude: 13.380312380535472)
 
-    init(viewController: UIViewController, mapView: MapView) {
-        self.viewController = viewController
+    init(mapView: MapView) {
         self.mapView = mapView
         let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 10)
         mapView.camera.lookAt(point: mapCenterGeoCoordinates,
@@ -40,9 +38,23 @@ class MapItemsExample: TapDelegate {
         // Setting a tap delegate to pick markers from map.
         mapView.gestures.tapDelegate = self
 
+        // Load the map scene using a map scheme to render the map with.
+        mapView.mapScene.loadScene(mapScheme: MapScheme.normalDay, completion: onLoadScene)
+        
         showDialog(title: "Note", message: "You can tap 2D markers.")
     }
-
+    
+    // Completion handler for loadScene().
+    private func onLoadScene(mapError: MapError?) {
+        guard mapError == nil else {
+            print("Error: Map scene not loaded, \(String(describing: mapError))")
+            return
+        }
+        
+        // Users of the Navigate Edition can enable textured landmarks:
+        // mapView.mapScene.enableFeatures([MapFeatures.landmarks : MapFeatureModes.landmarksTextured])
+    }
+    
     func onAnchoredButtonClicked() {
         unTiltMap()
 
@@ -171,7 +183,7 @@ class MapItemsExample: TapDelegate {
         }
 
         let mapImage = MapImage(pixelData: imageData,
-                                       imageFormat: ImageFormat.png)
+                                imageFormat: ImageFormat.png)
         let mapMarker = MapMarker(at: geoCoordinates, image: mapImage)
 
         let metadata = Metadata()
@@ -270,7 +282,7 @@ class MapItemsExample: TapDelegate {
         mapView.mapScene.addMapMarker(mapMarker)
         mapMarkers.append(mapMarker)
     }
-
+    
     private func addPhotoMapMarker(geoCoordinates: GeoCoordinates) {
         guard
             let image = UIImage(named: "here_car.png"),
@@ -400,37 +412,36 @@ class MapItemsExample: TapDelegate {
     }
 
     private func getResourceStringFromBundle(name: String, type: String) -> String {
-        let bundle = Bundle(for: ViewController.self)
-        let resourceUrl = bundle.url(forResource: name,
-                                     withExtension: type)
-        guard let resourceString = resourceUrl?.path else {
+        // Access the main bundle directly in SwiftUI
+        let bundle = Bundle.main
+        guard let resourceUrl = bundle.url(forResource: name, withExtension: type) else {
             fatalError("Error: Resource not found!")
         }
-
-        return resourceString
+        
+        return resourceUrl.path
     }
-
+    
     private func clearMap() {
         mapView.mapScene.removeMapMarkers(mapMarkers)
         mapMarkers.removeAll()
-
+        
         for mapMarker3D in mapMarkers3D {
             mapView.mapScene.removeMapMarker3d(mapMarker3D)
         }
         mapMarkers3D.removeAll()
-
+        
         for locationIndicator in locationIndicators {
             // Remove indicator from map view.
             locationIndicator.disable()
         }
         locationIndicators.removeAll()
-
+        
         for mapMarkerCluster in mapMarkerClusters {
             mapView.mapScene.removeMapMarkerCluster(mapMarkerCluster)
         }
         mapMarkerClusters.removeAll()
     }
-
+    
     // Conform to the TapDelegate protocol.
     func onTap(origin: Point2D) {
         let originInPixels = Point2D(x:origin.x,y:origin.y);
@@ -449,7 +460,7 @@ class MapItemsExample: TapDelegate {
         
         mapView.pick(filter: filter, inside: rectangle, completion:onMapItemsPicked);
     }
-
+    
     // Completion handler to receive picked map items.
     func onMapItemsPicked(mapPickResults: MapPickResult?) {
         let pickedMapItems = mapPickResults?.mapItems;
@@ -457,17 +468,17 @@ class MapItemsExample: TapDelegate {
         if let groupingList = pickedMapItems?.clusteredMarkers {
             handlePickedMapMarkerClusters(groupingList)
         }
-
+        
         // Note that 3D map markers can't be picked yet. Only marker, polgon and polyline map items are pickable.
         guard let topmostMapMarker = pickedMapItems?.markers.first else {
             return
         }
-
+        
         if let message = topmostMapMarker.metadata?.getString(key: "key_poi") {
             showDialog(title: "Map Marker picked", message: message)
             return
         }
-
+        
         if let message = topmostMapMarker.metadata?.getString(key: "key_poi_text") {
             showDialog(title: "Map Marker with text picked", message: message)
             // You can update text for a marker on-the-fly.
@@ -477,12 +488,12 @@ class MapItemsExample: TapDelegate {
         
         showDialog(title: "Map marker picked:", message: "Location: \(topmostMapMarker.coordinates)")
     }
-
+    
     private func handlePickedMapMarkerClusters(_ groupingList: [MapMarkerCluster.Grouping]) {
         guard let topmostGrouping = groupingList.first else {
             return
         }
-
+        
         let clusterSize = topmostGrouping.markers.count
         if (clusterSize == 0) {
             // This cluster does not contain any MapMarker items.
@@ -502,21 +513,21 @@ class MapItemsExample: TapDelegate {
                        message: "Number of contained markers in this cluster: \(clusterSize). \(metadataMessage) Total number of markers in this MapMarkerCluster: \(topmostGrouping.parent.markers.count)")
         }
     }
-
+    
     private func getClusterMetadata(_ mapMarker: MapMarker) -> String {
         if let message = mapMarker.metadata?.getString(key: "key_cluster") {
-             return message
+            return message
         }
         return "No metadata."
     }
-
+    
     private func createRandomGeoCoordinatesAroundMapCenter() -> GeoCoordinates {
         let scaleFactor = UIScreen.main.scale
         let mapViewWidthInPixels = Double(mapView.bounds.width * scaleFactor)
         let mapViewHeightInPixels = Double(mapView.bounds.height * scaleFactor)
         let centerPoint2D = Point2D(x: mapViewWidthInPixels / 2,
                                     y: mapViewHeightInPixels / 2)
-
+        
         let centerGeoCoordinates = mapView.viewToGeoCoordinates(viewCoordinates: centerPoint2D)
         let lat = centerGeoCoordinates!.latitude
         let lon = centerGeoCoordinates!.longitude
@@ -525,11 +536,11 @@ class MapItemsExample: TapDelegate {
                               longitude: getRandom(min: lon - 0.02,
                                                    max: lon + 0.02))
     }
-
+    
     private func getRandom(min: Double, max: Double) -> Double {
         return Double.random(in: min ... max)
     }
-
+    
     private func tiltMap() {
         let bearing = mapView.camera.state.orientationAtTarget.bearing
         let tilt: Double = 60
@@ -537,7 +548,7 @@ class MapItemsExample: TapDelegate {
                                                      tilt: tilt)
         mapView.camera.setOrientationAtTarget(targetOrientation)
     }
-
+    
     private func unTiltMap() {
         let bearing = mapView.camera.state.orientationAtTarget.bearing
         let tilt: Double = 0
@@ -545,10 +556,23 @@ class MapItemsExample: TapDelegate {
                                                      tilt: tilt)
         mapView.camera.setOrientationAtTarget(targetOrientation)
     }
-
+    
     private func showDialog(title: String, message: String) {
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-        viewController.present(alertController, animated: true, completion: nil)
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootViewController = windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController {
+            
+            let alert = UIAlertController(
+                title: title,
+                message: message,
+                preferredStyle: .alert
+            )
+            
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+                // Handle OK button action.
+                alert.dismiss(animated: true, completion: nil)
+            }))
+            
+            rootViewController.present(alert, animated: true, completion: nil)
+        }
     }
 }

@@ -35,6 +35,7 @@ import com.here.sdk.core.Size2D;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.mapview.LineCap;
 import com.here.sdk.mapview.MapCamera;
+import com.here.sdk.mapview.MapContentSettings;
 import com.here.sdk.mapview.MapFeatureModes;
 import com.here.sdk.mapview.MapFeatures;
 import com.here.sdk.mapview.MapMeasure;
@@ -53,12 +54,14 @@ import com.here.sdk.traffic.TrafficIncidentLookupOptions;
 import com.here.sdk.traffic.TrafficIncidentsQueryCallback;
 import com.here.sdk.traffic.TrafficIncidentsQueryOptions;
 import com.here.sdk.traffic.TrafficQueryError;
+import com.here.time.Duration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// This example shows how to query traffic info on incidents with the TrafficEngine.
 public class TrafficExample {
 
     private static final String TAG = TrafficExample.class.getName();
@@ -78,6 +81,8 @@ public class TrafficExample {
         camera.lookAt(new GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
 
         try {
+            // The traffic engine can be used to request additional information about
+            // the current traffic situation anywhere on the road network.
             trafficEngine = new TrafficEngine();
         } catch (InstantiationErrorException e) {
             throw new RuntimeException("Initialization of TrafficEngine failed: " + e.error.name());
@@ -100,6 +105,14 @@ public class TrafficExample {
     }
 
     private void enableTrafficVisualization() {
+        // Try to refresh the TRAFFIC_FLOW vector tiles every minute.
+        // If MapFeatures.TRAFFIC_FLOW is disabled, no requests are made.
+        try {
+            MapContentSettings.setTrafficRefreshPeriod(Duration.ofMinutes(1));
+        } catch (MapContentSettings.TrafficRefreshPeriodException e) {
+            throw new RuntimeException("TrafficRefreshPeriodException: " + e.error.name());
+        }
+
         Map<String, String> mapFeatures = new HashMap<>();
         // Once these traffic layers are added to the map, they will be automatically updated while panning the map.
         mapFeatures.put(MapFeatures.TRAFFIC_FLOW, MapFeatureModes.TRAFFIC_FLOW_WITH_FREE_FLOW);

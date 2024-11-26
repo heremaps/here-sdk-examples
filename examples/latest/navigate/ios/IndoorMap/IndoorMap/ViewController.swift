@@ -156,33 +156,45 @@ class StructureSwitcherAlertController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        let scrollView = UIScrollView()
+        scrollView.showsVerticalScrollIndicator = false
+        view.addSubview(scrollView)
+
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        
 
         let contentView = UIView()
         contentView.backgroundColor = .white
         contentView.layer.cornerRadius = 10
-        view.addSubview(contentView)
+        scrollView.addSubview(contentView)
 
         contentView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor).isActive = true
+        contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor).isActive = true
+        contentView.topAnchor.constraint(equalTo: scrollView.topAnchor).isActive = true
+        contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor).isActive = true
 
         var maxWidth: CGFloat = 0
         for name in structureNames {
             let size = (name as NSString).size(withAttributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 17.0)])
             maxWidth = max(maxWidth, size.width)
         }
+        if structureNames.count > 5 {
+            scrollView.heightAnchor.constraint(equalToConstant: 300).isActive = true
+            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -250).isActive = true
+        } else {
+            scrollView.heightAnchor.constraint(equalToConstant: 100).isActive = true
+            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: (CGFloat)((structureNames.count * 75 * -1)-125)).isActive = true
+        }
+        scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -80).isActive = true
+        scrollView.widthAnchor.constraint(equalToConstant: maxWidth + 40).isActive = true
 
-        let padding: CGFloat = 20
-
-        contentView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -85).isActive = true
-        contentView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -300).isActive = true
-        contentView.widthAnchor.constraint(equalToConstant: maxWidth + padding + 20).isActive = true
-
-        let screenSize = UIScreen.main.bounds.size
-        let allowMultiline = maxWidth > screenSize.width || contentView.frame.height > screenSize.height
+        var previousButton: UIButton?
 
         for (index, name) in structureNames.enumerated() {
             let button = UIButton(type: .system)
             button.contentEdgeInsets = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 20)
-            button.titleLabel?.numberOfLines = allowMultiline ? 0 : 1
             button.setTitle(name, for: .normal)
             button.contentHorizontalAlignment = .left
             button.titleLabel?.adjustsFontSizeToFitWidth = true
@@ -197,19 +209,17 @@ class StructureSwitcherAlertController: UIViewController {
             button.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -10).isActive = true
             button.heightAnchor.constraint(equalToConstant: 50).isActive = true
 
-            if index == 0 {
-                button.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10).isActive = true
+            if let previousButton = previousButton {
+                button.topAnchor.constraint(equalTo: previousButton.bottomAnchor, constant: 5).isActive = true
             } else {
-                button.topAnchor.constraint(equalTo: buttons[index - 1].bottomAnchor, constant: 5).isActive = true
+                button.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10).isActive = true
             }
-            
-            if index == structureNames.count - 1 {
-                button.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10).isActive = true
-            }
+            previousButton = button
         }
-        
-        contentView.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 20).isActive = true
-        contentView.topAnchor.constraint(greaterThanOrEqualTo: view.topAnchor, constant: 20).isActive = true
+
+        if let lastButton = buttons.last {
+            lastButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10).isActive = true
+        }
     }
 
     @objc private func optionSelected(_ sender: UIButton) {

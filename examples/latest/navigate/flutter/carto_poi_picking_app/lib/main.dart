@@ -57,7 +57,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late HereMapController? _hereMapController;
-  late OfflineSearchEngine? _offlineSearchEngine;
+  late SearchEngine? _searchEngine;
 
   @override
   Widget build(BuildContext context) {
@@ -95,10 +95,10 @@ class _MyAppState extends State<MyApp> {
     _enableVehicleRestrictionsOnMap();
 
     try {
-      // Allows to search on already downloaded or cached map data.
-      _offlineSearchEngine = OfflineSearchEngine();
+      // Allows to search online.
+      _searchEngine = SearchEngine();
     } on InstantiationException {
-      throw ("Initialization of OfflineSearchEngine failed.");
+      throw ("Initialization of SearchEngine failed.");
     }
 
     // Setting a tap handler to pick embedded map content.
@@ -161,17 +161,16 @@ class _MyAppState extends State<MyApp> {
     var lon = topmostPickedPlace.coordinates.longitude;
     _showDialog("Carto POI picked", "Name: $name. Location: $lat, $lon. See log for more place details.");
 
-    // Now you can use the SearchEngine (via PickedPlace) or the OfflineSearchEngine
-    // (via PickedPlace or offlineSearchId) to retrieve the Place object containing more details.
-    // Below we use the offlineSearchId.
-    _fetchCartoPOIDetails(topmostPickedPlace.offlineSearchId);
+    // Now you can use the SearchEngine (via PickedPlace)
+    // (via PickedPlace or placeCategoryId) to retrieve the Place object containing more details.
+    // Below we use the placeCategoryId.
+    _fetchCartoPOIDetails(topmostPickedPlace.placeCategoryId);
   }
 
-  // The ID is only given for cached or downloaded maps data.
-  void _fetchCartoPOIDetails(String offlineSearchId) {
+  void _fetchCartoPOIDetails(String placeCategoryId) {
     // Set null to get the results in their local language.
     LanguageCode? languageCode;
-    _offlineSearchEngine!.searchByPlaceId(PlaceIdQuery(offlineSearchId), languageCode,
+    _searchEngine!.searchByPlaceId(PlaceIdQuery(placeCategoryId), languageCode,
         (SearchError? searchError, Place? place) async {
       _handleSearchResult(searchError, place);
     });

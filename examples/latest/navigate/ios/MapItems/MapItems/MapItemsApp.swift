@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 HERE Europe B.V.
+ * Copyright (C) 2024 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,20 +18,34 @@
  */
 
 import heresdk
-import UIKit
+import SwiftUI
 
-@UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
+// This class is the entry point to an application.
+// HERE SDK initialization is done at start of app. When app is terminated, the HERE SDK is disposed.
+@main
+struct MapItemsApp: App {
 
-    var window: UIWindow?
-
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
-
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+        }
+    }
+    
+    init() {
+        observeAppLifecycle()
+        
         // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
         initializeHERESDK()
-
-        return true
+    }
+    
+    private func observeAppLifecycle() {
+        NotificationCenter.default.addObserver(forName: UIApplication.willTerminateNotification,
+                                               object: nil,
+                                               queue: nil) { _ in
+            // Perform cleanup or final tasks here.
+            print("App is about to terminate.")
+            disposeHERESDK()
+        }
     }
 
     private func initializeHERESDK() {
@@ -45,15 +59,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             fatalError("Failed to initialize the HERE SDK. Cause: \(engineInstantiationError)")
         }
     }
-
+    
     private func disposeHERESDK() {
         // Free HERE SDK resources before the application shuts down.
         // Usually, this should be called only on application termination.
-        // Afterwards, the HERE SDK is no longer usable unless it is initialized again.
+        
+        // After this call, the HERE SDK is no longer usable unless it is initialized again.
         SDKNativeEngine.sharedInstance = nil
-    }
-
-    func applicationWillTerminate(_ application: UIApplication) {
-        disposeHERESDK()
     }
 }

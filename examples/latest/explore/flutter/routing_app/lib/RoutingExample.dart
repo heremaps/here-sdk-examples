@@ -135,7 +135,7 @@ class RoutingExample {
       }
       for (Toll toll in tolls) {
         print("Toll information valid for this list of spans:");
-        print("Toll system: " + toll.tollSystem);
+        print("Toll systems: " + toll.tollSystems.join(', '));
         print("Toll country code (ISO-3166-1 alpha-3): " + toll.countryCode);
         print("Toll fare information: ");
         for (TollFare tollFare in toll.fares) {

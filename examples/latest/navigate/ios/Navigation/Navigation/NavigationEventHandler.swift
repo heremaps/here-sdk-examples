@@ -83,9 +83,6 @@ class NavigationEventHandler : NavigableLocationDelegate,
         visualNavigator.realisticViewWarningDelegate = self
         
         setupBorderCrossingWarnings()
-        setupDangerZoneWarnings()
-        setupLowSpeedZoneWarnings()
-        setupSafetyCameraWarnings()
         setupSpeedWarnings()
         setupRoadSignWarnings()
         setupVoiceGuidance()
@@ -338,7 +335,7 @@ class NavigationEventHandler : NavigableLocationDelegate,
         // We can optionally retrieve the associated maneuver. The details will be nil if the text contains
         // non-maneuver related information, such as for speed camera warnings.
         if (eventText.type == TextNotificationType.maneuver) {
-            let maneuver = eventText.maneuverNotificationDetails?.maneuver
+            _ = eventText.maneuverNotificationDetails?.maneuver
         }
     }
     
@@ -731,23 +728,7 @@ class NavigationEventHandler : NavigableLocationDelegate,
         // If the value is false, all border crossing notifications will be given for both
         // country borders and state borders. Defaults to false
         borderCrossingWarningOptions.filterOutStateBorderWarnings = true
-        // Warning distance setting for urban, in meters. Defaults to 500 meters.
-        borderCrossingWarningOptions.urbanWarningDistanceInMeters = 400
         visualNavigator.borderCrossingWarningOptions = borderCrossingWarningOptions
-    }
-    
-    private func setupDangerZoneWarnings() {
-        var dangerZoneWarningOptions = DangerZoneWarningOptions()
-        // Distance setting for urban, in meters. Defaults to 500 meters.
-        dangerZoneWarningOptions.urbanWarningDistanceInMeters = 400
-        visualNavigator.dangerZoneWarningOptions = dangerZoneWarningOptions
-    }
-    
-    private func setupLowSpeedZoneWarnings() {
-        var lowSpeedZoneWarningOptions = LowSpeedZoneWarningOptions()
-        // Distance setting for urban, in meters. Defaults to 500 meters.
-        lowSpeedZoneWarningOptions.urbanWarningDistanceInMeters = 400
-        visualNavigator.lowSpeedZoneWarningOptions = lowSpeedZoneWarningOptions
     }
     
     private func setupSpeedWarnings() {
@@ -761,34 +742,22 @@ class NavigationEventHandler : NavigableLocationDelegate,
         var roadSignWarningOptions = RoadSignWarningOptions()
         // Set a filter to get only shields relevant for trucks and heavyTrucks.
         roadSignWarningOptions.vehicleTypesFilter = [RoadSignVehicleType.trucks, RoadSignVehicleType.heavyTrucks]
-        // Warning distance setting for highways, defaults to 1500 meters.
-        roadSignWarningOptions.highwayWarningDistanceInMeters = 1600
-        // Warning distance setting for rural roads, defaults to 750 meters.
-        roadSignWarningOptions.ruralWarningDistanceInMeters = 800
-        // Warning distance setting for urban roads, defaults to 500 meters.
-        roadSignWarningOptions.urbanWarningDistanceInMeters = 600
-        visualNavigator.roadSignWarningOptions = roadSignWarningOptions
-    }
-    
-    private func setupSafetyCameraWarnings() {
-        var safetyCameraWarningOptions = SafetyCameraWarningOptions()
-        // Warning distance setting for highways, defaults to 1500 meters.
-        safetyCameraWarningOptions.highwayWarningDistanceInMeters = 1600
-        // Warning distance setting for rural roads, defaults to 750 meters.
-        safetyCameraWarningOptions.ruralWarningDistanceInMeters = 800
-        // Warning distance setting for urban roads, defaults to 500 meters.
-        safetyCameraWarningOptions.urbanWarningDistanceInMeters = 600
-        visualNavigator.safetyCameraWarningOptions = safetyCameraWarningOptions
+        // Get notification distances for road sign alerts from visual navigator.
+        var warningNotificationDistances = visualNavigator.getWarningNotificationDistances(warningType: WarningType.roadSign)
+        
+        // The distance in meters for emitting warnings when the speed limit or current speed is fast. Defaults to 1500.
+        warningNotificationDistances.fastSpeedDistanceInMeters = 1600;
+        // The distance in meters for emitting warnings when the speed limit or current speed is regular. Defaults to 750.
+        warningNotificationDistances.regularSpeedDistanceInMeters = 800;
+        // The distance in meters for emitting warnings when the speed limit or current speed is slow. Defaults to 500.
+        warningNotificationDistances.slowSpeedDistanceInMeters = 600;
+
+        // Set the warning distances for road signs.
+        visualNavigator.setWarningNotificationDistances(warningType: WarningType.roadSign, warningNotificationDistances: warningNotificationDistances)
     }
     
     private func setupRealisticViewWarnings() {
         var realisticViewWarningOptions = RealisticViewWarningOptions(aspectRatio: AspectRatio.aspectRatio3X4, darkTheme: false)
-        // Warning distance setting for highways, defaults to 1500 meters.
-        realisticViewWarningOptions.highwayWarningDistanceInMeters = 1600
-        // Warning distance setting for rural roads, defaults to 750 meters.
-        realisticViewWarningOptions.ruralWarningDistanceInMeters = 800
-        // Warning distance setting for urban roads, defaults to 500.
-        realisticViewWarningOptions.urbanWarningDistanceInMeters = 600
         visualNavigator.realisticViewWarningOptions = realisticViewWarningOptions
     }
     
@@ -800,9 +769,14 @@ class NavigationEventHandler : NavigableLocationDelegate,
     }
     
     private func setupVoiceGuidance() {
+        var maneuverNotificationOptions = ManeuverNotificationOptions()
         let ttsLanguageCode = getLanguageCodeForDevice(supportedVoiceSkins: VisualNavigator.availableLanguagesForManeuverNotifications())
-        visualNavigator.maneuverNotificationOptions = ManeuverNotificationOptions(language: ttsLanguageCode,
-                                                                                  unitSystem: UnitSystem.metric)
+
+        // Set the language in which the notifications will be generated.
+        maneuverNotificationOptions.language = ttsLanguageCode
+        // Set the measurement system used for distances.
+        maneuverNotificationOptions.unitSystem = UnitSystem.metric
+        visualNavigator.maneuverNotificationOptions = maneuverNotificationOptions
         
         print("LanguageCode for maneuver notifications: \(ttsLanguageCode).")
         

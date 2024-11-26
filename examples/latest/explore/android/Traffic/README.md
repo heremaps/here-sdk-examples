@@ -1,4 +1,4 @@
-The Traffic example app shows how to toggle traffic flow and traffic incidents visualization on a map. You can find how this is done in [TrafficExample.java](app/src/main/java/com/here/traffic/TrafficExample.java).
+The Traffic example app shows how to toggle traffic flow and traffic incidents visualization on a map and how to use the TrafficEngine to query such data in realtime, for example, along a route. You can find how this is done in [TrafficExample.java](app/src/main/java/com/here/traffic/TrafficExample.java) and [RoutingExample.java](app/src/main/java/com/here/traffic/RoutingExample.java).
 
 Build instructions:
 -------------------

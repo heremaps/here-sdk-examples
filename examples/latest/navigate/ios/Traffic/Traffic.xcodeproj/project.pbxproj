@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8344E68F2CE66DC400D7003F /* RoutingExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8344E68E2CE66DC400D7003F /* RoutingExample.swift */; };
 		83C066CA2CCC057A007A890F /* heresdk.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 83C066C92CCC057A007A890F /* heresdk.xcframework */; };
 		83C066CB2CCC057A007A890F /* heresdk.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 83C066C92CCC057A007A890F /* heresdk.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		83C837BC2C207F340004F54E /* TrafficApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C837BB2C207F340004F54E /* TrafficApp.swift */; };
@@ -34,6 +35,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		8344E68E2CE66DC400D7003F /* RoutingExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutingExample.swift; sourceTree = "<group>"; };
 		83C066C92CCC057A007A890F /* heresdk.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = heresdk.xcframework; sourceTree = "<group>"; };
 		83C837B82C207F340004F54E /* Traffic.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Traffic.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		83C837BB2C207F340004F54E /* TrafficApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrafficApp.swift; sourceTree = "<group>"; };
@@ -79,6 +81,7 @@
 				83C837BB2C207F340004F54E /* TrafficApp.swift */,
 				83C837BD2C207F340004F54E /* ContentView.swift */,
 				83C837D02C20EFA70004F54E /* TrafficExample.swift */,
+				8344E68E2CE66DC400D7003F /* RoutingExample.swift */,
 				83C837BF2C207F360004F54E /* Assets.xcassets */,
 				83C837C12C207F360004F54E /* Preview Content */,
 			);
@@ -175,6 +178,7 @@
 				83C837BE2C207F340004F54E /* ContentView.swift in Sources */,
 				83C837BC2C207F340004F54E /* TrafficApp.swift in Sources */,
 				83C837D12C20EFA70004F54E /* TrafficExample.swift in Sources */,
+				8344E68F2CE66DC400D7003F /* RoutingExample.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -15,6 +15,7 @@
 
     <LinearLayout
         app:layout_constraintTop_toTopOf="parent"
+        android:id="@+id/button1stRow"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
@@ -22,15 +23,35 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Enable All"
+            android:text="Enable traffic"
             android:onClick="enableAllButtonClicked" />
 
         <Button
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Disable All"
+            android:text="Disable traffic"
             android:onClick="disableAllButtonClicked" />
+    </LinearLayout>
+
+    <LinearLayout
+        app:layout_constraintTop_toBottomOf="@+id/button1stRow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Add route"
+            android:onClick="addRouteClicked" />
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Clear map"
+            android:onClick="clearMapClicked" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
