@@ -204,7 +204,7 @@ public class RoutingExample {
             }
             for (Toll toll : tolls) {
                 Log.d(TAG, "Toll information valid for this list of spans:");
-                Log.d(TAG, "Toll system: " + toll.tollSystem);
+                Log.d(TAG, "Toll systems: " + toll.tollSystems);
                 Log.d(TAG, "Toll country code (ISO-3166-1 alpha-3): " + toll.countryCode);
                 Log.d(TAG, "Toll fare information: ");
                 for (TollFare tollFare : toll.fares) {

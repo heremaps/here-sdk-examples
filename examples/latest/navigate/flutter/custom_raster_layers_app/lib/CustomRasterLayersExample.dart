@@ -33,7 +33,7 @@ class CustomRasterLayersExample {
     MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
     _hereMapController.camera.lookAtPointWithMeasure(GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
 
-    String dataSourceName = "myRasterDataSourceTonerStyle";
+    String dataSourceName = "myRasterDataSourceOutdoorStyle";
     _rasterDataSourceStyle = _createRasterDataSource(dataSourceName);
     _rasterMapLayerStyle = _createMapLayer(dataSourceName);
 

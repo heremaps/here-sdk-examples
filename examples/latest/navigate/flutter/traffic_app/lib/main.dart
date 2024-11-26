@@ -23,6 +23,7 @@ import 'package:here_sdk/core.engine.dart';
 import 'package:here_sdk/core.errors.dart';
 import 'package:here_sdk/mapview.dart';
 
+import 'RoutingExample.dart';
 import 'TrafficExample.dart';
 
 void main() {
@@ -55,6 +56,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   TrafficExample? _trafficExample;
+  RoutingExample? _routingExample;
 
   @override
   Widget build(BuildContext context) {
@@ -73,6 +75,13 @@ class _MyAppState extends State<MyApp> {
                 button('Disable All', _disableAllButtonClicked),
               ],
             ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                button('Add route', _addRouteButtonClicked),
+                button('Clear map', _clearMapButtonClicked),
+              ],
+            ),
           ],
         ),
       ),
@@ -80,9 +89,10 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _onMapCreated(HereMapController hereMapController) {
-    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
+    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.liteDay, (MapError? error) {
       if (error == null) {
         _trafficExample = TrafficExample(_showDialog, hereMapController);
+        _routingExample = RoutingExample(_showDialog, hereMapController);
       } else {
         print("Map scene not loaded. MapError: " + error.toString());
       }
@@ -95,6 +105,14 @@ class _MyAppState extends State<MyApp> {
 
   void _disableAllButtonClicked() {
     _trafficExample?.disableAll();
+  }
+
+  void _addRouteButtonClicked() {
+    _routingExample?.addRoute();
+  }
+
+  void _clearMapButtonClicked() {
+    _routingExample?.clearMap();
   }
 
   @override

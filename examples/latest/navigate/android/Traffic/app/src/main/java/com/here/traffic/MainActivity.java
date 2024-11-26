@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     private PermissionsRequestor permissionsRequestor;
     private MapView mapView;
     private TrafficExample trafficExample;
+    private RoutingExample routingExample;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,11 +97,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadMapScene() {
         // Load a scene from the HERE SDK to render the map with a map scheme.
-        mapView.getMapScene().loadScene(MapScheme.NORMAL_DAY, new MapScene.LoadSceneCallback() {
+        mapView.getMapScene().loadScene(MapScheme.LITE_DAY, new MapScene.LoadSceneCallback() {
             @Override
             public void onLoadScene(@Nullable MapError mapError) {
                 if (mapError == null) {
                     trafficExample = new TrafficExample(MainActivity.this, mapView);
+                    routingExample = new RoutingExample(MainActivity.this, mapView);
                 } else {
                     Log.d(TAG, "onLoadScene failed: " + mapError.toString());
                 }
@@ -114,6 +116,14 @@ public class MainActivity extends AppCompatActivity {
 
     public void disableAllButtonClicked(View view) {
         trafficExample.disableAll();
+    }
+
+    public void addRouteClicked(View view) {
+        routingExample.addRoute();
+    }
+
+    public void clearMapClicked(View view) {
+        routingExample.clearMap();
     }
 
     @Override

@@ -28,6 +28,7 @@ import 'package:here_sdk/traffic.dart';
 // A callback to notify the hosting widget.
 typedef ShowDialogFunction = void Function(String title, String message);
 
+// This example shows how to query traffic info on incidents with the TrafficEngine.
 class TrafficExample {
   HereMapController _hereMapController;
   ShowDialogFunction _showDialog;
@@ -39,11 +40,15 @@ class TrafficExample {
   TrafficExample(ShowDialogFunction showDialogCallback, HereMapController hereMapController)
       : _showDialog = showDialogCallback,
         _hereMapController = hereMapController {
+
+    // Configure the map.
     double distanceToEarthInMeters = 10000;
     MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
     _hereMapController.camera.lookAtPointWithMeasure(GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
 
     try {
+      // The traffic engine can be used to request additional information about
+      // the current traffic situation anywhere on the road network.
       _trafficEngine = TrafficEngine();
     } on InstantiationException {
       throw ("Initialization of TrafficEngine failed.");
@@ -65,6 +70,14 @@ class TrafficExample {
   }
 
   void _enableTrafficVisualization() {
+    // Try to refresh the trafficFlow vector tiles every minute.
+    // If MapFeatures.trafficFlow is disabled, no requests are made.
+    try {
+      MapContentSettings.setTrafficRefreshPeriod(Duration(minutes: 1));
+    } on MapContentSettingsTrafficRefreshPeriodExceptionException {
+      throw ("TrafficRefreshPeriodException");
+    }
+
     // Once these layers are added to the map, they will be automatically updated while panning the map.
     _hereMapController.mapScene.enableFeatures({MapFeatures.trafficFlow: MapFeatureModes.trafficFlowWithFreeFlow});
     // MapFeatures.trafficIncidents renders traffic icons and lines to indicate the location of incidents. Note that these are not directly pickable yet.

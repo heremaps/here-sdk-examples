@@ -177,7 +177,7 @@ class RoutingExample {
             }
             for toll in tolls {
                 print("Toll information valid for this list of spans:")
-                print("Toll system: \(toll.tollSystem).")
+                print("Toll systems: \(toll.tollSystems).")
                 print("Toll country code (ISO-3166-1 alpha-3): \(toll.countryCode).")
                 print("Toll fare information: ")
                 for tollFare in toll.fares {

@@ -39,7 +39,7 @@ class CustomRasterTileSourceExample {
   }
 
   void setup() async {
-    String dataSourceName = "myRasterDataSourceTonerStyle";
+    String dataSourceName = "myColorfulRasterDataSource";
     _rasterDataSourceStyle = await _createRasterDataSource(dataSourceName);
     _rasterMapLayerStyle = _createMapLayer(dataSourceName);
 

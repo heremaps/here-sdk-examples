@@ -24,7 +24,8 @@ struct ContentView: View {
 
     @State private var mapView = MapView()
     @State private var trafficExample: TrafficExample?
-
+    @State private var routingExample: RoutingExample?
+    
     var body: some View {
          // Show the views on top of each other.
          ZStack(alignment: .top) {
@@ -35,18 +36,29 @@ struct ContentView: View {
 
              VStack {
                  HStack {
-                     CustomButton(title: "Enable All") {
+                     CustomButton(title: "Enable traffic") {
                          trafficExample?.enableTrafficVisualization()
                      }
-                     CustomButton(title: "DisableAll") {
+                     CustomButton(title: "Disable traffic") {
                          trafficExample?.disableTrafficVisualization()
+                     }
+                 }
+             }
+             VStack {
+                 HStack {
+                     CustomButton(title: "Add route") {
+                         routingExample?.addRoute()
+                     }
+                     CustomButton(title: "Clear map") {
+                         routingExample?.clearMap()
                      }
                  }
              }
          }
          .onAppear {
-             // ContentView appeared, now we init the example.
+             // ContentView appeared, now we init the examples.
              trafficExample = TrafficExample(mapView)
+             routingExample = RoutingExample(mapView)
          }
      }
 }

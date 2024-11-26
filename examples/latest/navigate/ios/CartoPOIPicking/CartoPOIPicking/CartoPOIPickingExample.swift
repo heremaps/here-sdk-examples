@@ -23,7 +23,7 @@ import SwiftUI
 class CartoPOIPickingExample: TapDelegate {
     
     private var mapView: MapView
-    private var offlineSearchEngine: OfflineSearchEngine
+    private var searchEngine: SearchEngine
     
     init(_ mapView: MapView) {
         self.mapView = mapView
@@ -35,10 +35,10 @@ class CartoPOIPickingExample: TapDelegate {
                       zoom: distanceInMeters)
         
         do {
-            // Allows to search on already downloaded or cached map data.
-            try offlineSearchEngine = OfflineSearchEngine()
+            // Allows to search online.
+            try searchEngine = SearchEngine()
         } catch let engineInstantiationError {
-            fatalError("Failed to initialize OfflineSearchEngine. Cause: \(engineInstantiationError)")
+            fatalError("Failed to initialize SearchEngine. Cause: \(engineInstantiationError)")
         }
         
         // Load the map scene using a map scheme to render the map with.
@@ -115,17 +115,16 @@ class CartoPOIPickingExample: TapDelegate {
         showDialog(title: "Carto POI picked",
                    message: "Name: \(name). Location: \(lat), \(lon). See log for more place details.")
 
-        // Now you can use the SearchEngine or the OfflineSearchEngine (if available for your edition)
+        // Now you can use the SearchEngine (via PickedPlace)
         // to retrieve the Place object containing more details.
-        // Below we use the offlineSearchId.
-        fetchCartoPOIDetails(topmostCartoPOI.offlineSearchId);
+        // Below we use the placeCategoryId.
+        fetchCartoPOIDetails(topmostCartoPOI.placeCategoryId);
     }
 
-    // The ID is only given for cached or downloaded maps data.
-    private func fetchCartoPOIDetails(_ offlineSearchId: String) {
+    private func fetchCartoPOIDetails(_ placeCategoryId: String) {
         // Set nil for LanguageCode to get the results in their local language.
         let languageCode: LanguageCode? = nil
-        offlineSearchEngine.searchByPlaceId(PlaceIdQuery(offlineSearchId),
+        searchEngine.searchByPlaceId(PlaceIdQuery(placeCategoryId),
                                     languageCode: languageCode,
                                     completion: onSearchCompleted)
     }

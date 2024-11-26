@@ -3,10 +3,12 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		83E589CE2CF0DD3F004E83D3 /* heresdk.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 83E589CD2CF0DD3F004E83D3 /* heresdk.xcframework */; };
+		83E589CF2CF0DD3F004E83D3 /* heresdk.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 83E589CD2CF0DD3F004E83D3 /* heresdk.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AC8E71EC2A8CF2A6004C3538 /* CustomCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC8E71EA2A8CF2A6004C3538 /* CustomCell.swift */; };
 		AC8E71F32A93CE1A004C3538 /* CustomCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = AC8E71F12A93CE1A004C3538 /* CustomCell.xib */; };
 		B02A918A24B60CF900571C9D /* VenuesManager.xib in Resources */ = {isa = PBXBuildFile; fileRef = B02A918824B60CF900571C9D /* VenuesManager.xib */; };
@@ -23,8 +25,8 @@
 		B05883432469624E00DEF143 /* DrawingSwitcher.xib in Resources */ = {isa = PBXBuildFile; fileRef = B058833F2469624E00DEF143 /* DrawingSwitcher.xib */; };
 		B05883442469624E00DEF143 /* LevelSwitcher.xib in Resources */ = {isa = PBXBuildFile; fileRef = B05883412469624E00DEF143 /* LevelSwitcher.xib */; };
 		B058835224696D2600DEF143 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B058835024696D2600DEF143 /* LaunchScreen.storyboard */; };
-		B0DCC721246D8764006BC49A /* heresdk.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = C88C016923CDFC7F00043918 /* heresdk.xcframework */; };
-		B0DCC722246D8769006BC49A /* heresdk.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = C88C016923CDFC7F00043918 /* heresdk.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		B0DCC721246D8764006BC49A /* (null) in Frameworks */ = {isa = PBXBuildFile; };
+		B0DCC722246D8769006BC49A /* (null) in Embed Frameworks */ = {isa = PBXBuildFile; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		C865242520B7E70F00392D48 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C865242420B7E70F00392D48 /* AppDelegate.swift */; };
 		C865242720B7E70F00392D48 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C865242620B7E70F00392D48 /* ViewController.swift */; };
 		C865242C20B7E71200392D48 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C865242B20B7E71200392D48 /* Assets.xcassets */; };
@@ -37,7 +39,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				B0DCC722246D8769006BC49A /* heresdk.xcframework in Embed Frameworks */,
+				83E589CF2CF0DD3F004E83D3 /* heresdk.xcframework in Embed Frameworks */,
+				B0DCC722246D8769006BC49A /* (null) in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -45,6 +48,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		83E589CD2CF0DD3F004E83D3 /* heresdk.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = heresdk.xcframework; sourceTree = "<group>"; };
 		AC8E71EA2A8CF2A6004C3538 /* CustomCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomCell.swift; sourceTree = "<group>"; };
 		AC8E71EB2A8CF2A6004C3538 /* CustomCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CustomCell.xib; sourceTree = "<group>"; };
 		AC8E71F22A93CE1A004C3538 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/CustomCell.xib; sourceTree = "<group>"; };
@@ -67,7 +71,6 @@
 		C865242620B7E70F00392D48 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		C865242920B7E70F00392D48 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		C865242B20B7E71200392D48 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		C88C016923CDFC7F00043918 /* heresdk.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = heresdk.xcframework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,7 +78,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B0DCC721246D8764006BC49A /* heresdk.xcframework in Frameworks */,
+				83E589CE2CF0DD3F004E83D3 /* heresdk.xcframework in Frameworks */,
+				B0DCC721246D8764006BC49A /* (null) in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -130,7 +134,7 @@
 		C88C016823CDFC7E00043918 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				C88C016923CDFC7F00043918 /* heresdk.xcframework */,
+				83E589CD2CF0DD3F004E83D3 /* heresdk.xcframework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -203,7 +207,6 @@
 				B0479B9A24B5D16600EDEEEA /* VenueSearch.xib in Resources */,
 				AC8E71F32A93CE1A004C3538 /* CustomCell.xib in Resources */,
 				B02A919424B62C7700571C9D /* VenueTableViewCell.xib in Resources */,
-				AC8E71ED2A8CF2A6004C3538 /* CustomCell.xib in Resources */,
 				B058835224696D2600DEF143 /* LaunchScreen.storyboard in Resources */,
 				B05883442469624E00DEF143 /* LevelSwitcher.xib in Resources */,
 			);
