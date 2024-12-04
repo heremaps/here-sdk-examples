@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CustomPointTileSource implements PointTileSource {
@@ -42,6 +43,7 @@ public class CustomPointTileSource implements PointTileSource {
   final DataVersion mDataVersionWhenEmpty = new DataVersion(2, 0);
   private AtomicBoolean mHasData = new AtomicBoolean(true);
   private Listener mListener;
+  private Random randomNumberGenerator = new Random();
 
   // Tile source supported data levels.
   final List<Integer> mSupportedLevels = new ArrayList<Integer>(
@@ -61,8 +63,8 @@ public class CustomPointTileSource implements PointTileSource {
       +
       "        \"text\": [\"concat\", \" occupied: \", [\"get\", \"occupied\"],\" free: \", [\"get\", \"free\"],\"\\n\", [\"get\", \"tileKey\"]],\n"
       +
-      "        \"text-color\": [\"case\", [\">\", [\"get\", \"free\"], 0], \"#007700ff\", \"#770000ff\"],\n"
-      + "        \"text-size\": 30\n"
+      "        \"text-color\": [\"case\", [\">\", [\"get\", \"free\"], 0], \"#009900ff\", \"#CC0000ff\"],\n"
+      + "        \"text-size\": 40\n"
       + "      }\n"
       + "    }\n"
       + "  ]\n"
@@ -78,8 +80,8 @@ public class CustomPointTileSource implements PointTileSource {
           new DataAttributesBuilder()
               .with("tileKey", String.format("TileKey: (%d, %d, %d)", tileKey.x,
                                              tileKey.y, tileKey.level))
-              .with("occupied", 1)
-              .with("free", 2)
+              .with("occupied", randomNumberGenerator.nextInt(4))
+              .with("free", randomNumberGenerator.nextInt(4))
               .build();
 
       GeoCoordinates tileCenter =
