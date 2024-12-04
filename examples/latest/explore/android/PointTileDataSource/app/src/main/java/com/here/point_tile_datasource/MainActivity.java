@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 HERE Europe B.V.
+ * Copyright (C) 2024 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ package com.here.point_tile_datasource;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -32,17 +33,51 @@ import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.core.engine.SDKOptions;
 import com.here.sdk.core.errors.InstantiationErrorException;
+import com.here.sdk.mapview.HereMap;
+import com.here.sdk.mapview.JsonStyleFactory;
+import com.here.sdk.mapview.MapContentType;
 import com.here.sdk.mapview.MapError;
+import com.here.sdk.mapview.MapLayer;
+import com.here.sdk.mapview.MapLayerBuilder;
+import com.here.sdk.mapview.MapLayerPriority;
+import com.here.sdk.mapview.MapLayerPriorityBuilder;
 import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
+import com.here.sdk.mapview.Style;
+import com.here.sdk.mapview.datasource.PointTileDataSource;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
+    // Name of the custom points data source.
+    private final static String DATASOURCE_NAME = "point_tile_datasource_ci_test";
+
+    // Name of the custom points layer.
+    private final static String LAYER_NAME = "point_tile_layer_ci_test";
+
+    // Style of the custom points layer.
+    private final static String LAYER_STYLE = "{\n"
+            + "  \"styles\": [\n"
+            + "    {\n"
+            + "      \"layer\": \"point_tile_layer_ci_test\",\n"
+            + "      \"technique\": \"icon-text\",\n"
+            + "      \"attr\": {\n"
+            + "        \"text\": [\"get\", \"pointText\"],\n"
+            + "        \"text-color\": \"#ff0000ff\",\n"
+            + "        \"text-size\": 30\n"
+            + "      }\n"
+            + "    }\n"
+            + "  ]\n"
+            + "}";
+
     private PermissionsRequestor permissionsRequestor;
     private MapView mapView;
+
+    private CustomPointTileSource mTileSource;
+    private PointTileDataSource mDataSource;
+    private MapLayer mLayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,7 +144,11 @@ public class MainActivity extends AppCompatActivity {
         // The camera can be configured before or after a scene is loaded.
         double distanceInMeters = 1000 * 10;
         MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
-        mapView.getCamera().lookAt(new GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
+        mapView.getCamera().lookAt(new GeoCoordinates(52.56726841787437, 13.285501201751865), mapMeasureZoom);
+
+        // configure point tile datasource
+        Style layerStyle = createPointLayerStyle();
+        createPointTileDatasourceAndLayer(mapView, layerStyle);
 
         // Load a scene from the HERE SDK to render the map with a map scheme.
         mapView.getMapScene().loadScene(MapScheme.NORMAL_DAY, new MapScene.LoadSceneCallback() {
@@ -157,6 +196,45 @@ public class MainActivity extends AppCompatActivity {
             // For safety reasons, we explicitly set the shared instance to null to avoid situations,
             // where a disposed instance is accidentally reused.
             SDKNativeEngine.setSharedInstance(null);
+        }
+    }
+
+    private void createPointTileDatasourceAndLayer(MapView mapView, Style style) {
+        // check for main thread
+        if (Looper.myLooper() != Looper.getMainLooper()) {
+            throw new AssertionError();
+        }
+
+        mTileSource = new CustomPointTileSource();
+        mDataSource =
+                PointTileDataSource.create(mapView.getMapContext(), DATASOURCE_NAME, mTileSource);
+
+        HereMap hereMap = mapView.getHereMap();
+
+        MapLayerPriority priority = new MapLayerPriorityBuilder().renderedLast().build();
+
+        try {
+            MapLayerBuilder newLayerBuilder =
+                    new MapLayerBuilder()
+                            .withName(LAYER_NAME)
+                            .withPriority(priority)
+                            .forMap(hereMap)
+                            .withDataSource(DATASOURCE_NAME, MapContentType.POINT);
+            if (style != null) {
+                newLayerBuilder.withStyle(style);
+            }
+            mLayer = newLayerBuilder.build();
+        } catch (MapLayerBuilder.InstantiationException e) {
+            throw new AssertionError();
+        }
+    }
+
+    private Style createPointLayerStyle() {
+        try {
+            Style layerStyle = JsonStyleFactory.createFromString(LAYER_STYLE);
+            return layerStyle;
+        } catch (JsonStyleFactory.InstantiationException e) {
+            throw new AssertionError();
         }
     }
 }
