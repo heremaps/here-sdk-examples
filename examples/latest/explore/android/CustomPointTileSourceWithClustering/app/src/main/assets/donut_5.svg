@@ -1,0 +1,8 @@
+<svg width="200" height="200" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <!-- Full green circle -->
+  <circle r="16" cx="16" cy="16" fill="green" />
+  <!-- Red segment -->
+  <path d="M16 16 L16 0 A16 16 0 0 1 20.94427190999916 0.7830957392775435 L16 16" fill="red" />
+  <!-- Inner white circle to create the donut hole -->
+  <circle r="12" cx="16" cy="16" fill="white" />
+</svg>
