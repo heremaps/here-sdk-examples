@@ -17,7 +17,7 @@
  * License-Filename: LICENSE
  */
 
-package com.here.hellomap;
+package com.here.point_tile_datasource;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -27,7 +27,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.here.hellomap.PermissionsRequestor.ResultListener;
+import com.here.point_tile_datasource.PermissionsRequestor.ResultListener;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.core.engine.SDKOptions;
