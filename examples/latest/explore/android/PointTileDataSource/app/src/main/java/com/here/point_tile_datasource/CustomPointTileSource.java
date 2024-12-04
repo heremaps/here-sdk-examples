@@ -60,6 +60,8 @@ public class CustomPointTileSource implements PointTileSource {
           new DataAttributesBuilder()
               .with("pointText", String.format("Tile: (%d, %d, %d)", tileKey.x,
                                                tileKey.y, tileKey.level))
+              .with("occupied", 1)
+              .with("free", 2)
               .build();
 
       GeoCoordinates tileCenter =
