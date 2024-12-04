@@ -55,23 +55,6 @@ public class MainActivity extends AppCompatActivity {
   // Name of the custom points layer.
   private final static String LAYER_NAME = "point_tile_layer_ci_test";
 
-  // Style of the custom points layer.
-  private final static String LAYER_STYLE =
-      "{\n"
-      + "  \"styles\": [\n"
-      + "    {\n"
-      + "      \"layer\": \"point_tile_layer_ci_test\",\n"
-      + "      \"technique\": \"icon-text\",\n"
-      + "      \"attr\": {\n"
-      +
-      "        \"text\": [\"concat\", \" occupied: \", [\"get\", \"occupied\"],\" free: \", [\"get\", \"free\"],\"\\n\", [\"get\", \"pointText\"]],\n"
-      + "        \"text-color\": \"#ff0000ff\",\n"
-      + "        \"text-size\": 30\n"
-      + "      }\n"
-      + "    }\n"
-      + "  ]\n"
-      + "}";
-
   private PermissionsRequestor permissionsRequestor;
   private MapView mapView;
 
@@ -242,8 +225,8 @@ public class MainActivity extends AppCompatActivity {
 
   private Style createPointLayerStyle() {
     try {
-      Style layerStyle = JsonStyleFactory.createFromString(LAYER_STYLE);
-      return layerStyle;
+      return JsonStyleFactory.createFromString(
+          CustomPointTileSource.LAYER_STYLE);
     } catch (JsonStyleFactory.InstantiationException e) {
       throw new AssertionError();
     }

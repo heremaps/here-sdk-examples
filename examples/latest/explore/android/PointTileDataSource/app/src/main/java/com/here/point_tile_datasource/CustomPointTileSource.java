@@ -50,6 +50,24 @@ public class CustomPointTileSource implements PointTileSource {
   // Tile source supported tiling scheme.
   final TilingScheme mSupportedTilingScheme = TilingScheme.QUAD_TREE_MERCATOR;
 
+  // Style of the custom points layer.
+  public final static String LAYER_STYLE =
+      "{\n"
+      + "  \"styles\": [\n"
+      + "    {\n"
+      + "      \"layer\": \"point_tile_layer_ci_test\",\n"
+      + "      \"technique\": \"icon-text\",\n"
+      + "      \"attr\": {\n"
+      +
+      "        \"text\": [\"concat\", \" occupied: \", [\"get\", \"occupied\"],\" free: \", [\"get\", \"free\"],\"\\n\", [\"get\", \"tileKey\"]],\n"
+      +
+      "        \"text-color\": [\"case\", [\">\", [\"get\", \"free\"], 0], \"#007700ff\", \"#770000ff\"],\n"
+      + "        \"text-size\": 30\n"
+      + "      }\n"
+      + "    }\n"
+      + "  ]\n"
+      + "}";
+
   @Nullable
   @Override
   public LoadTileRequestHandle
@@ -58,8 +76,8 @@ public class CustomPointTileSource implements PointTileSource {
     if (mHasData.get()) {
       DataAttributes pointAttributes =
           new DataAttributesBuilder()
-              .with("pointText", String.format("Tile: (%d, %d, %d)", tileKey.x,
-                                               tileKey.y, tileKey.level))
+              .with("tileKey", String.format("TileKey: (%d, %d, %d)", tileKey.x,
+                                             tileKey.y, tileKey.level))
               .with("occupied", 1)
               .with("free", 2)
               .build();
