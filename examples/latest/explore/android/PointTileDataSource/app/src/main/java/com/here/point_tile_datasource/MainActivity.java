@@ -23,11 +23,9 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.here.point_tile_datasource.PermissionsRequestor.ResultListener;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.engine.SDKNativeEngine;
@@ -50,191 +48,203 @@ import com.here.sdk.mapview.datasource.PointTileDataSource;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = MainActivity.class.getSimpleName();
-    // Name of the custom points data source.
-    private final static String DATASOURCE_NAME = "point_tile_datasource_ci_test";
+  private static final String TAG = MainActivity.class.getSimpleName();
+  // Name of the custom points data source.
+  private final static String DATASOURCE_NAME = "point_tile_datasource_ci_test";
 
-    // Name of the custom points layer.
-    private final static String LAYER_NAME = "point_tile_layer_ci_test";
+  // Name of the custom points layer.
+  private final static String LAYER_NAME = "point_tile_layer_ci_test";
 
-    // Style of the custom points layer.
-    private final static String LAYER_STYLE = "{\n"
-            + "  \"styles\": [\n"
-            + "    {\n"
-            + "      \"layer\": \"point_tile_layer_ci_test\",\n"
-            + "      \"technique\": \"icon-text\",\n"
-            + "      \"attr\": {\n"
-            + "        \"text\": [\"get\", \"pointText\"],\n"
-            + "        \"text-color\": \"#ff0000ff\",\n"
-            + "        \"text-size\": 30\n"
-            + "      }\n"
-            + "    }\n"
-            + "  ]\n"
-            + "}";
+  // Style of the custom points layer.
+  private final static String LAYER_STYLE =
+      "{\n"
+      + "  \"styles\": [\n"
+      + "    {\n"
+      + "      \"layer\": \"point_tile_layer_ci_test\",\n"
+      + "      \"technique\": \"icon-text\",\n"
+      + "      \"attr\": {\n"
+      +
+      "        \"text\": [\"concat\", \" occupied: \", [\"get\", \"occupied\"],\" free: \", [\"get\", \"free\"],\"\\n\", [\"get\", \"pointText\"]],\n"
+      + "        \"text-color\": \"#ff0000ff\",\n"
+      + "        \"text-size\": 30\n"
+      + "      }\n"
+      + "    }\n"
+      + "  ]\n"
+      + "}";
 
-    private PermissionsRequestor permissionsRequestor;
-    private MapView mapView;
+  private PermissionsRequestor permissionsRequestor;
+  private MapView mapView;
 
-    private CustomPointTileSource mTileSource;
-    private PointTileDataSource mDataSource;
-    private MapLayer mLayer;
+  private CustomPointTileSource mTileSource;
+  private PointTileDataSource mDataSource;
+  private MapLayer mLayer;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
 
-        // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
-        initializeHERESDK();
+    // Usually, you need to initialize the HERE SDK only once during the
+    // lifetime of an application.
+    initializeHERESDK();
 
-        setContentView(R.layout.activity_main);
+    setContentView(R.layout.activity_main);
 
-        // Get a MapView instance from layout.
-        mapView = findViewById(R.id.map_view);
-        mapView.onCreate(savedInstanceState);
+    // Get a MapView instance from layout.
+    mapView = findViewById(R.id.map_view);
+    mapView.onCreate(savedInstanceState);
 
-        mapView.setOnReadyListener(new MapView.OnReadyListener() {
-            @Override
-            public void onMapViewReady() {
-                // This will be called each time after this activity is resumed.
-                // It will not be called before the first map scene was loaded.
-                // Any code that requires map data may not work as expected until this event is received.
-                Log.d(TAG, "HERE Rendering Engine attached.");
+    mapView.setOnReadyListener(new MapView.OnReadyListener() {
+      @Override
+      public void onMapViewReady() {
+        // This will be called each time after this activity is resumed.
+        // It will not be called before the first map scene was loaded.
+        // Any code that requires map data may not work as expected until this
+        // event is received.
+        Log.d(TAG, "HERE Rendering Engine attached.");
+      }
+    });
+
+    handleAndroidPermissions();
+  }
+
+  private void initializeHERESDK() {
+    // Set your credentials for the HERE SDK.
+    String accessKeyID = "";
+    String accessKeySecret = "";
+    SDKOptions options = new SDKOptions(accessKeyID, accessKeySecret);
+    try {
+      Context context = this;
+      SDKNativeEngine.makeSharedInstance(context, options);
+    } catch (InstantiationErrorException e) {
+      throw new RuntimeException("Initialization of HERE SDK failed: " +
+                                 e.error.name());
+    }
+  }
+
+  private void handleAndroidPermissions() {
+    permissionsRequestor = new PermissionsRequestor(this);
+    permissionsRequestor.request(new ResultListener() {
+      @Override
+      public void permissionsGranted() {
+        loadMapScene();
+      }
+
+      @Override
+      public void permissionsDenied() {
+        Log.e(TAG, "Permissions denied by user.");
+      }
+    });
+  }
+
+  @Override
+  public void onRequestPermissionsResult(int requestCode,
+                                         @NonNull String[] permissions,
+                                         @NonNull int[] grantResults) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    permissionsRequestor.onRequestPermissionsResult(requestCode, grantResults);
+  }
+
+  private void loadMapScene() {
+    // The camera can be configured before or after a scene is loaded.
+    double distanceInMeters = 1000 * 10;
+    MapMeasure mapMeasureZoom =
+        new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
+    mapView.getCamera().lookAt(
+        new GeoCoordinates(52.56726841787437, 13.285501201751865),
+        mapMeasureZoom);
+
+    // configure point tile datasource
+    Style layerStyle = createPointLayerStyle();
+    createPointTileDatasourceAndLayer(mapView, layerStyle);
+
+    // Load a scene from the HERE SDK to render the map with a map scheme.
+    mapView.getMapScene().loadScene(
+        MapScheme.NORMAL_DAY, new MapScene.LoadSceneCallback() {
+          @Override
+          public void onLoadScene(@Nullable MapError mapError) {
+            if (mapError != null) {
+              Log.d(TAG, "Loading map failed: mapError: " + mapError.name());
             }
+          }
         });
+  }
 
-        handleAndroidPermissions();
+  @Override
+  protected void onPause() {
+    mapView.onPause();
+    super.onPause();
+  }
+
+  @Override
+  protected void onResume() {
+    mapView.onResume();
+    super.onResume();
+  }
+
+  @Override
+  protected void onDestroy() {
+    mapView.onDestroy();
+    disposeHERESDK();
+    super.onDestroy();
+  }
+
+  @Override
+  protected void onSaveInstanceState(@NonNull Bundle outState) {
+    mapView.onSaveInstanceState(outState);
+    super.onSaveInstanceState(outState);
+  }
+
+  private void disposeHERESDK() {
+    // Free HERE SDK resources before the application shuts down.
+    // Usually, this should be called only on application termination.
+    // Afterwards, the HERE SDK is no longer usable unless it is initialized
+    // again.
+    SDKNativeEngine sdkNativeEngine = SDKNativeEngine.getSharedInstance();
+    if (sdkNativeEngine != null) {
+      sdkNativeEngine.dispose();
+      // For safety reasons, we explicitly set the shared instance to null to
+      // avoid situations, where a disposed instance is accidentally reused.
+      SDKNativeEngine.setSharedInstance(null);
+    }
+  }
+
+  private void createPointTileDatasourceAndLayer(MapView mapView, Style style) {
+    // check for main thread
+    if (Looper.myLooper() != Looper.getMainLooper()) {
+      throw new AssertionError();
     }
 
-    private void initializeHERESDK() {
-        // Set your credentials for the HERE SDK.
-        String accessKeyID = "";
-        String accessKeySecret = "";
-        SDKOptions options = new SDKOptions(accessKeyID, accessKeySecret);
-        try {
-            Context context = this;
-            SDKNativeEngine.makeSharedInstance(context, options);
-        } catch (InstantiationErrorException e) {
-            throw new RuntimeException("Initialization of HERE SDK failed: " + e.error.name());
-        }
+    mTileSource = new CustomPointTileSource();
+    mDataSource = PointTileDataSource.create(mapView.getMapContext(),
+                                             DATASOURCE_NAME, mTileSource);
+
+    HereMap hereMap = mapView.getHereMap();
+
+    MapLayerPriority priority =
+        new MapLayerPriorityBuilder().renderedLast().build();
+
+    try {
+      MapLayerBuilder newLayerBuilder =
+          new MapLayerBuilder()
+              .withName(LAYER_NAME)
+              .withPriority(priority)
+              .forMap(hereMap)
+              .withDataSource(DATASOURCE_NAME, MapContentType.POINT);
+      if (style != null) {
+        newLayerBuilder.withStyle(style);
+      }
+      mLayer = newLayerBuilder.build();
+    } catch (MapLayerBuilder.InstantiationException e) {
+      throw new AssertionError();
     }
+  }
 
-    private void handleAndroidPermissions() {
-        permissionsRequestor = new PermissionsRequestor(this);
-        permissionsRequestor.request(new ResultListener(){
-
-            @Override
-            public void permissionsGranted() {
-                loadMapScene();
-            }
-
-            @Override
-            public void permissionsDenied() {
-                Log.e(TAG, "Permissions denied by user.");
-            }
-        });
+  private Style createPointLayerStyle() {
+    try {
+      Style layerStyle = JsonStyleFactory.createFromString(LAYER_STYLE);
+      return layerStyle;
+    } catch (JsonStyleFactory.InstantiationException e) {
+      throw new AssertionError();
     }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        permissionsRequestor.onRequestPermissionsResult(requestCode, grantResults);
-    }
-
-    private void loadMapScene() {
-        // The camera can be configured before or after a scene is loaded.
-        double distanceInMeters = 1000 * 10;
-        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
-        mapView.getCamera().lookAt(new GeoCoordinates(52.56726841787437, 13.285501201751865), mapMeasureZoom);
-
-        // configure point tile datasource
-        Style layerStyle = createPointLayerStyle();
-        createPointTileDatasourceAndLayer(mapView, layerStyle);
-
-        // Load a scene from the HERE SDK to render the map with a map scheme.
-        mapView.getMapScene().loadScene(MapScheme.NORMAL_DAY, new MapScene.LoadSceneCallback() {
-            @Override
-            public void onLoadScene(@Nullable MapError mapError) {
-                if (mapError != null) {
-                    Log.d(TAG, "Loading map failed: mapError: " + mapError.name());
-                }
-            }
-        });
-    }
-
-    @Override
-    protected void onPause() {
-        mapView.onPause();
-        super.onPause();
-    }
-
-    @Override
-    protected void onResume() {
-        mapView.onResume();
-        super.onResume();
-    }
-
-    @Override
-    protected void onDestroy() {
-        mapView.onDestroy();
-        disposeHERESDK();
-        super.onDestroy();
-    }
-
-    @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
-        mapView.onSaveInstanceState(outState);
-        super.onSaveInstanceState(outState);
-    }
-
-    private void disposeHERESDK() {
-        // Free HERE SDK resources before the application shuts down.
-        // Usually, this should be called only on application termination.
-        // Afterwards, the HERE SDK is no longer usable unless it is initialized again.
-        SDKNativeEngine sdkNativeEngine = SDKNativeEngine.getSharedInstance();
-        if (sdkNativeEngine != null) {
-            sdkNativeEngine.dispose();
-            // For safety reasons, we explicitly set the shared instance to null to avoid situations,
-            // where a disposed instance is accidentally reused.
-            SDKNativeEngine.setSharedInstance(null);
-        }
-    }
-
-    private void createPointTileDatasourceAndLayer(MapView mapView, Style style) {
-        // check for main thread
-        if (Looper.myLooper() != Looper.getMainLooper()) {
-            throw new AssertionError();
-        }
-
-        mTileSource = new CustomPointTileSource();
-        mDataSource =
-                PointTileDataSource.create(mapView.getMapContext(), DATASOURCE_NAME, mTileSource);
-
-        HereMap hereMap = mapView.getHereMap();
-
-        MapLayerPriority priority = new MapLayerPriorityBuilder().renderedLast().build();
-
-        try {
-            MapLayerBuilder newLayerBuilder =
-                    new MapLayerBuilder()
-                            .withName(LAYER_NAME)
-                            .withPriority(priority)
-                            .forMap(hereMap)
-                            .withDataSource(DATASOURCE_NAME, MapContentType.POINT);
-            if (style != null) {
-                newLayerBuilder.withStyle(style);
-            }
-            mLayer = newLayerBuilder.build();
-        } catch (MapLayerBuilder.InstantiationException e) {
-            throw new AssertionError();
-        }
-    }
-
-    private Style createPointLayerStyle() {
-        try {
-            Style layerStyle = JsonStyleFactory.createFromString(LAYER_STYLE);
-            return layerStyle;
-        } catch (JsonStyleFactory.InstantiationException e) {
-            throw new AssertionError();
-        }
-    }
+  }
 }
