@@ -17,7 +17,7 @@
  * License-Filename: LICENSE
  */
 
-package com.here.hellomap;
+package com.here.point_tile_datasource;
 
 import android.Manifest;
 import android.app.Activity;
