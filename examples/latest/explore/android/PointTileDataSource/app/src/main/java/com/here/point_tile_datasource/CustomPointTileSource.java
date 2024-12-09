@@ -36,6 +36,21 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+// What:
+// * user has some kind of database with charging stations, aka points with
+// certain attribution
+// * datasource delivers a tile key (aka geoBox)
+// * user reads all points with that tile (geoBox)
+// * clustering takes place, i.E.
+//    input:
+//      point set
+//    output:
+//      individual points (unclustered) + clusters (incl. all contained points)
+//      better: just points with cluster ids
+
+// how
+// tile key has
+
 public class CustomPointTileSource implements PointTileSource {
 
   // Tile source data version.
@@ -76,16 +91,24 @@ public class CustomPointTileSource implements PointTileSource {
   loadTile(@NonNull TileKey tileKey,
            @NonNull LoadResultHandler loadResultHandler) {
     if (mHasData.get()) {
+
+      // tileKey to GeoCoordinates
+      GeoCoordinates tileCenter =
+          TilingUtils.geoBoxCenter(TilingUtils.getGeoBox(tileKey));
+
+      // GeoCoordinates to tileKey (for testing purposes)
+      TileKey testKey = TilingUtils.toTileKey(tileCenter, tileKey.level);
+
       DataAttributes pointAttributes =
           new DataAttributesBuilder()
-              .with("tileKey", String.format("TileKey: (%d, %d, %d)", tileKey.x,
-                                             tileKey.y, tileKey.level))
+              .with("tileKey",
+                    String.format(
+                        "TileKey_i: (%d, %d, %d), TileKey_o: (%d, %d, %d)",
+                        tileKey.x, tileKey.y, tileKey.level, testKey.x,
+                        testKey.y, testKey.level))
               .with("occupied", randomNumberGenerator.nextInt(4))
               .with("free", randomNumberGenerator.nextInt(4))
               .build();
-
-      GeoCoordinates tileCenter =
-          TilingUtils.geoBoxCenter(TilingUtils.getGeoBox(tileKey));
 
       PointData tileData = new PointDataBuilder()
                                .withCoordinates(tileCenter)
