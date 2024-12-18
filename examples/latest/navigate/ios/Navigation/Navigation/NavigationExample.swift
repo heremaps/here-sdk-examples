@@ -25,7 +25,7 @@ import SwiftUI
 // By default, tracking mode is enabled. When navigation is stopped, tracking mode is enabled again.
 // The preferred device language determines the language for voice notifications used for TTS.
 // (Make sure to set language + region in device settings.)
-class NavigationExample : DynamicRoutingDelegate {
+class NavigationExample : DynamicRoutingDelegate, MessageDelegate {
     
     private let visualNavigator: VisualNavigator
     private let dynamicRoutingEngine: DynamicRoutingEngine
@@ -33,15 +33,18 @@ class NavigationExample : DynamicRoutingDelegate {
     private let herePositioningSimulator: HEREPositioningSimulator
     private let routePrefetcher: RoutePrefetcher
     private let navigationEventHandler: NavigationEventHandler
-    var textViewUpdateDelegate: TextViewUpdateDelegate?
+    private let routeCalculator: RouteCalculator
+    var messageDelegate: MessageDelegate?
     
-    init(mapView: MapView) {
+    init(mapView: MapView, routeCalculator:RouteCalculator) {
         do {
             // Without a route set, this starts tracking mode.
             try visualNavigator = VisualNavigator()
         } catch let engineInstantiationError {
             fatalError("Failed to initialize VisualNavigator. Cause: \(engineInstantiationError)")
         }
+        
+        self.routeCalculator = routeCalculator
         
         // By default, enable auto-zoom during guidance.
         visualNavigator.cameraBehavior = DynamicCameraBehavior()
@@ -61,9 +64,10 @@ class NavigationExample : DynamicRoutingDelegate {
         dynamicRoutingEngine = NavigationExample.createDynamicRoutingEngine()
         
         // A class to handle various kinds of guidance events.
+
         navigationEventHandler = NavigationEventHandler(
-            visualNavigator, dynamicRoutingEngine)
-        navigationEventHandler.textViewUpdateDelegate = self
+            visualNavigator, dynamicRoutingEngine, routeCalculator)
+        navigationEventHandler.messageDelegate = self
     }
     
     func startLocationProvider() {
@@ -192,13 +196,8 @@ class NavigationExample : DynamicRoutingDelegate {
         return herePositioningProvider.getLastKnownLocation()
     }
     
-    private func updateMessage(_ message: String) {
-        textViewUpdateDelegate?.updateTextViewMessage(message)
-    }
-}
-
-extension NavigationExample: TextViewUpdateDelegate {
-    func updateTextViewMessage(_ message: String) {
-        textViewUpdateDelegate?.updateTextViewMessage(message)
+    // Conform to MessageDelegate protocol.
+    func updateMessage(_ message: String) {
+        messageDelegate?.updateMessage(message)
     }
 }

@@ -76,8 +76,9 @@
             <ListView
                 android:id="@+id/drawingList"
                 android:layout_width="180dp"
-                android:layout_height="wrap_content"
+                android:layout_height="300dp"
                 android:layout_marginRight="58dp"
+                android:layout_alignBottom="@+id/drawing_switcher_button"
                 android:layout_alignParentEnd="true"
                 android:divider="@null"
                 android:dividerHeight="0dp"

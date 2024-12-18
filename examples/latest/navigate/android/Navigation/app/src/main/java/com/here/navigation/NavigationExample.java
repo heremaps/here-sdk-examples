@@ -36,10 +36,8 @@ import com.here.sdk.navigation.DynamicCameraBehavior;
 import com.here.sdk.navigation.SpeedBasedCameraBehavior;
 import com.here.sdk.navigation.VisualNavigator;
 import com.here.sdk.prefetcher.RoutePrefetcher;
-import com.here.sdk.routing.CalculateTrafficOnRouteCallback;
 import com.here.sdk.routing.Route;
 import com.here.sdk.routing.RoutingError;
-import com.here.sdk.routing.TrafficOnRoute;
 import com.here.sdk.trafficawarenavigation.DynamicRoutingEngine;
 import com.here.sdk.trafficawarenavigation.DynamicRoutingEngineOptions;
 import com.here.sdk.trafficawarenavigation.DynamicRoutingListener;
@@ -60,7 +58,6 @@ public class NavigationExample {
     private RoutePrefetcher routePrefetcher;
     private final NavigationEventHandler navigationEventHandler;
     private final TextView messageView;
-    private CalculateTrafficOnRouteCallback calculateTrafficOnRouteCallback;
 
     public NavigationExample(Context context, MapView mapView, TextView messageView) {
         this.messageView = messageView;
@@ -153,16 +150,6 @@ public class NavigationExample {
 
         // Synchronize with the toggle button state.
         updateCameraTracking(isCameraTrackingEnabled);
-
-        navigationEventHandler.startPeriodicTrafficUpdateOnRoute((routingError, trafficOnRoute) -> {
-            if (routingError != null) {
-                Log.d(TAG, "CalculateTrafficOnRoute error: " + routingError.name());
-                return;
-            }
-            Log.d(TAG, "Updated traffic on route");
-            // Sets traffic data for the current route, affecting RouteProgress duration in SectionProgress, while preserving route distance and geometry.
-            visualNavigator.setTrafficOnRoute(trafficOnRoute);
-        }, 1000);
     }
 
     private void startDynamicSearchForBetterRoutes(Route route) {
@@ -209,8 +196,6 @@ public class NavigationExample {
 
         dynamicRoutingEngine.stop();
         routePrefetcher.stopPrefetchAroundRoute();
-        navigationEventHandler.stopPeriodicTrafficUpdateOnRoute();
-
         // Synchronize with the toggle button state.
         updateCameraTracking(isCameraTrackingEnabled);
     }

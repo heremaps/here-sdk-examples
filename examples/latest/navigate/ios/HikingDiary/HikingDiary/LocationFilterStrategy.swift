@@ -87,3 +87,4 @@ class DefaultLocationFilter: LocationFilterStrategy {
         return true
     }
 }
+

@@ -146,6 +146,7 @@ class RoutingHybridExample {
         let outlineColor = UIColor(red: 0.043, green: 0.325, blue: 0.749, alpha: 1)
         do {
             // Below, we're creating an instance of MapMeasureDependentRenderSize. This instance will use the scaled width values to render the route polyline.
+            // We can also apply the same values to MapArrow.setMeasureDependentTailWidth().
             // The parameters for the constructor are: the kind of MapMeasure (in this case, ZOOM_LEVEL), the unit of measurement for the render size (PIXELS), and the scaled width values.
             let mapMeasureDependentLineWidth = try MapMeasureDependentRenderSize(measureKind: MapMeasure.Kind.zoomLevel, sizeUnit: RenderSize.Unit.pixels, sizes: getDefaultLineWidthValues())
 
@@ -180,7 +181,8 @@ class RoutingHybridExample {
         }
     }
 
-    // We are retrieving the default route line widths from VisualNavigator and scale them according to the screen's pixel density.
+    // Retrieves the default widths of a route polyline and maneuver arrows from VisualNavigator,
+    // scaling them based on the screen's pixel density.
     // Note that the VisualNavigator stores the width values per zoom level MapMeasure.Kind.
     private func getDefaultLineWidthValues() -> [Double:Double] {
         var widthsPerZoomLevel: [Double: Double] = [:];

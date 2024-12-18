@@ -21,18 +21,22 @@ import heresdk
 import SwiftUI
 
 struct ContentView: View {
-    
-    @State private var mapView = MapView()
+
     @State private var offlineMapsExample: OfflineMapsExample?
     @State private var messageText = ""
+    @StateObject private var mapViewObservable = MapViewObservable()
+    @State private var isMapViewVisible = true // Toggle visibility
+
     
     var body: some View {
          // Show the views on top of each other.
          ZStack(alignment: .top) {
              
-             // The map view should fill the entire screen.
-             WrappedMapView(mapView: $mapView)
-                 .edgesIgnoringSafeArea(.all)
+             // Conditionally render the map view
+             if isMapViewVisible {
+                 WrappedMapView(mapViewObservable: mapViewObservable)
+                     .edgesIgnoringSafeArea(.all)
+             }
              
              VStack {
                  HStack {
@@ -42,29 +46,50 @@ struct ContentView: View {
                      CustomButton(title: "Download") {
                          offlineMapsExample!.onDownloadMapClicked()
                      }
+                     CustomButton(title: "Clear Cache"){
+                         offlineMapsExample!.clearCache()
+                     }
+                 }
+                 HStack{
+                     CustomToggleButton(onLabel: "offlineSearch layer: OFF", offLabel: "offlineSearch layer: ON") {
+                         offlineMapsExample!.toggleConfiguration()
+                         
+                         // In SwiftUI, UIViewRepresentable views may not always be recreated when their state changes,
+                         // especially when SwiftUI performs optimizations like view recycling.
+                         // To ensure that a UIViewRepresentable is fully recreated (i.e., makeUIView is called again),
+                         // we can toggle the visibility of the view, effectively removing it from the view hierarchy
+                         // and then re-adding it.
+                         isMapViewVisible = false
+                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                             isMapViewVisible = true
+                         }
+
+                     }
+                     CustomButton(title: "Area") {
+                         offlineMapsExample!.onDownloadAreaClicked()
+                     }
                      CustomButton(title: "Cancel") {
                          offlineMapsExample!.onCancelMapDownloadClicked()
                      }
-                     CustomButton(title: "Test") {
-                         offlineMapsExample!.onSearchPlaceClicked()
-                     }
                  }
                  HStack {
-                     CustomButton(title: "Switch Online") {
-                         offlineMapsExample!.onSwitchOnlineClicked()
+                     CustomButton(title: "Test offline Search") {
+                         offlineMapsExample!.onSearchPlaceClicked()
                      }
-                     CustomButton(title: "Switch Offline") {
-                         offlineMapsExample!.onSwitchOfflineClicked()
+                     CustomToggleButton(onLabel: "Offline Mode: On", offLabel: "Offline Mode: Off") {
+                         offlineMapsExample!.toggleOfflineMode()
                      }
+                     
                  }
                  HStack(){
-                     MessageView(message: messageText)
-                 }
+                     MessageView(message: messageText)                 }
              }
+             .font(.subheadline)
+             
          }
          .onAppear {
              // ContentView appeared, now we init the example.
-             offlineMapsExample = OfflineMapsExample(mapView: mapView, showMessageClosure: showMessage)
+             offlineMapsExample = OfflineMapsExample(mapViewObservable: mapViewObservable, showMessageClosure: showMessage)
          }
      }
     
@@ -75,12 +100,23 @@ struct ContentView: View {
     }
 }
 
+
 // The MapView provided by the HERE SDK conforms to a UIKit view, so it needs to be wrapped to conform
 // to a SwiftUI view. The map view is created in the ContentView and bound here.
-private struct WrappedMapView: UIViewRepresentable {
-    @Binding var mapView: MapView
-    func makeUIView(context: Context) -> MapView { return mapView }
-    func updateUIView(_ mapView: MapView, context: Context) { }
+private struct WrappedMapView: UIViewRepresentable{
+    @ObservedObject var mapViewObservable: MapViewObservable
+
+     func makeUIView(context: Context) -> MapView {
+         if mapViewObservable.mapView == nil{
+             mapViewObservable.configureMapView()
+         }
+         
+         return mapViewObservable.mapView!
+     }
+
+     func updateUIView(_ uiView: MapView, context: Context) {
+         // Updates will automatically apply due to observable properties
+     }
 }
 
 // A reusable button to keep the layout clean.
@@ -98,6 +134,28 @@ struct CustomButton: View {
         }
     }
 }
+
+// A reusable toggle button to keep the layout clean.
+struct CustomToggleButton: View {
+    @State private var isOn: Bool = false
+    var onLabel: String
+    var offLabel: String
+    var action: () -> Void
+
+    var body: some View {
+        Button(action: {
+            isOn.toggle()
+            action()
+        }) {
+            Text(isOn ? onLabel : offLabel)
+                .padding()
+                .background(Color(red: 0, green: 182/255, blue: 178/255))
+                .foregroundColor(.white)
+                .cornerRadius(5)
+        }
+    }
+}
+
 
 // A reusable text view to keep the layout clean.
 struct MessageView: View {

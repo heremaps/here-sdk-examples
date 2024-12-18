@@ -22,24 +22,26 @@ import SwiftUI
 
 class OfflineMapsExample : DownloadRegionsStatusListener {
 
-    private let mapView: MapView
     private var mapDownloader: MapDownloader?
     private var mapUpdater: MapUpdater?
-    private let offlineSearchEngine: OfflineSearchEngine
+    private var offlineSearchEngine: OfflineSearchEngine
     private var downloadableRegions = [Region]()
     private var mapDownloaderTasks = [MapDownloaderTask]()
     private var showMessage: (String) -> Void
+    private var offlineMode = false
+    private var offlineSearchEnabled = true;
+    private var mapViewObservable : MapViewObservable
 
-    init(mapView: MapView, showMessageClosure: @escaping (String) -> Void) {
-        self.mapView = mapView
+    init(mapViewObservable : MapViewObservable, showMessageClosure: @escaping (String) -> Void) {
         self.showMessage = showMessageClosure
-        
+        self.mapViewObservable = mapViewObservable
+
         // Configure the map.
-        let camera = mapView.camera
+        let camera = self.mapViewObservable.mapView!.camera
         let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 7)
         camera.lookAt(point: GeoCoordinates(latitude: 52.530932, longitude: 13.384915),
                       zoom: distanceInMeters)
-        
+
         do {
             // Adding offline search engine to show that we can search on downloaded regions.
             // Note that the engine cannot be used while a map update is in progress and an error will be indicated.
@@ -56,15 +58,6 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
         let storagePath = sdkNativeEngine.options.cachePath
         showMessage("This example allows to download the region Switzerland. StoragePath: \(storagePath).")
 
-        // Create MapDownloader in background to not block the UI thread.
-        MapDownloader.fromEngineAsync(sdkNativeEngine, { mapDownloader in
-            self.mapDownloader = mapDownloader
-
-            // Checks the status of already downloaded map data and eventually repairs it.
-            // Important: For production-ready apps, it is recommended to not do such operations silently in
-            // the background and instead inform the user.
-            self.checkInstallationStatus()
-        })
 
         // Create MapUpdater in background to not block the UI thread.
         MapUpdater.fromEngineAsync(sdkNativeEngine, { mapUpdater in
@@ -72,11 +65,13 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
 
             self.performUpdateChecks()
         })
-        
+
+        initMapDownloader(sdkNativeEngine: sdkNativeEngine)
+
         // Load the map scene using a map scheme to render the map with.
-        mapView.mapScene.loadScene(mapScheme: MapScheme.normalDay, completion: onLoadScene)
+        self.mapViewObservable.configureMapView()
     }
-    
+
     // Completion handler for loadScene().
     private func onLoadScene(mapError: MapError?) {
         if let mapError = mapError {
@@ -214,6 +209,92 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
         return downloadableRegion
     }
 
+    // Download the rectangular area that is currently visible in the viewport.
+    // It is possible to call downloadArea() in parallel to download multiple areas in parallel.
+    func onDownloadAreaClicked() {
+        let downloadAreaStatusListenerImpl = DownloadRegionsStatusListenerImpl()
+        downloadAreaStatusListenerImpl.showDialog(title: "Note",
+                                                  message: "Downloading the area that is currently visible in the viewport.")
+
+        let polygonArea = GeoPolygon(geoBox: getMapViewGeoBox())
+        _ = mapDownloader?.downloadArea(area: polygonArea,
+                                        statusListener: downloadAreaStatusListenerImpl)
+    }
+
+    private class DownloadRegionsStatusListenerImpl: DownloadRegionsStatusListener {
+        func onDownloadRegionsComplete(error: MapLoaderError?, regions: [RegionId]?) {
+            if let mapLoaderError = error {
+                showDialog(title: "Error",
+                           message: "Download area completion error: \(mapLoaderError.localizedDescription)")
+                return
+            }
+
+            // If error is null, it is guaranteed that the regions will not be null.
+            // When downloading an area, only a single unique ID will be provided.
+            // Note: It is recommended to store this ID with a human readable name,
+            // as this will make it easier to delete the downloaded area in the future by calling
+            // mapDownloader.deleteRegions(...). The ID itself is accessible from InstalledRegions.
+            // For simplicity, this is not shown here.
+            if let regionId = regions?.first {
+                let message = "Download area status. Completed 100%! ID: \(regionId.id)"
+                print(message)
+            }
+        }
+
+        func onProgress(region: RegionId, percentage: Int32) {
+            // Note that this ID is uniquely created and can be used to delete the area in the future.
+            let message = "Download of area. ID: \(region.id). Progress: \(percentage)%."
+            print(message)
+        }
+
+        func onPause(error: MapLoaderError?) {
+            if let mapLoaderError = error {
+                showDialog(title: "Error",
+                           message: "Download area onPause error. The task tried too often to retry the download: \(mapLoaderError.localizedDescription)")
+            } else {
+                showDialog(title: "Info",
+                           message: "The area download was paused by the user calling mapDownloaderTask.pause().")
+            }
+        }
+
+        func onResume() {
+            showDialog(title: "Info", message: "A previously paused area download has been resumed.")
+        }
+
+        func showDialog(title: String, message: String) {
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let rootViewController = windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController {
+
+                let alert = UIAlertController(
+                    title: title,
+                    message: message,
+                    preferredStyle: .alert
+                )
+
+                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+                    // Handle OK button action.
+                    alert.dismiss(animated: true, completion: nil)
+                }))
+
+                rootViewController.present(alert, animated: true, completion: nil)
+            }
+        }
+    }
+
+    private func getMapViewGeoBox() -> GeoBox {
+        let scaleFactor = UIScreen.main.scale
+        let mapViewWidthInPixels = Double(mapViewObservable.mapView!.bounds.width * scaleFactor)
+        let mapViewHeightInPixels = Double(mapViewObservable.mapView!.bounds.height * scaleFactor)
+        let bottomLeftPoint2D = Point2D(x: 0, y: mapViewHeightInPixels)
+        let topRightPoint2D = Point2D(x: mapViewWidthInPixels, y: 0)
+
+        let southWestCorner = mapViewObservable.mapView!.viewToGeoCoordinates(viewCoordinates: bottomLeftPoint2D)!
+        let northEastCorner = mapViewObservable.mapView!.viewToGeoCoordinates(viewCoordinates: topRightPoint2D)!
+
+        // Note: This algorithm assumes an unrotated map view.
+        return GeoBox(southWestCorner: southWestCorner, northEastCorner: northEastCorner)
+    }
+
     func onCancelMapDownloadClicked() {
         for mapDownloaderTask in mapDownloaderTasks {
             mapDownloaderTask.cancel()
@@ -334,7 +415,7 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
     // the SearchEngine will only search online using HERE backend services.
     // Keep in mind that the OfflineSearchEngine can also search on cached map data.
     func onSearchPlaceClicked() {
-        guard let bbox = mapView.camera.boundingBox else {
+        guard let bbox = self.mapViewObservable.mapView!.camera.boundingBox else {
             showMessage("Invalid bounding box.")
             return
         }
@@ -360,14 +441,113 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
         }
     }
 
-    func onSwitchOnlineClicked() {
-        SDKNativeEngine.sharedInstance?.isOfflineMode = false
-        showMessage("The app is allowed to go online.")
+    func toggleOfflineMode(){
+        offlineMode = !offlineMode;
+        if offlineMode {
+            SDKNativeEngine.sharedInstance?.isOfflineMode = true
+            showMessage("The app is radio-silence.")
+        } else{
+            SDKNativeEngine.sharedInstance?.isOfflineMode = false
+            showMessage("The app is allowed to go online.")
+        }
     }
 
-    func onSwitchOfflineClicked() {
-        SDKNativeEngine.sharedInstance?.isOfflineMode = true
-        showMessage("The app is radio-silence.")
+    func toggleConfiguration() {
+        var options = SDKOptions(accessKeyId: OfflineMapsApp.accessKeyID, accessKeySecret: OfflineMapsApp.accessKeySecret)
+
+        // Toggle the layer configuration
+        offlineSearchEnabled = !offlineSearchEnabled
+        var features: [LayerConfiguration.Feature]
+
+        if offlineSearchEnabled {
+            features = [.detailRendering, .rendering, .offlineSearch]
+            showMessage("Enabled minimal layer configuration with offlineSearch layer.")
+        } else {
+            features = [.detailRendering, .rendering]
+            showMessage("Enabled minimal layer configuration without offlineSearch layer.")
+        }
+        options.layerConfiguration = LayerConfiguration(enabledFeatures: features)
+
+        do {
+            // Initialize the SDKNativeEngine
+            try SDKNativeEngine.makeSharedInstance(options: options)
+        } catch let engineInstantiationError {
+            showMessage("Failed to initialize the HERE SDK. Cause: \(engineInstantiationError.localizedDescription)")
+            return
+        }
+
+        // Reset the map view
+        self.mapViewObservable.resetMapView()
+
+        do {
+            // Adding offline search engine to show that we can search on downloaded regions.
+            // Note that the engine cannot be used while a map update is in progress and an error will be indicated.
+            try self.offlineSearchEngine = OfflineSearchEngine()
+        } catch let engineInstantiationError {
+            fatalError("Failed to initialize OfflineSearchEngine. Cause: \(engineInstantiationError)")
+        }
+
+        // ReCreate MapUpdater in background to not block the UI thread.
+        MapUpdater.fromEngineAsync(SDKNativeEngine.sharedInstance!) { mapUpdater in
+            self.mapUpdater = mapUpdater
+            _ = mapUpdater.performFeatureUpdate(completion: MapUpdateprogressListenerImpl())
+        }
+
+        // Initialize MapDownloader
+        initMapDownloader(sdkNativeEngine: SDKNativeEngine.sharedInstance!)
+    }
+
+    private class MapUpdateprogressListenerImpl : MapUpdateProgressListener {
+        func onProgress(region: heresdk.RegionId, percentage: Int32) {
+            print("FeatureUpdate: Downloading and installing a map feature update. Progress for \(region.id): \(percentage)%.")
+        }
+
+        func onPause(error: heresdk.MapLoaderError?) {
+            if let mapLoaderError = error {
+                print("Feature update onPause error. The task tried to often to retry the update: \(mapLoaderError).")
+            } else {
+                print("FeatureUpdate: The map feature update was paused by the user.")
+            }
+        }
+
+        func onComplete(error: heresdk.MapLoaderError?) {
+            if let mapLoaderError = error {
+                print("FeatureUpdate completion error: \(mapLoaderError)")
+                return
+            }
+            print("FeatureUpdate: One or more map update has been successfully installed.")
+
+        }
+
+        func onResume() {
+            print("MapUpdate: A previously paused map feature update has been resumed.")
+        }
+
+    }
+
+    func initMapDownloader(sdkNativeEngine:SDKNativeEngine){
+        // Create MapDownloader in background to not block the UI thread.
+        MapDownloader.fromEngineAsync(sdkNativeEngine, { mapDownloader in
+            self.mapDownloader = mapDownloader
+
+            // Checks the status of already downloaded map data and eventually repairs it.
+            // Important: For production-ready apps, it is recommended to not do such operations silently in
+            // the background and instead inform the user.
+            self.checkInstallationStatus()
+        })
+    }
+
+
+    // Cached map data will not be removed until the least recently used (LRU) strategy is applied.
+    // Therefore, we can manually clear the cache to remove any outdated entries.
+    func clearCache(){
+        SDKCache.fromEngine(SDKNativeEngine.sharedInstance!).clearCache { (error) in
+            if error == nil {
+                self.showMessage("Cache clear succeeded.")
+            } else{
+                self.showMessage("Cache clear error \(error.debugDescription)")
+            }
+        }
     }
 
     private func checkInstallationStatus() {

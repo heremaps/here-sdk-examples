@@ -24,6 +24,10 @@ import SwiftUI
 // HERE SDK initialization is done at start of app. When app is terminated, the HERE SDK is disposed.
 @main
 struct OfflineMapsApp: App {
+    
+    // Set your credentials for the HERE SDK.
+    static let accessKeyID = "YOUR_ACCESS_KEY_ID"
+    static let accessKeySecret = "YOUR_ACCESS_KEY_SECRET"
 
     var body: some Scene {
         WindowGroup {
@@ -49,11 +53,13 @@ struct OfflineMapsApp: App {
     }
 
     private func initializeHERESDK() {
-        // Set your credentials for the HERE SDK.
-        let accessKeyID = "YOUR_ACCESS_KEY_ID"
-        let accessKeySecret = "YOUR_ACCESS_KEY_SECRET"
-        let options = SDKOptions(accessKeyId: accessKeyID, accessKeySecret: accessKeySecret)
+        var options = SDKOptions(accessKeyId: OfflineMapsApp.accessKeyID, accessKeySecret: OfflineMapsApp.accessKeySecret)
         do {
+            var features: [LayerConfiguration.Feature] = []
+            features = [.detailRendering, .rendering, .offlineSearch]
+            // With this layer configuration we enable only the listed layers.
+            // All the other layers including the default layers will be disabled.
+            options.layerConfiguration = LayerConfiguration(enabledFeatures: features)
             try SDKNativeEngine.makeSharedInstance(options: options)
         } catch let engineInstantiationError {
             fatalError("Failed to initialize the HERE SDK. Cause: \(engineInstantiationError)")

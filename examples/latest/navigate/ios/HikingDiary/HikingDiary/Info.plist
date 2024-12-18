@@ -20,12 +20,6 @@
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>This app needs to access your current location to display it on the map.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>This app needs to access your current location to display it on the map while the app is being used or when running in background.</string>
-	<key>NSMotionUsageDescription</key>
-	<string>Motion detection is needed to determine more accurate locations, when no GPS signal is found or used.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>
@@ -34,24 +28,26 @@
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>location-services</string>
+		<string>gps</string>
 	</array>
-	<key>BGTaskSchedulerPermittedIdentifiers</key>
-	<array>
-		<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-	</array>
-	<key>LSRequiresIPhoneOS</key>
-	<true/>
-	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen</string>
-	<key>UIMainStoryboardFile</key>
-	<string>Main</string>
+  <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app needs to access your current location to display it on the map.</string>
+  <key>NSLocationWhenInUseUsageDescription</key>
+  <string>This app needs to access your current location to display it on the map.</string>
+  <key>NSMotionUsageDescription</key>
+  <string>Motion detection is needed to determine more accurate locations, when no GPS signal is found or used.</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 </dict>
 </plist>

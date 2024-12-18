@@ -25,22 +25,28 @@ enum ConstantsEnum {
     static let DEFAULT_DISTANCE_IN_METERS: Double = 1000 * 2
 }
 
+// A protocol to send text messages from other classes to this class.
+protocol MessageDelegate {
+    func updateMessage(_ message: String)
+}
+
 // An app that allows to calculate a route and start navigation, using either platform positioning or
 // simulated locations.
-class NavigationAppLogic: LongPressDelegate {
+class NavigationAppLogic: ObservableObject, MessageDelegate, LongPressDelegate {
     
-    private let mapView: MapView
-    private let routeCalculator: RouteCalculator
-    private let navigationExample: NavigationExample
+    private var mapView: MapView?
+    private var routeCalculator: RouteCalculator?
+    private var navigationExample: NavigationExample?
     private var mapMarkers = [MapMarker]()
     private var mapPolylineList = [MapPolyline]()
     private var startingWaypoint: Waypoint?
     private var destinationWaypoint: Waypoint?
     private var isLongpressDestination = false
     private var timeUtils = TimeUtils()
-    var textViewUpdateDelegate: TextViewUpdateDelegate?
     
-    init(_ mapView: MapView) {
+    @Published var messageText: String = "Initializing ..."
+
+    func startExample(_ mapView: MapView) {
         self.mapView = mapView
         
         let distanceInMeters = MapMeasure(kind: .distance, value: ConstantsEnum.DEFAULT_DISTANCE_IN_METERS)
@@ -48,10 +54,11 @@ class NavigationAppLogic: LongPressDelegate {
                               zoom: distanceInMeters)
         
         routeCalculator = RouteCalculator()
-        
-        navigationExample = NavigationExample(mapView: mapView)
-        navigationExample.textViewUpdateDelegate = self
-        navigationExample.startLocationProvider()
+        if let routeCalculator = routeCalculator {
+            navigationExample = NavigationExample(mapView: mapView, routeCalculator: routeCalculator)
+            navigationExample?.startLocationProvider()
+            navigationExample?.messageDelegate = self
+        }
         
         // Load the map scene using a map scheme to render the map with.
         mapView.mapScene.loadScene(mapScheme: MapScheme.normalDay, completion: onLoadScene)
@@ -68,9 +75,9 @@ class NavigationAppLogic: LongPressDelegate {
         }
         
         // Enable traffic flows, low speed zones and 3d landmarks, by default.
-        mapView.mapScene.enableFeatures([MapFeatures.trafficFlow : MapFeatureModes.trafficFlowWithFreeFlow])
-        mapView.mapScene.enableFeatures([MapFeatures.lowSpeedZones : MapFeatureModes.lowSpeedZonesAll])
-        mapView.mapScene.enableFeatures([MapFeatures.landmarks : MapFeatureModes.landmarksTextured])
+        mapView?.mapScene.enableFeatures([MapFeatures.trafficFlow : MapFeatureModes.trafficFlowWithFreeFlow])
+        mapView?.mapScene.enableFeatures([MapFeatures.lowSpeedZones : MapFeatureModes.lowSpeedZonesAll])
+        mapView?.mapScene.enableFeatures([MapFeatures.landmarks : MapFeatureModes.landmarksTextured])
     }
     
     // Calculate a route and start navigation using a location simulator.
@@ -93,11 +100,11 @@ class NavigationAppLogic: LongPressDelegate {
     }
     
     func enableCameraTracking() {
-        navigationExample.startCameraTracking()
+        navigationExample?.startCameraTracking()
     }
     
     func disableCameraTracking() {
-        navigationExample.stopCameraTracking()
+        navigationExample?.stopCameraTracking()
     }
     
     private func calculateRoute(isSimulated: Bool) {
@@ -108,8 +115,8 @@ class NavigationAppLogic: LongPressDelegate {
         }
         
         // Calculates a car route.
-        routeCalculator.calculateRoute(start: startingWaypoint!,
-                                       destination: destinationWaypoint!) { (routingError, routes) in
+        routeCalculator?.calculateRoute(start: startingWaypoint!,
+                                        destination: destinationWaypoint!) { (routingError, routes) in
             if let error = routingError {
                 self.showDialog(title: "Error while calculating a route:", message: "\(error)")
                 return
@@ -125,7 +132,7 @@ class NavigationAppLogic: LongPressDelegate {
     private func determineRouteWaypoints(isSimulated: Bool) -> Bool {
         // When using real GPS locations, we always start from the current location of user.
         if !isSimulated {
-            guard let location = navigationExample.getLastKnownLocation() else {
+            guard let location = navigationExample?.getLastKnownLocation() else {
                 showDialog(title: "Error", message: "No location found.")
                 return false
             }
@@ -135,7 +142,7 @@ class NavigationAppLogic: LongPressDelegate {
             // If a driver is moving, the bearing value can help to improve the route calculation.
             startingWaypoint?.headingInDegrees = location.bearingInDegrees
             
-            mapView.camera.lookAt(point: location.coordinates)
+            mapView?.camera.lookAt(point: location.coordinates)
         }
         
         if (startingWaypoint == nil) {
@@ -175,7 +182,7 @@ class NavigationAppLogic: LongPressDelegate {
                                                             size: widthInPixels),
                                                         color: polylineColor,
                                                         capShape: LineCap.round))
-            mapView.mapScene.addMapPolyline(routeMapPolyline)
+            mapView?.mapScene.addMapPolyline(routeMapPolyline)
             mapPolylineList.append(routeMapPolyline)
         } catch let error {
             fatalError("Failed to render MapPolyline. Cause: \(error)")
@@ -186,30 +193,30 @@ class NavigationAppLogic: LongPressDelegate {
         clearWaypointMapMarker()
         clearRoute()
         
-        navigationExample.stopNavigation()
+        navigationExample?.stopNavigation()
     }
     
     private func clearWaypointMapMarker() {
         for mapMarker in mapMarkers {
-            mapView.mapScene.removeMapMarker(mapMarker)
+            mapView?.mapScene.removeMapMarker(mapMarker)
         }
         mapMarkers.removeAll()
     }
     
     private func clearRoute() {
         for mapPolyline in mapPolylineList {
-            mapView.mapScene.removeMapPolyline(mapPolyline)
+            mapView?.mapScene.removeMapPolyline(mapPolyline)
         }
         mapPolylineList.removeAll()
     }
     
     private func setLongPressGestureHandler() {
-        mapView.gestures.longPressDelegate = self
+        mapView?.gestures.longPressDelegate = self
     }
     
     // Conform to LongPressDelegate protocol.
     func onLongPress(state: heresdk.GestureState, origin: Point2D) {
-        guard let geoCoordinates = mapView.viewToGeoCoordinates(viewCoordinates: origin) else {
+        guard let geoCoordinates = mapView?.viewToGeoCoordinates(viewCoordinates: origin) else {
             print("Warning: Long press coordinate is not on map view.")
             return
         }
@@ -243,7 +250,7 @@ class NavigationAppLogic: LongPressDelegate {
     }
     
     private func getMapViewCenter() -> GeoCoordinates {
-        return mapView.camera.state.targetCoordinates
+        return mapView?.camera.state.targetCoordinates ?? GeoCoordinates(latitude: 52, longitude: 13)
     }
     
     private func addCircleMapMarker(geoCoordinates: GeoCoordinates, imageName: String) {
@@ -257,7 +264,7 @@ class NavigationAppLogic: LongPressDelegate {
                                 imageFormat: ImageFormat.png)
         let mapMarker = MapMarker(at: geoCoordinates,
                                   image: mapImage)
-        mapView.mapScene.addMapMarker(mapMarker)
+        mapView?.mapScene.addMapMarker(mapMarker)
         mapMarkers.append(mapMarker)
     }
     
@@ -279,7 +286,7 @@ class NavigationAppLogic: LongPressDelegate {
             
             alert.addAction(UIAlertAction(title: buttonText, style: .default, handler: { (alertAction) -> Void in
                 // Handle OK button action.
-                self.navigationExample.startNavigation(route: route, isSimulated: isSimulated)
+                self.navigationExample?.startNavigation(route: route, isSimulated: isSimulated)
             }))
             alert.addAction(UIAlertAction(title: "Cancel", style: .default))
             
@@ -306,13 +313,9 @@ class NavigationAppLogic: LongPressDelegate {
         }
     }
     
-    private func updateMessage(_ message: String) {
-        textViewUpdateDelegate?.updateTextViewMessage(message)
-    }
-}
-
-extension NavigationAppLogic: TextViewUpdateDelegate {
-    func updateTextViewMessage(_ message: String) {
-        textViewUpdateDelegate?.updateTextViewMessage(message)
+    // Conform to MessageDelegate protocol.
+    func updateMessage(_ message: String) {
+        // Publish the text in our ContentView.
+        messageText = message
     }
 }

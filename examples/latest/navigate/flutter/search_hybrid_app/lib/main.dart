@@ -24,6 +24,7 @@ import 'package:here_sdk/core.errors.dart';
 import 'package:here_sdk/mapview.dart';
 
 import 'SearchExample.dart';
+import 'W3WSearchExample.dart';
 
 void main() {
   // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
@@ -56,6 +57,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   SearchExample? _searchExample;
+  W3WSearchExample? _w3wSearchExample;
 
   @override
   Widget build(BuildContext context) {
@@ -79,6 +81,13 @@ class _MyAppState extends State<MyApp> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
+                  button('W3W Search', _onW3WSearchButtonClicked),
+                  button('W3W Geocoding', _onW3WGeocodingButtonClicked),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
                   button('Switch Online', _onlineButtonClicked),
                   button('Switch Offline', _offlineButtonClicked),
                 ],
@@ -94,6 +103,7 @@ class _MyAppState extends State<MyApp> {
     hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
       if (error == null) {
         _searchExample = SearchExample(_showDialog, hereMapController);
+        _w3wSearchExample = W3WSearchExample(_showDialog, hereMapController);
       } else {
         print("Map scene not loaded. MapError: " + error.toString());
       }
@@ -106,6 +116,14 @@ class _MyAppState extends State<MyApp> {
 
   void _geocodingButtonClicked() {
     _searchExample?.geocodeAnAddressButtonClicked();
+  }
+
+  void _onW3WSearchButtonClicked() {
+    _w3wSearchExample?.onW3WSearchButtonClicked();
+  }
+
+  void _onW3WGeocodingButtonClicked() {
+    _w3wSearchExample?.onW3WGeocodinButtonClicked();
   }
 
   void _onlineButtonClicked() {

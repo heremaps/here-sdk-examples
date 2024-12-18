@@ -1,0 +1,30 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdk 35
+    defaultConfig {
+        applicationId "com.here.mapfeatures"
+        minSdkVersion 24
+        targetSdkVersion 35
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            signingConfig signingConfigs.debug
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
+    }
+    namespace 'com.here.mapfeatures'
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.aar', '*.jar'], exclude : ['*mock*.jar'])
+    implementation 'com.google.android.material:material:1.4.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.1'
+}

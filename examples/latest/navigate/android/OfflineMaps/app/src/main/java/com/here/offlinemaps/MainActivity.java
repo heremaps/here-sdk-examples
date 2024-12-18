@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onLoadScene(@Nullable MapError mapError) {
                 if (mapError == null) {
-                    offlineMapsExample = new OfflineMapsExample(mapView);
+                    offlineMapsExample = new OfflineMapsExample(mapView, MainActivity.this);
                 } else {
                     Log.d(TAG, "onLoadScene failed: " + mapError.toString());
                 }
@@ -167,6 +167,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void onSearchPlaceClicked(View view) {
         offlineMapsExample.onSearchPlaceClicked();
+    }
+
+    public void onAreaClicked(View view) {
+        offlineMapsExample.onDownloadAreaClicked();
     }
 
     public void clearCache(View view){

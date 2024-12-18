@@ -73,6 +73,16 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:backgroundTint="@android:color/holo_blue_light"
+            android:onClick="onAreaClicked"
+            android:text="Area"
+            android:textColor="@android:color/white"
+            android:textSize="8sp" />
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:backgroundTint="@android:color/holo_blue_light"
             android:onClick="clearCache"
             android:text="Clear cache"
             android:textColor="@android:color/white"

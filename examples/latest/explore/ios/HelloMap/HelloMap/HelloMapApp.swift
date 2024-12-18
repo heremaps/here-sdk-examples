@@ -52,7 +52,9 @@ struct HelloMapApp: App {
         // Set your credentials for the HERE SDK.
         let accessKeyID = "YOUR_ACCESS_KEY_ID"
         let accessKeySecret = "YOUR_ACCESS_KEY_SECRET"
-        let options = SDKOptions(accessKeyId: accessKeyID, accessKeySecret: accessKeySecret)
+        let authenticationMode = AuthenticationMode.withKeySecret(accessKeyId: accessKeyID,
+                                                                  accessKeySecret: accessKeySecret)
+        let options = SDKOptions(authenticationMode: authenticationMode)
         do {
             try SDKNativeEngine.makeSharedInstance(options: options)
         } catch let engineInstantiationError {

@@ -32,7 +32,7 @@ import 'NavigationExample.dart';
 class AppLogic {
   MapPolyline? _calculatedRouteMapPolyline;
   final HereMapController _hereMapController;
-  final NavigationExample _navigationExample;
+  late final NavigationExample _navigationExample;
   final RouteCalculator _routeCalculator;
   final ValueChanged<String> _updateMessageState;
   final Function _showDialogCallback;
@@ -47,8 +47,8 @@ class AppLogic {
       : _hereMapController = hereMapController,
         _updateMessageState = updateMessageState,
         _showDialogCallback = showDialogCallback,
-        _navigationExample = NavigationExample(hereMapController, updateMessageState),
         _routeCalculator = RouteCalculator() {
+    _navigationExample = NavigationExample(hereMapController, updateMessageState,_routeCalculator);
     _setLongPressGestureHandler();
     _updateMessageState("Long press to set start/destination or use random ones.");
 

@@ -24,6 +24,7 @@ struct ContentView: View {
     
     @State private var mapView = MapView()
     @State private var searchHybridExample: SearchHybridExample?
+    @State private var w3wSearchExample: W3WSearchExample?
     
     var body: some View {
          // Show the views on top of each other.
@@ -43,6 +44,14 @@ struct ContentView: View {
                      }
                  }
                  HStack {
+                     CustomButton(title: "W3W Search") {
+                         w3wSearchExample?.onW3WSearchButtonClicked()
+                     }
+                     CustomButton(title: "W3W GeoCode") {
+                         w3wSearchExample?.onW3WGeoCodeButtonClicked()
+                     }
+                 }
+                 HStack {
                      CustomToggleButton(onLabel: "Online: On", offLabel: "Online: Off") {
                          searchHybridExample?.onToggleOnlineButton()
                      }
@@ -50,8 +59,9 @@ struct ContentView: View {
              }
          }
          .onAppear {
-             // ContentView appeared, now we init the example.
+             // ContentView appeared, now we init the examples.
              searchHybridExample = SearchHybridExample(mapView)
+             w3wSearchExample = W3WSearchExample(mapView)
          }
      }
 }

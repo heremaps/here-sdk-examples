@@ -101,12 +101,15 @@ class _MainPageState extends State<MainPage> {
 
   void _resetCameraPosition() {
     const double distanceToEarthInMeters = 500;
-    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
-    _hereMapController.camera.lookAtPointWithMeasure(GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
+    MapMeasure mapMeasureZoom =
+        MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+    _hereMapController.camera.lookAtPointWithMeasure(
+        GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
 
     // Hide the extruded building layer, so that it does not overlap
     // with the venues.
-    _hereMapController.mapScene.disableFeatures([MapFeatures.extrudedBuildings]);
+    _hereMapController.mapScene
+        .disableFeatures([MapFeatures.extrudedBuildings]);
   }
 
   @override
@@ -123,80 +126,98 @@ class _MainPageState extends State<MainPage> {
             body: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.only(top: 50), // Set the desired margin top here
-                  child: Container(
-                    width: double.infinity,
-                    height: 60,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        ValueListenableBuilder<bool>(
-                          valueListenable: mapLoading.isMapLoading,
-                          builder: (BuildContext context, bool isLoading, Widget? child) {
-                            return isLoading
-                                ? Row(
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.only(left: 20),
-                                  child: GestureDetector(
-                                    onTap: () => _handleBackButtonPress(context),
-                                    child: Image.asset(
-                                      'assets/back-button.png',
-                                      width: 24,
-                                      height: 24,
-                                    ),
+                    padding: const EdgeInsets.only(
+                        top: 50), // Set the desired margin top here
+                    child: ValueListenableBuilder(
+                        valueListenable: mapLoading.isMapLoading,
+                        builder: (BuildContext context, bool isLoading,
+                            Widget? child) {
+                          return isLoading
+                              ? Container(
+                                  width: double.infinity,
+                                  height: 60,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Padding(
+                                            padding: EdgeInsets.only(left: 20),
+                                            child: GestureDetector(
+                                              onTap: () =>
+                                                  _handleBackButtonPress(
+                                                      context),
+                                              child: Image.asset(
+                                                'assets/back-button.png',
+                                                width: 24,
+                                                height: 24,
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(width: 8),
+                                          Container(
+                                            width: MediaQuery.of(context)
+                                                    .size
+                                                    .width -
+                                                105,
+                                            child: Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                  vertical: 8),
+                                              child: Text(
+                                                _clickedVenueName,
+                                                style: TextStyle(fontSize: 16),
+                                                textAlign: TextAlign.left,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ),
+                                          GestureDetector(
+                                            onTap: () {
+                                              setState(() {
+                                                _topologyPressed =
+                                                    !_topologyPressed;
+                                              });
+                                              _venueEngineState
+                                                      .venueEngine!
+                                                      .venueMap
+                                                      .selectedVenue!
+                                                      .isTopologyVisible =
+                                                  _topologyPressed;
+                                            },
+                                            child: Image.asset(
+                                              _topologyPressed
+                                                  ? 'assets/topology-focused.png'
+                                                  : 'assets/topology-default.png',
+                                              width: 40,
+                                              height: 40,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      Padding(
+                                        padding:
+                                            EdgeInsets.only(left: 5, right: 5),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: <Widget>[
+                                            ValueListenableBuilder<List>(
+                                              builder: (BuildContext context,
+                                                  List value, Widget? child) {
+                                                _venueList = value;
+                                                return SizedBox();
+                                              },
+                                              valueListenable:
+                                                  listEventHandler.updatedList,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ),
-                                SizedBox(width: 8),
-                                Container(
-                                  width: MediaQuery.of(context).size.width - 105,
-                                  child: Padding(
-                                    padding: EdgeInsets.symmetric(vertical: 8),
-                                    child: Text(
-                                      _clickedVenueName,
-                                      style: TextStyle(fontSize: 16),
-                                      textAlign: TextAlign.left,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      _topologyPressed = !_topologyPressed;
-                                    });
-                                    _venueEngineState.venueEngine!.venueMap.selectedVenue!.isTopologyVisible = _topologyPressed;
-                                  },
-                                  child: Image.asset(
-                                    _topologyPressed ? 'assets/topology-focused.png' : 'assets/topology-default.png',
-                                    width: 40,
-                                    height: 40,
-                                  ),
-                                ),
-                              ],
-                            )
-                                : Container(); // Placeholder widget, replace with actual widget
-                          },
-                        ),
-                        Padding(
-                          padding: EdgeInsets.only(left: 5, right: 5),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              ValueListenableBuilder<List>(
-                                builder: (BuildContext context, List value, Widget? child) {
-                                  _venueList = value;
-                                  return SizedBox();
-                                },
-                                valueListenable: listEventHandler.updatedList,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                                )
+                              : Container();
+                        })),
                 Expanded(
                   child: Stack(
                     children: <Widget>[
@@ -204,25 +225,29 @@ class _MainPageState extends State<MainPage> {
                       VenueEngineWidget(state: _venueEngineState),
                       ValueListenableBuilder<bool>(
                         valueListenable: mapLoading.isMapLoading,
-                        builder: (BuildContext context, bool isLoading, Widget? child) {
+                        builder: (BuildContext context, bool isLoading,
+                            Widget? child) {
                           return Center(
                             child: Stack(
                               children: [
                                 !_isVenueListTapped || isLoading
                                     ? SizedBox() // Empty container when not loading or not tapped
                                     : Transform.translate(
-                                  offset: Offset(0, -150),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    padding: EdgeInsets.all(16),
-                                    child: CircularProgressIndicator(
-                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
-                                    ),
-                                  ),
-                                ),
+                                        offset: Offset(0, -150),
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                          ),
+                                          padding: EdgeInsets.all(16),
+                                          child: CircularProgressIndicator(
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                                    Colors.black),
+                                          ),
+                                        ),
+                                      ),
                               ],
                             ),
                           );
@@ -263,8 +288,11 @@ class _MainPageState extends State<MainPage> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (_venueEngineState.venueTapController?.topologyDetails != null)
-                          ..._buildRowsFromTopologyDetails(_venueEngineState.venueTapController!.topologyDetails),
+                        if (_venueEngineState
+                                .venueTapController?.topologyDetails !=
+                            null)
+                          ..._buildRowsFromTopologyDetails(_venueEngineState
+                              .venueTapController!.topologyDetails),
                       ],
                     ),
                   ),
@@ -343,19 +371,18 @@ class _MainPageState extends State<MainPage> {
           onPanUpdate: (details) {},
           onPanEnd: (details) {},
           child: Container(
-            margin: EdgeInsets.all(8.0),
             padding: EdgeInsets.all(8.0),
             height: 25,
             child: Image.asset('assets/indoor_handle.png'),
           ),
         ),
         Container(
-        margin: EdgeInsets.all(8.0),
+          margin: EdgeInsets.all(8.0),
           padding: EdgeInsets.all(8.0),
           height: 60,
           decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey),
-          borderRadius: BorderRadius.circular(20.0),
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(20.0),
           ),
           child: ValueListenableBuilder<bool>(
             valueListenable: mapLoading.isMapLoading,
@@ -371,33 +398,38 @@ class _MainPageState extends State<MainPage> {
                   _panelController.animatePanelToPosition(1.0);
                 },
                 decoration: InputDecoration(
-                  labelText: searchQuery.isEmpty ? (isMapLoading ? 'Search for spaces' : 'Search for venues') : '',
+                  hintText: isMapLoading ? 
+		  	'Search for spaces' 
+			: 'Search for venues',
                   prefixIcon: Icon(Icons.search),
                   border: InputBorder.none,
-                  labelStyle: TextStyle(color: isTextFieldTapped ? Colors.black : Colors.black),
-                  suffix: searchQuery.isNotEmpty ? GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _searchController.clear();
-                        searchQuery = '';
-                        isTextFieldTapped = false;
-                      });
-                    },
-                    child: Container(
-                      width: 24,
-                      height: 24,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.grey,
-                      ),
-                      child: Icon(
-                        Icons.clear,
-                        size: 16,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ) : null,
+                  labelStyle: TextStyle(
+                      color: isTextFieldTapped ? Colors.black : Colors.black),
+                  suffix: searchQuery.isNotEmpty
+                      ? GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _searchController.clear();
+                              searchQuery = '';
+                              isTextFieldTapped = true;
+                            });
+                          },
+                          child: Container(
+                            width: 24,
+                            height: 24,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.grey,
+                            ),
+                            child: Icon(
+                              Icons.clear,
+                              size: 16,
+                              color: Colors.white,
+                            ),
+                          ),
+                        )
+                      : null,
                 ),
               );
             },
@@ -410,7 +442,8 @@ class _MainPageState extends State<MainPage> {
               _venueList = value;
               if (_venueList.length == 1) {
                 return Container(
-                  height: 650, // Set the height of the container to match the sliding panel height
+                  height:
+                      650, // Set the height of the container to match the sliding panel height
                   alignment: Alignment.center, // Center its child vertically
                   child: CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
@@ -424,7 +457,7 @@ class _MainPageState extends State<MainPage> {
             valueListenable: listEventHandler.updatedList,
           ),
         ),
-        SizedBox(height: 25),
+        SizedBox(height: 0),
         // Scrollable elements
         Expanded(
           child: _buildDataTable(),
@@ -442,6 +475,10 @@ class _MainPageState extends State<MainPage> {
             valueListenable: spaceTapped.isSpaceTapped,
             builder: (context, isSpaceTapped, child) {
               if (isSpaceTapped) {
+                if(MediaQuery.of(context).viewInsets.bottom > 1)
+                  _panelController.animatePanelToPosition(0.5);
+                else
+                  _panelController.animatePanelToPosition(0.12);
                 return SingleChildScrollView(
                   child: DataTable(
                     columns: [
@@ -449,7 +486,8 @@ class _MainPageState extends State<MainPage> {
                       DataColumn(label: Text('')),
                       DataColumn(label: Text('')),
                     ],
-                    rows: _buildSingleTableRow(searchQuery, _venueEngineState.geometryList),
+                    rows: _buildSingleTableRow(
+                        searchQuery, _venueEngineState.geometryList),
                   ),
                 );
               } else {
@@ -460,7 +498,8 @@ class _MainPageState extends State<MainPage> {
                       DataColumn(label: Text('')),
                       DataColumn(label: Text('')),
                     ],
-                    rows: _buildTableRowsOfLoadedVenue(searchQuery, _venueEngineState.geometryList),
+                    rows: _buildTableRowsOfLoadedVenue(
+                        searchQuery, _venueEngineState.geometryList),
                   ),
                 );
               }
@@ -488,64 +527,63 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  List<DataRow> _buildSingleTableRow(String searchQuery, List<String> venueList) {
-    FocusScope.of(context).unfocus();
-    _panelController.animatePanelToPosition(0.12);
+  List<DataRow> _buildSingleTableRow(
+      String searchQuery, List<String> venueList) {
 
     List<DataRow> rows = [];
     rows.clear();
-      rows.add(
-        DataRow(
-          cells: [
-            DataCell(
-              GestureDetector(
-                onTap: () {
-                  //Do Nothing
-                },
-                child: Container(
-                  width: 20,
-                  child: Image.asset(
-                      'assets/indoor_rowleft.png', width: 20, height: 22),
+    rows.add(
+      DataRow(
+        cells: [
+          DataCell(
+            GestureDetector(
+              onTap: () {
+                //Do Nothing
+              },
+              child: Container(
+                width: 20,
+                child: Image.asset('assets/indoor_rowleft.png',
+                    width: 20, height: 22),
+              ),
+            ),
+          ),
+          DataCell(
+            GestureDetector(
+              onTap: () {
+                //Do Nothing
+              },
+              child: Container(
+                //width: 225,
+                width: MediaQuery.of(context).size.width - 200,
+                child: Text(
+                  _venueEngineState.venueTapController!.tappedSpaceName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ),
-            DataCell(
-              GestureDetector(
-                onTap: () {
-                  //Do Nothing
-                },
-                child: Container(
-                  //width: 225,
-                  width: MediaQuery.of(context).size.width - 200,
-                  child: Text(
-                    _venueEngineState.venueTapController!.tappedSpaceName,
-                    maxLines: 1,
-                    overflow: TextOverflow
-                        .ellipsis,
-                  ),
-                ),
+          ),
+          DataCell(
+            GestureDetector(
+              onTap: () {
+                //Do Nothing
+              },
+              child: Container(
+                width: 16,
+                child: Image.asset('assets/indoor_rowright.png',
+                    width: 16, height: 18),
               ),
             ),
-            DataCell(
-              GestureDetector(
-                onTap: () {
-                  //Do Nothing
-                },
-                child: Container(
-                  width: 16,
-                  child: Image.asset(
-                      'assets/indoor_rowright.png', width: 16, height: 18),
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
+          ),
+        ],
+      ),
+    );
     return rows;
   }
 
-  List<DataRow> _buildTableRowsOfLoadedVenue(String searchQuery, List<String> venueList) {
-    if(_venueEngineState.venueTapController?.clickCount == 1) {
+  List<DataRow> _buildTableRowsOfLoadedVenue(
+      String searchQuery, List<String> venueList) {
+    if (_venueEngineState.venueTapController?.clickCount == 1) {
       FocusScope.of(context).unfocus();
       _panelController.animatePanelToPosition(0.0);
       _venueEngineState.venueTapController?.clickCount = 0;
@@ -566,8 +604,8 @@ class _MainPageState extends State<MainPage> {
                   },
                   child: Container(
                     width: 20,
-                    child: Image.asset(
-                        'assets/indoor_rowleft.png', width: 20, height: 22),
+                    child: Image.asset('assets/indoor_rowleft.png',
+                        width: 20, height: 22),
                   ),
                 ),
               ),
@@ -582,8 +620,7 @@ class _MainPageState extends State<MainPage> {
                     child: Text(
                       venue,
                       maxLines: 1,
-                      overflow: TextOverflow
-                          .ellipsis,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ),
@@ -595,8 +632,8 @@ class _MainPageState extends State<MainPage> {
                   },
                   child: Container(
                     width: 16,
-                    child: Image.asset(
-                        'assets/indoor_rowright.png', width: 16, height: 18),
+                    child: Image.asset('assets/indoor_rowright.png',
+                        width: 16, height: 18),
                   ),
                 ),
               ),
@@ -633,7 +670,8 @@ class _MainPageState extends State<MainPage> {
                   },
                   child: Container(
                     width: 20,
-                    child: Image.asset('assets/indoor_row_icon.png', width: 20, height: 22),
+                    child: Image.asset('assets/indoor_row_icon.png',
+                        width: 20, height: 22),
                   ),
                 ),
               ),
@@ -660,7 +698,8 @@ class _MainPageState extends State<MainPage> {
                   },
                   child: Container(
                     width: 16,
-                    child: Image.asset('assets/indoor_rightaccessory.png', width: 16, height: 18),
+                    child: Image.asset('assets/indoor_rightaccessory.png',
+                        width: 16, height: 18),
                   ),
                 ),
               ),
@@ -679,15 +718,15 @@ class _MainPageState extends State<MainPage> {
     _searchController.clear();
 
     print('clicked spaces for loaded venue: $venue');
-    final index = _venueEngineState.geometryList.indexOf(venue)-1;
+    final index = _venueEngineState.geometryList.indexOf(venue) - 1;
     print('index value : $index');
 
-    if (_venueEngineState.venueTapController != null && _venueEngineState != null) {
+    if (_venueEngineState.venueTapController != null &&
+        _venueEngineState != null) {
       _venueEngineState.venueTapController?.selectGeometry(
           _venueEngineState.getVenueSearchState().searchResult[index],
           _venueEngineState.getVenueSearchState().searchResult[index].center,
-          true
-      );
+          true);
     }
 
     FocusScope.of(context).unfocus();
@@ -705,7 +744,7 @@ class _MainPageState extends State<MainPage> {
 
     _isVenueListTapped = true;
 
-    if(mapLoading.isMapLoading.value) {
+    if (mapLoading.isMapLoading.value) {
       print("true");
     } else {
       print("false");
@@ -732,27 +771,32 @@ class _MainPageState extends State<MainPage> {
   void _onMapCreated(HereMapController hereMapController) {
     _hereMapController = hereMapController;
     // Load a scene from the HERE SDK to render the map with a map scheme.
-    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
+    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay,
+        (MapError? error) {
       if (error != null) {
         print('Map scene not loaded. MapError: ${error.toString()}');
         return;
       }
 
       const double distanceToEarthInMeters = 500;
-      MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
-      hereMapController.camera.lookAtPointWithMeasure(GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
+      MapMeasure mapMeasureZoom =
+          MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+      hereMapController.camera.lookAtPointWithMeasure(
+          GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
 
       // Hide the extruded building layer, so that it does not overlap
       // with the venues.
-      hereMapController.mapScene.disableFeatures([MapFeatures.extrudedBuildings]);
+      hereMapController.mapScene
+          .disableFeatures([MapFeatures.extrudedBuildings]);
 
       // Create a venue engine object. Once the initialization is done,
       // a callback will be called.
       var venueEngine;
       try {
         venueEngine = VenueEngine(_onVenueEngineCreated);
-        _venueEngineState.set(hereMapController, venueEngine, _geometryInfoState);
-      } on InstantiationException catch(e){
+        _venueEngineState.set(
+            hereMapController, venueEngine, _geometryInfoState);
+      } on InstantiationException catch (e) {
         print('error caught: $e');
       }
     });
@@ -764,11 +808,10 @@ class _MainPageState extends State<MainPage> {
   }
 
   void setWatermarkLocation(HereMapController hereMapController) {
-    Anchor2D anchor = Anchor2D.withHorizontalAndVertical(0.0, 0.78);
-    Point2D offset = Point2D(0, 0);
+    Anchor2D anchor = Anchor2D.withHorizontalAndVertical(0.0, 0.65);
+    Point2D offset = Point2D(0.0, 0.0);
     hereMapController.setWatermarkLocation(anchor, offset);
   }
-
 
   void _handleBackButtonPress(BuildContext context) {
     print("back button pressed");
@@ -781,9 +824,11 @@ class _MainPageState extends State<MainPage> {
     setState(() {
       _topologyPressed = false;
     });
-    _venueEngineState.venueEngine!.venueMap.selectedVenue!.isTopologyVisible = _topologyPressed;
+    _venueEngineState.venueEngine!.venueMap.selectedVenue!.isTopologyVisible =
+        _topologyPressed;
 
-    _venueEngineState.venueEngine?.venueMap.removeVenue(_venueEngineState.venueEngine!.venueMap.selectedVenue!);
+    _venueEngineState.venueEngine?.venueMap
+        .removeVenue(_venueEngineState.venueEngine!.venueMap.selectedVenue!);
     _venueEngineState.getLevelSwitcherState().onLevelsChanged(null);
     _venueEngineState.getDrawingSwitcherState().onDrawingsChanged(null);
     _venueEngineState.venueTapController?.deselectTopology();
@@ -796,7 +841,5 @@ class _MainPageState extends State<MainPage> {
     if (_hereMapController != null) {
       _resetCameraPosition();
     }
-
   }
-
 }

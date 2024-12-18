@@ -133,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
                     ArrayList<String> entryDescriptions = hikingApp.getMenuEntryDescriptions() != null ? new ArrayList<>(hikingApp.getMenuEntryDescriptions()) : new ArrayList<>();
 
                     if (entryKeys.isEmpty()) {
-                        hikingApp.setMessage("No hiking diary entries yet.");
+                        hikingApp.setMessage("No hiking diary entries saved yet.");
                     } else {
                         Bundle bundle = new Bundle();
                         bundle.putStringArrayList("key_names", entryKeys);

@@ -245,12 +245,13 @@ class EVRoutingExample {
         // within a max distance of xx meters from any point of the route.
         let routeCorridor = GeoCorridor(polyline: route.geometry.vertices,
                                         halfWidthInMeters: Int32(200))
-        let queryArea = TextQuery.Area(inCorridor: routeCorridor, near: mapView.camera.state.targetCoordinates)
-        let textQuery = TextQuery("charging station", area: queryArea)
+        let queryArea = CategoryQuery.Area(inCorridor: routeCorridor, near: mapView.camera.state.targetCoordinates)
+        let placeCategory = PlaceCategory(id: PlaceCategory.businessAndServicesEvChargingStation)
+        let categoryQuery = CategoryQuery(placeCategory, area: queryArea)
 
         let searchOptions = SearchOptions(languageCode: LanguageCode.enUs,
                                           maxItems: 30)
-        searchEngine.searchByText(textQuery,
+        searchEngine.searchByCategory(categoryQuery,
                             options: searchOptions,
                             completion: onSearchCompleted)
     }

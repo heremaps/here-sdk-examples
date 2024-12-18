@@ -63,7 +63,9 @@ import com.here.sdk.routing.RoutingError;
 import com.here.sdk.routing.Section;
 import com.here.sdk.routing.SectionNotice;
 import com.here.sdk.routing.Waypoint;
+import com.here.sdk.search.CategoryQuery;
 import com.here.sdk.search.Place;
+import com.here.sdk.search.PlaceCategory;
 import com.here.sdk.search.SearchCallback;
 import com.here.sdk.search.SearchEngine;
 import com.here.sdk.search.SearchError;
@@ -302,14 +304,15 @@ public class EVRoutingExample {
         // within a max distance of xx meters from any point of the route.
         int halfWidthInMeters = 200;
         GeoCorridor routeCorridor = new GeoCorridor(route.getGeometry().vertices, halfWidthInMeters);
-        TextQuery.Area queryArea = new TextQuery.Area(routeCorridor, mapView.getCamera().getState().targetCoordinates);
-        TextQuery textQuery = new TextQuery("charging station", queryArea);
+        PlaceCategory placeCategory = new PlaceCategory(PlaceCategory.BUSINESS_AND_SERVICES_EV_CHARGING_STATION);
+        CategoryQuery.Area categoryQueryArea = new CategoryQuery.Area(routeCorridor, mapView.getCamera().getState().targetCoordinates);
+        CategoryQuery categoryQuery = new CategoryQuery(placeCategory, categoryQueryArea);
 
         SearchOptions searchOptions = new SearchOptions();
         searchOptions.languageCode = LanguageCode.EN_US;
         searchOptions.maxItems = 30;
 
-        searchEngine.searchByText(textQuery, searchOptions, new SearchCallback() {
+        searchEngine.searchByCategory(categoryQuery, searchOptions, new SearchCallback() {
             @Override
             public void onSearchCompleted(SearchError searchError, List<Place> items) {
                 if (searchError != null) {

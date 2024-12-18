@@ -14,6 +14,7 @@
 		83C837CB2C20AAE50004F54E /* heresdk.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 83C837CA2C20AAE50004F54E /* heresdk.xcframework */; };
 		83C837CC2C20AAE50004F54E /* heresdk.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 83C837CA2C20AAE50004F54E /* heresdk.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		83C837D12C20EFA70004F54E /* OfflineMapsExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C837D02C20EFA70004F54E /* OfflineMapsExample.swift */; };
+		DC2DCDEA2CE353B7004FADCC /* MapViewObservable.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC2DCDE92CE353B7004FADCC /* MapViewObservable.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -23,7 +24,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				83C837CC2C20AAE50004F54E /* heresdk.xcframework in Embed Frameworks */
+				83C837CC2C20AAE50004F54E /* heresdk.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -38,6 +39,7 @@
 		83C837C22C207F360004F54E /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		83C837CA2C20AAE50004F54E /* heresdk.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = heresdk.xcframework; sourceTree = "<group>"; };
 		83C837D02C20EFA70004F54E /* OfflineMapsExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineMapsExample.swift; sourceTree = "<group>"; };
+		DC2DCDE92CE353B7004FADCC /* MapViewObservable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewObservable.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +79,7 @@
 				83C837D02C20EFA70004F54E /* OfflineMapsExample.swift */,
 				83C837BF2C207F360004F54E /* Assets.xcassets */,
 				83C837C12C207F360004F54E /* Preview Content */,
+				DC2DCDE92CE353B7004FADCC /* MapViewObservable.swift */,
 			);
 			path = OfflineMaps;
 			sourceTree = "<group>";
@@ -171,6 +174,7 @@
 				83C837BE2C207F340004F54E /* ContentView.swift in Sources */,
 				83C837BC2C207F340004F54E /* OfflineMapsApp.swift in Sources */,
 				83C837D12C20EFA70004F54E /* OfflineMapsExample.swift in Sources */,
+				DC2DCDEA2CE353B7004FADCC /* MapViewObservable.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

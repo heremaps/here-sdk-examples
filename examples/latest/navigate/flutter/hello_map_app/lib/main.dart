@@ -36,8 +36,11 @@ void _initializeHERESDK() async {
 
   // Set your credentials for the HERE SDK.
   String accessKeyId = "YOUR_ACCESS_KEY_ID";
-  String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
-  SDKOptions sdkOptions = SDKOptions.withAccessKeySecret(accessKeyId, accessKeySecret);
+  String accessKeySecret =
+      "YOUR_ACCESS_KEY_SECRET";
+  AuthenticationMode authenticationMode =
+      AuthenticationMode.withKeySecret(accessKeyId, accessKeySecret);
+  SDKOptions sdkOptions = SDKOptions.withAuthenticationMode(authenticationMode);
 
   try {
     await SDKNativeEngine.makeSharedInstance(sdkOptions);
@@ -58,11 +61,14 @@ class MyApp extends StatelessWidget {
   void _onMapCreated(HereMapController hereMapController) {
     // The camera can be configured before or after a scene is loaded.
     const double distanceToEarthInMeters = 8000;
-    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
-    hereMapController.camera.lookAtPointWithMeasure(GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
+    MapMeasure mapMeasureZoom =
+        MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+    hereMapController.camera.lookAtPointWithMeasure(
+        GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
 
     // Load the map scene using a map scheme to render the map with.
-    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
+    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay,
+        (MapError? error) {
       if (error != null) {
         print('Map scene not loaded. MapError: ${error.toString()}');
       }

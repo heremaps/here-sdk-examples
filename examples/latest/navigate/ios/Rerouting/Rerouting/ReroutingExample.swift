@@ -673,6 +673,7 @@ class ReroutingExample: LongPressDelegate,
         // will not change very quickly, so that a previous icon will not be overwritten by a parallel call.
         iconProvider.createRoadShieldIcon(properties: roadShieldIconProperties,
                                           mapScheme: MapScheme.normalDay,
+                                          assetType: IconProviderAssetType.ui,
                                           widthConstraintInPixels: widthConstraintInPixels,
                                           heightConstraintInPixels: heightConstraintInPixels,
                                           callback: handleIconProviderCallback)

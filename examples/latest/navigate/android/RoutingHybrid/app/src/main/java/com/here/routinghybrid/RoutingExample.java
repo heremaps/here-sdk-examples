@@ -32,6 +32,7 @@ import com.here.sdk.core.GeoPolyline;
 import com.here.sdk.core.Point2D;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.mapview.LineCap;
+import com.here.sdk.mapview.MapArrow;
 import com.here.sdk.mapview.MapCamera;
 import com.here.sdk.mapview.MapImage;
 import com.here.sdk.mapview.MapImageFactory;
@@ -193,6 +194,7 @@ public class RoutingExample {
         MapPolyline routeMapPolyline = null;
         try {
             // Below, we're creating an instance of MapMeasureDependentRenderSize. This instance will use the scaled width values to render the route polyline.
+            // We can also apply the same values to MapArrow.setMeasureDependentTailWidth().
             // The parameters for the constructor are: the kind of MapMeasure (in this case, ZOOM_LEVEL), the unit of measurement for the render size (PIXELS), and the scaled width values.
             MapMeasureDependentRenderSize mapMeasureDependentLineWidth = new MapMeasureDependentRenderSize(MapMeasure.Kind.ZOOM_LEVEL, RenderSize.Unit.PIXELS, getDefaultLineWidthValues());
 
@@ -230,7 +232,8 @@ public class RoutingExample {
         }
     }
 
-    // We are retrieving the default route line widths from VisualNavigator and scale them according to the screen's pixel density.
+    // Retrieves the default widths of a route polyline and maneuver arrows from VisualNavigator,
+    // scaling them based on the screen's pixel density.
     // Note that the VisualNavigator stores the width values per zoom level MapMeasure.Kind.
     private HashMap<Double, Double> getDefaultLineWidthValues() {
         HashMap<Double, Double> widthsPerZoomLevel = new HashMap<>();

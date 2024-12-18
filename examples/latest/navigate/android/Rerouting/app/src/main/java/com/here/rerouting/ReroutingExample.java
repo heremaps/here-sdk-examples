@@ -41,6 +41,7 @@ import com.here.sdk.core.Size2D;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.gestures.GestureState;
 import com.here.sdk.mapview.IconProvider;
+import com.here.sdk.mapview.IconProviderAssetType;
 import com.here.sdk.mapview.IconProviderError;
 import com.here.sdk.mapview.LineCap;
 import com.here.sdk.mapview.MapCamera;
@@ -498,6 +499,7 @@ public class ReroutingExample {
                 roadShieldIconProperties,
                 // A road shield icon can be created to match visually the currently selected map scheme.
                 MapScheme.NORMAL_DAY,
+                IconProviderAssetType.UI,
                 widthConstraintInPixels,
                 heightConstraintInPixels, new IconProvider.IconCallback() {
                     @Override

@@ -77,6 +77,7 @@ class OutdoorRasterLayer {
   _createMapLayer(String dataSourceName) {
     // The layer should be rendered on top of other layers except the layers showing the location indicator and polylines/polygons.
     final priority = MapLayerPriorityBuilder()
+        .renderedAfterLayer("labels")
         .renderedBeforeLayer('&location_indicator_layer')
         .renderedBeforeLayer('&polyline_layer')
         .build();

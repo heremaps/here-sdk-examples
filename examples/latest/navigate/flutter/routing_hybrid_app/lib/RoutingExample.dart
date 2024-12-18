@@ -227,6 +227,7 @@ class RoutingExample {
     MapPolyline routeMapPolyline;
     try {
       // Below, we're creating an instance of MapMeasureDependentRenderSize. This instance will use the scaled width values to render the route polyline.
+      // We can also apply the same values to MapArrow.setMeasureDependentTailWidth().
       // The parameters for the constructor are: the kind of MapMeasure (in this case, ZOOM_LEVEL), the unit of measurement for the render size (PIXELS), and the scaled width values.
       MapMeasureDependentRenderSize mapMeasureDependentLineWidth =
           MapMeasureDependentRenderSize(MapMeasureKind.zoomLevel,
@@ -269,7 +270,8 @@ class RoutingExample {
     }
   }
 
-  // We are retrieving the default route line widths from VisualNavigator and scale them according to the screen's pixel density.
+  // Retrieves the default widths of a route polyline and maneuver arrows from VisualNavigator,
+  // scaling them based on the screen's pixel density.
   // Note that the VisualNavigator stores the width values per zoom level MapMeasure.Kind.
   Map<double, double> getDefaultLineWidthValues() {
     Map<double, double> widthsPerZoomLevel = {};
