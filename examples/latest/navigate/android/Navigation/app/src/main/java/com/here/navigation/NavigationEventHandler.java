@@ -23,11 +23,11 @@ import android.content.Context;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.os.Handler;
 import android.util.Log;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.LanguageCode;
@@ -110,6 +110,8 @@ import com.here.sdk.routing.RoadTexts;
 import com.here.sdk.routing.RoadType;
 import com.here.sdk.routing.Route;
 import com.here.sdk.routing.RoutingEngine;
+import com.here.sdk.routing.RoutingError;
+import com.here.sdk.routing.TrafficOnRoute;
 import com.here.sdk.trafficawarenavigation.DynamicRoutingEngine;
 import com.here.sdk.transport.GeneralVehicleSpeedLimits;
 
@@ -131,11 +133,7 @@ public class NavigationEventHandler {
     private final TextView messageView;
     private final TimeUtils timeUtils;
     private final RoutingEngine routingEngine;
-    private int traveledDistanceOnLastSectionInMeters;
-    private int lastTraveledSectionIndex;
-    private Route currentRoute;
-    private Handler trafficOnRouteUpdateHandler;
-    private Runnable trafficUpdateRunnable;
+    private long lastTrafficUpdateInMilliseconds = 0l;
 
     public NavigationEventHandler(Context context, TextView messageView) {
         this.context = context;
@@ -160,17 +158,6 @@ public class NavigationEventHandler {
         visualNavigator.setRouteProgressListener(new RouteProgressListener() {
             @Override
             public void onRouteProgressUpdated(@NonNull RouteProgress routeProgress) {
-                List<SectionProgress> sectionProgressList = routeProgress.sectionProgress;
-                // sectionProgressList is guaranteed to be non-empty.
-                SectionProgress lastSectionProgress = sectionProgressList.get(sectionProgressList.size() - 1);
-                traveledDistanceOnLastSectionInMeters = visualNavigator.getRoute().getLengthInMeters() - lastSectionProgress.remainingDistanceInMeters;
-                lastTraveledSectionIndex = routeProgress.sectionIndex;
-                currentRoute = visualNavigator.getRoute();
-                String currentETAString = "ETA: " + timeUtils.getETAinDeviceTimeZone((int) lastSectionProgress.remainingDuration.toSeconds());
-                Log.d(TAG, "Distance to destination in meters: " + lastSectionProgress.remainingDistanceInMeters);
-                Log.d(TAG, "Traffic delay ahead in seconds: " + lastSectionProgress.trafficDelay.getSeconds());
-                // Logs current ETA.
-                Log.d(TAG, currentETAString);
 
                 // Contains the progress for the next maneuver ahead and the next-next maneuvers, if any.
                 List<ManeuverProgress> nextManeuverList = routeProgress.maneuverProgress;
@@ -213,6 +200,8 @@ public class NavigationEventHandler {
                             roundaboutAngle + " degrees to reach the exit.");
                 }
 
+                String currentETAString = getETA(routeProgress);
+
                 if (previousManeuverIndex != nextManeuverIndex) {
                     currentETAString = currentETAString + "\nNew maneuver: " + logMessage;
                 } else {
@@ -228,6 +217,8 @@ public class NavigationEventHandler {
                     // We periodically want to search for better traffic-optimized routes.
                     dynamicRoutingEngine.updateCurrentLocation(lastMapMatchedLocation, routeProgress.sectionIndex);
                 }
+
+                updateTrafficOnRoute(routeProgress, visualNavigator);
             }
         });
 
@@ -765,6 +756,18 @@ public class NavigationEventHandler {
         });
     }
 
+    private String getETA(RouteProgress routeProgress) {
+        List<SectionProgress> sectionProgressList = routeProgress.sectionProgress;
+        // sectionProgressList is guaranteed to be non-empty.
+        SectionProgress lastSectionProgress = sectionProgressList.get(sectionProgressList.size() - 1);
+        String currentETAString = "ETA: " + timeUtils.getETAinDeviceTimeZone((int) lastSectionProgress.remainingDuration.toSeconds());
+        Log.d(TAG, "Distance to destination in meters: " + lastSectionProgress.remainingDistanceInMeters);
+        Log.d(TAG, "Traffic delay ahead in seconds: " + lastSectionProgress.trafficDelay.getSeconds());
+        // Logs current ETA.
+        Log.d(TAG, currentETAString);
+        return currentETAString;
+    }
+
     private void setupSpeedWarnings(VisualNavigator visualNavigator) {
         SpeedLimitOffset speedLimitOffset = new SpeedLimitOffset();
         speedLimitOffset.lowSpeedOffsetInMetersPerSecond = 2;
@@ -944,24 +947,42 @@ public class NavigationEventHandler {
         Log.d(TAG, "Motorcycles are allowed on this lane: " + laneAccess.motorcycles);
     }
 
-    // Starts periodic updates of the traffic on the route.
-    public void startPeriodicTrafficUpdateOnRoute(CalculateTrafficOnRouteCallback calculateTrafficOnRouteCallback, long updateIntervalInSeconds){
-        trafficOnRouteUpdateHandler = new Handler();
-        trafficUpdateRunnable = new Runnable() {
-            @Override
-            public void run() {
-                routingEngine.calculateTrafficOnRoute(currentRoute, lastTraveledSectionIndex, traveledDistanceOnLastSectionInMeters, calculateTrafficOnRouteCallback);
-                trafficOnRouteUpdateHandler.postDelayed(this,updateIntervalInSeconds);
-            }
-        };
-        // Refresh traffic after the specified interval.
-        trafficOnRouteUpdateHandler.post(trafficUpdateRunnable);
-    }
-
-    // Stops periodic updates of the traffic on the route.
-    public void stopPeriodicTrafficUpdateOnRoute() {
-        if (trafficOnRouteUpdateHandler != null) {
-            trafficOnRouteUpdateHandler.removeCallbacks(trafficUpdateRunnable);
+    // Periodically updates the traffic information for the current route.
+    // This method checks whether the last traffic update occurred within the specified interval and skips the update if not.
+    // Then it calculates the current traffic conditions along the route using the `RoutingEngine`.
+    // Lastly, it updates the `VisualNavigator` with the newly calculated `TrafficOnRoute` object,
+    // which affects the `RouteProgress` duration without altering the route geometry or distance.
+    public void updateTrafficOnRoute(RouteProgress routeProgress, VisualNavigator visualNavigator) {
+        Route currentRoute = visualNavigator.getRoute();
+        if (currentRoute == null) {
+            // Should never happen.
+            return;
         }
+
+        long trafficUpdateIntervalInMilliseconds = 3 * 60000; // 3 minutes.
+        long now = System.currentTimeMillis();
+        if ((now - lastTrafficUpdateInMilliseconds) < trafficUpdateIntervalInMilliseconds) {
+            return;
+        }
+        // Store the current time when we update trafficOnRoute.
+        lastTrafficUpdateInMilliseconds = now;
+
+        List<SectionProgress> sectionProgressList = routeProgress.sectionProgress;
+        SectionProgress lastSectionProgress = sectionProgressList.get(sectionProgressList.size() - 1);
+        int traveledDistanceOnLastSectionInMeters = currentRoute.getLengthInMeters() - lastSectionProgress.remainingDistanceInMeters;
+        int lastTraveledSectionIndex = routeProgress.sectionIndex;
+
+        routingEngine.calculateTrafficOnRoute(currentRoute, lastTraveledSectionIndex, traveledDistanceOnLastSectionInMeters, new CalculateTrafficOnRouteCallback() {
+            @Override
+            public void onTrafficOnRouteCalculated(@Nullable RoutingError routingError, @Nullable TrafficOnRoute trafficOnRoute) {
+                if (routingError != null) {
+                    Log.d(TAG, "CalculateTrafficOnRoute error: " + routingError.name());
+                    return;
+                }
+                Log.d(TAG, "Updated traffic on route");
+                // Sets traffic data for the current route, affecting RouteProgress duration in SectionProgress, while preserving route distance and geometry.
+                visualNavigator.setTrafficOnRoute(trafficOnRoute);
+            }
+        });
     }
 }

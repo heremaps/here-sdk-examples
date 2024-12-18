@@ -26,21 +26,29 @@ import 'package:here_sdk/mapview.dart';
 import 'OfflineMapsExample.dart';
 
 void main() {
+  String accessKeyId = "YOUR_ACCESS_KEY_ID";
+  String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
+
   // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
-  _initializeHERESDK();
+  _initializeHERESDK(accessKeyId,accessKeySecret);
 
   // Ensure that all widgets, including MyApp, have a MaterialLocalizations object available.
-  runApp(MaterialApp(home: MyApp()));
+  runApp(MaterialApp(home: MyApp(accessKeyId: accessKeyId,accessKeySecret: accessKeySecret)));
 }
 
-void _initializeHERESDK() async {
+void _initializeHERESDK(String accessKeyId,String accessKeySecret) async {
   // Needs to be called before accessing SDKOptions to load necessary libraries.
   SdkContext.init(IsolateOrigin.main);
 
   // Set your credentials for the HERE SDK.
-  String accessKeyId = "YOUR_ACCESS_KEY_ID";
-  String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
+
   SDKOptions sdkOptions = SDKOptions.withAccessKeySecret(accessKeyId, accessKeySecret);
+
+  // With this layer configuration we enable only the listed layers.
+  // All the other layers including the default layers will be disabled.
+  var enabledFeatures = [LayerConfigurationFeature.detailRendering,LayerConfigurationFeature.rendering,LayerConfigurationFeature.offlineSearch];
+  var layerConfiguration = LayerConfiguration(enabledFeatures);
+  sdkOptions.layerConfiguration = layerConfiguration;
 
   try {
     await SDKNativeEngine.makeSharedInstance(sdkOptions);
@@ -50,16 +58,27 @@ void _initializeHERESDK() async {
 }
 
 class MyApp extends StatefulWidget {
+  final String? accessKeyId ;
+  final String? accessKeySecret ;
+
   @override
   _MyAppState createState() => _MyAppState();
+
+  MyApp({Key? key, this.accessKeyId, this.accessKeySecret }) : super(key: key);
+
 }
 
 class _MyAppState extends State<MyApp> {
   OfflineMapsExample? _offlineMapsExample;
+  final List<bool> _selectedOfflineMode = <bool>[true];
+  final List<bool> _toggleOfflineSearchLayer = <bool>[true];
+  final ValueNotifier<bool> mapRebuildNotifier = ValueNotifier(false);
+  Key _refreshKey = UniqueKey();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _refreshKey,
       appBar: AppBar(
         title: Text('HERE SDK - Offline Maps Example'),
       ),
@@ -72,29 +91,104 @@ class _MyAppState extends State<MyApp> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  button('Get Regions', _regionsButtonClicked),
-                  button('Download Region', _downloadButtonClicked),
+                  button('Regions', _regionsButtonClicked),
+                  button('Download', _downloadButtonClicked),
                 ],
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   button('Cancel', _cancelButtonClicked),
-                  button('Test Search', _testButtonClicked),
+                  button('Area', _areaButtonClicked),
                 ],
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  button('Switch Online', _onlineButtonClicked),
-                  button('Switch Offline', _offlineButtonClicked),
+                  button('Test Search', _testButtonClicked),
+                  button('Clear Cache', _clearCacheClicked),
                 ],
               ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ToggleButtons(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(8.0),
+                          decoration: BoxDecoration(
+                            color: Colors.lightBlueAccent,
+                            borderRadius: BorderRadius.circular(16.0),
+                          ),
+                          child: Text(
+                            _selectedOfflineMode[0]
+                                ? 'Offline Mode-OFF'
+                                : 'Offline Mode-ON',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18.0,
+                            ),
+                          ),
+
+                        ),
+                      ],
+                      onPressed: (int index) {
+                        setState(() {
+                          _selectedOfflineMode[index] =
+                          !_selectedOfflineMode[index];
+                        });
+                        _toggleOnlineMode();
+                      },
+                      isSelected: _selectedOfflineMode
+                  ),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ToggleButtons(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(8.0),
+                          decoration: BoxDecoration(
+                            color: Colors.lightBlueAccent,
+                            borderRadius: BorderRadius.circular(16.0),
+                          ),
+                          child: Text(
+                            _toggleOfflineSearchLayer[0]
+                                ? 'offlineSearch layer: ON'
+                                : 'offlineSearch layer: OFF',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18.0,
+                            ),
+                          ),
+                        ),
+                      ],
+                      onPressed: (int index) {
+                        setState(() {
+                          _toggleOfflineSearchLayer[index] =
+                          !_toggleOfflineSearchLayer[index];
+
+                        });
+                        _toggleConfiguration();
+                      },
+                      isSelected: _toggleOfflineSearchLayer
+                  ),
+                ],
+              )
             ],
           ),
         ],
       ),
     );
+  }
+
+  void _rebuildMap() {
+    setState(() {
+      // Force rebuild of mapview.
+      _refreshKey = UniqueKey();
+    });
   }
 
   void _onMapCreated(HereMapController hereMapController) {
@@ -115,6 +209,10 @@ class _MyAppState extends State<MyApp> {
     _offlineMapsExample?.onDownloadMapClicked();
   }
 
+  void _areaButtonClicked() {
+    _offlineMapsExample?.onDownloadAreaClicked();
+  }
+
   void _cancelButtonClicked() {
     _offlineMapsExample?.onCancelMapDownloadClicked();
   }
@@ -123,12 +221,20 @@ class _MyAppState extends State<MyApp> {
     _offlineMapsExample?.onSearchPlaceClicked();
   }
 
-  void _onlineButtonClicked() {
-    _offlineMapsExample?.onOnlineButtonClicked();
+  void _toggleOnlineMode(){
+    if(_selectedOfflineMode[0]){
+      _offlineMapsExample?.onOnlineButtonClicked();
+    }else{
+      _offlineMapsExample?.onOfflineButtonClicked();
+    }
   }
 
-  void _offlineButtonClicked() {
-    _offlineMapsExample?.onOfflineButtonClicked();
+  void _clearCacheClicked(){
+    _offlineMapsExample?.onClearCache();
+  }
+
+  void _toggleConfiguration(){
+    _offlineMapsExample?.toggleLayerConfiguration(widget.accessKeyId!, widget.accessKeySecret!, _rebuildMap);
   }
 
   @override

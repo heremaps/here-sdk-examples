@@ -20,11 +20,10 @@
 import heresdk
 import SwiftUI
 
-struct ContentView: View, TextViewUpdateDelegate {
+struct ContentView: View {
     
     @State private var mapView = MapView()
-    @State private var navigationAppLogic: NavigationAppLogic?
-    @State private var message: String = "Initializing..."
+    @StateObject private var navigationAppLogic = NavigationAppLogic()
     
     var body: some View {
         // Show the views on top of each other.
@@ -37,10 +36,10 @@ struct ContentView: View, TextViewUpdateDelegate {
             VStack {
                 HStack {
                     CustomButton(title: "Add Route (Simulated Location)") {
-                        navigationAppLogic?.addRouteSimulatedLocationButtonClicked()
+                        navigationAppLogic.addRouteSimulatedLocationButtonClicked()
                     }
                     CustomButton(title: "Add Route (Device Location)") {
-                        navigationAppLogic?.addRouteDeviceLocationButtonClicked()
+                        navigationAppLogic.addRouteDeviceLocationButtonClicked()
                     }
                 }
                 HStack {
@@ -48,32 +47,26 @@ struct ContentView: View, TextViewUpdateDelegate {
                         onLabel: "Camera Tracking: Off",
                         offLabel: "Camera Tracking: On",
                         onAction: {
-                            navigationAppLogic?.disableCameraTracking()
+                            navigationAppLogic.disableCameraTracking()
                         },
                         offAction: {
-                            navigationAppLogic?.enableCameraTracking()
+                            navigationAppLogic.enableCameraTracking()
                         }
                     )
                     CustomButton(title: "Clear map") {
-                        navigationAppLogic?.clearMapButtonClicked()
+                        navigationAppLogic.clearMapButtonClicked()
                     }
                 }
                 HStack {
                     // A permanent view to show log content such as maneuver information.
-                    CustomTextView(message: message)
+                    CustomTextView(message: navigationAppLogic.messageText)
                 }
             }
         }
         .onAppear {
-            // ContentView appeared, now we init the example.
-            navigationAppLogic = NavigationAppLogic(mapView)
-            navigationAppLogic?.textViewUpdateDelegate = self
+            // ContentView appeared, now we start the example.
+            navigationAppLogic.startExample(mapView)
         }
-    }
-        
-    // Updates the message displayed on CustomTextView.
-    func updateTextViewMessage(_ message: String) {
-        self.message = message
     }
 }
 
@@ -83,11 +76,6 @@ private struct WrappedMapView: UIViewRepresentable {
     @Binding var mapView: MapView
     func makeUIView(context: Context) -> MapView { return mapView }
     func updateUIView(_ mapView: MapView, context: Context) { }
-}
-
-// Protocol to delegate text message updates to display in ContentView.
-protocol TextViewUpdateDelegate {
-    func updateTextViewMessage(_ message: String)
 }
 
 struct ContentView_Previews: PreviewProvider {

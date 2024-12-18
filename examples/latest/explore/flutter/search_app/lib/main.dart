@@ -66,11 +66,15 @@ class _MyAppState extends State<MyApp> {
       body: Stack(
         children: [
           HereMap(onMapCreated: _onMapCreated),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          Column(
             children: [
-              button('Search', _searchButtonClicked),
-              button('Geocoding', _geocodeAnAddressButtonClicked),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  button('Search', _searchButtonClicked),
+                  button('Geocoding', _geocodeAnAddressButtonClicked),
+                ],
+              ),
             ],
           ),
         ],

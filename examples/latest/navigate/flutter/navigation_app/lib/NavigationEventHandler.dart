@@ -26,6 +26,7 @@ import 'package:here_sdk/navigation.dart';
 import 'package:here_sdk/routing.dart' as HERE;
 import 'package:here_sdk/routing.dart';
 import 'package:here_sdk/trafficawarenavigation.dart';
+import 'package:navigation_app/RouteCalculator.dart';
 
 import 'LanguageCodeConverter.dart';
 
@@ -36,15 +37,20 @@ class NavigationEventHandler {
   DynamicRoutingEngine _dynamicRoutingEngine;
   MapMatchedLocation? _lastMapMatchedLocation;
   int _previousManeuverIndex = -1;
+  int lastTrafficUpdateInMilliseconds = 0;
   final ValueChanged<String> _updateMessageState;
+  RouteCalculator _routeCalculator;
 
   NavigationEventHandler(
       VisualNavigator visualNavigator,
       DynamicRoutingEngine dynamicRoutingEngine,
-      ValueChanged<String> updateMessageState)
+      ValueChanged<String> updateMessageState,
+      RouteCalculator routeCalculator )
       : _visualNavigator = visualNavigator,
         _dynamicRoutingEngine = dynamicRoutingEngine,
-        _updateMessageState = updateMessageState {}
+        _updateMessageState = updateMessageState,
+        _routeCalculator = routeCalculator
+  {}
 
   void setupListeners() {
     _setupSpeedWarnings();
@@ -105,6 +111,8 @@ class NavigationEventHandler {
         _dynamicRoutingEngine.updateCurrentLocation(
             _lastMapMatchedLocation!, routeProgress.sectionIndex);
       }
+
+      updateTrafficOnRoute(routeProgress);
     });
 
     // Notifies on the current map-matched location and other useful information while driving or walking.
@@ -685,6 +693,48 @@ class NavigationEventHandler {
         }
       }
     });
+  }
+
+  // Periodically updates the traffic information for the current route.
+  // This method checks whether the last traffic update occurred within the specified interval and skips the update if not.
+  // Then it calculates the current traffic conditions along the route using the `RoutingEngine`.
+  // Lastly, it updates the `VisualNavigator` with the newly calculated `TrafficOnRoute` object,
+  // which affects the `RouteProgress` duration without altering the route geometry or distance.
+  void updateTrafficOnRoute(RouteProgress routeProgress) {
+    Route? currentRoute = _visualNavigator.route;
+    if (currentRoute == null) {
+      // Should never happen.
+      return;
+    }
+
+    const int trafficUpdateIntervalInMilliseconds = 3 * 60000; // 3 minutes.
+    int now = DateTime.now().millisecondsSinceEpoch;
+    if ((now - lastTrafficUpdateInMilliseconds) < trafficUpdateIntervalInMilliseconds) {
+      return;
+    }
+    // Store the current time when we update trafficOnRoute.
+    lastTrafficUpdateInMilliseconds = now;
+
+    List<SectionProgress> sectionProgressList = routeProgress.sectionProgress;
+    SectionProgress lastSectionProgress = sectionProgressList.last;
+    int traveledDistanceOnLastSectionInMeters =
+        currentRoute.lengthInMeters - lastSectionProgress.remainingDistanceInMeters;
+    int lastTraveledSectionIndex = routeProgress.sectionIndex;
+
+    _routeCalculator.calculateTrafficOnRoute(
+      currentRoute,
+      lastTraveledSectionIndex,
+      traveledDistanceOnLastSectionInMeters,
+          (RoutingError? routingError, TrafficOnRoute? trafficOnRoute) {
+        if (routingError != null) {
+          print("CalculateTrafficOnRoute error: ${routingError.name}");
+          return;
+        }
+        print("Updated traffic on route");
+        // Sets traffic data for the current route, affecting RouteProgress duration in SectionProgress, while preserving route distance and geometry.
+        _visualNavigator.trafficOnRoute = trafficOnRoute;
+      },
+    );
   }
 
   void _setupSpeedWarnings() {

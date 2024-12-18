@@ -26,27 +26,29 @@ struct ContentView: View {
     @State private var searchExample: SearchExample?
 
     var body: some View {
-         // Show the views on top of each other.
         ZStack(alignment: .top) {
-
             // The map view should fill the entire screen.
             WrappedMapView(mapView: $mapView)
                 .edgesIgnoringSafeArea(.all)
 
-            HStack {
-                CustomButton(title: "Search example") {
-                    searchExample?.onSearchButtonClicked()
-                }
-                CustomButton(title: "GeoCode example") {
-                    searchExample?.onGeoCodeButtonClicked()
+            VStack(spacing: 10) {
+                HStack {
+                    CustomButton(title: "Search                      ") {
+                        searchExample?.onSearchButtonClicked()
+                    }
+
+                    CustomButton(title: "GeoCode                     ") {
+                        searchExample?.onGeoCodeButtonClicked()
+                    }
                 }
             }
-         }
-         .onAppear {
-             // ContentView appeared, now we init the example.
-             searchExample = SearchExample(mapView)
-         }
-     }
+            .padding()
+        }
+        .onAppear {
+            // ContentView appeared, now we init the example.
+            searchExample = SearchExample(mapView)
+        }
+    }
 }
 
 // The MapView provided by the HERE SDK conforms to a UIKit view, so it needs to be wrapped to conform

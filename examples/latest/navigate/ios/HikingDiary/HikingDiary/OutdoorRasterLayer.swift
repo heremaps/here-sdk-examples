@@ -18,7 +18,7 @@
  */
 
 import heresdk
-import UIKit
+import SwiftUI
 
 // A class to show a custom raster layer on top of the default map style.
 // This class has been taken and adapted for this app from the CustomerRasterLayers example app, you can find here:
@@ -86,6 +86,7 @@ class OutdoorRasterLayer {
     private func createMapLayer(dataSourceName: String) -> MapLayer {
         // The layer should be rendered on top of other layers except the layers showing the location indicator and polylines/polygons.
         let priority = MapLayerPriorityBuilder()
+            .renderedAfterLayer(named: "labels")
             .renderedBeforeLayer(named: "&location_indicator_layer")
             .renderedBeforeLayer(named: "&polyline_layer")
             .build()
@@ -110,3 +111,4 @@ class OutdoorRasterLayer {
         }
     }
 }
+

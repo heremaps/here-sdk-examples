@@ -232,15 +232,15 @@ class EVRoutingExample {
     // within a max distance of xx meters from any point of the route.
     int halfWidthInMeters = 200;
     GeoCorridor routeCorridor = GeoCorridor(route.geometry.vertices, halfWidthInMeters);
-    TextQueryArea queryArea =
-        TextQueryArea.withCorridor(routeCorridor, _hereMapController.camera.state.targetCoordinates);
-    TextQuery textQuery = TextQuery.withArea("charging station", queryArea);
+    PlaceCategory placeCategory = PlaceCategory(PlaceCategory.businessAndServicesEvChargingStation);
+    CategoryQueryArea categoryQueryArea = CategoryQueryArea.withCorridorAndCenter(routeCorridor, _hereMapController.camera.state.targetCoordinates);
+    CategoryQuery categoryQuery = CategoryQuery.withCategoryInArea(placeCategory, categoryQueryArea);
 
     SearchOptions searchOptions = SearchOptions();
     searchOptions.languageCode = LanguageCode.enUs;
     searchOptions.maxItems = 30;
 
-    _searchEngine.searchByText(textQuery, searchOptions, (SearchError? searchError, List<Place>? items) {
+    _searchEngine.searchByCategory(categoryQuery, searchOptions, (SearchError? searchError, List<Place>? items) {
       if (searchError != null) {
         print("Search: No charging stations found along the route. Error: $searchError");
         return;

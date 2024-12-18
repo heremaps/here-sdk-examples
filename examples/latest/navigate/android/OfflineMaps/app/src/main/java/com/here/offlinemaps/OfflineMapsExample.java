@@ -19,6 +19,7 @@
 
 package com.here.offlinemaps;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
@@ -29,7 +30,9 @@ import androidx.annotation.Nullable;
 import com.google.android.material.snackbar.Snackbar;
 import com.here.sdk.core.GeoBox;
 import com.here.sdk.core.GeoCoordinates;
+import com.here.sdk.core.GeoPolygon;
 import com.here.sdk.core.LanguageCode;
+import com.here.sdk.core.Point2D;
 import com.here.sdk.core.engine.LayerConfiguration;
 import com.here.sdk.core.engine.SDKBuildInformation;
 import com.here.sdk.core.engine.SDKNativeEngine;
@@ -76,6 +79,7 @@ import java.util.List;
 
 public class OfflineMapsExample {
 
+    private final Context context;
     private final MapView mapView;
     @Nullable
     private MapDownloader mapDownloader;
@@ -89,7 +93,8 @@ public class OfflineMapsExample {
     private boolean offlineSearchLayerEnabled = true;
     private boolean switchOffline = false;
 
-    public OfflineMapsExample(MapView mapView) {
+    public OfflineMapsExample(MapView mapView, Context context) {
+        this.context = context;
 
         // Configure the map.
         this.mapView = mapView;
@@ -497,7 +502,7 @@ public class OfflineMapsExample {
                     // healing option listed in the API Reference. For example, if the status
                     // is PENDING_UPDATE, it cannot be repaired, but instead an update
                     // should be executed. It is recommended to inform your users to
-                    // perform the recommended action.               
+                    // perform the recommended action.
                     Log.d("RepairPersistentMap", "Repair operation failed: " + persistentMapRepairError.name());
                 }
             });
@@ -509,8 +514,8 @@ public class OfflineMapsExample {
         // After modifying the "FeatureConfiguration" calling performFeatureUpdate()
         // will also clear the cache if at least one region has been installed.
         // This app allows the user to install one region for testing purposes.
-        // In order to simplify testing when no region has been installed, we 
-        // explicitly clear the cache. 
+        // In order to simplify testing when no region has been installed, we
+        // explicitly clear the cache.
         // If the cache is not cleared, the HERE SDK will look for cached data, for example,
         // when using the OfflineSearchEngine.
         try {
@@ -656,6 +661,76 @@ public class OfflineMapsExample {
         }
     }
 
+    // Download the rectangular area that is currently visible in the viewport.
+    // It is possible to call this method in parallel to download multiple areas in parallel.
+    public void onDownloadAreaClicked() {
+        showDialog("Note", "Downloading the area that is currently visible in the viewport.");
+        GeoPolygon polygonArea = new GeoPolygon(getMapViewGeoBox());
+
+        mapDownloader.downloadArea(polygonArea, new DownloadRegionsStatusListener() {
+            @Override
+            public void onDownloadRegionsComplete(@Nullable MapLoaderError mapLoaderError, @Nullable List<RegionId> list) {
+                if (mapLoaderError != null) {
+                    String message = "Download area completion error: " + mapLoaderError;
+                    snackbar.setText(message).show();
+                    return;
+                }
+
+                // If error is null, it is guaranteed that the regions will not be null.
+                // When downloading an area, only a single unique ID will be provided.
+                // Note: It is recommended to store this ID with a human readable name,
+                // as this will make it easier to delete the downloaded area in the future by calling
+                // mapDownloader.deleteRegions(...). The ID itself is accessible from InstalledRegions.
+                // For simplicity, this is not shown here.
+                String message = "Completed 100% for area! ID: " + list.get(0).id;
+                snackbar.setText(message).show();
+                Log.d(TAG, message);
+            }
+
+            @Override
+            public void onProgress(@NonNull RegionId regionId, int percentage) {
+                // Note that this ID is uniquely created and can be to delete the area in the future.
+                String message = "Download for area ID: " + regionId.id +
+                        ". Progress: " + percentage + "%.";
+                snackbar.setText(message).show();
+            }
+
+            @Override
+            public void onPause(@Nullable MapLoaderError mapLoaderError) {
+                if (mapLoaderError == null) {
+                    String message = "The download area was paused by the user calling mapDownloaderTask.pause().";
+                    snackbar.setText(message).show();
+                } else {
+                    String message = "Download area onPause error. The task tried to often to retry the download: " + mapLoaderError;
+                    snackbar.setText(message).show();
+                }
+            }
+
+            @Override
+            public void onResume() {
+                String message = "A previously paused area download has been resumed.";
+                snackbar.setText(message).show();
+            }
+        });
+    }
+
+    private GeoBox getMapViewGeoBox() {
+        int mapViewWidthInPixels = mapView.getWidth();
+        int mapViewHeightInPixels = mapView.getHeight();
+        Point2D bottomLeftPoint2D = new Point2D(0, mapViewHeightInPixels);
+        Point2D topRightPoint2D = new Point2D(mapViewWidthInPixels, 0);
+
+        GeoCoordinates southWestCorner = mapView.viewToGeoCoordinates(bottomLeftPoint2D);
+        GeoCoordinates northEastCorner = mapView.viewToGeoCoordinates(topRightPoint2D);
+
+        if (southWestCorner == null || northEastCorner == null) {
+            throw new RuntimeException("GeoBox creation failed, corners are null.");
+        }
+
+        // Note: This algorithm assumes an unrotated map view.
+        return new GeoBox(southWestCorner, northEastCorner);
+    }
+
     // Cached map data will not be removed until the least recently used (LRU) strategy is applied.
     // Therefore, we can manually clear the cache to remove any outdated entries.
     public void clearCache() {
@@ -676,5 +751,13 @@ public class OfflineMapsExample {
         double distanceInMeters = 1000 * 7;
         MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
         camera.lookAt(new GeoCoordinates(46.94843, 7.44046), mapMeasureZoom);
+    }
+
+    private void showDialog(String title, String message) {
+        AlertDialog.Builder builder =
+                new AlertDialog.Builder(context);
+        builder.setTitle(title);
+        builder.setMessage(message);
+        builder.show();
     }
 }

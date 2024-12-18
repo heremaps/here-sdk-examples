@@ -21,9 +21,9 @@ import heresdk
 
 // A class that creates car Routes with the HERE SDK.
 class RouteCalculator {
-
+    
     private let routingEngine: RoutingEngine
-
+    
     init() {
         do {
             try routingEngine = RoutingEngine()
@@ -31,11 +31,11 @@ class RouteCalculator {
             fatalError("Failed to initialize routing engine. Cause: \(engineInstantiationError)")
         }
     }
-
+    
     func calculateRoute(start: Waypoint,
                         destination: Waypoint,
                         calculateRouteCompletionHandler: @escaping CalculateRouteCompletionHandler) {
-
+        
         // A route handle is required for the DynamicRoutingEngine to get updates on traffic-optimized routes.
         var carOptions = CarOptions()
         carOptions.routeOptions.enableRouteHandle = true
@@ -44,4 +44,12 @@ class RouteCalculator {
                                      carOptions: carOptions,
                                      completion: calculateRouteCompletionHandler)
     }
+    
+    func calculateTrafficOnRoute(
+        currentRoute: Route,
+        lastTraveledSectionIndex: Int,
+        traveledDistanceOnLastSectionInMeters: Int,
+        calculatetrafficOnRouteCompletionHandler: @escaping CalculateTrafficOnRouteCompletionHandler) {
+            routingEngine.calculateTrafficOnRoute(route: currentRoute, lastTraveledSectionIndex: Int32(lastTraveledSectionIndex), traveledDistanceOnLastSectionInMeters: Int32(traveledDistanceOnLastSectionInMeters), completion: calculatetrafficOnRouteCompletionHandler)
+        }
 }

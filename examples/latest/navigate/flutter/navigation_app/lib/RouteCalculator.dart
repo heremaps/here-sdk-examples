@@ -43,4 +43,12 @@ class RouteCalculator {
 
     _routingEngine.calculateCarRoute(waypoints, routingOptions, calculateRouteCallback);
   }
+
+  void calculateTrafficOnRoute(
+      HERE.Route currentRoute,
+      int lastTraveledSectionIndex,
+      int traveledDistanceOnLastSectionInMeters,
+      HERE.CalculateTrafficOnRouteCallback callback) {
+    _routingEngine.calculateTrafficOnRoute(currentRoute, lastTraveledSectionIndex, traveledDistanceOnLastSectionInMeters, callback);
+  }
 }

@@ -154,7 +154,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                   );
                 } else {
                   if (hikingApp != null) {
-                    hikingApp!.setMessage("No Hikes saved.");
+                    hikingApp!.setMessage("No hiking diary entries saved yet.");
                   }
                 }
               }, // Add your logic here.

@@ -3,10 +3,11 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		83C4975C2D0C9B9600D67F5E /* W3WSearchExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C4975B2D0C9B9600D67F5E /* W3WSearchExample.swift */; };
 		83C837BC2C207F340004F54E /* SearchHybridApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C837BB2C207F340004F54E /* SearchHybridApp.swift */; };
 		83C837BE2C207F340004F54E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C837BD2C207F340004F54E /* ContentView.swift */; };
 		83C837C02C207F360004F54E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 83C837BF2C207F360004F54E /* Assets.xcassets */; };
@@ -31,6 +32,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		83C4975B2D0C9B9600D67F5E /* W3WSearchExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = W3WSearchExample.swift; sourceTree = "<group>"; };
 		83C837B82C207F340004F54E /* SearchHybrid.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SearchHybrid.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		83C837BB2C207F340004F54E /* SearchHybridApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchHybridApp.swift; sourceTree = "<group>"; };
 		83C837BD2C207F340004F54E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -75,6 +77,7 @@
 				83C837BB2C207F340004F54E /* SearchHybridApp.swift */,
 				83C837BD2C207F340004F54E /* ContentView.swift */,
 				83C837D02C20EFA70004F54E /* SearchHybridExample.swift */,
+				83C4975B2D0C9B9600D67F5E /* W3WSearchExample.swift */,
 				83C837BF2C207F360004F54E /* Assets.xcassets */,
 				83C837C12C207F360004F54E /* Preview Content */,
 			);
@@ -168,6 +171,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				83C4975C2D0C9B9600D67F5E /* W3WSearchExample.swift in Sources */,
 				83C837BE2C207F340004F54E /* ContentView.swift in Sources */,
 				83C837BC2C207F340004F54E /* SearchHybridApp.swift in Sources */,
 				83C837D12C20EFA70004F54E /* SearchHybridExample.swift in Sources */,

@@ -48,27 +48,28 @@ class PermissionsRequestor(private val activity: Activity) {
     }
 
     private val permissionsToRequest: Array<String>
-        private get() {
+        get() {
             val permissionList = ArrayList<String>()
             try {
-                @Suppress("DEPRECATION")
-                val packageInfo = activity.packageManager.getPackageInfo(
-                        activity.packageName, PackageManager.GET_PERMISSIONS)
+                val packageInfo = activity.packageManager.getPackageInfo(activity.packageName, PackageManager.GET_PERMISSIONS)
                 if (packageInfo.requestedPermissions != null) {
-                    for (permission in packageInfo.requestedPermissions) {
-                        if (ContextCompat.checkSelfPermission(
-                                        activity, permission) != PackageManager.PERMISSION_GRANTED) {
-                            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.M && permission == Manifest.permission.CHANGE_NETWORK_STATE) {
-                                // Exclude CHANGE_NETWORK_STATE as it does not require explicit user approval.
-                                // This workaround is needed for devices running Android 6.0.0,
-                                // see https://issuetracker.google.com/issues/37067994
-                                continue
+                    val permissions = packageInfo.requestedPermissions
+                    if (permissions != null) {
+                        for (permission in permissions) {
+                            if (ContextCompat.checkSelfPermission(activity, permission) != PackageManager.PERMISSION_GRANTED) {
+                                if (Build.VERSION.SDK_INT == Build.VERSION_CODES.M
+                                    && permission == Manifest.permission.CHANGE_NETWORK_STATE) {
+                                    // Exclude CHANGE_NETWORK_STATE as it does not require explicit user approval.
+                                    // This workaround is needed for devices running Android 6.0.0,
+                                    // see https://issuetracker.google.com/issues/37067994
+                                    continue
+                                }
+                                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q &&
+                                    permission == Manifest.permission.ACCESS_BACKGROUND_LOCATION) {
+                                    continue
+                                }
+                                permissionList.add(permission)
                             }
-                            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q &&
-                                permission == Manifest.permission.ACCESS_BACKGROUND_LOCATION) {
-                                continue
-                            }
-                            permissionList.add(permission)
                         }
                     }
                 }

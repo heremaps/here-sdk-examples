@@ -64,3 +64,4 @@ class HEREPositioningSimulator {
         return locationSimulator
     }
 }
+

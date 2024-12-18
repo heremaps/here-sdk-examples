@@ -29,6 +29,7 @@ import 'package:here_sdk/prefetcher.dart';
 import 'package:here_sdk/routing.dart' as HERE;
 import 'package:here_sdk/routing.dart';
 import 'package:here_sdk/trafficawarenavigation.dart';
+import 'package:navigation_app/RouteCalculator.dart';
 
 import 'HEREPositioningProvider.dart';
 import 'HEREPositioningSimulator.dart';
@@ -43,9 +44,10 @@ class NavigationExample {
   late DynamicRoutingEngine _dynamicRoutingEngine;
   final ValueChanged<String> _updateMessageState;
   late NavigationEventHandler _navigationEventHandler;
+  late RouteCalculator _routeCalculator;
   RoutePrefetcher _routePrefetcher;
 
-  NavigationExample(HereMapController hereMapController, ValueChanged<String> updateMessageState)
+  NavigationExample(HereMapController hereMapController, ValueChanged<String> updateMessageState, RouteCalculator routeCalculator)
       : _hereMapController = hereMapController,
         _updateMessageState = updateMessageState,
         // For easy testing, this location provider simulates location events along a route.
@@ -76,8 +78,10 @@ class NavigationExample {
     // An engine to find better routes during guidance.
     _createDynamicRoutingEngine();
 
+    _routeCalculator = routeCalculator;
+
     // A class to handle various kinds of guidance events.
-    _navigationEventHandler = NavigationEventHandler(_visualNavigator, _dynamicRoutingEngine, _updateMessageState);
+    _navigationEventHandler = NavigationEventHandler(_visualNavigator, _dynamicRoutingEngine, _updateMessageState, _routeCalculator);
     _navigationEventHandler.setupListeners();
   }
 

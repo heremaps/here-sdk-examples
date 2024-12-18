@@ -23,6 +23,7 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.here.hellomap.PermissionsRequestor.ResultListener
 import com.here.sdk.core.GeoCoordinates
+import com.here.sdk.core.engine.AuthenticationMode
 import com.here.sdk.core.engine.SDKNativeEngine
 import com.here.sdk.core.engine.SDKOptions
 import com.here.sdk.core.errors.InstantiationErrorException
@@ -58,7 +59,8 @@ class MainActivity : AppCompatActivity() {
         // Set your credentials for the HERE SDK.
         var accessKeyID = "YOUR_ACCESS_KEY_ID"
         var accessKeySecret = "YOUR_ACCESS_KEY_SECRET"
-        var options = SDKOptions(accessKeyID, accessKeySecret)
+        var authenticationMode = AuthenticationMode.withKeySecret(accessKeyID, accessKeySecret)
+        var options = SDKOptions(authenticationMode)
         try {
             var context = this
             SDKNativeEngine.makeSharedInstance(context, options)

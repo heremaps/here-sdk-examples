@@ -20,7 +20,6 @@
 package com.here.sdk.examples.venues;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -31,28 +30,22 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.here.sdk.core.Anchor2D;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.Point2D;
@@ -72,10 +65,9 @@ import com.here.sdk.venue.control.VenueInfoListListener;
 import com.here.sdk.venue.control.VenueMap;
 import com.here.sdk.venue.control.VenueSelectionListener;
 import com.here.sdk.venue.data.VenueGeometry;
-import com.here.sdk.venue.data.VenueGeometryFilterType;
 import com.here.sdk.venue.data.VenueInfo;
 import com.here.sdk.venue.data.VenueModel;
-import com.here.sdk.venue.service.VenueListener;
+import com.here.sdk.venue.service.VenueMapListener;
 import com.here.sdk.venue.service.VenueService;
 import com.here.sdk.venue.service.VenueServiceInitStatus;
 import com.here.sdk.venue.service.VenueServiceListener;
@@ -322,7 +314,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Add needed listeners.
         service.add(serviceListener);
-        service.add(venueListener);
+        service.add(venueMapListener);
         venueMap.add(venueSelectionListener);
         venueMap.add(venueInfoListListener);
 
@@ -393,12 +385,12 @@ public class MainActivity extends AppCompatActivity {
     };
 
     // Listener for the venue loading event.
-    private final VenueListener venueListener = new VenueListener() {
+    private final VenueMapListener venueMapListener = new VenueMapListener() {
         @Override
-        public void onGetVenueCompleted(int venueId, @Nullable VenueModel venueModel, boolean b, @Nullable VenueStyle venueStyle) {
+        public void onGetVenueCompleted(String venueIdentifier, @Nullable VenueModel venueModel, boolean b, @Nullable VenueStyle venueStyle) {
             progressBar.setVisibility(View.GONE);
             if (venueModel == null) {
-                Log.e(TAG, "Failed to load the venue: " + venueId);
+                Log.e(TAG, "Failed to load the venue: " + venueIdentifier);
             } else {
                 mapLoadDone = true;
                 mapView.getCamera().zoomTo(18);
@@ -409,7 +401,7 @@ public class MainActivity extends AppCompatActivity {
                 venue_search.setHint("Search for Spaces");
                 String venue_name = "";
                 for(VenueInfo venue : venueInfo) {
-                    if(venue.getVenueId() == venueId)
+                    if(venue.getVenueIdentifier() == venueIdentifier)
                         venue_name = venue.getVenueName();
                 }
                 venueName.setText(venue_name);
@@ -442,7 +434,7 @@ public class MainActivity extends AppCompatActivity {
                     venue_search.setHint("Search for Spaces");
                     String venue_name = "";
                     for(VenueInfo venue : venueInfo) {
-                        if(venue.getVenueId() == venueModel.getId())
+                        if(venue.getVenueIdentifier() == venueModel.getIdentifier())
                             venue_name = venue.getVenueName();
                     }
                     venueName.setText(venue_name);
@@ -547,7 +539,7 @@ public class MainActivity extends AppCompatActivity {
             VenueMap venueMap = venueEngine.getVenueMap();
             // remove added listeners
             service.remove(serviceListener);
-            service.remove(venueListener);
+            service.remove(venueMapListener);
             venueMap.remove(venueSelectionListener);
             venueMap.remove(venueInfoListListener);
             venueEngine.destroy();
@@ -630,13 +622,13 @@ public class MainActivity extends AppCompatActivity {
         progressBar.setVisibility(View.VISIBLE);
         try {
             // Try to parse a venue id.
-            final int venueId = venueInfo.getVenueId();
+            final String venueIdentifier = venueInfo.getVenueIdentifier();
             VenueMap venueMap = venueEngine.getVenueMap();
             Venue selectedVenue = venueMap.getSelectedVenue();
             hideKeyboard();
-            if (selectedVenue == null || selectedVenue.getVenueModel().getId() != venueId) {
+            if (selectedVenue == null || !selectedVenue.getVenueModel().getIdentifier().equals(venueIdentifier)) {
                 // Select a venue by id.
-                venueMap.selectVenueAsync(venueId, this ::onVenueLoadError);
+                venueMap.selectVenueAsync(venueIdentifier, this ::onVenueLoadError);
             }
             if(sheetBehavior.getState() != BottomSheetBehavior.STATE_COLLAPSED)
                 sheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);

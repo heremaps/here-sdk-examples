@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  * License-Filename: LICENSE
  */
- 
+
 package com.here.hikingdiary;
 
 import com.here.sdk.mapview.MapContentType;
@@ -98,6 +98,7 @@ public class OutdoorRasterLayer {
     private MapLayer createMapLayer(String dataSourceName) {
         // The layer should be rendered on top of other layers except the layers showing the location indicator and polylines/polygons.
         MapLayerPriority priority = new MapLayerPriorityBuilder()
+                .renderedAfterLayer("labels")
                 .renderedBeforeLayer("&location_indicator_layer")
                 .renderedBeforeLayer("&polyline_layer")
                 .build();

@@ -69,10 +69,10 @@ class CustomRasterTileSourceExample {
   }
 
   MapLayer _createMapLayer(String dataSourceName) {
-    // The layer should be rendered on top of other layers except for the "labels" layer
+    // The layer should be rendered on top of other layers including the "labels" layer
     // so that we don't overlap the raster layer over POI markers.
     MapLayerPriority priority =
-        MapLayerPriorityBuilder().renderedBeforeLayer("labels").build();
+        MapLayerPriorityBuilder().renderedAfterLayer("labels").build();
 
     // And it should be visible for all zoom levels.
     MapLayerVisibilityRange range = MapLayerVisibilityRange(0, 22 + 1);

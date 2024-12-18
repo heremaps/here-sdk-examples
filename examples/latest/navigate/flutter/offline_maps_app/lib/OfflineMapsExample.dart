@@ -17,6 +17,9 @@
  * License-Filename: LICENSE
  */
 
+import 'dart:ffi';
+
+import 'package:flutter/cupertino.dart';
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/core.engine.dart';
 import 'package:here_sdk/core.errors.dart';
@@ -35,13 +38,17 @@ class OfflineMapsExample {
   List<Region> _downloadableRegions = [];
   List<MapDownloaderTask> _mapDownloaderTasks = [];
   ShowDialogFunction _showDialog;
+  bool _offlineSearchLayerEnabled = true;
 
-  OfflineMapsExample(ShowDialogFunction showDialogCallback, HereMapController hereMapController)
+  OfflineMapsExample(ShowDialogFunction showDialogCallback,
+      HereMapController hereMapController)
       : _showDialog = showDialogCallback,
         _hereMapController = hereMapController {
     double distanceToEarthInMeters = 7000;
-    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
-    _hereMapController.camera.lookAtPointWithMeasure(GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
+    MapMeasure mapMeasureZoom =
+        MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+    _hereMapController.camera.lookAtPointWithMeasure(
+        GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
 
     try {
       // Allows to search on already downloaded or cached map data (added for testing a downloaded region).
@@ -73,7 +80,8 @@ class OfflineMapsExample {
 
     // Note that the default storage path can be adapted when creating a new SDKNativeEngine.
     String storagePath = sdkNativeEngine.options.cachePath;
-    _showDialog("This example allows to download the region Switzerland.", "Storage path: $storagePath");
+    _showDialog("This example allows to download the region Switzerland.",
+        "Storage path: $storagePath");
   }
 
   void _performUpdateChecks() {
@@ -132,7 +140,8 @@ class OfflineMapsExample {
       }
 
       var listLenght = _downloadableRegions.length;
-      _showDialog("Contintents found: $listLenght", "Each continent contains various countries. See log for details.");
+      _showDialog("Contintents found: $listLenght",
+          "Each continent contains various countries. See log for details.");
     });
   }
 
@@ -150,7 +159,8 @@ class OfflineMapsExample {
     Region? region = _findRegion(swizNameInGerman);
 
     if (region == null) {
-      _showDialog("Error", "Error: The Swiz region was not found. Click 'Get Regions' first.");
+      _showDialog("Error",
+          "Error: The Swiz region was not found. Click 'Get Regions' first.");
       return;
     }
 
@@ -159,26 +169,34 @@ class OfflineMapsExample {
 
     MapDownloaderTask mapDownloaderTask = _mapDownloader.downloadRegions(
         regionIDs,
-        DownloadRegionsStatusListener((MapLoaderError? mapLoaderError, List<RegionId>? list) {
+        DownloadRegionsStatusListener(
+            (MapLoaderError? mapLoaderError, List<RegionId>? list) {
           // Handle events from onDownloadRegionsComplete().
           if (mapLoaderError != null) {
-            _showDialog("Error", "Download regions completion error: $mapLoaderError");
+            _showDialog(
+                "Error", "Download regions completion error: $mapLoaderError");
             return;
           }
 
           // If error is null, it is guaranteed that the list will not be null.
           // For this example we downloaded only one hardcoded region.
-          String message = "Download Regions Status: Completed 100% for Switzerland! ID: " + list!.first.id.toString();
+          String message =
+              "Download Regions Status: Completed 100% for Switzerland! ID: " +
+                  list!.first.id.toString();
           print(message);
         }, (RegionId regionId, int percentage) {
           // Handle events from onProgress().
-          String message =
-              "Download of Switzerland. ID: " + regionId.id.toString() + ". Progress: " + percentage.toString() + "%.";
+          String message = "Download of Switzerland. ID: " +
+              regionId.id.toString() +
+              ". Progress: " +
+              percentage.toString() +
+              "%.";
           print(message);
         }, (MapLoaderError? mapLoaderError) {
           // Handle events from onPause().
           if (mapLoaderError == null) {
-            _showDialog("Info", "The download was paused by the user calling mapDownloaderTask.pause().");
+            _showDialog("Info",
+                "The download was paused by the user calling mapDownloaderTask.pause().");
           } else {
             _showDialog("Error",
                 "Download regions onPause error. The task tried to often to retry the download: $mapLoaderError");
@@ -218,6 +236,78 @@ class OfflineMapsExample {
     return downloadableRegion;
   }
 
+  // Download the rectangular area that is currently visible in the viewport.
+  // It is possible to call this method in parallel to download multiple areas in parallel.
+  onDownloadAreaClicked() {
+    _showDialog("Note",
+        "Downloading the area that is currently visible in the viewport.");
+
+    GeoBox geoBox = _getMapViewGeoBox();
+    GeoPolygon polygonArea = GeoPolygon.withGeoBox(geoBox);
+
+    MapDownloaderTask mapDownloaderTask = _mapDownloader.downloadArea(
+        polygonArea,
+        DownloadRegionsStatusListener(
+                (MapLoaderError? mapLoaderError, List<RegionId>? list) {
+              // Handle events from onDownloadRegionsComplete().
+              if (mapLoaderError != null) {
+                _showDialog(
+                    "Error", "Download area completion error: $mapLoaderError");
+                return;
+              }
+
+              // If error is null, it is guaranteed that the regions will not be null.
+              // When downloading an area, only a single unique ID will be provided.
+              // Note: It is recommended to store this ID with a human readable name,
+              // as this will make it easier to delete the downloaded area in the future by calling
+              // mapDownloader.deleteRegions(...). The ID itself is accessible from InstalledRegions.
+              // For simplicity, this is not shown here.
+              String message =
+                  "Download area status. Completed 100%! ID: " +
+                      list!.first.id.toString();
+              print(message);
+            }, (RegionId regionId, int percentage) {
+          // Handle events from onProgress().
+          // Note that this ID is uniquely created and can be used to delete the area in the future.
+          String message = "Download of area. ID: " +
+              regionId.id.toString() +
+              ". Progress: " +
+              percentage.toString() +
+              "%.";
+          print(message);
+        }, (MapLoaderError? mapLoaderError) {
+          // Handle events from onPause().
+          if (mapLoaderError == null) {
+            _showDialog("Info",
+                "The area download was paused by the user calling mapDownloaderTask.pause().");
+          } else {
+            _showDialog("Error",
+                "Download area onPause error. The task tried to often to retry the download: $mapLoaderError");
+          }
+        }, () {
+          // Handle events from onResume().
+          _showDialog("Info", "A previously paused area download has been resumed.");
+        }));
+  }
+
+  GeoBox _getMapViewGeoBox() {
+    MapCamera camera = _hereMapController.camera;
+    GeoBox? geoBox = camera.boundingBox;
+    if (geoBox == null) {
+      print(
+          "GeoBox creation failed, corners are null. This can happen when the map is tilted. Falling back to a fixed box.");
+      GeoCoordinates southWestCorner = GeoCoordinates(
+          camera.state.targetCoordinates.latitude - 0.05,
+          camera.state.targetCoordinates.longitude - 0.05);
+      GeoCoordinates northEastCorner = GeoCoordinates(
+          camera.state.targetCoordinates.latitude + 0.05,
+          camera.state.targetCoordinates.longitude + 0.05);
+      geoBox = GeoBox(southWestCorner, northEastCorner);
+    }
+
+    return geoBox;
+  }
+
   onCancelMapDownloadClicked() {
     for (MapDownloaderTask mapDownloaderTask in _mapDownloaderTasks) {
       mapDownloaderTask.cancel();
@@ -236,7 +326,8 @@ class OfflineMapsExample {
     String queryString = "restaurants";
     GeoBox? viewportGeoBox = _hereMapController.camera.boundingBox;
     if (viewportGeoBox == null) {
-      _showDialog("GeoBox creation failed", "Is the map tilted or zoomed-out? Note that you cannot pick coordinates from the sky or the space when map is zoomed-out.");
+      _showDialog("GeoBox creation failed",
+          "Is the map tilted or zoomed-out? Note that you cannot pick coordinates from the sky or the space when map is zoomed-out.");
       return;
     }
     TextQueryArea queryArea = TextQueryArea.withBox(viewportGeoBox);
@@ -246,7 +337,8 @@ class OfflineMapsExample {
     searchOptions.languageCode = LanguageCode.enUs;
     searchOptions.maxItems = 30;
 
-    _offlineSearchEngine.searchByText(query, searchOptions, (SearchError? searchError, List<Place>? list) async {
+    _offlineSearchEngine.searchByText(query, searchOptions,
+        (SearchError? searchError, List<Place>? list) async {
       if (searchError != null) {
         _showDialog("Search", "Error: " + searchError.toString());
         return;
@@ -254,7 +346,8 @@ class OfflineMapsExample {
 
       // If error is null, list is guaranteed to be not empty.
       int listLength = list!.length;
-      _showDialog("Test search for $queryString", "Results: $listLength. See logs for details.");
+      _showDialog("Test search for $queryString",
+          "Results: $listLength. See logs for details.");
 
       // Log search results.
       for (Place place in list) {
@@ -275,6 +368,110 @@ class OfflineMapsExample {
     _showDialog("Note", "The app is radio-silence.");
   }
 
+  onClearCache(){
+    SDKCache.fromSdkEngine(SDKNativeEngine.sharedInstance!).clearAppCache((mapLoaderError){
+      if (mapLoaderError != null) {
+        _showDialog("Error","Cache clear error $mapLoaderError");
+      } else {
+        _showDialog("Note","Cache clear succeeded.");
+      }
+    });
+  }
+
+  toggleLayerConfiguration(String accessKeyId, String accessKeySecret,
+      void Function() rebuildMapView) async {
+    // Cached map data persists until the Least Recently Used (LRU) eviction policy is triggered.
+    // After modifying the "FeatureConfiguration" calling performFeatureUpdate()
+    // will also clear the cache if at least one region has been installed.
+    // This app allows the user to install one region for testing purposes.
+    // In order to simplify testing when no region has been installed, we
+    // explicitly clear the cache.
+    // If the cache is not cleared, the HERE SDK will look for cached data, for example,
+    // when using the OfflineSearchEngine.
+    // Needs to be called before accessing SDKOptions to load necessary libraries.
+    _offlineSearchLayerEnabled = !_offlineSearchLayerEnabled;
+    var enabledFeatures = [
+      LayerConfigurationFeature.detailRendering,
+      LayerConfigurationFeature.rendering
+    ];
+    if (_offlineSearchLayerEnabled) {
+      enabledFeatures.add(LayerConfigurationFeature.offlineSearch);
+      _showDialog("Note",
+          "Enabled minimal layer configuration with offlineSearch layer.");
+    } else {
+      _showDialog("Note",
+          "Enabled minimal layer configuration without offlineSearch layer.");
+    }
+    // LayerConfiguration can only be updated before HERE SDK initialization.
+    var layerConfiguration = LayerConfiguration(enabledFeatures);
+
+    // Set your credentials for the HERE SDK.
+    SDKOptions sdkOptions =
+        SDKOptions.withAccessKeySecret(accessKeyId, accessKeySecret);
+    sdkOptions.layerConfiguration = layerConfiguration;
+
+    // Releases resources used by the SDK.
+    SdkContext.release();
+
+    // Needs to be called before accessing SDKOptions to load necessary libraries.
+    SdkContext.init(IsolateOrigin.main);
+
+    try {
+      // Invoking makeSharedInstance will invalidate any existing references to the previous instance of SDKNativeEngine.
+      await SDKNativeEngine.makeSharedInstance(sdkOptions);
+    } on InstantiationException {
+      throw Exception("Failed to initialize the HERE SDK.");
+    }
+
+    rebuildMapView();
+
+    // Reinitialize MapDownloader.
+    MapDownloader.fromSdkEngineAsync(SDKNativeEngine.sharedInstance!,
+        (mapDownloader) {
+      _mapDownloader = mapDownloader;
+    });
+
+    // Reinitialize MapUpdater in background to not block the UI thread.
+    MapUpdater.fromSdkEngineAsync(SDKNativeEngine.sharedInstance!,
+        (mapUpdater) {
+      _mapUpdater = mapUpdater;
+      _mapUpdater.performFeatureUpdate(
+          MapUpdateProgressListener((regionId, percentage) {
+        // Handle feature update progress.
+        print(
+            "FeatureUpdate: Downloading and installing a map feature update. Progress for" +
+                regionId.id.toString() +
+                ":" +
+                percentage.toString());
+      }, (error) {
+        if (error == null) {
+          print(
+              "Feature update onPause error. The task tried to often to retry the update: " +
+                  error.toString());
+        } else {
+          print(
+              "FeatureUpdate: The map feature update was paused by the user.");
+        }
+      }, (error) {
+        if (error == null) {
+          print("Feature update completion error: " + error.toString());
+        } else {
+          print(
+              "FeatureUpdate: One or more map update has been successfully installed.");
+        }
+      }, () {
+        print(
+            "FeatureUpdate: A previously paused map feature update has been resumed.");
+      }));
+    });
+
+    // Reinitialize offline search engine.
+    try {
+      _offlineSearchEngine = OfflineSearchEngine();
+    } on InstantiationException {
+      throw ("Initialization of OfflineSearchEngine failed.");
+    }
+  }
 
   void _checkForMapUpdates() {
     if (_mapUpdater == null) {
@@ -303,10 +500,13 @@ class OfflineMapsExample {
       // available regions. The map data for a region may differ based on the catalog that is used
       // or on the version that is downloaded and installed.
       for (CatalogUpdateInfo catalogUpdateInfo in catalogList) {
-        print("CatalogUpdateCheck - Catalog name:" + catalogUpdateInfo.installedCatalog.catalogIdentifier.hrn);
+        print("CatalogUpdateCheck - Catalog name:" +
+            catalogUpdateInfo.installedCatalog.catalogIdentifier.hrn);
         print("CatalogUpdateCheck - Installed map version:" +
-            catalogUpdateInfo.installedCatalog.catalogIdentifier.version.toString());
-        print("CatalogUpdateCheck - Latest available map version:" + catalogUpdateInfo.latestVersion.toString());
+            catalogUpdateInfo.installedCatalog.catalogIdentifier.version
+                .toString());
+        print("CatalogUpdateCheck - Latest available map version:" +
+            catalogUpdateInfo.latestVersion.toString());
         _performMapUpdate(catalogUpdateInfo);
       }
     });
@@ -326,23 +526,28 @@ class OfflineMapsExample {
         catalogUpdateInfo,
         CatalogUpdateProgressListener((RegionId regionId, int percentage) {
           // Handle events from onProgress().
-          print("CatalogUpdate: Downloading and installing a map update. Progress for ${regionId.id}: $percentage%.");
+          print(
+              "CatalogUpdate: Downloading and installing a map update. Progress for ${regionId.id}: $percentage%.");
         }, (MapLoaderError? mapLoaderError) {
           // Handle events from onPause().
           if (mapLoaderError == null) {
-            print("CatalogUpdate:  The map update was paused by the user calling catalogUpdateTask.pause().");
+            print(
+                "CatalogUpdate:  The map update was paused by the user calling catalogUpdateTask.pause().");
           } else {
-            print("CatalogUpdate: Map update onPause error. The task tried to often to retry the update: " +
-                mapLoaderError.toString());
+            print(
+                "CatalogUpdate: Map update onPause error. The task tried to often to retry the update: " +
+                    mapLoaderError.toString());
           }
         }, (MapLoaderError? mapLoaderError) {
           // Handle events from onComplete().
           if (mapLoaderError != null) {
-            print("CatalogUpdate: Map update completion error: " + mapLoaderError.toString());
+            print("CatalogUpdate: Map update completion error: " +
+                mapLoaderError.toString());
             return;
           }
 
-          print("CatalogUpdate: One or more map update has been successfully installed.");
+          print(
+              "CatalogUpdate: One or more map update has been successfully installed.");
           _logCurrentMapVersion();
 
           // It is recommend to call now also `getDownloadableRegions()` to update
@@ -351,7 +556,8 @@ class OfflineMapsExample {
           // before doing a new download, update or delete operation.
         }, () {
           // Handle events from onResume():
-          print("CatalogUpdate: A previously paused map update has been resumed.");
+          print(
+              "CatalogUpdate: A previously paused map update has been resumed.");
         }));
   }
 
@@ -362,16 +568,20 @@ class OfflineMapsExample {
     }
 
     // Note that this value will not change during the lifetime of an app.
-    PersistentMapStatus persistentMapStatus = _mapDownloader.getInitialPersistentMapStatus();
+    PersistentMapStatus persistentMapStatus =
+        _mapDownloader.getInitialPersistentMapStatus();
     if (persistentMapStatus != PersistentMapStatus.ok) {
       // Something went wrong after the app was closed the last time. It seems the offline map data is
       // corrupted. This can eventually happen, when an ongoing map download was interrupted due to a crash.
-      print("PersistentMapStatus: The persistent map data seems to be corrupted. Trying to repair.");
+      print(
+          "PersistentMapStatus: The persistent map data seems to be corrupted. Trying to repair.");
 
       // Let's try to repair.
-      _mapDownloader.repairPersistentMap((PersistentMapRepairError? persistentMapRepairError) {
+      _mapDownloader.repairPersistentMap(
+          (PersistentMapRepairError? persistentMapRepairError) {
         if (persistentMapRepairError == null) {
-          print("RepairPersistentMap: Repair operation completed successfully!");
+          print(
+              "RepairPersistentMap: Repair operation completed successfully!");
           return;
         }
 
@@ -380,7 +590,8 @@ class OfflineMapsExample {
         // is "pendingUpdate", it cannot be repaired, but instead an update
         // should be executed. It is recommended to inform your users to
         // perform the recommended action.
-        print("RepairPersistentMap: Repair operation failed: " + persistentMapRepairError.toString());
+        print("RepairPersistentMap: Repair operation failed: " +
+            persistentMapRepairError.toString());
       });
     }
   }
@@ -397,10 +608,13 @@ class OfflineMapsExample {
 
     try {
       MapVersionHandle mapVersionHandle = _mapUpdater.getCurrentMapVersion();
-      print("Installed map version: " + mapVersionHandle.stringRepresentation(","));
+      print("Installed map version: " +
+          mapVersionHandle.stringRepresentation(","));
     } on MapLoaderExceptionException catch (e) {
       MapLoaderError mapLoaderError = e.error;
-      print("MapLoaderError" + "Fetching current map version failed: " + mapLoaderError.toString());
+      print("MapLoaderError" +
+          "Fetching current map version failed: " +
+          mapLoaderError.toString());
     }
   }
 }

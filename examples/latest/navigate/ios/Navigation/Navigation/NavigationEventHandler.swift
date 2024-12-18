@@ -50,12 +50,16 @@ class NavigationEventHandler : NavigableLocationDelegate,
     private let voiceAssistant: VoiceAssistant
     private var lastMapMatchedLocation: MapMatchedLocation?
     private var previousManeuverIndex: Int32 = -1
-    var textViewUpdateDelegate: TextViewUpdateDelegate?
+    private let routeCalculator: RouteCalculator
+    private var lastTrafficUpdateInMilliseconds: Int = 0;
+    var messageDelegate: MessageDelegate?
     
     init(_ visualNavigator: VisualNavigator,
-         _ dynamicRoutingEngine: DynamicRoutingEngine) {
+         _ dynamicRoutingEngine: DynamicRoutingEngine,
+         _ routeCalculator: RouteCalculator) {
         self.visualNavigator = visualNavigator
         self.dynamicRoutingEngine = dynamicRoutingEngine
+        self.routeCalculator = routeCalculator
         
         // A helper class for TTS.
         voiceAssistant = VoiceAssistant()
@@ -133,7 +137,53 @@ class NavigationEventHandler : NavigableLocationDelegate,
                 mapMatchedLocation: lastMapMatchedLocation,
                 sectionIndex: routeProgress.sectionIndex)
         }
+        
+        updateTrafficOnRoute(routeProgress: routeProgress)
     }
+    
+    // Periodically updates the traffic information for the current route.
+    // This method checks whether the last traffic update occurred within the specified interval and skips the update if not.
+    // Then it calculates the current traffic conditions along the route using the `RoutingEngine`.
+    // Lastly, it updates the `VisualNavigator` with the newly calculated `TrafficOnRoute` object,
+    // which affects the `RouteProgress` duration without altering the route geometry or distance.
+    func updateTrafficOnRoute(routeProgress: RouteProgress) {
+        guard let currentRoute = visualNavigator.route else {
+            // Should never happen.
+            return
+        }
+        
+        let trafficUpdateIntervalInMilliseconds = 3 * 60000 // 3 minutes
+        let now = Int(Date().timeIntervalSince1970 * 1000) // Current time in milliseconds
+        if (now - lastTrafficUpdateInMilliseconds) < trafficUpdateIntervalInMilliseconds {
+            return
+        }
+        // Store the current time when we update trafficOnRoute.
+        lastTrafficUpdateInMilliseconds = now
+        
+        let sectionProgressList = routeProgress.sectionProgress
+        guard let lastSectionProgress = sectionProgressList.last else {
+            // Should never happen if the list is valid.
+            return
+        }
+        let traveledDistanceOnLastSectionInMeters =
+        currentRoute.lengthInMeters - lastSectionProgress.remainingDistanceInMeters
+        let lastTraveledSectionIndex = routeProgress.sectionIndex
+        
+        routeCalculator.calculateTrafficOnRoute(
+            currentRoute: currentRoute,
+            lastTraveledSectionIndex: Int(lastTraveledSectionIndex),
+            traveledDistanceOnLastSectionInMeters: Int(traveledDistanceOnLastSectionInMeters)
+        ) { routingError, trafficOnRoute in
+            if let routingError = routingError {
+                print("CalculateTrafficOnRoute error: \(routingError)")
+                return
+            }
+            print("Updated traffic on route")
+            // Sets traffic data for the current route, affecting RouteProgress duration in SectionProgress, while preserving route distance and geometry.
+            self.visualNavigator.trafficOnRoute = trafficOnRoute
+        }
+    }
+
     
     func getRoadName(maneuver: Maneuver) -> String {
         let currentRoadTexts = maneuver.roadTexts
@@ -811,6 +861,6 @@ class NavigationEventHandler : NavigableLocationDelegate,
     }
     
     private func updateMessage(_ message: String) {
-        textViewUpdateDelegate?.updateTextViewMessage(message)
+        messageDelegate?.updateMessage(message)
     }
 }

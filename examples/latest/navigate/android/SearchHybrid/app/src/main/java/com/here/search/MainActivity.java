@@ -21,11 +21,12 @@ package com.here.search;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import android.util.Log;
-import android.view.View;
 
 import com.here.sdk.core.engine.SDKBuildInformation;
 import com.here.sdk.core.engine.SDKNativeEngine;
@@ -43,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     private PermissionsRequestor permissionsRequestor;
     private MapView mapView;
     private SearchExample searchExample;
+    private W3WSearchExample w3wSearchExample;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         permissionsRequestor.onRequestPermissionsResult(requestCode, grantResults);
     }
 
@@ -103,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
             public void onLoadScene(@Nullable MapError mapError) {
                 if (mapError == null) {
                     searchExample = new SearchExample(MainActivity.this, mapView);
+                    w3wSearchExample = new W3WSearchExample(MainActivity.this, mapView);
                 } else {
                     Log.d(TAG, "onLoadScene failed: " + mapError.toString());
                 }
@@ -116,6 +120,14 @@ public class MainActivity extends AppCompatActivity {
 
     public void geocodeAnAddressButtonClicked(View view) {
         searchExample.onGeocodeButtonClicked();
+    }
+
+    public void onW3WSearchButtonClicked(View view) {
+        w3wSearchExample.onW3WSearchButtonClicked();
+    }
+
+    public void onW3WGeocodingButtonClicked(View view) {
+        w3wSearchExample.onW3WGeocodeButtonClicked();
     }
 
     public void switchOnlineButtonClicked(View view) {

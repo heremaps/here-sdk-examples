@@ -21,7 +21,6 @@ DerivedData
 *.lock
 Pods/
 *.xcworkspace
-*/xcshareddata/
 
 # SDK
 *.xcframework
