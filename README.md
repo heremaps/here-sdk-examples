@@ -35,7 +35,7 @@ For an overview of the existing features, please check the _Developer Guide_ for
 - **HelloMapCarPlay**: Shows how CarPlay can be integrated into the _HelloMap_ app to display a map on an in-car head unit display (iOS only). Exclusively available for the _Explore Edition_ and the _Navigate Edition_.
 - **HelloMapSurface**: Shows how to use the MapSurface class to render low-level graphic elements with OpenGL ES on top of the map. (Android only). Exclusively available for the _Explore Edition_ and the _Navigate Edition_.
 - **Camera**: Shows how to change the target and the target anchor point and how to move to another location using custom map animations.
-- **MapFeatures**: Shows how to enable different map view features. Exclusively available for the _ Navigate Editions_ (Android only).
+- **MapFeatures**: Shows how to enable different map view features. Exclusively available for the _Navigate Edition_ (Android only, for now).
 - **CameraKeyframeTracks**: Shows how to do custom camera animations with keyframe tracks.
 - **CustomMapStyles**: Shows how to load custom map schemes made with the _HERE Style Editor_. Exclusively available for the _Explore Edition_ and the _Navigate Edition_.
 - **CustomRasterLayers**: Shows how to load custom raster layers. Exclusively available for the _Explore Edition_ and the _Navigate Edition_.
