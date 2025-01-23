@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 HERE Europe B.V.
+ * Copyright (C) 2019-2025 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,8 @@ void _initializeHERESDK() async {
   // Set your credentials for the HERE SDK.
   String accessKeyId = "YOUR_ACCESS_KEY_ID";
   String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
-  SDKOptions sdkOptions = SDKOptions.withAccessKeySecret(accessKeyId, accessKeySecret);
+  AuthenticationMode authenticationMode = AuthenticationMode.withKeySecret(accessKeyId, accessKeySecret);
+  SDKOptions sdkOptions = SDKOptions.withAuthenticationMode(authenticationMode);
 
   try {
     await SDKNativeEngine.makeSharedInstance(sdkOptions);
@@ -71,6 +72,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   static const String _trackingOff = "Tracking: OFF";
   String _trackingState = "Pending ...";
   bool _isTracking = true;
+  late final AppLifecycleListener _listener;
 
   // When using HERE Positioning in your app, it is required to request and to show the user's consent decision.
   // In addition, users must be able to change their consent decision at any time.
@@ -257,18 +259,29 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance!.addObserver(this);
+    _listener = AppLifecycleListener(
+      onDetach: () =>
+      // Sometimes Flutter may not reliably call dispose(),
+      // therefore it is recommended to dispose the HERE SDK
+      // also when the AppLifecycleListener is detached.
+      // See more details: https://github.com/flutter/flutter/issues/40940
+      { print('AppLifecycleListener detached.'), _disposeHERESDK() },
+    );
   }
 
   @override
   void dispose() {
+    _disposeHERESDK();
+    super.dispose();
+  }
+
+  void _disposeHERESDK() async {
     WidgetsBinding.instance!.removeObserver(this);
 
     // Free HERE SDK resources before the application shuts down.
-    SDKNativeEngine.sharedInstance?.dispose();
+    await SDKNativeEngine.sharedInstance?.dispose();
     SdkContext.release();
-
-    super.dispose();
+    _listener.dispose();
   }
 
   @override

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2024 HERE Europe B.V.
+ * Copyright (C) 2023-2025 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ package com.here.hellomapandroidauto;
 
 import android.content.Context;
 import android.util.Log;
+import com.here.sdk.core.engine.AuthenticationMode;
 import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.core.engine.SDKOptions;
 import com.here.sdk.core.errors.InstantiationErrorException;
@@ -51,7 +52,8 @@ public class HERESDKLifecycle {
     // Set your credentials for the HERE SDK.
     String accessKeyID = "YOUR_ACCESS_KEY_ID";
     String accessKeySecret ="YOUR_ACCESS_KEY_SECRET";
-    SDKOptions options = new SDKOptions(accessKeyID, accessKeySecret);
+    AuthenticationMode authenticationMode = AuthenticationMode.withKeySecret(accessKeyID, accessKeySecret);
+    SDKOptions options = new SDKOptions(authenticationMode);
     try {
       Log.d(TAG, "initialize here sdk");
       SDKNativeEngine.makeSharedInstance(context, options);
@@ -75,7 +77,7 @@ public class HERESDKLifecycle {
     }
     disposeSDK();
   }
-  
+
   private static void disposeSDK() {
     SDKNativeEngine sdkNativeEngine = SDKNativeEngine.getSharedInstance();
     if (sdkNativeEngine != null) {

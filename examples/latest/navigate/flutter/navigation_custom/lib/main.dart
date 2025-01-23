@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 HERE Europe B.V.
+ * Copyright (C) 2019-2025 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,8 @@ void _initializeHERESDK() async {
   // Set your credentials for the HERE SDK.
   String accessKeyId = "YOUR_ACCESS_KEY_ID";
   String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
-  SDKOptions sdkOptions = SDKOptions.withAccessKeySecret(accessKeyId, accessKeySecret);
+  AuthenticationMode authenticationMode = AuthenticationMode.withKeySecret(accessKeyId, accessKeySecret);
+  SDKOptions sdkOptions = SDKOptions.withAuthenticationMode(authenticationMode);
 
   try {
     await SDKNativeEngine.makeSharedInstance(sdkOptions);
@@ -60,6 +61,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> implements HERE.LocationListener, AnimationListener {
   final GeoCoordinates _routeStartGeoCoordinates = GeoCoordinates(52.520798, 13.409408);
   final double _distanceInMeters = 1000;
+  late final AppLifecycleListener _listener;
 
   HereMapController? _hereMapController;
 
@@ -80,6 +82,32 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
 
     // Return true to allow the back press.
     return true;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _listener = AppLifecycleListener(
+      onDetach: () =>
+      // Sometimes Flutter may not reliably call dispose(),
+      // therefore it is recommended to dispose the HERE SDK
+      // also when the AppLifecycleListener is detached.
+      // See more details: https://github.com/flutter/flutter/issues/40940
+      { print('AppLifecycleListener detached.'), _disposeHERESDK() },
+    );
+  }
+
+  @override
+  void dispose() {
+    _disposeHERESDK();
+    super.dispose();
+  }
+
+  void _disposeHERESDK() async {
+    // Free HERE SDK resources before the application shuts down.
+    await SDKNativeEngine.sharedInstance?.dispose();
+    SdkContext.release();
+    _listener.dispose();
   }
 
   @override
@@ -405,14 +433,6 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
 
     _locationSimulator!.listener = this;
     _locationSimulator!.start();
-  }
-
-  @override
-  void dispose() {
-    // Free HERE SDK resources before the application shuts down.
-    SDKNativeEngine.sharedInstance?.dispose();
-    SdkContext.release();
-    super.dispose();
   }
 
   // A helper method to add a button on top of the HERE map.

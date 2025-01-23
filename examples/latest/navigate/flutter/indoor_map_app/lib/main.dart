@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020-2024 HERE Europe B.V.
+ * Copyright (C) 2020-2025 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,8 @@ void _initializeHERESDK() async {
   // Set your credentials for the HERE SDK.
   String accessKeyId = "VENUE_ACCESS_KEY_ID";
   String accessKeySecret = "VENUE_ACCESS_KEY_SECRET";
-  SDKOptions sdkOptions = SDKOptions.withAccessKeySecret(accessKeyId, accessKeySecret);
+  AuthenticationMode authenticationMode = AuthenticationMode.withKeySecret(accessKeyId, accessKeySecret);
+  SDKOptions sdkOptions = SDKOptions.withAuthenticationMode(authenticationMode);
 
   try {
     await SDKNativeEngine.makeSharedInstance(sdkOptions);
@@ -82,6 +83,7 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   final VenueEngineState _venueEngineState = VenueEngineState();
   final GeometryInfoState _geometryInfoState = GeometryInfoState();
+  late final AppLifecycleListener _listener;
   late String _venueIdAsString = "";
   late String _selectedVenue = "Venue Id";
   List _venueList = ["Venue Id"];
@@ -113,6 +115,32 @@ class _MainPageState extends State<MainPage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _listener = AppLifecycleListener(
+      onDetach: () =>
+      // Sometimes Flutter may not reliably call dispose(),
+      // therefore it is recommended to dispose the HERE SDK
+      // also when the AppLifecycleListener is detached.
+      // See more details: https://github.com/flutter/flutter/issues/40940
+      { print('AppLifecycleListener detached.'), _disposeHERESDK() },
+    );
+  }
+
+  @override
+  void dispose() {
+    _disposeHERESDK();
+    super.dispose();
+  }
+
+  void _disposeHERESDK() async {
+    // Free HERE SDK resources before the application shuts down.
+    await SDKNativeEngine.sharedInstance?.dispose();
+    SdkContext.release();
+    _listener.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -120,14 +148,14 @@ class _MainPageState extends State<MainPage> {
         children: [
           SlidingUpPanel(
             controller: _panelController,
-            minHeight: 140,
+            minHeight: 100,
             maxHeight: 850,
             panel: _buildSlidingPanel(),
             body: Column(
               children: [
                 Padding(
                     padding: const EdgeInsets.only(
-                        top: 50), // Set the desired margin top here
+                        top: 29), // Set the desired margin top here
                     child: ValueListenableBuilder(
                         valueListenable: mapLoading.isMapLoading,
                         builder: (BuildContext context, bool isLoading,
@@ -481,6 +509,7 @@ class _MainPageState extends State<MainPage> {
                   _panelController.animatePanelToPosition(0.12);
                 return SingleChildScrollView(
                   child: DataTable(
+                    headingRowHeight: 0,
                     columns: [
                       DataColumn(label: Text('')),
                       DataColumn(label: Text('')),
@@ -493,6 +522,7 @@ class _MainPageState extends State<MainPage> {
               } else {
                 return SingleChildScrollView(
                   child: DataTable(
+                    headingRowHeight: 0,
                     columns: [
                       DataColumn(label: Text('')),
                       DataColumn(label: Text('')),
@@ -512,6 +542,7 @@ class _MainPageState extends State<MainPage> {
               _venueName = venueNames.cast<String>();
               return SingleChildScrollView(
                 child: DataTable(
+                  headingRowHeight: 0,
                   columns: [
                     DataColumn(label: Text('')),
                     DataColumn(label: Text('')),
@@ -754,12 +785,11 @@ class _MainPageState extends State<MainPage> {
     mapLoading.isMapLoading.value = false;
 
     // Perform additional actions when a row is tapped
-    String venueId = venueMap[venue] ?? "";
-    if (venueId.isNotEmpty) {
-      int venueIdAsInt = int.parse(venueId);
-      _venueEngineState.selectVenue(venueIdAsInt);
+    String venueIdentifier = venueMap[venue] ?? "";
+    if (venueIdentifier.isNotEmpty) {
+      _venueEngineState.selectVenue(venueIdentifier);
     } else {
-      print('Venue ID not found for venue: $venue');
+      print('Venue Identifier not found for venue: $venue');
     }
 
     FocusScope.of(context).unfocus();

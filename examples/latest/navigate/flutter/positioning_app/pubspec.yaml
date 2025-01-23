@@ -32,7 +32,10 @@ dependencies:
 
   # The following adds the permission_handler plugin, to request various different
   # permissions from the user.
-  permission_handler: 10.2.0
+  permission_handler: ^11.0.1
+
+  # The following adds the shared_preferences plugin, to save and read persistent preferences.
+  shared_preferences: ^2.3.2
 
   # The following adds the HERE SDK for Flutter plugin folder to your application.
   here_sdk:

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 HERE Europe B.V.
+ * Copyright (C) 2019-2025 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -130,7 +130,8 @@ class NavigationEventHandler {
       _lastMapMatchedLocation = mapMatchedLocation;
 
       if (_lastMapMatchedLocation?.isDrivingInTheWrongWay == true) {
-        print("User is driving in the wrong direction of the route.");
+        // For two-way streets, this value is always false. This feature is supported in tracking mode and when deviating from a route.
+        print("This is a one way road. User is driving against the allowed traffic direction.");
       }
 
       var speed =
@@ -336,8 +337,7 @@ class NavigationEventHandler {
       }
 
       if (speedWarningStatus == SpeedWarningStatus.speedLimitRestored) {
-        print(
-            "Driver is again slower than current speed limit (plus an optional offset.)");
+        print("Driver is again slower than current speed limit (plus an optional offset.)");
       }
     });
 
@@ -368,14 +368,12 @@ class NavigationEventHandler {
             ? routeDeviation.lastLocationOnRoute!.originalLocation.coordinates
             : lastMapMatchedLocationOnRoute.coordinates;
       } else {
-        print(
-            "User was never following the route. So, we take the start of the route instead.");
+        print("User was never following the route. So, we take the start of the route instead.");
         lastGeoCoordinatesOnRoute =
             route.sections.first.departurePlace.originalCoordinates!;
       }
 
-      int distanceInMeters =
-          currentGeoCoordinates.distanceTo(lastGeoCoordinatesOnRoute) as int;
+      int distanceInMeters = currentGeoCoordinates.distanceTo(lastGeoCoordinatesOnRoute) as int;
       print("RouteDeviation in meters is " + distanceInMeters.toString());
 
       // Now, an application needs to decide if the user has deviated far enough and
@@ -700,6 +698,10 @@ class NavigationEventHandler {
   // Then it calculates the current traffic conditions along the route using the `RoutingEngine`.
   // Lastly, it updates the `VisualNavigator` with the newly calculated `TrafficOnRoute` object,
   // which affects the `RouteProgress` duration without altering the route geometry or distance.
+  //
+  // Note: This code initiates periodic calls to the HERE Routing backend. Depending on your contract,
+  // each call may be charged separately. It is the application's responsibility to decide how and how
+  // often this code should be executed.
   void updateTrafficOnRoute(RouteProgress routeProgress) {
     Route? currentRoute = _visualNavigator.route;
     if (currentRoute == null) {
@@ -707,7 +709,8 @@ class NavigationEventHandler {
       return;
     }
 
-    const int trafficUpdateIntervalInMilliseconds = 3 * 60000; // 3 minutes.
+    // Below, we use 10 minutes. A common range is between 5 and 15 minutes.
+    const int trafficUpdateIntervalInMilliseconds = 10 * 60000; // 10 minutes.
     int now = DateTime.now().millisecondsSinceEpoch;
     if ((now - lastTrafficUpdateInMilliseconds) < trafficUpdateIntervalInMilliseconds) {
       return;
@@ -730,9 +733,10 @@ class NavigationEventHandler {
           print("CalculateTrafficOnRoute error: ${routingError.name}");
           return;
         }
-        print("Updated traffic on route");
-        // Sets traffic data for the current route, affecting RouteProgress duration in SectionProgress, while preserving route distance and geometry.
+        // Sets traffic data for the current route, affecting RouteProgress duration in SectionProgress,
+        // while preserving route distance and geometry.
         _visualNavigator.trafficOnRoute = trafficOnRoute;
+        print("Updated traffic on route.");
       },
     );
   }

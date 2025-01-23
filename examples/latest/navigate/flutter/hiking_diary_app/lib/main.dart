@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2024 HERE Europe B.V.
+ * Copyright (C) 2023-2025 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,10 +53,9 @@ void _initializeHERESDK() async {
 
   // Set your credentials for the HERE SDK.
   String accessKeyId = "YOUR_ACCESS_KEY_ID";
-  String accessKeySecret =
-      "YOUR_ACCESS_KEY_SECRET";
-  SDKOptions sdkOptions =
-      SDKOptions.withAccessKeySecret(accessKeyId, accessKeySecret);
+  String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
+  AuthenticationMode authenticationMode = AuthenticationMode.withKeySecret(accessKeyId, accessKeySecret);
+  SDKOptions sdkOptions = SDKOptions.withAuthenticationMode(authenticationMode);
 
   try {
     await SDKNativeEngine.makeSharedInstance(sdkOptions);
@@ -77,6 +76,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   bool _mapLayerSwitch = false;
   HikingApp? hikingApp;
+  late final AppLifecycleListener _listener;
 
   bool _isLocationPermissionGranted = false;
 
@@ -92,6 +92,15 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    _listener = AppLifecycleListener(
+      onDetach: () =>
+      // Sometimes Flutter may not reliably call dispose(),
+      // therefore it is recommended to dispose the HERE SDK
+      // also when the AppLifecycleListener is detached.
+      // See more details: https://github.com/flutter/flutter/issues/40940
+      { print('AppLifecycleListener detached.'), _disposeHERESDK() },
+    );
+
     WidgetsBinding.instance.addObserver(this);
     widget.messageNotifier.addListener(_update);
   }
@@ -99,17 +108,20 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    widget.messageNotifier.removeListener(_update);
+    _disposeHERESDK();
+    super.dispose();
+  }
 
-    // Free HERE SDK resources before the application shuts down.
-    SDKNativeEngine.sharedInstance?.dispose();
-    SdkContext.release();
-
+  void _disposeHERESDK() async {
     if (hikingApp != null) {
       hikingApp!.onDestroyOutdoorRasterLayer();
     }
 
-    widget.messageNotifier.removeListener(_update);
-    super.dispose();
+    // Free HERE SDK resources before the application shuts down.
+    await SDKNativeEngine.sharedInstance?.dispose();
+    SdkContext.release();
+    _listener.dispose();
   }
 
   // Triggers a rebuild of the widget.

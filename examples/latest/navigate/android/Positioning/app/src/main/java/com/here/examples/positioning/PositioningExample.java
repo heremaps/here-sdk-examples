@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020-2024 HERE Europe B.V.
+ * Copyright (C) 2020-2025 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,6 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.here.sdk.consent.Consent;
-import com.here.sdk.consent.ConsentEngine;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.Location;
 import com.here.sdk.core.LocationListener;
@@ -53,7 +51,6 @@ public class PositioningExample {
 
     private MapView mapView;
     private LocationEngine locationEngine;
-    private ConsentEngine consentEngine;
     private LocationIndicator locationIndicator;
 
     private final LocationListener locationListener = location -> {
@@ -90,14 +87,9 @@ public class PositioningExample {
         this.mapView = mapView;
 
         try {
-            consentEngine = new ConsentEngine();
             locationEngine = new LocationEngine();
         } catch (InstantiationErrorException e) {
             throw new RuntimeException("Initialization failed: " + e.getMessage());
-        }
-
-        if (consentEngine.getUserConsentState() == Consent.UserReply.NOT_HANDLED) {
-            consentEngine.requestUserConsent();
         }
 
         final Location myLastLocation = locationEngine.getLastKnownLocation();
@@ -116,6 +108,7 @@ public class PositioningExample {
         locationEngine.addLocationStatusListener(locationStatusListener);
         locationEngine.addLocationIssueListener(locationIssueListener);
         locationEngine.addLocationListener(locationListener);
+        locationEngine.confirmHEREPrivacyNoticeInclusion();
         locationEngine.start(LocationAccuracy.BEST_AVAILABLE);
     }
 

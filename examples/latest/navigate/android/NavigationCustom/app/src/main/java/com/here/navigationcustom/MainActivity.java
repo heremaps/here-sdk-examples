@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 HERE Europe B.V.
+ * Copyright (C) 2019-2025 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import com.here.sdk.core.GeoCoordinatesUpdate;
 import com.here.sdk.core.GeoOrientationUpdate;
 import com.here.sdk.core.Location;
 import com.here.sdk.core.LocationListener;
+import com.here.sdk.core.engine.AuthenticationMode;
 import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.core.engine.SDKOptions;
 import com.here.sdk.core.errors.InstantiationErrorException;
@@ -88,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
     private Location lastKnownLocation = null;
     private GeoCoordinates routeStartGeoCoordinates;
     private boolean isDefaultLocationIndicator = true;
+    private boolean isCurrentColorBlue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,7 +114,8 @@ public class MainActivity extends AppCompatActivity {
         // Set your credentials for the HERE SDK.
         String accessKeyID = "YOUR_ACCESS_KEY_ID";
         String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
-        SDKOptions options = new SDKOptions(accessKeyID, accessKeySecret);
+        AuthenticationMode authenticationMode = AuthenticationMode.withKeySecret(accessKeyID, accessKeySecret);
+        SDKOptions options = new SDKOptions(authenticationMode);
         try {
             Context context = this;
             SDKNativeEngine.makeSharedInstance(context, options);
@@ -237,6 +240,17 @@ public class MainActivity extends AppCompatActivity {
                         Log.e("Route calculation error", routingError.toString());
                     }
                 });
+    }
+
+    // Toggle the halo color of the default LocationIndicator.
+    public void colorButtonClicked(View view) {
+        if (isCurrentColorBlue) {
+            defaultLocationIndicator.setHaloColor(IndicatorStyle.PEDESTRIAN, new Color(255F, 255F, 0F, 0.30F));
+            isCurrentColorBlue = false;
+        } else {
+            defaultLocationIndicator.setHaloColor(IndicatorStyle.PEDESTRIAN, new Color(0F, 0F, 255F, 0.30F));
+            isCurrentColorBlue = true;
+        }
     }
 
     // Stop guidance simulation and switch pedestrian LocationIndicator on.

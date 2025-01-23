@@ -1,4 +1,4 @@
-The HelloMap example app shows how the HERE SDK can be integrated into your project and how to display a map.
+The HelloMapKotlin example app shows how the HERE SDK can be integrated into your project and how to display a map.
 
 Build instructions:
 -------------------

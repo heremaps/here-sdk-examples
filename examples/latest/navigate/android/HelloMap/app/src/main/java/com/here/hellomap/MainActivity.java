@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 HERE Europe B.V.
+ * Copyright (C) 2019-2025 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
+        // Before creating a MapView instance please make sure that the HERE SDK is initialized.
         initializeHERESDK();
 
         setContentView(R.layout.activity_main);
@@ -68,6 +69,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // Note that for this app handling of permissions is optional as no sensitive permissions
+        // are required.
         handleAndroidPermissions();
     }
 

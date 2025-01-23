@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 HERE Europe B.V.
+ * Copyright (C) 2019-2025 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,10 +36,8 @@ void _initializeHERESDK() async {
 
   // Set your credentials for the HERE SDK.
   String accessKeyId = "YOUR_ACCESS_KEY_ID";
-  String accessKeySecret =
-      "YOUR_ACCESS_KEY_SECRET";
-  AuthenticationMode authenticationMode =
-      AuthenticationMode.withKeySecret(accessKeyId, accessKeySecret);
+  String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
+  AuthenticationMode authenticationMode = AuthenticationMode.withKeySecret(accessKeyId, accessKeySecret);
   SDKOptions sdkOptions = SDKOptions.withAuthenticationMode(authenticationMode);
 
   try {
@@ -49,7 +47,14 @@ void _initializeHERESDK() async {
   }
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  late final AppLifecycleListener _appLifecycleListener;
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -67,11 +72,36 @@ class MyApp extends StatelessWidget {
         GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
 
     // Load the map scene using a map scheme to render the map with.
-    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay,
-        (MapError? error) {
+    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
       if (error != null) {
         print('Map scene not loaded. MapError: ${error.toString()}');
       }
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _appLifecycleListener = AppLifecycleListener(
+      onDetach: () =>
+      // Sometimes Flutter may not reliably call dispose(),
+      // therefore it is recommended to dispose the HERE SDK
+      // also when the AppLifecycleListener is detached.
+      // See more details: https://github.com/flutter/flutter/issues/40940
+      { print('AppLifecycleListener detached.'), _disposeHERESDK() },
+    );
+  }
+
+  @override
+  void dispose() {
+    _disposeHERESDK();
+    super.dispose();
+  }
+
+  void _disposeHERESDK() async {
+    // Free HERE SDK resources before the application shuts down.
+    await SDKNativeEngine.sharedInstance?.dispose();
+    SdkContext.release();
+    _appLifecycleListener.dispose();
   }
 }

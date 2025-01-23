@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020-2024 HERE Europe B.V.
+ * Copyright (C) 2020-2025 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -127,9 +127,9 @@ class VenueEngineState extends State<VenueEngineWidget> {
   late VenueSelectionListener _venueSelectionListener;
   late VenueDrawingSelectionListener _drawingSelectionListener;
   late VenueLevelSelectionListener _levelSelectionListener;
-  late VenueLifecycleListenerImpl _venueLifecycleListener;
+  late VenueMapLifecycleListenerImpl _venueMapLifecycleListener;
   late VenueInfoListListener _venueInfoListListener;
-  late VenueListener _venueListener;
+  late VenueMapListener _venueMapListener;
   VenueTapController? venueTapController;
   VenueTapListenerImpl? _tapListener;
   final _drawingSwitcherState = DrawingSwitcherState();
@@ -186,10 +186,10 @@ class VenueEngineState extends State<VenueEngineWidget> {
     _geometryInfoState = geometryInfoState;
   }
 
-  selectVenue(int venueId) {
+  selectVenue(String venueIdentifier) {
     if (_venueEngine != null) {
       // Select venue by ID.
-      _venueEngine!.venueMap.selectVenueAsyncWithErrors(venueId, (VenueErrorCode? venueLoadError) {
+      _venueEngine!.venueMap.selectVenueAsyncWithErrorsStr(venueIdentifier, (VenueErrorCode? venueLoadError) {
         String errorMsg;
         switch(venueLoadError) {
           case VenueErrorCode.noNetwork:
@@ -237,15 +237,15 @@ class VenueEngineState extends State<VenueEngineWidget> {
     _venueSelectionListener = VenueSelectionListenerImpl(this);
     _drawingSelectionListener = DrawingSelectionListenerImpl(this);
     _levelSelectionListener = LevelSelectionListenerImpl(this);
-    _venueLifecycleListener = VenueLifecycleListenerImpl(this);
+    _venueMapLifecycleListener = VenueMapLifecycleListenerImpl();
     _venueInfoListListener = VenueInfoListListenerImpl(this);
     venueMap.addVenueSelectionListener(_venueSelectionListener);
     venueMap.addDrawingSelectionListener(_drawingSelectionListener);
     venueMap.addLevelSelectionListener(_levelSelectionListener);
-    venueMap.addVenueLifecycleListener(_venueLifecycleListener);
+    venueMap.addVenueMapLifecycleListener(_venueMapLifecycleListener);
     venueMap.addVenueInfoListListener(_venueInfoListListener);
-    _venueListener = VenueListenerImpl(this);
-    _venueEngine!.venueService.addVenueListener(_venueListener);
+    _venueMapListener = VenueMapListenerImpl();
+    _venueEngine!.venueService.addVenueMapListener(_venueMapListener);
     // Create a venue tap controller.
     venueTapController = VenueTapController(
         hereMapController: _hereMapController, venueMap: venueMap, geometryInfoState: _geometryInfoState);
@@ -318,15 +318,14 @@ class VenueInfoListListenerImpl implements VenueInfoListListener {
 
   @override
   void onVenueInfoListLoad(List<VenueInfo> venueInfoList) {
-    // TODO: implement onVenueInfoListLoad
     for (int i = 0; i < venueInfoList.length; i++) {
-      int venueId = venueInfoList[i].venueId;
-      var updatedVenueIdList = venueInfoList[i].venueIdentifier.substring(venueInfoList[i].venueIdentifier.length - 5);
+      String venueIdentifier = venueInfoList[i].venueIdentifier;
+      var updatedVenueIdList = venueInfoList[i].venueIdentifier;
       var updatedVenueNameList = venueInfoList[i].venueName;
       list.insert(i + 1, updatedVenueIdList);
       nameList.insert(i+1, updatedVenueNameList);
       print("list = " + list[i + 1]);
-      print("Venue Identifier: " + venueInfoList[i].venueIdentifier + " Venue Id: $venueId" + " Venue Name: " + venueInfoList[i].venueName);
+      print("Venue Identifier: " + venueIdentifier + " Venue Name: " + venueInfoList[i].venueName);
     }
     listEventHandler.updatedList.value = list;
     nameListEventHandler.updatedNameList.value = nameList;
@@ -401,7 +400,7 @@ class VenueServiceListenerImpl implements VenueServiceListener {
 
 // A listener for venue load completion.
 
-class VenueListenerImpl implements VenueListener {
+class VenueMapListenerImpl implements VenueMapListener {
   late VenueEngineState _venueEngineState;
   HereMapController? _hereMapController;
 
@@ -411,9 +410,9 @@ class VenueListenerImpl implements VenueListener {
   }
 
   @override
-  onGetVenueCompleted(int venueID, VenueModel? venueModel, bool online, VenueStyle? venueStyle) {
+  onGetVenueCompleted(String venueIdentifier, VenueModel? venueModel, bool online, VenueStyle? venueStyle) {
     if(venueModel == null) {
-      print("Failed to load venue ID: " + venueID.toString());
+      print("Failed to load venue ID: " + venueIdentifier.toString());
     }
     _hereMapController!.camera.zoomTo(18);
   }
@@ -482,7 +481,7 @@ class LevelSelectionListenerImpl implements VenueLevelSelectionListener {
 }
 
 // A listener for the venues lifecycle event.
-class VenueLifecycleListenerImpl implements VenueLifecycleListener {
+class VenueMapLifecycleListenerImpl implements VenueMapLifecycleListener {
   late VenueEngineState _venueEngineState;
 
   VenueLifecycleListenerImpl(VenueEngineState venueEngineState) {
@@ -495,7 +494,7 @@ class VenueLifecycleListenerImpl implements VenueLifecycleListener {
   }
 
   @override
-  onVenueRemoved(int venueId) {
+  onVenueRemoved(String venueIdentifier) {
     _venueEngineState.onVenuesChanged();
   }
 

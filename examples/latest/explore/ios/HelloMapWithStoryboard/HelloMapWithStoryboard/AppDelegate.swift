@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 HERE Europe B.V.
+ * Copyright (C) 2019-2025 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Set your credentials for the HERE SDK.
         let accessKeyID = "YOUR_ACCESS_KEY_ID"
         let accessKeySecret = "YOUR_ACCESS_KEY_SECRET"
-        let options = SDKOptions(accessKeyId: accessKeyID, accessKeySecret: accessKeySecret)
+        let authenticationMode = AuthenticationMode.withKeySecret(accessKeyId: accessKeyID, accessKeySecret: accessKeySecret)
+        let options = SDKOptions(authenticationMode: authenticationMode)
         do {
             try SDKNativeEngine.makeSharedInstance(options: options)
         } catch let engineInstantiationError {

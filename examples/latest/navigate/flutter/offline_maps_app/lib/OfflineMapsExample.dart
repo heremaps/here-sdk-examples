@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 HERE Europe B.V.
+ * Copyright (C) 2019-2025 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -406,8 +406,8 @@ class OfflineMapsExample {
     var layerConfiguration = LayerConfiguration(enabledFeatures);
 
     // Set your credentials for the HERE SDK.
-    SDKOptions sdkOptions =
-        SDKOptions.withAccessKeySecret(accessKeyId, accessKeySecret);
+    AuthenticationMode authenticationMode = AuthenticationMode.withKeySecret(accessKeyId, accessKeySecret);
+    SDKOptions sdkOptions = SDKOptions.withAuthenticationMode(authenticationMode);
     sdkOptions.layerConfiguration = layerConfiguration;
 
     // Releases resources used by the SDK.
