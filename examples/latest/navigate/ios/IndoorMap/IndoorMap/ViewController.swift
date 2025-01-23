@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020-2024 HERE Europe B.V.
+ * Copyright (C) 2020-2025 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -616,7 +616,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, VenueInfoLi
         let venueMap = venueEngine.venueMap
         let venueService = venueEngine.venueService
         venueService.removeServiceDelegate(self)
-        venueService.removeVenueDelegate(self)
+        venueService.removeVenueMapDelegate(self)
         venueMap.removeVenueSelectionDelegate(self)
         venueMap.removeVenueSelectionDelegate(self)
         mapView.gestures.tapDelegate = nil
@@ -652,7 +652,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, VenueInfoLi
         
         // Add needed delegates.
         venueService.addServiceDelegate(self)
-        venueService.addVenueDelegate(self)
+        venueService.addVenueMapDelegate(self)
         venueMap.addVenueSelectionDelegate(self)
         venueMap.addVenueInfoListDelegate(self)
         
@@ -718,12 +718,12 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, VenueInfoLi
             return
         }
         
-        if let id = Int32(selectedVenue) {
+        if let id = selectedVenue {
             if (venueEngine?.venueService.isInitialized() ?? false) /*&& (id != venueEngine?.venueMap.selectedVenue?.venueModel.id)*/ {
                 print("Loading venue \(id).")
                 moveToVenue = true
                 // Select a venue by id.
-                venueEngine?.venueMap.selectVenueAsync(venueId: id, completion: self.onVenueLoadError)
+                venueEngine?.venueMap.selectVenueAsync(venueIdentifier: id, completion: self.onVenueLoadError)
             } else {
                 print("Venue service is not initialized! Status: \(String(describing: venueEngine?.venueService.getInitStatus()))")
             }
@@ -815,10 +815,10 @@ extension ViewController: VenueServiceDelegate {
 }
 
 // Delegate for the venue loading event.
-extension ViewController: VenueDelegate {
-    func onGetVenueCompleted(venueId: Int32, venueModel: VenueModel?, online: Bool, venueStyle: VenueStyle?) {
+extension ViewController: VenueMapDelegate {
+    func onGetVenueCompleted(venueIdentifier: String, venueModel: VenueModel?, online: Bool, venueStyle: VenueStyle?) {
         if venueModel == nil {
-            print("Loading of venue \(venueId) failed!")
+            print("Loading of venue \(venueIdentifier) failed!")
         }
         mapView.camera.zoomTo(zoomLevel: 18)
         
@@ -1021,7 +1021,7 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
                 if searching {
                     cell.venueLbl.text = searchName[indexPath.row]
                 } else {
-                    cell.venueLbl.text = String(venueMapList[indexPath.row].dropFirst(6))
+                    cell.venueLbl.text = venueNamesList[indexPath.row]
                 }
                 
                 let imageView = cell.indoor
@@ -1080,41 +1080,31 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
                 if searching {
                     if let index = venueNamesList.firstIndex(of: searchName[indexPath.row]) {
                         if index < venueMapList.count {
-                            let venueMapListItem = venueMapList[index]
-                            let components = venueMapListItem.components(separatedBy: ":")
-                            
-                            if components.count >= 2 {
-                                let venueName = components[1]
-                                displayVenueName = venueName
-                                print("Venue Name at Index \(index): \(venueName)")
-                            }
+                            let venueName = venueNamesList[index]
+                            displayVenueName = venueName
+                            print("Venue Name at Index \(index): \(venueName)")
                         }
-                        selectedVenue = String(venueMapList[index].prefix(5))
+                        selectedVenue = venueMapList[index]
                     }
                 } else {
                     if indexPath.row < venueMapList.count {
-                        let venueMapListItem = venueMapList[indexPath.row]
-                        let components = venueMapListItem.components(separatedBy: ":")
-                        
-                        if components.count >= 2 {
-                            let venueName = components[1]
-                            displayVenueName = venueName
-                            print("Venue Name at IndexPath row \(indexPath.row): \(venueName)")
-                        }
+                        let venueName = venueNamesList[indexPath.row]
+                        displayVenueName = venueName
+                        print("Venue Name at IndexPath row \(indexPath.row): \(venueName)")
                     }
-                    selectedVenue = String(venueMapList[indexPath.row].prefix(5))
+                    selectedVenue = venueMapList[indexPath.row]
                 }
                 
                 animate(toogle: false)
                 customSearchBar.resignFirstResponder()
                 
-                if let id = Int32(selectedVenue) {
+                if let id = selectedVenue {
                     if (venueEngine?.venueService.isInitialized() ?? false) /*&& (id != venueEngine?.venueMap.selectedVenue?.venueModel.id)*/ {
                         print("Loading venue \(id).")
                         // Disable the input UI while a venue loading and selection is in progress.
                         moveToVenue = true
                         // Select a venue by id.
-                        venueEngine?.venueMap.selectVenueAsync(venueId: id, completion: self.onVenueLoadError)
+                        venueEngine?.venueMap.selectVenueAsync(venueIdentifier: id, completion: self.onVenueLoadError)
                         spinnerView.isHidden = false
                         startRotation()
                         
@@ -1210,8 +1200,7 @@ extension ViewController: UISearchBarDelegate {
             if let venueInfo = venueInfo {
                 for venueInfo in venueInfo {
                     print("Venue Identifier: \(venueInfo.venueIdentifier)." + " Venue Id: \(venueInfo.venueId)." + " Venue Name: \(venueInfo.venueName).")
-                    let venueIdStr = venueInfo.venueIdentifier
-                    venueMapList.insert(String(venueIdStr.dropFirst(41) + ":" + (venueInfo.venueName)), at: index)
+                    venueMapList.insert(venueInfo.venueIdentifier, at: index)
                     venueNamesList.insert((venueInfo.venueName), at: index)
                     index = index+1
                 }

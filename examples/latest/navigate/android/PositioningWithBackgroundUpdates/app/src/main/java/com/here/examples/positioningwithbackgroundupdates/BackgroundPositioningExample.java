@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 HERE Europe B.V.
+ * Copyright (C) 2022-2025 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -127,6 +127,10 @@ public class BackgroundPositioningExample {
         // Stops service and closes binder.
         HEREBackgroundPositioningService.stop(context);
         closeBinder();
+    }
+
+    public boolean isForegroundServiceRunning() {
+        return shouldUnbind;
     }
 
     void openBinder() {

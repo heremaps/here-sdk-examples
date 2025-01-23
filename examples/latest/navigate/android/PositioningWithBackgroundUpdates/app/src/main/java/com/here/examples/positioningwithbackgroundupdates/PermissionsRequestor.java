@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 HERE Europe B.V.
+ * Copyright (C) 2022-2025 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,13 +86,6 @@ public class PermissionsRequestor {
                 for (String permission : packageInfo.requestedPermissions) {
                     if (ContextCompat.checkSelfPermission(
                             activity, permission) != PackageManager.PERMISSION_GRANTED) {
-                        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.M &&
-                                permission.equals(Manifest.permission.CHANGE_NETWORK_STATE)) {
-                            // Exclude CHANGE_NETWORK_STATE as it does not require explicit user approval.
-                            // This workaround is needed for devices running Android 6.0.0,
-                            // see https://issuetracker.google.com/issues/37067994
-                            continue;
-                        }
                         // ACCESS_BACKGROUND_LOCATION is needed on Android 10+ (API 29+)
                         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q &&
                                 permission.equals(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
@@ -148,7 +141,7 @@ public class PermissionsRequestor {
             }
         }
 
-        if (newPermissionList.size() > 0) {
+        if (!newPermissionList.isEmpty()) {
             ActivityCompat.requestPermissions(activity, newPermissionList.toArray(new String[0]), PERMISSIONS_REQUEST_CODE);
         }
         // else might be zero if only background location access was requested (see handling above).
@@ -201,12 +194,9 @@ public class PermissionsRequestor {
             builder.setTitle(R.string.background_access_dialog_title);
 
             builder.setMessage(String.format(activity.getString(R.string.background_access_dialog_text), activity.getPackageManager().getBackgroundPermissionOptionLabel()));
-            builder.setPositiveButton(R.string.background_access_button_settings, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    requestPermissions(new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION});
-                    requestBackgroundLocation = false;
-                }
+            builder.setPositiveButton(R.string.background_access_button_settings, (dialog, which) -> {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION});
+                requestBackgroundLocation = false;
             });
             backgroundLocationRequestInProgress = true;
             AlertDialog dialog = builder.create();

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 HERE Europe B.V.
+ * Copyright (C) 2022-2025 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,14 @@
 package com.here.examples.positioningwithbackgroundupdates;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -35,15 +35,17 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 import com.here.examples.positioningwithbackgroundupdates.PermissionsRequestor.ResultListener;
+import com.here.sdk.core.engine.AuthenticationMode;
 import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.core.engine.SDKOptions;
 import com.here.sdk.core.errors.InstantiationErrorException;
-import com.here.sdk.mapview.MapError;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
-import com.here.sdk.mapview.MapScene;
 
 /**
  * This is an example app to showcase how to use the HERE SDK for tracking the
@@ -53,34 +55,49 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
+    /** Key for service terms*/
+    private static final String PREF_SERVICE_TERMS = "service_terms";
+
+    /** Preferences extension. */
+    private static final String PREF_NAME_EXTENSION = "_preferences";
+
     private MapView mapView;
     private PermissionsRequestor permissionsRequestor;
     private BackgroundPositioningExample positioningExample;
+    private int serviceTerms;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        readAppPrefs();
 
         // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
         initializeHERESDK();
 
         setContentView(R.layout.activity_main);
 
-        Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar myToolbar = findViewById(R.id.toolbar);
         setSupportActionBar(myToolbar);
 
         // Get a MapView instance from the layout.
         mapView = findViewById(R.id.map_view);
         mapView.onCreate(savedInstanceState);
 
-        handleAndroidPermissions();
+        // Shows example of application Terms & Privacy policy dialog as
+        // required by Legal Requirements in Development Guide under Positioning
+        // section.
+        if (!showServiceTermsDialog()) {
+            handleAndroidPermissions();
+        }
     }
 
     private void initializeHERESDK() {
         // Set your credentials for the HERE SDK.
         String accessKeyID = "YOUR_ACCESS_KEY_ID";
         String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
-        SDKOptions options = new SDKOptions(accessKeyID, accessKeySecret);
+        AuthenticationMode authenticationMode = AuthenticationMode.withKeySecret(accessKeyID, accessKeySecret);
+        SDKOptions options = new SDKOptions(authenticationMode);
         try {
             Context context = getApplicationContext();
             SDKNativeEngine.makeSharedInstance(context, options);
@@ -97,16 +114,38 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem startItem = menu.findItem(R.id.start);
+        MenuItem stopItem = menu.findItem(R.id.stop);
+
+        if (positioningExample != null) {
+            if (positioningExample.isForegroundServiceRunning()) {
+                startItem.setVisible(false);
+                stopItem.setVisible(true);
+            } else {
+                stopItem.setVisible(false);
+                startItem.setVisible(true);
+            }
+        } else {
+            startItem.setVisible(false);
+            stopItem.setVisible(false);
+        }
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
         int itemId = item.getItemId();
-        if (itemId == R.id.about) {
-            Intent intent = new Intent(this, ConsentStateActivity.class);
-            startActivity(intent);
+        if (itemId == R.id.start) {
+            if (positioningExample != null) {
+                positioningExample.startForegroundService();
+            }
             return true;
         } else if (itemId == R.id.stop) {
             if (positioningExample != null) {
-              positioningExample.stopForegroundService();
+                positioningExample.stopForegroundService();
+
             }
             return true;
         } else {
@@ -142,21 +181,20 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         permissionsRequestor.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     private void loadMapScene() {
         // Load a scene from the HERE SDK to render the map with a map scheme.
-        mapView.getMapScene().loadScene(MapScheme.NORMAL_DAY, new MapScene.LoadSceneCallback() {
+        mapView.getMapScene().loadScene(MapScheme.NORMAL_DAY, mapError -> {
+            if (mapError == null) {
+                positioningExample = new BackgroundPositioningExample();
+                positioningExample.onMapSceneLoaded(mapView, MainActivity.this);
+                positioningExample.startForegroundService();
 
-            @Override
-            public void onLoadScene(@Nullable MapError mapError) {
-                if (mapError == null) {
-                    positioningExample = new BackgroundPositioningExample();
-                    positioningExample.onMapSceneLoaded(mapView, MainActivity.this);
-                    positioningExample.startForegroundService();
-                } else {
-                    Log.d(TAG, "Loading map failed: mapError: " + mapError.name());
-                }
+                invalidateOptionsMenu();
+            } else {
+                Log.d(TAG, "Loading map failed: mapError: " + mapError.name());
             }
         });
     }
@@ -188,7 +226,7 @@ public class MainActivity extends AppCompatActivity {
         mapView.onSaveInstanceState(outState);
         super.onSaveInstanceState(outState);
     }
-    
+
     private void disposeHERESDK() {
         // Free HERE SDK resources before the application shuts down.
         // Usually, this should be called only on application termination.
@@ -206,16 +244,81 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(titleId);
         builder.setMessage(messageId);
-        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                Uri uri = Uri.fromParts("package", getPackageName(), null);
-                intent.setData(uri);
-                startActivity(intent);
-                finish();
-            }
+        builder.setPositiveButton(android.R.string.ok, (dialog, which) -> {
+            Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            Uri uri = Uri.fromParts("package", getPackageName(), null);
+            intent.setData(uri);
+            startActivity(intent);
+            finish();
         });
         builder.show();
+    }
+
+    /**
+     * Reads shared preferences
+     */
+    private void readAppPrefs() {
+        SharedPreferences sharedPreferences =
+                getSharedPreferences(
+                        getPackageName() + PREF_NAME_EXTENSION, Context.MODE_PRIVATE);
+        serviceTerms = sharedPreferences.getInt(PREF_SERVICE_TERMS, 0);
+    }
+
+    /**
+     * Writes shared preferences
+     */
+    private void writeAppPrefs() {
+        SharedPreferences.Editor sharedPrefsEditor =
+                getSharedPreferences(
+                        getPackageName() + PREF_NAME_EXTENSION, Context.MODE_PRIVATE).edit();
+        sharedPrefsEditor.putInt(PREF_SERVICE_TERMS, serviceTerms);
+        sharedPrefsEditor.apply();
+    }
+
+
+    /**
+     * Show dialog for application service terms
+     */
+    private boolean showServiceTermsDialog() {
+      if (serviceTerms == 1) {
+        return false;
+      }
+
+        WebView webView = new WebView(this);
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                final Uri uri = request.getUrl();
+
+                if (uri.getScheme() != null && uri.getScheme().contains("http")) {
+                    try {
+                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, uri);
+                        startActivity(browserIntent);
+                    }  catch (ActivityNotFoundException e) {
+                        Log.d(TAG, "Opening browser failed: " + e.getMessage());
+                    }
+                    return true;
+                }
+                return false;
+            }
+        });
+        webView.loadUrl("file:///android_asset/APPLICATION_TERMS.html");
+
+        AlertDialog.Builder builder =  new AlertDialog.Builder(this);
+        builder.setView(webView);
+
+        builder.setCancelable(false);
+        builder.setPositiveButton(getString(R.string.button_agree),
+                                  (dialog, id) -> {
+                                    serviceTerms = 1;
+                                    writeAppPrefs();
+                                    dialog.cancel();
+                                    // Check app permissions now
+                                    handleAndroidPermissions();
+                                  });
+        AlertDialog termsAndServicesDialog = builder.create();
+        termsAndServicesDialog.show();
+        return true;
     }
 }

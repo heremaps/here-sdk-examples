@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 HERE Europe B.V.
+ * Copyright (C) 2019-2025 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -98,13 +98,18 @@ class NavigationExample {
 
   // Use this engine to periodically search for better routes during guidance, ie. when the traffic
   // situation changes.
+  //
+  // Note: This code initiates periodic calls to the HERE Routing backend. Depending on your contract,
+  // each call may be charged separately. It is the application's responsibility to decide how
+  // often this code should be executed.
   void _createDynamicRoutingEngine() {
     var dynamicRoutingOptions = DynamicRoutingEngineOptions();
     // Both, minTimeDifference and minTimeDifferencePercentage, will be checked:
     // When the poll interval is reached, the smaller difference will win.
     dynamicRoutingOptions.minTimeDifference = Duration(seconds: 1);
     dynamicRoutingOptions.minTimeDifferencePercentage = 0.1;
-    dynamicRoutingOptions.pollInterval = Duration(minutes: 5);
+    // Below, we use 10 minutes. A common range is between 5 and 15 minutes.
+    dynamicRoutingOptions.pollInterval = Duration(minutes: 10);
 
     try {
       // With the dynamic routing engine you can poll the HERE backend services to search for routes with less traffic.

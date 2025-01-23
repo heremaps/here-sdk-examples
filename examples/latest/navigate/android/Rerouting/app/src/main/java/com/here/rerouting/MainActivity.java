@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 HERE Europe B.V.
+ * Copyright (C) 2019-2025 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.here.sdk.core.engine.AuthenticationMode;
 import com.here.sdk.core.engine.LogControl;
 import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.core.engine.SDKOptions;
@@ -81,7 +82,8 @@ public class MainActivity extends AppCompatActivity {
         // Set your credentials for the HERE SDK.
         String accessKeyID = "YOUR_ACCESS_KEY_ID";
         String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
-        SDKOptions options = new SDKOptions(accessKeyID, accessKeySecret);
+        AuthenticationMode authenticationMode = AuthenticationMode.withKeySecret(accessKeyID, accessKeySecret);
+        SDKOptions options = new SDKOptions(authenticationMode);
         try {
             Context context = this;
             SDKNativeEngine.makeSharedInstance(context, options);

@@ -1,10 +1,5 @@
 <resources>
     <string name="app_name">Positioning With Background Updates</string>
-    <string name="consent_state_title">Consent preferences</string>
-    <string name="consent_state_text">The Location Engine contains functionality that can gather certain information about the surroundings of the mobile device in order to improve the HERE services used by the HERE SDK. An example of such information is the strength of the nearby Wi-Fi and mobile network signals.</string>
-    <string name="consent_state_change_answer">Manage consent</string>
-    <string name="consent_state_granted">You have granted consent to the data collection.</string>
-    <string name="consent_state_denied">You have denied consent to the data collection.</string>
 
     <string name="notification_channel_name">HERE Positioning</string>
     <string name="notification_channel_description">HERE Positioning notification channel</string>
@@ -19,6 +14,7 @@
     <string name="status_red">Positioning service is not running</string>
 
     <string name="menu_item_stop">Stop Positioning Service</string>
+    <string name="menu_item_start">Start Positioning Service</string>
 
     <string name="error">Error</string>
     <string name="dialog_msg_service_connection_failed">Connection to positioning service failed, please restart the device.</string>
@@ -30,4 +26,7 @@
     <string name="background_access_missing_text">Background location permission is missing. Please enable it from app settings.</string>
 
     <string name="post_notifications_access_missing_text">Notifications permission is missing. Please enable it from app settings.</string>
+
+    <string name="button_agree">Agree</string>
+
 </resources>

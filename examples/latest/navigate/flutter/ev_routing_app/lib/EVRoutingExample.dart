@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 HERE Europe B.V.
+ * Copyright (C) 2019-2025 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -103,6 +103,34 @@ class EVRoutingExample {
     });
   }
 
+  // Note: This API is currently only accessible for alpha users.
+  void _applyEMSPPreferences(EVCarOptions evCarOptions) {
+    // You can get a list of all E-Mobility Service Providers and their partner IDs by using the request described here:
+    // https://www.here.com/docs/bundle/ev-charge-points-api-developer-guide/page/topics/example-charging-station.html.
+    // The RoutingEngine will follow the priority order you specify when calculating routes, so try to specify at least most preferred providers.
+    // Note that this may impact the route geometry.
+
+    // Most preferred provider for route calculation: As an example, we use "Jaguar Charging" referenced by the partner ID taken from above link.
+    List<String> preferredProviders = ["3379b852-cca5-11ed-8856-42010aa40002"];
+
+    // Example code for a least preferred provider.
+    List<String> leastPreferredProviders = ["12345678-abcd-0000-0000-000000000000"];
+
+    // Alternative provider for route calculation to be used only when no better options are available.
+    // Example code for an alternative provider.
+    List<String> alternativeProviders = ["12345678-0000-abcd-0000-000123456789"];
+
+    // Excluded provider that should not be considered for route calculation.
+    // Example code for an excluded provider.
+    List<String> excludedProviders = ["00000000-abcd-0000-1234-123000000000"];
+
+    evCarOptions.evMobilityServiceProviderPreferences = EVMobilityServiceProviderPreferences();
+    evCarOptions.evMobilityServiceProviderPreferences.high = preferredProviders;
+    evCarOptions.evMobilityServiceProviderPreferences.low = leastPreferredProviders;
+    evCarOptions.evMobilityServiceProviderPreferences.medium = alternativeProviders;
+    evCarOptions.evMobilityServiceProviderPreferences.exclude = excludedProviders;
+  }
+
   EVCarOptions _getEVCarOptions() {
     EVCarOptions evCarOptions = EVCarOptions();
 
@@ -132,6 +160,10 @@ class EVRoutingExample {
     evCarOptions.batterySpecifications.initialChargeInKilowattHours = 10.0;
     evCarOptions.batterySpecifications.targetChargeInKilowattHours = 72.0;
     evCarOptions.batterySpecifications.chargingCurve = {0.0: 239.0, 64.0: 111.0, 72.0: 1.0};
+
+    // Apply EV mobility service provider preferences (eMSP).
+    // This API is currently in alpha stage. Comment it out when you are participating.
+    // _applyEMSPPreferences(evCarOptions);
 
     // Note: More EV options are available, the above shows only the minimum viable options.
     return evCarOptions;

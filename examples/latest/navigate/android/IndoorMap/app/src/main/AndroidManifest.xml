@@ -16,7 +16,8 @@
 
         <activity android:name=".MainActivity"
                   android:exported="true"
-                  android:configChanges="orientation|screenSize|screenLayout|keyboardHidden">
+                  android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+                  android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.VIEW" />

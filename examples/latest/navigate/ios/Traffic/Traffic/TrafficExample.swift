@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 HERE Europe B.V.
+ * Copyright (C) 2019-2025 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ class TrafficExample : TapDelegate {
         } catch let engineInstantiationError {
             fatalError("Failed to initialize TrafficEngine. Cause: \(engineInstantiationError)")
         }
-      
+
         // Load the map scene using a map scheme to render the map with.
         mapView.mapScene.loadScene(mapScheme: MapScheme.liteDay, completion: onLoadScene)
 
@@ -65,11 +65,14 @@ class TrafficExample : TapDelegate {
     }
 
     func enableTrafficVisualization() {
-        // Try to refresh the trafficFlow vector tiles every minute.
-        // If MapFeatures.trafficFlow is disabled, no requests are made.
         do {
-            // Set the traffic flow refresh period to 60 seconds (1 minute).
-            try MapContentSettings.setTrafficRefreshPeriod(60.0)
+            // Set the traffic flow refresh period to 5 * 60 seconds (5 minutes).
+            // If MapFeatures.trafficFlow is disabled, no requests are made.
+            //
+            // Note: This code initiates periodic calls to the HERE Traffic backend. Depending on your contract,
+            // each call may be charged separately. It is the application's responsibility to decide how
+            // often this code should be executed.
+            try MapContentSettings.setTrafficRefreshPeriod(5 * 60.0)
         } catch let error as MapContentSettings.TrafficRefreshPeriodError {
             print("TrafficRefreshPeriodError: \(error)")
         } catch {

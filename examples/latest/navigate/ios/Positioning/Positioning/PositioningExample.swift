@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 HERE Europe B.V.
+ * Copyright (C) 2019-2025 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,19 +105,41 @@ class PositioningExample: NSObject, CLLocationManagerDelegate, LocationDelegate,
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let rootViewController = windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController {
 
-            let alert = UIAlertController(
-                title: "Location access required",
-                message: "This example requires location access to function correctly, please accept location access in following dialog.",
-                preferredStyle: .alert
-            )
+            let locationAuthorizationStatus = clLocationManager.authorizationStatus
 
-            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
-                // Handle OK button action.
-                self.clLocationManager.requestWhenInUseAuthorization()
-                alert.dismiss(animated: true, completion: nil)
-            }))
+            var alert: UIAlertController?
 
-            rootViewController.present(alert, animated: true, completion: nil)
+            // Check authorization.
+            switch locationAuthorizationStatus {
+            case .restricted:
+                // Access to location services restricted in the system settings.
+                alert = UIAlertController(title: "Location Services are restricted", message: "Please remove Location Services restriction in your device Settings", preferredStyle: .alert)
+                let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+                alert?.addAction(okAction)
+                break
+
+            case .denied:
+                // Location access denied for the application.
+                alert = UIAlertController(title: "Location access is denied", message: "Please allow location access for the application in your device Settings", preferredStyle: .alert)
+                let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+                alert?.addAction(okAction)
+                break
+
+            case .authorizedWhenInUse, .authorizedAlways:
+                // Authorization ok.
+                return
+
+            case .notDetermined:
+                clLocationManager.requestWhenInUseAuthorization()
+                return
+
+            default:
+                return
+            }
+
+            if alert != nil {
+                rootViewController.present(alert!, animated: true, completion: nil)
+            }
         }
     }
 

@@ -1,6 +1,4 @@
-UNDER DEVELOPMENT
-
-The MapFeatures example app. You can find how this is done in [MapFeaturesExample.java](app/src/main/java/com/here/mapfeatures/MapFeaturesExample.java).
+The MapFeatures example app demonstrates how to load and switch between various map schemes and how to overlay specialized map features, such as 3D landmarks, onto the map. You can find how this is done in [MapFeaturesExample.java](app/src/main/java/com/here/mapfeatures/MapFeaturesExample.java).
 
 Build instructions:
 -------------------

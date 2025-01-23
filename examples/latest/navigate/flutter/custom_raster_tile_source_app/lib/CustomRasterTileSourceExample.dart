@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 HERE Europe B.V.
+ * Copyright (C) 2025 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -69,10 +69,10 @@ class CustomRasterTileSourceExample {
   }
 
   MapLayer _createMapLayer(String dataSourceName) {
-    // The layer should be rendered on top of other layers including the "labels" layer
+    // The layer should be rendered on top of other layers except the "labels" layer
     // so that we don't overlap the raster layer over POI markers.
     MapLayerPriority priority =
-        MapLayerPriorityBuilder().renderedAfterLayer("labels").build();
+        MapLayerPriorityBuilder().renderedBeforeLayer("labels").build();
 
     // And it should be visible for all zoom levels.
     MapLayerVisibilityRange range = MapLayerVisibilityRange(0, 22 + 1);

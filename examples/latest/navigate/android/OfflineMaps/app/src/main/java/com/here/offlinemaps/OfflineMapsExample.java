@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 HERE Europe B.V.
+ * Copyright (C) 2019-2025 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.GeoPolygon;
 import com.here.sdk.core.LanguageCode;
 import com.here.sdk.core.Point2D;
+import com.here.sdk.core.engine.AuthenticationMode;
 import com.here.sdk.core.engine.LayerConfiguration;
 import com.here.sdk.core.engine.SDKBuildInformation;
 import com.here.sdk.core.engine.SDKNativeEngine;
@@ -67,6 +68,8 @@ import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
 import com.here.sdk.search.OfflineSearchEngine;
+import com.here.sdk.search.OfflineSearchIndex;
+import com.here.sdk.search.OfflineSearchIndexListener;
 import com.here.sdk.search.Place;
 import com.here.sdk.search.SearchCallback;
 import com.here.sdk.search.SearchError;
@@ -92,6 +95,9 @@ public class OfflineMapsExample {
     private final String TAG = OfflineMapsExample.class.getSimpleName();
     private boolean offlineSearchLayerEnabled = true;
     private boolean switchOffline = false;
+    private OfflineSearchIndex.Options offlineSearchIndexOptions;
+    private OfflineSearchIndexListener offlineSearchIndexListener;
+
 
     public OfflineMapsExample(MapView mapView, Context context) {
         this.context = context;
@@ -152,6 +158,9 @@ public class OfflineMapsExample {
          */
         initMapDownloader(sdkNativeEngine);
         initMapUpdater(sdkNativeEngine);
+        // Enable indexing to improve the search experience.
+        enableOfflineSearchIndexing(sdkNativeEngine);
+
         String info = "This example allows to download the region Switzerland.";
         snackbar = Snackbar.make(mapView, info, Snackbar.LENGTH_INDEFINITE);
         snackbar.show();
@@ -519,7 +528,8 @@ public class OfflineMapsExample {
         // If the cache is not cleared, the HERE SDK will look for cached data, for example,
         // when using the OfflineSearchEngine.
         try {
-            SDKOptions options = new SDKOptions(accessKeyID, accessKeySecret);
+            AuthenticationMode authenticationMode = AuthenticationMode.withKeySecret(accessKeyID, accessKeySecret);
+            SDKOptions options = new SDKOptions(authenticationMode);
             // Toggle the layer configuration.
             offlineSearchLayerEnabled = !offlineSearchLayerEnabled;
             // LayerConfiguration can only be updated before HERE SDK initialization.
@@ -759,5 +769,37 @@ public class OfflineMapsExample {
         builder.setTitle(title);
         builder.setMessage(message);
         builder.show();
+    }
+
+    private void enableOfflineSearchIndexing(SDKNativeEngine sdkNativeEngine) {
+        offlineSearchIndexOptions = new OfflineSearchIndex.Options();
+        offlineSearchIndexOptions.enabled = true;
+
+        offlineSearchIndexListener = new OfflineSearchIndexListener() {
+            @Override
+            public void onStarted(@NonNull OfflineSearchIndex.Operation operation) {
+                Log.d("OfflineSearchIndexListener", "Indexing started. Operation: " + operation);
+                snackbar.setText("Indexing started: " + operation).show();
+            }
+
+            @Override
+            public void onProgress(int percentage) {
+                Log.d("OfflineSearchIndexListener", "Indexing progress: " + percentage + "%");
+                snackbar.setText("Indexing progress: " + percentage + "%").show();
+            }
+
+            @Override
+            public void onComplete(@Nullable OfflineSearchIndex.Error error) {
+                if (error == null) {
+                    Log.d("OfflineSearchIndexListener", "Indexing completed successfully.");
+                    snackbar.setText("Indexing completed successfully.").show();
+                } else {
+                    Log.e("OfflineSearchIndexListener", "Indexing failed: " + error.name());
+                    snackbar.setText("Indexing failed: " + error.name()).show();
+                }
+            }
+        };
+
+        offlineSearchEngine.setIndexOptions(sdkNativeEngine, offlineSearchIndexOptions, offlineSearchIndexListener);
     }
 }

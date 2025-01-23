@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 HERE Europe B.V.
+ * Copyright (C) 2022-2025 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ import androidx.appcompat.widget.Toolbar;
 import com.here.HikingDiary.R;
 import com.here.hikingdiary.menu.MenuActivity;
 import com.here.sdk.core.GeoCoordinates;
+import com.here.sdk.core.engine.AuthenticationMode;
 import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.core.engine.SDKOptions;
 import com.here.sdk.core.errors.InstantiationErrorException;
@@ -160,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         handleAndroidPermissions();
-        
+
         String message = "For this example app, an outdoor layer from thunderforest.com is used. " +
                 "Without setting a valid API key, these raster tiles will show a watermark (terms of usage: https://www.thunderforest.com/terms/)." +
                 "\n Attribution for the outdoor layer: \n Maps © www.thunderforest.com, \n Data © www.osm.org/copyright.";
@@ -197,7 +198,8 @@ public class MainActivity extends AppCompatActivity {
         // Set your credentials for the HERE SDK.
         String accessKeyID = "YOUR_ACCESS_KEY_ID";
         String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
-        SDKOptions options = new SDKOptions(accessKeyID, accessKeySecret);
+        AuthenticationMode authenticationMode = AuthenticationMode.withKeySecret(accessKeyID, accessKeySecret);
+        SDKOptions options = new SDKOptions(authenticationMode);
         try {
             Context context = this;
             SDKNativeEngine.makeSharedInstance(context, options);
@@ -341,7 +343,7 @@ public class MainActivity extends AppCompatActivity {
         mapView.onSaveInstanceState(outState);
         super.onSaveInstanceState(outState);
     }
-    
+
     private void disposeHERESDK() {
         // Free HERE SDK resources before the application shuts down.
         // Usually, this should be called only on application termination.

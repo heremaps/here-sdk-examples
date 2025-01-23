@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 HERE Europe B.V.
+ * Copyright (C) 2019-2025 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -453,7 +453,8 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
     }
 
     func toggleConfiguration() {
-        var options = SDKOptions(accessKeyId: OfflineMapsApp.accessKeyID, accessKeySecret: OfflineMapsApp.accessKeySecret)
+        let authenticationMode = AuthenticationMode.withKeySecret(accessKeyId: OfflineMapsApp.accessKeyID, accessKeySecret: OfflineMapsApp.accessKeySecret)
+        var options = SDKOptions(authenticationMode: authenticationMode)
 
         // Toggle the layer configuration
         offlineSearchEnabled = !offlineSearchEnabled

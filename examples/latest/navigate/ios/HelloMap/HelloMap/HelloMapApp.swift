@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 HERE Europe B.V.
+ * Copyright (C) 2022-2025 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,16 +30,16 @@ struct HelloMapApp: App {
             ContentView()
         }
     }
-    
+
     init() {
         observeAppLifecycle()
-        
+
         // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
         initializeHERESDK()
     }
-    
+
     private func observeAppLifecycle() {
-        NotificationCenter.default.addObserver(forName: UIApplication.willTerminateNotification, 
+        NotificationCenter.default.addObserver(forName: UIApplication.willTerminateNotification,
                                                object: nil,
                                                queue: nil) { _ in
             // Perform cleanup or final tasks here.
@@ -52,8 +52,7 @@ struct HelloMapApp: App {
         // Set your credentials for the HERE SDK.
         let accessKeyID = "YOUR_ACCESS_KEY_ID"
         let accessKeySecret = "YOUR_ACCESS_KEY_SECRET"
-        let authenticationMode = AuthenticationMode.withKeySecret(accessKeyId: accessKeyID,
-                                                                  accessKeySecret: accessKeySecret)
+        let authenticationMode = AuthenticationMode.withKeySecret(accessKeyId: accessKeyID, accessKeySecret: accessKeySecret)
         let options = SDKOptions(authenticationMode: authenticationMode)
         do {
             try SDKNativeEngine.makeSharedInstance(options: options)
@@ -61,11 +60,11 @@ struct HelloMapApp: App {
             fatalError("Failed to initialize the HERE SDK. Cause: \(engineInstantiationError)")
         }
     }
-    
+
     private func disposeHERESDK() {
         // Free HERE SDK resources before the application shuts down.
         // Usually, this should be called only on application termination.
-        
+
         // After this call, the HERE SDK is no longer usable unless it is initialized again.
          SDKNativeEngine.sharedInstance = nil
     }

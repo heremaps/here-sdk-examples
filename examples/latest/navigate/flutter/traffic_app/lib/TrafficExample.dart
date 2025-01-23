@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 HERE Europe B.V.
+ * Copyright (C) 2019-2025 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -70,10 +70,14 @@ class TrafficExample {
   }
 
   void _enableTrafficVisualization() {
-    // Try to refresh the trafficFlow vector tiles every minute.
+    // Try to refresh the trafficFlow vector tiles 5 minutes.
     // If MapFeatures.trafficFlow is disabled, no requests are made.
+    //
+    // Note: This code initiates periodic calls to the HERE Traffic backend. Depending on your contract,
+    // each call may be charged separately. It is the application's responsibility to decide how
+    // often this code should be executed.
     try {
-      MapContentSettings.setTrafficRefreshPeriod(Duration(minutes: 1));
+      MapContentSettings.setTrafficRefreshPeriod(Duration(minutes: 5));
     } on MapContentSettingsTrafficRefreshPeriodExceptionException {
       throw ("TrafficRefreshPeriodException");
     }
