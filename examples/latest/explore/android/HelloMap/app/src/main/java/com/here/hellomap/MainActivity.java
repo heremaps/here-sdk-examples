@@ -114,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
     private void loadMapScene() {
         // The camera can be configured before or after a scene is loaded.
         double distanceInMeters = 1000 * 10;
-        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
+        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, distanceInMeters);
         mapView.getCamera().lookAt(new GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
 
         // Load a scene from the HERE SDK to render the map with a map scheme.

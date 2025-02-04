@@ -18,18 +18,20 @@
   */
 
  package com.here.sdk.custompointtilesource;
- ;
+
  import android.util.Pair;
 
  import androidx.annotation.NonNull;
  import androidx.annotation.Nullable;
 
+ import com.here.sdk.core.GeoBox;
  import com.here.sdk.core.GeoCoordinates;
  import com.here.sdk.mapview.datasource.DataAttributes;
  import com.here.sdk.mapview.datasource.DataAttributesBuilder;
  import com.here.sdk.mapview.datasource.PointData;
  import com.here.sdk.mapview.datasource.PointDataBuilder;
  import com.here.sdk.mapview.datasource.PointTileSource;
+ import com.here.sdk.mapview.datasource.TileGeoBoundsCalculator;
  import com.here.sdk.mapview.datasource.TileKey;
  import com.here.sdk.mapview.datasource.TilingScheme;
 
@@ -50,6 +52,9 @@
 
      // Tile source supported tiling scheme.
      final TilingScheme mSupportedTilingScheme = TilingScheme.QUAD_TREE_MERCATOR;
+
+     // Tile geo-bounds calculator for supported tiling scheme.
+     final TileGeoBoundsCalculator mTileBoundsCalculator = new TileGeoBoundsCalculator(mSupportedTilingScheme);
 
      @Nullable
      @Override
@@ -101,12 +106,14 @@
          return mSupportedLevels;
      }
 
-     private static GeoCoordinates getTileCenter(TileKey tileKey) {
-         Pair<GeoCoordinates, GeoCoordinates> tileBoundingBox = tileKeyToGeoBox(tileKey);
-         final double latitude = (tileBoundingBox.first.latitude + tileBoundingBox.second.latitude) * 0.5;
+     private GeoCoordinates getTileCenter(TileKey tileKey) {
+         final GeoBox tileBoundingBox = mTileBoundsCalculator.boundsOf(tileKey);
+         final GeoCoordinates sw = tileBoundingBox.southWestCorner;
+         final GeoCoordinates ne = tileBoundingBox.northEastCorner;
 
-         final double west = tileBoundingBox.first.longitude;
-         final double east = tileBoundingBox.second.longitude;
+         final double latitude = (sw.latitude + ne.latitude) * 0.5;
+         final double west = sw.longitude;
+         final double east = ne.longitude;
 
          if (west <= east)
          {
@@ -120,54 +127,5 @@
          }
 
          return new GeoCoordinates(latitude, longitude);
-     }
-
-     /**
-      * Computes the geo box out of a tile key, assuming a TMS tile key, spherical projection and quadtree
-      * mercator tiling scheme.
-      * @param tileKey Key of the tile for which to compute
-      * @return Tile geo box (SW, NE).
-      */
-     private static Pair<GeoCoordinates, GeoCoordinates> tileKeyToGeoBox(TileKey tileKey) {
-        // TMS -> XYZ
-         final int tileZ = tileKey.level;
-         final int tileX = tileKey.x;
-         final int tileY = (1 << tileZ) - 1 - tileKey.y;
-
-         final int tileSize = 256;
-         final double earthRadius = 6378137.0;
-         final double twoPi = 2.0 * Math.PI;
-         final double halfPi = Math.PI * 0.5;
-         final double toRadiansFactor = Math.PI / 180.0;
-         final double toDegreesFactor = 180.0 / Math.PI;
-         final double originShift = twoPi * earthRadius * 0.5;
-         final double initialResolution = twoPi * earthRadius / tileSize;
-
-         final double pointXWest = tileX * tileSize;
-         final double pointYNorth = tileY * tileSize;
-         final double pointXEast = (tileX + 1) * tileSize;
-         final double pointYSouth = (tileY + 1) * tileSize;
-
-         // Compute corner coordinates.
-         final double resolutionAtCurrentZ = initialResolution / (1 << tileZ);
-         final double halfSize = tileSize * (1 << tileZ) * 0.5;
-         // SW
-         final double meterXW = Math.abs(pointXWest * resolutionAtCurrentZ - originShift) *
-                 (pointXWest < halfSize ? -1 : 1);
-         final double meterYS = Math.abs(pointYSouth * resolutionAtCurrentZ - originShift) *
-                 (pointYSouth > halfSize ? -1 : 1);
-         double longitudeSW = (meterXW / originShift) * 180.0;
-         double latitudeSW = (meterYS / originShift) * 180.0;
-         latitudeSW = toDegreesFactor * (2 * Math.atan(Math.exp(latitudeSW * toRadiansFactor)) - halfPi);
-         // NE
-         final double meterXE = Math.abs(pointXEast * resolutionAtCurrentZ - originShift) *
-                 (pointXEast < halfSize ? -1 : 1);
-         final double meterYN = Math.abs(pointYNorth * resolutionAtCurrentZ - originShift) *
-                 (pointYNorth > halfSize ? -1 : 1);
-         double longitudeNE = (meterXE / originShift) * 180.0;
-         double latitudeNE = (meterYN / originShift) * 180.0;
-         latitudeNE = toDegreesFactor * (2 * Math.atan(Math.exp(latitudeNE * toRadiansFactor)) - halfPi);
-
-         return new Pair<>(new GeoCoordinates(latitudeSW, longitudeSW), new GeoCoordinates(latitudeNE, longitudeNE));
      }
  }

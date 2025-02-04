@@ -22,6 +22,14 @@ import SwiftUI
 
 struct ContentView: View {
     
+    // Initialize the models for the SpeedView using default values.
+    @StateObject private var truckSpeedLimitModel = SpeedModel()
+    @StateObject private var carSpeedLimitModel = SpeedModel()
+    @StateObject private var drivingSpeedModel = SpeedModel()
+    
+    // Initialize the model for the TruckRestrictionView using default values.
+    @StateObject private var truckRestrictionModel = TruckRestrictionModel()
+    
     @State private var mapView = MapView()
     @State private var truckGuidanceExample: TruckGuidanceExample?
         
@@ -53,11 +61,35 @@ struct ContentView: View {
                          truckGuidanceExample?.onToggleSpeedClicked()
                      }
                  }
+
+                 // Position all UI components in the bottom-left screen area.
+                 VStack {
+                     Spacer()
+                     
+                     HStack {
+                         TruckRestrictionView(model: truckRestrictionModel)
+                     }
+                     .frame(maxWidth: .infinity, alignment: .leading)
+                     .padding()
+                     
+                     HStack {
+                         SpeedView(model: truckSpeedLimitModel)
+                         SpeedView(model: carSpeedLimitModel)
+                         SpeedView(model: drivingSpeedModel)
+                     }
+                     .frame(maxWidth: .infinity, alignment: .leading)
+                     .padding(.leading)
+                 }
+                 .frame(maxHeight: .infinity, alignment: .bottom)
              }
          }
          .onAppear {
              // ContentView appeared, now we init the example.
-             truckGuidanceExample = TruckGuidanceExample(mapView)
+             truckGuidanceExample = TruckGuidanceExample(mapView,
+                                                         truckSpeedLimitModel: truckSpeedLimitModel,
+                                                         carSpeedLimitModel: carSpeedLimitModel,
+                                                         drivingSpeedModel: drivingSpeedModel,
+                                                         truckRestrictionModel: truckRestrictionModel)
          }
      }
 }

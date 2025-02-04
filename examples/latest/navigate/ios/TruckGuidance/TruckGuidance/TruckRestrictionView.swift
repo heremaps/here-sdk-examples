@@ -17,98 +17,73 @@
  * License-Filename: LICENSE
  */
 
-import UIKit
+import SwiftUI
+
+// A model class to be used for data binding. The example class will use this model to update
+// data while traversing along a route. The data will be shown by the TruckRestrictionView panel.
+class TruckRestrictionModel: ObservableObject {
+    @Published var restrictionDescription: String?
+    @Published var isViewVisible: Bool
+    
+    init(restrictionDescription: String = "n/a",
+         isViewVisible: Bool = false) {
+        self.restrictionDescription = restrictionDescription
+        self.isViewVisible = isViewVisible
+    }
+}
 
 // A simple view to show the next TruckRestrictionWarning event.
-class TruckRestrictionView: UIView {
+struct TruckRestrictionView: View {
     
-    // The dimensions of the rectangle that holds all content.
-    // (xy set by the hosting view.)
-    var x: CGFloat = 0
-    var y: CGFloat = 0
+    // The model which is updated by the example class when new data is provided by the VisualNavigator.
+    @ObservedObject var model: TruckRestrictionModel
+    
+    // The width and height of the container view.
     let w: CGFloat = 125
     let h: CGFloat = 60
-
+    
+    // Margin for text positioning.
     private let margin: CGFloat = 8
+    
+    // Corner radius for rounded background.
     private let cornerRadius: CGFloat = 8.0
-    private var customBackgroundColor = UIColor(red: 18/255, green: 109/255, blue: 249/255, alpha: 1)
-
-    var restrictionDescription: String? {
-        didSet {
-            setNeedsDisplay()
+    
+    // Custom background color.
+    private let customBackgroundColor = Color(red: 18/255, green: 109/255, blue: 249/255)
+    
+    var body: some View {
+        if model.isViewVisible {
+            ZStack(alignment: .leading) {
+                // Background rectangle with rounded corners.
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .fill(customBackgroundColor)
+                    .frame(width: w, height: h)
+                
+                // Restriction description text, left-aligned and truncated if too long.
+                if let restrictionDescription = model.restrictionDescription, !restrictionDescription.isEmpty {
+                    Text(restrictionDescription)
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(.white)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                        .padding(.leading, margin)
+                        .frame(width: w - 2 * margin, height: h, alignment: .center)
+                }
+            }
+            .frame(width: w, height: h)
+            .background(Color.clear)
         }
     }
+}
 
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        backgroundColor = .clear // Set the background color to transparent
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    private func drawRectangleOutlines(_ rect: CGRect) {
-        let rectanglePath = UIBezierPath(rect: rect)
-        rectanglePath.stroke()
-    }
-
-    // Renders text vertically centered in given rectangle.
-    // Too long text will be truncated with an ellipsis.
-    private func drawTextLeftAligned(_ text: String, rect: CGRect, leftMargin: CGFloat, fontSize: CGFloat) {
-        // Set the font and paragraph style for the text.
-        let font = UIFont.boldSystemFont(ofSize: fontSize)
-        let paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.alignment = .left
-        paragraphStyle.lineBreakMode = .byTruncatingTail
-
-        // Set the attributes for the text with a white color.
-        let attributes: [NSAttributedString.Key: Any] = [
-            .font: font,
-            // Use white color for text.
-            .foregroundColor: UIColor.white,
-            .paragraphStyle: paragraphStyle
-        ]
-
-        // Calculate the available width for the text based on the leftMargin.
-        let availableWidth = rect.width - leftMargin
-
-        // Calculate the size of the text to be drawn, considering the available width and truncation options.
-        let textSize = (text as NSString).boundingRect(
-            with: CGSize(width: availableWidth, height: .greatestFiniteMagnitude),
-            options: [.usesLineFragmentOrigin, .usesFontLeading],
-            attributes: attributes,
-            context: nil
-        ).size
-
-        // Calculate the y-coordinate to vertically center the text inside the given rectangle.
-        let centerY = rect.origin.y + (rect.height - textSize.height) / 2
-
-        // Calculate the x-coordinate for the left-aligned text with the left margin.
-        let startX = rect.origin.x + leftMargin
-
-        // Create a rectangle for the text based on the calculated position and size.
-        let textRect = CGRect(x: startX, y: centerY, width: textSize.width, height: textSize.height)
-
-        // Draw the text in the calculated rectangle with truncation.
-        text.draw(in: textRect, withAttributes: attributes)
-    }
-
-    override func draw(_ rect: CGRect) {
-        super.draw(rect)
-
-        guard let restrictionDescription = restrictionDescription else {
-            // Nothing to draw: Clear any previous content.
-            return
-        }
-
-        // Create a rounded rectangle path for the background of our view.
-        let backgroundPath = UIBezierPath(roundedRect: bounds, cornerRadius: cornerRadius)
-
-        // Set the background color and fill the path.
-        customBackgroundColor.setFill()
-        backgroundPath.fill()
-
-        drawTextLeftAligned(restrictionDescription, rect: rect, leftMargin: margin, fontSize: 14)
+struct TruckRestrictionView_Previews: PreviewProvider {
+    static var previews: some View {
+        // Create a sample model for the preview.
+        let sampleModel = TruckRestrictionModel(
+            restrictionDescription: "n/a"
+        )
+        
+        TruckRestrictionView(model: sampleModel)
+            .previewLayout(.sizeThatFits)
     }
 }

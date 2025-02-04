@@ -50,7 +50,6 @@ class CustomPointTileSourceExample {
   """;
 
   CustomPointTileSourceExample(this._hereMapController) {
-  
     String dataSourceName = "MyPointDataSource";
     _pointDataSource = _createPointTileDataSource(dataSourceName);
     _pointMapLayer = _createMapLayer(dataSourceName);
@@ -70,14 +69,16 @@ class CustomPointTileSourceExample {
     _pointMapLayer?.setEnabled(false);
   }
 
-  PointTileDataSource _createPointTileDataSource(String dataSourceName)  {
+  PointTileDataSource _createPointTileDataSource(String dataSourceName) {
     var localPointTileSource = LocalPointTileSource();
 
+    // Create a PointTileDataSource using a local point tile source.
     // Note that this will make the point source already known to the passed map view.
     return PointTileDataSource.create(
         _hereMapController.mapContext, dataSourceName, localPointTileSource);
   }
 
+  // Creates a MapLayer for displaying custom point tiles.
   MapLayer _createMapLayer(String dataSourceName) {
     // The layer should be visible for all zoom levels.
     MapLayerVisibilityRange range = MapLayerVisibilityRange(0, 22 + 1);
@@ -89,7 +90,8 @@ class CustomPointTileSourceExample {
               _hereMapController.hereMapControllerCore) // mandatory parameter
           .withName(dataSourceName + "Layer") // mandatory parameter
           .withDataSource(dataSourceName, MapContentType.point)
-          .withStyle(JsonStyleFactory.createFromString(_pointLayerStyle))
+          .withStyle(JsonStyleFactory.createFromString(
+              _pointLayerStyle)) // Creates a custom style for the point layer from the predefined JSON style string.
           .withVisibilityRange(range)
           .build();
       return mapLayer;

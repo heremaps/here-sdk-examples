@@ -114,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
                     mapViewPinExample = new MapViewPinExample(MainActivity.this, mapView);
 
                     double distanceInMeters = 1000 * 20;
-                    MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
+                    MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, distanceInMeters);
                     mapView.getCamera().lookAt(new GeoCoordinates(52.51760485151816, 13.380312380535472), mapMeasureZoom);
                 } else {
                     Log.d(TAG, "onLoadScene failed: " + mapError.toString());

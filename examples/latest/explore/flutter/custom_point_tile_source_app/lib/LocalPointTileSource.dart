@@ -27,6 +27,9 @@ class LocalPointTileSource implements PointTileSource {
   // Tile source data version. A single version is supported for this example.
   final TileSourceDataVersion dataVersion = TileSourceDataVersion(1, 0);
 
+  // Tile geo-bounds calculator for supported tiling scheme.
+  final TileGeoBoundsCalculator tileBoundsCalculator = TileGeoBoundsCalculator(TilingScheme.quadTreeMercator);
+
   @override
   TileSourceLoadTileRequestHandle? loadTile(
       TileKey tileKey, PointTileSourceLoadResultHandler completionHandler) {
@@ -86,56 +89,12 @@ class LocalPointTileSource implements PointTileSource {
     15,
     16
   ];
-  
-  // Computes the geo box out of a tile key, assuming a TMS tile key, spherical projection and quadtree
-  // mercator tiling scheme.
-  // @param tileKey Key of the tile for which to compute
-  // @return Tile geo box (SW, NE).
-  (GeoCoordinates, GeoCoordinates) tileKeyToGeoBox(TileKey tileKey) {
-    // TMS -> XYZ
-    final int tileZ = tileKey.level;
-    final int tileX = tileKey.x;
-    final int tileY = (1 << tileZ) - 1 - tileKey.y;
 
-    final int tileSize = 256;
-    final double earthRadius = 6378137.0;
-    final double twoPi = 2.0 * pi;
-    final double halfPi = pi * 0.5;
-    final double toRadiansFactor = pi / 180.0;
-    final double toDegreesFactor = 180.0 / pi;
-    final double originShift = twoPi * earthRadius * 0.5;
-    final double initialResolution = twoPi * earthRadius / tileSize;
-
-    final double pointXWest = (tileX * tileSize).toDouble();
-    final double pointYNorth = (tileY * tileSize).toDouble();
-    final double pointXEast = ((tileX + 1) * tileSize).toDouble();
-    final double pointYSouth = ((tileY + 1) * tileSize).toDouble();
-
-    // Compute corner coordinates.
-    final double resolutionAtCurrentZ = initialResolution / (1 << tileZ);
-    final double halfSize = tileSize * (1 << tileZ) * 0.5;
-    // SW
-    final double meterXW = (pointXWest * resolutionAtCurrentZ - originShift).abs() *
-                 (pointXWest < halfSize ? -1 : 1);
-    final double meterYS = (pointYSouth * resolutionAtCurrentZ - originShift).abs() *
-                 (pointYSouth > halfSize ? -1 : 1);
-    double longitudeSW = (meterXW / originShift) * 180.0;
-    double latitudeSW = (meterYS / originShift) * 180.0;
-    latitudeSW = toDegreesFactor * (2 * atan(exp(latitudeSW * toRadiansFactor)) - halfPi);
-    // NE
-    final double meterXE = (pointXEast * resolutionAtCurrentZ - originShift).abs() *
-                 (pointXEast < halfSize ? -1 : 1);
-    final double meterYN = (pointYNorth * resolutionAtCurrentZ - originShift).abs() *
-                 (pointYNorth > halfSize ? -1 : 1);
-    double longitudeNE = (meterXE / originShift) * 180.0;
-    double latitudeNE = (meterYN / originShift) * 180.0;
-    latitudeNE = toDegreesFactor * (2 * atan(exp(latitudeNE * toRadiansFactor)) - halfPi);
-
-    return (GeoCoordinates(latitudeSW, longitudeSW), GeoCoordinates(latitudeNE, longitudeNE));
-  }
-  
   GeoCoordinates getTileCenter(TileKey tileKey) {
-    var (sw, ne) = tileKeyToGeoBox(tileKey);
+    var tileBoundingBox = tileBoundsCalculator.boundsOf(tileKey);
+    var sw = tileBoundingBox.southWestCorner;
+    var ne = tileBoundingBox.northEastCorner;
+
     final double latitude = (sw.latitude + ne.latitude) * 0.5;
 
     final double west = sw.longitude;

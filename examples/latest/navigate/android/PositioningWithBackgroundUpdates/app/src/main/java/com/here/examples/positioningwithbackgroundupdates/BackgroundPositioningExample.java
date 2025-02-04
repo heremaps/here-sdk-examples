@@ -47,7 +47,7 @@ public class BackgroundPositioningExample {
 
     private static final int CAMERA_DISTANCE_IN_METERS = 200;
 
-    private final MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, CAMERA_DISTANCE_IN_METERS);
+    private final MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, CAMERA_DISTANCE_IN_METERS);
     private final GeoCoordinates defaultCoordinates = new GeoCoordinates(52.520798,13.409408);
 
     private MapView mapView;

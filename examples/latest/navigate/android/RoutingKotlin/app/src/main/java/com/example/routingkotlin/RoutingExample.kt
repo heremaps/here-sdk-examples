@@ -69,7 +69,7 @@ class RoutingExample(private val context: Context, private val mapView: MapView)
     init {
         val camera: MapCamera = mapView.camera
         val distanceInMeters = (1000 * 10).toDouble()
-        val mapMeasureZoom = MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters)
+        val mapMeasureZoom = MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, distanceInMeters)
         camera.lookAt(GeoCoordinates(52.520798, 13.409408), mapMeasureZoom)
 
         try {

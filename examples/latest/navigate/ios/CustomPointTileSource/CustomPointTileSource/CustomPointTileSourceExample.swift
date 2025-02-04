@@ -80,13 +80,14 @@ class CustomPointTileSourceExample {
     }
 
     private func createPointTileDataSource(dataSourceName: String) -> PointTileDataSource {
-        // Create a PointTileDataSource over a local point tile source.
+        // Create a PointTileDataSource using a local point tile source.
         // Note that this will make the point source already known to the passed map view.
         return PointTileDataSource.create(context: mapView.mapContext,
                                           name: dataSourceName,
                                           tileSource: LocalPointTileSource())
     }
 
+    // Creates a MapLayer for displaying custom point tiles.
     private func createMapLayer(dataSourceName: String) -> MapLayer {
         // The layer should be visible for all zoom levels.
         let range = MapLayerVisibilityRange(minimumZoomLevel: 0, maximumZoomLevel: 22 + 1)
@@ -101,7 +102,7 @@ class CustomPointTileSourceExample {
                 .withDataSource(named: dataSourceName,
                                 contentType: MapContentType.point)
                 .withVisibilityRange(range)
-                .withStyle(JsonStyleFactory.createFromString(pointLayerStyle))
+                .withStyle(JsonStyleFactory.createFromString(pointLayerStyle)) // Creates a custom style for the point layer from the predefined JSON style string.
                 .build()
             return mapLayer
         } catch let InstantiationException {

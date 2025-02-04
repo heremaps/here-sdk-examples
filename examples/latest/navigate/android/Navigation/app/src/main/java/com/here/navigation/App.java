@@ -70,7 +70,7 @@ public class App {
         this.context = context;
         this.mapView = mapView;
         this.messageView = messageView;
-        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, DEFAULT_DISTANCE_IN_METERS);
+        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, DEFAULT_DISTANCE_IN_METERS);
         this.mapView.getCamera().lookAt(DEFAULT_MAP_CENTER, mapMeasureZoom);
 
         routeCalculator = new RouteCalculator();
