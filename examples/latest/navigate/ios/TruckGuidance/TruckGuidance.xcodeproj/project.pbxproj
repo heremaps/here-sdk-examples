@@ -12,7 +12,6 @@
 		8339C0012C8B880900689509 /* HEREPositioningSimulator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8339BFFE2C8B880900689509 /* HEREPositioningSimulator.swift */; };
 		8339C0042CAC190D00689509 /* heresdk.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 83C837CA2C20AAE50004F54E /* heresdk.xcframework */; };
 		8339C0052CAC190D00689509 /* heresdk.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 83C837CA2C20AAE50004F54E /* heresdk.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		8339C0082CAC1A7D00689509 /* TruckGuidanceUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8339C0072CAC1A7D00689509 /* TruckGuidanceUI.swift */; };
 		83C837BC2C207F340004F54E /* TruckGuidanceApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C837BB2C207F340004F54E /* TruckGuidanceApp.swift */; };
 		83C837BE2C207F340004F54E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C837BD2C207F340004F54E /* ContentView.swift */; };
 		83C837C02C207F360004F54E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 83C837BF2C207F360004F54E /* Assets.xcassets */; };
@@ -38,7 +37,6 @@
 		8339BFFC2C8B880900689509 /* SpeedView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpeedView.swift; sourceTree = "<group>"; };
 		8339BFFD2C8B880900689509 /* TruckRestrictionView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TruckRestrictionView.swift; sourceTree = "<group>"; };
 		8339BFFE2C8B880900689509 /* HEREPositioningSimulator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HEREPositioningSimulator.swift; sourceTree = "<group>"; };
-		8339C0072CAC1A7D00689509 /* TruckGuidanceUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TruckGuidanceUI.swift; sourceTree = "<group>"; };
 		83C837B82C207F340004F54E /* TruckGuidance.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TruckGuidance.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		83C837BB2C207F340004F54E /* TruckGuidanceApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TruckGuidanceApp.swift; sourceTree = "<group>"; };
 		83C837BD2C207F340004F54E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -83,7 +81,6 @@
 				83C837BB2C207F340004F54E /* TruckGuidanceApp.swift */,
 				83C837BD2C207F340004F54E /* ContentView.swift */,
 				83C837D02C20EFA70004F54E /* TruckGuidanceExample.swift */,
-				8339C0072CAC1A7D00689509 /* TruckGuidanceUI.swift */,
 				8339BFFC2C8B880900689509 /* SpeedView.swift */,
 				8339BFFD2C8B880900689509 /* TruckRestrictionView.swift */,
 				8339BFFE2C8B880900689509 /* HEREPositioningSimulator.swift */,
@@ -181,7 +178,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				8339C0002C8B880900689509 /* TruckRestrictionView.swift in Sources */,
-				8339C0082CAC1A7D00689509 /* TruckGuidanceUI.swift in Sources */,
 				83C837BE2C207F340004F54E /* ContentView.swift in Sources */,
 				8339C0012C8B880900689509 /* HEREPositioningSimulator.swift in Sources */,
 				83C837BC2C207F340004F54E /* TruckGuidanceApp.swift in Sources */,

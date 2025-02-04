@@ -759,7 +759,7 @@ public class OfflineMapsExample {
     private void repositionCamera(){
         MapCamera camera = mapView.getCamera();
         double distanceInMeters = 1000 * 7;
-        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
+        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, distanceInMeters);
         camera.lookAt(new GeoCoordinates(46.94843, 7.44046), mapMeasureZoom);
     }
 

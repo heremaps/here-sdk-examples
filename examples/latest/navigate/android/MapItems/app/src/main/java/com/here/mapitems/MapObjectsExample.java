@@ -208,7 +208,7 @@ public class MapObjectsExample {
     private void flyTo(GeoCoordinates geoCoordinates) {
         GeoCoordinatesUpdate geoCoordinatesUpdate = new GeoCoordinatesUpdate(geoCoordinates);
         double distanceInMeters = 1000 * 8;
-        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
+        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, distanceInMeters);
         double bowFactor = 1;
         MapCameraAnimation animation = MapCameraAnimationFactory.flyTo(
                 geoCoordinatesUpdate, mapMeasureZoom, bowFactor, Duration.ofSeconds(3));

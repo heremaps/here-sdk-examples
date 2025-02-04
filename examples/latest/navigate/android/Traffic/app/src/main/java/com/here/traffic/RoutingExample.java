@@ -74,7 +74,7 @@ public class RoutingExample {
         // Configure the map.
         MapCamera camera = mapView.getCamera();
         double distanceInMeters = 1000 * 10;
-        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
+        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, distanceInMeters);
         camera.lookAt(new GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
 
         try {

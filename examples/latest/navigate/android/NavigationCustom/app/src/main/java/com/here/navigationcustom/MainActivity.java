@@ -159,7 +159,7 @@ public class MainActivity extends AppCompatActivity {
                     mapFeatures.put(MapFeatures.LANDMARKS, MapFeatureModes.LANDMARKS_TEXTURED);
                     mapView.getMapScene().enableFeatures(mapFeatures);
 
-                    MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, DISTANCE_IN_METERS);
+                    MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, DISTANCE_IN_METERS);
                     mapView.getCamera().lookAt(
                             routeStartGeoCoordinates, mapMeasureZoom);
                     startAppLogic();
@@ -337,7 +337,7 @@ public class MainActivity extends AppCompatActivity {
         GeoOrientationUpdate orientationUpdate = new GeoOrientationUpdate(bearingInDegrees, tiltInDegrees);
 
         double distanceInMeters = 50;
-        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
+        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, distanceInMeters);
 
         double bowFactor = 1;
         MapCameraAnimation animation = MapCameraAnimationFactory.flyTo(
@@ -362,7 +362,7 @@ public class MainActivity extends AppCompatActivity {
         double tiltInDegrees = 0;
         GeoOrientationUpdate orientationUpdate = new GeoOrientationUpdate(bearingInDegrees, tiltInDegrees);
 
-        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, DISTANCE_IN_METERS);
+        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, DISTANCE_IN_METERS);
         double bowFactor = 1;
         MapCameraAnimation animation = MapCameraAnimationFactory.flyTo(
                 geoCoordinatesUpdate, orientationUpdate, mapMeasureZoom, bowFactor, Duration.ofSeconds(3));

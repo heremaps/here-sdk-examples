@@ -105,7 +105,7 @@ class MainActivity : AppCompatActivity() {
         mapView?.mapScene?.loadScene(MapScheme.NORMAL_DAY) { mapError ->
             if (mapError == null) {
                 val distanceInMeters = (1000 * 10).toDouble()
-                val mapMeasureZoom = MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters)
+                val mapMeasureZoom = MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, distanceInMeters)
                 mapView?.camera?.lookAt(GeoCoordinates(52.530932, 13.384915), mapMeasureZoom)
             } else {
                 Log.d(TAG, "Loading map failed: mapError: " + mapError.name)

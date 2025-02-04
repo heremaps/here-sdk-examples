@@ -55,7 +55,7 @@ public class MapViewPinExample {
         this.mapView = mapView;
         mapCamera = mapView.getCamera();
         double distanceToEarthInMeters = 7000;
-        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceToEarthInMeters);
+        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, distanceToEarthInMeters);
         mapCamera.lookAt(MAP_CENTER_GEO_COORDINATES, mapMeasureZoom);
 
         // Add circle to indicate map center.

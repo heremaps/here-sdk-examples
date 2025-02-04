@@ -257,7 +257,7 @@ public class HikingApp {
         if (currentLocation != null) {
             GeoCoordinatesUpdate geoCoordinatesUpdate = new GeoCoordinatesUpdate(currentLocation.coordinates);
             Duration durationInSeconds = Duration.ofSeconds(3);
-            MapMeasure distanceInMeters = new MapMeasure(MapMeasure.Kind.DISTANCE, 500);
+            MapMeasure distanceInMeters = new MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, 500);
             MapCameraAnimation animation = MapCameraAnimationFactory.flyTo(geoCoordinatesUpdate, distanceInMeters,1, durationInSeconds);
 
             mapView.getCamera().startAnimation(animation);
@@ -277,7 +277,7 @@ public class HikingApp {
         GeoOrientationUpdate geoOrientationUpdate = new GeoOrientationUpdate(bearing, tilt);
 
         // For very short polylines we want to have at least a distance of 100 meters.
-        MapMeasure minDistanceInMeters = new MapMeasure(MapMeasure.Kind.DISTANCE, 100);
+        MapMeasure minDistanceInMeters = new MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, 100);
 
         MapCameraUpdate mapCameraUpdate = MapCameraUpdateFactory.lookAt(geoCoordinateList,
                 mapViewport,

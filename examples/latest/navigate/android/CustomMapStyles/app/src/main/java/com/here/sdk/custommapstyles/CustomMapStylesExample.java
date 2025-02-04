@@ -46,7 +46,7 @@
          this.mapView = mapView;
 
          MapCamera camera = mapView.getCamera();
-         MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, DEFAULT_DISTANCE_TO_EARTH_IN_METERS);
+         MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, DEFAULT_DISTANCE_TO_EARTH_IN_METERS);
          camera.lookAt(new GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
      }
 

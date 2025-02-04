@@ -65,7 +65,7 @@
 
          camera = mapView.getCamera();
 
-         MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, DEFAULT_DISTANCE_TO_EARTH_IN_METERS);
+         MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, DEFAULT_DISTANCE_TO_EARTH_IN_METERS);
          camera.lookAt(new GeoCoordinates(52.750731,13.007375), mapMeasureZoom);
 
          // The red circle dot indicates the camera's current target location.

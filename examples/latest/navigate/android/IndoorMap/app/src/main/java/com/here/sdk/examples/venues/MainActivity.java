@@ -273,7 +273,7 @@ public class MainActivity extends AppCompatActivity {
             if (mapError == null) {
                 setWatermark(1800);
                 double distanceInMeters = 1000 * 10;
-                MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
+                MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, distanceInMeters);
                 mapView.getCamera().lookAt(
                         new GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
 
@@ -420,7 +420,7 @@ public class MainActivity extends AppCompatActivity {
                     // Move camera to the selected venue.
                     GeoCoordinates venueCenter = venueModel.getCenter();
                     double distanceInMeters = 500;
-                    MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
+                    MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, distanceInMeters);
                     mapView.getCamera().lookAt(
                             new GeoCoordinates(venueCenter.latitude, venueCenter.longitude),
                             mapMeasureZoom);
@@ -593,7 +593,7 @@ public class MainActivity extends AppCompatActivity {
             if (mapError == null) {
                 setWatermark(1800);
                 double distanceInMeters = 1000 * 10;
-                MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, distanceInMeters);
+                MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, distanceInMeters);
                 mapView.getCamera().lookAt(
                         new GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
 

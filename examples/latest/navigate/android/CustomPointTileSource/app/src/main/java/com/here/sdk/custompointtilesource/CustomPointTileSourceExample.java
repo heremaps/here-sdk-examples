@@ -67,7 +67,7 @@
          this.context = context;
 
          MapCamera camera = mapView.getCamera();
-         MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE, DEFAULT_DISTANCE_TO_EARTH_IN_METERS);
+         MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, DEFAULT_DISTANCE_TO_EARTH_IN_METERS);
          camera.lookAt(new GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
 
          String dataSourceName = "MyPointTileDataSource";
@@ -84,11 +84,12 @@
      }
 
      private PointTileDataSource createPointDataSource(String dataSourceName) {
-         // Create a PointTileDataSource over a local point tile source.
+         // Create a PointTileDataSource using a local point tile source.
          // Note that this will make the point source already known to the passed map view.
          return PointTileDataSource.create(mapView.getMapContext(), dataSourceName, new LocalPointTileSource());
      }
 
+     // Creates a MapLayer for displaying custom point tiles.
      private MapLayer createMapLayer(String dataSourceName) {
          // The layer should be visible for all zoom levels.
          MapLayerVisibilityRange range = new MapLayerVisibilityRange(0, 22 + 1);
@@ -108,6 +109,7 @@
          }
      }
 
+     // Creates a custom style for the point layer from the predefined JSON style string.
      private Style createCustomStyle() {
          try {
              return JsonStyleFactory.createFromString(LAYER_STYLE);

@@ -50,18 +50,23 @@ class TruckGuidanceExample: TapDelegate,
     private var lastCalculatedTruckRoute: Route?
     private var isGuidance = false
     private var isTracking = false
-    private let truckGuidanceUI: TruckGuidanceUI
 
-    // Reference to the UICallback delegate.
-    private weak var uiCallback: UICallback?
+    // The model classes to provide data via binding to the SpeedViews.
+    private var truckSpeedLimitModel: SpeedModel
+    private var carSpeedLimitModel: SpeedModel
+    private var drivingSpeedModel: SpeedModel
+    private var truckRestrictionModel: TruckRestrictionModel
 
-    init(_ mapView: MapView) {
+    init(_ mapView: MapView,
+         truckSpeedLimitModel: SpeedModel,
+         carSpeedLimitModel: SpeedModel,
+         drivingSpeedModel: SpeedModel,
+         truckRestrictionModel: TruckRestrictionModel) {
         self.mapView = mapView
-
-        // Adds views programmatically to the map view.
-        // This example class sends notifications to UI via callback protocoll.
-        truckGuidanceUI = TruckGuidanceUI(mapView)
-        uiCallback = truckGuidanceUI
+        self.truckSpeedLimitModel = truckSpeedLimitModel
+        self.carSpeedLimitModel = carSpeedLimitModel
+        self.drivingSpeedModel = drivingSpeedModel
+        self.truckRestrictionModel = truckRestrictionModel
 
         do {
             // We use the search engine to find places along a route.
@@ -111,7 +116,7 @@ class TruckGuidanceExample: TapDelegate,
 
         // Configure the map.
         let camera = mapView.camera
-        let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 90)
+        let distanceInMeters = MapMeasure(kind: .distanceInMeters, value: 1000 * 90)
         camera.lookAt(point: GeoCoordinates(latitude: 52.520798, longitude: 13.409408),
                       zoom: distanceInMeters)
 
@@ -132,10 +137,13 @@ class TruckGuidanceExample: TapDelegate,
             return
         }
 
-        // Add views programmatically to the map view.
-        truckGuidanceUI.setupUIComponents()
-        truckGuidanceUI.showSpeedViews()
-        truckGuidanceUI.listenForOrientationChanges()
+        // Specify initial state of UI components.
+        truckSpeedLimitModel.labelText = "Truck"
+        carSpeedLimitModel.labelText = "Car"
+        drivingSpeedModel.outerCircleColor = Color.white
+        truckSpeedLimitModel.isViewVisible = true
+        carSpeedLimitModel.isViewVisible = true
+        drivingSpeedModel.isViewVisible = true
     }
 
     // An immutable struct holding the definition of a truck.
@@ -320,16 +328,16 @@ class TruckGuidanceExample: TapDelegate,
             if let currentSpeedLimit = speedLimit.effectiveSpeedLimitInMetersPerSecond() {
                 if currentSpeedLimit == 0 {
                     print("No speed limits on this road! Drive as fast as you feel safe ...")
-                    truckGuidanceExample.uiCallback?.onTruckSpeedLimit(speedLimit: "NSL")
+                    truckGuidanceExample.truckSpeedLimitModel.speedText = "NSL"
                 } else {
                     print("Current speed limit (m/s): \(currentSpeedLimit)")
                     // For this example, we keep it simple and show speed limits only in km/h.
                     let kmh = Int(truckGuidanceExample.metersPerSecondToKilometersPerHour(currentSpeedLimit))
-                    truckGuidanceExample.uiCallback?.onTruckSpeedLimit(speedLimit: "\(kmh)")
+                    truckGuidanceExample.truckSpeedLimitModel.speedText = "\(kmh)"
                 }
             } else {
                 print("Warning: Speed limits unknown, data could not be retrieved.")
-                truckGuidanceExample.uiCallback?.onTruckSpeedLimit(speedLimit: "n/a")
+                truckGuidanceExample.truckSpeedLimitModel.speedText = "n/a"
             }
         }
 
@@ -347,16 +355,16 @@ class TruckGuidanceExample: TapDelegate,
             if let currentSpeedLimit = speedLimit.effectiveSpeedLimitInMetersPerSecond() {
                 if currentSpeedLimit == 0 {
                     print("No speed limits for cars on this road! Drive as fast as you feel safe ...")
-                    truckGuidanceExample.uiCallback?.onCarSpeedLimit(speedLimit: "NSL")
+                    truckGuidanceExample.carSpeedLimitModel.speedText = "NSL"
                 } else {
                     print("Current car speed limit (m/s): \(currentSpeedLimit)")
                     // For this example, we keep it simple and show speed limits only in km/h.
                     let kmh = Int(truckGuidanceExample.metersPerSecondToKilometersPerHour(currentSpeedLimit))
-                    truckGuidanceExample.uiCallback?.onCarSpeedLimit(speedLimit: "\(kmh)")
+                    truckGuidanceExample.carSpeedLimitModel.speedText = "\(kmh)"
                 }
             } else {
                 print("Warning: Car speed limits unknown, data could not be retrieved.")
-                truckGuidanceExample.uiCallback?.onCarSpeedLimit(speedLimit: "n/a")
+                truckGuidanceExample.carSpeedLimitModel.speedText = "n/a"
             }
         }
     }
@@ -367,9 +375,9 @@ class TruckGuidanceExample: TapDelegate,
         if let drivingSpeed = navigableLocation.originalLocation.speedInMetersPerSecond {
             // Note that we ignore speedAccuracyInMetersPerSecond here for simplicity.
             let kmh = Int(metersPerSecondToKilometersPerHour(drivingSpeed))
-            uiCallback?.onDrivingSpeed(drivingSpeed: "\(kmh)")
+            drivingSpeedModel.speedText = "\(kmh)"
         } else {
-            uiCallback?.onDrivingSpeed(drivingSpeed: "n/a")
+            drivingSpeedModel.speedText = "n/a"
         }
     }
 
@@ -512,10 +520,10 @@ class TruckGuidanceExample: TapDelegate,
 
                 if activeTruckRestrictionWarnings.isEmpty {
                     // No more restrictions ahead.
-                    uiCallback?.onHideTruckRestrictionWarning()
+                    onHideTruckRestrictionWarning()
                 } else {
                     // Show the next restriction ahead, which will be the first item in the list.
-                    uiCallback?.onTruckRestrictionWarning(description: activeTruckRestrictionWarnings[0])
+                    onTruckRestrictionWarning(description: activeTruckRestrictionWarnings[0])
                 }
             }
         case .reached:
@@ -524,7 +532,7 @@ class TruckGuidanceExample: TapDelegate,
         case .ahead:
             if activeTruckRestrictionWarnings.isEmpty {
                 // Show the first restriction.
-                uiCallback?.onTruckRestrictionWarning(description: newDescription)
+                onTruckRestrictionWarning(description: newDescription)
                 activeTruckRestrictionWarnings.append(newDescription)
             } else {
                 // Do not show the restriction yet. We'll show it when the previous restrictions have passed by.
@@ -644,9 +652,9 @@ class TruckGuidanceExample: TapDelegate,
     private func stopRendering() {
         visualNavigator.stopRendering()
         herePositioningSimulator.stopLocating()
-        uiCallback?.onDrivingSpeed(drivingSpeed: "n/a")
-        uiCallback?.onTruckSpeedLimit(speedLimit: "n/a")
-        uiCallback?.onCarSpeedLimit(speedLimit: "n/a")
+        truckSpeedLimitModel.speedText = "n/a"
+        carSpeedLimitModel.speedText = "n/a"
+        drivingSpeedModel.speedText = "n/a"
         untiltUnrotateMap()
     }
 
@@ -654,6 +662,15 @@ class TruckGuidanceExample: TapDelegate,
         mapView.camera.setOrientationAtTarget(GeoOrientationUpdate(bearing: 0, tilt: 0))
     }
 
+    private func onTruckRestrictionWarning(description: String) {
+        truckRestrictionModel.isViewVisible = true
+        truckRestrictionModel.restrictionDescription = description
+    }
+    
+    private func onHideTruckRestrictionWarning() {
+        truckRestrictionModel.isViewVisible = false
+    }
+    
     private func handleTruckRouteResults(_ routingError: RoutingError?, _ routes: [Route]?) {
         if let routingError = routingError {
             showDialog(title: "Error while calculating a truck route: ", message: "\(routingError.rawValue)")
