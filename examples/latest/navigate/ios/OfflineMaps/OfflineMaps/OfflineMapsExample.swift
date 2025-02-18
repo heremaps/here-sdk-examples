@@ -38,7 +38,7 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
 
         // Configure the map.
         let camera = self.mapViewObservable.mapView!.camera
-        let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 7)
+        let distanceInMeters = MapMeasure(kind: .distanceInMeters, value: 1000 * 7)
         camera.lookAt(point: GeoCoordinates(latitude: 52.530932, longitude: 13.384915),
                       zoom: distanceInMeters)
 

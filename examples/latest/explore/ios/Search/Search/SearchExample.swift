@@ -32,7 +32,7 @@ class SearchExample: TapDelegate,
         
         // Configure the map.
         let camera = mapView.camera
-        let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 10)
+        let distanceInMeters = MapMeasure(kind: .distanceInMeters, value: 1000 * 10)
         camera.lookAt(point: GeoCoordinates(latitude: 52.520798, longitude: 13.409408),
                       zoom: distanceInMeters)
 
@@ -164,7 +164,7 @@ class SearchExample: TapDelegate,
     public func geocodeAnAddress() {
         // Set map near to expected location.
         let geoCoordinates = GeoCoordinates(latitude: 52.53086, longitude: 13.38469)
-        let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 5)
+        let distanceInMeters = MapMeasure(kind: .distanceInMeters, value: 1000 * 5)
         mapView.camera.lookAt(point: geoCoordinates, zoom: distanceInMeters)
 
         let streetName = "Invalidenstraße 116, Berlin"

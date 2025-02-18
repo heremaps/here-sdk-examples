@@ -35,7 +35,7 @@ class MapObjectsExample {
     init(mapView: MapView) {
         // Configure the map.
         mapCamera = mapView.camera
-        let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 7)
+        let distanceInMeters = MapMeasure(kind: .distanceInMeters, value: 1000 * 7)
         mapCamera.lookAt(point: GeoCoordinates(latitude: 52.51760485151816, longitude: 13.380312380535472),
                          zoom: distanceInMeters)
 
@@ -169,7 +169,7 @@ class MapObjectsExample {
     private func flyTo(geoCoordinates: GeoCoordinates) {
         let geoCoordinatesUpdate = GeoCoordinatesUpdate(geoCoordinates)
         let distanceInMeters: Double = 1000 * 8
-        let mapMeasure = MapMeasure(kind: .distance, value: distanceInMeters)
+        let mapMeasure = MapMeasure(kind: .distanceInMeters, value: distanceInMeters)
         let durationInSeconds: TimeInterval = 3
         let animation = MapCameraAnimationFactory.flyTo(target: geoCoordinatesUpdate,
                                                         zoom: mapMeasure,

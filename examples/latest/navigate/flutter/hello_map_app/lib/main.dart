@@ -67,7 +67,7 @@ class _MyAppState extends State<MyApp> {
     // The camera can be configured before or after a scene is loaded.
     const double distanceToEarthInMeters = 8000;
     MapMeasure mapMeasureZoom =
-        MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+        MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
     hereMapController.camera.lookAtPointWithMeasure(
         GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
 

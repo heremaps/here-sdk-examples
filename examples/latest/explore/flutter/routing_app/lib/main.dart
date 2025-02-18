@@ -23,14 +23,14 @@ import 'package:here_sdk/core.engine.dart';
 import 'package:here_sdk/core.errors.dart';
 import 'package:here_sdk/mapview.dart';
 
-import 'RoutingExample.dart';
+import 'routing_example.dart';
 
 void main() {
   // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
   _initializeHERESDK();
 
   // Ensure that all widgets, including MyApp, have a MaterialLocalizations object available.
-  runApp(MaterialApp(home: MyApp()));
+  runApp(const MaterialApp(home: MyApp()));
 }
 
 void _initializeHERESDK() async {
@@ -39,8 +39,10 @@ void _initializeHERESDK() async {
 
   // Set your credentials for the HERE SDK.
   String accessKeyId = "YOUR_ACCESS_KEY_ID";
-  String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
-  AuthenticationMode authenticationMode = AuthenticationMode.withKeySecret(accessKeyId, accessKeySecret);
+  String accessKeySecret =
+      "YOUR_ACCESS_KEY_SECRET";
+  AuthenticationMode authenticationMode =
+      AuthenticationMode.withKeySecret(accessKeyId, accessKeySecret);
   SDKOptions sdkOptions = SDKOptions.withAuthenticationMode(authenticationMode);
 
   try {
@@ -51,21 +53,23 @@ void _initializeHERESDK() async {
 }
 
 class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
   @override
-  _MyAppState createState() => _MyAppState();
+  MyAppState createState() => MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class MyAppState extends State<MyApp> {
   RoutingExample? _routingExample;
   HereMapController? _hereMapController;
   final List<bool> _selectedTrafficOptimization = <bool>[true];
-  late final AppLifecycleListener _listener;
+  late final AppLifecycleListener _appLifecycleListener;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('HERE SDK - Routing Example'),
+        title: const Text('HERE SDK - Routing Example'),
       ),
       body: Stack(
         children: [
@@ -80,12 +84,20 @@ class _MyAppState extends State<MyApp> {
                 ],
               ),
               Row(
-                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ToggleButtons(
+                      onPressed: (int index) {
+                        _toggleTrafficOptimization();
+                        setState(() {
+                          _selectedTrafficOptimization[index] =
+                              !_selectedTrafficOptimization[index];
+                        });
+                      },
+                      isSelected: _selectedTrafficOptimization,
                       children: [
                         Container(
-                          padding: EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.all(8.0),
                           decoration: BoxDecoration(
                             color: Colors.lightBlueAccent,
                             borderRadius: BorderRadius.circular(16.0),
@@ -94,21 +106,13 @@ class _MyAppState extends State<MyApp> {
                             _selectedTrafficOptimization[0]
                                 ? 'Traffic Optimization-On'
                                 : 'Traffic Optimization-OFF',
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 18.0,
                             ),
                           ),
                         ),
-                      ],
-                      onPressed: (int index) {
-                        _toggleTrafficOptimization();
-                        setState(() {
-                          _selectedTrafficOptimization[index] =
-                              !_selectedTrafficOptimization[index];
-                        });
-                      },
-                      isSelected: _selectedTrafficOptimization),
+                      ]),
                 ],
               ),
             ],
@@ -120,6 +124,8 @@ class _MyAppState extends State<MyApp> {
 
   void _onMapCreated(HereMapController hereMapController) {
     _hereMapController = hereMapController;
+
+    // Load the map scene using a map scheme to render the map with.
     _hereMapController?.mapScene.loadSceneForMapScheme(MapScheme.normalDay,
         (MapError? error) {
       if (error == null) {
@@ -127,7 +133,7 @@ class _MyAppState extends State<MyApp> {
             {MapFeatures.lowSpeedZones: MapFeatureModes.lowSpeedZonesAll});
         _routingExample = RoutingExample(_showDialog, hereMapController);
       } else {
-        print("Map scene not loaded. MapError: " + error.toString());
+        print("Map scene not loaded. MapError: $error");
       }
     });
   }
@@ -147,13 +153,13 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    _listener = AppLifecycleListener(
+    _appLifecycleListener = AppLifecycleListener(
       onDetach: () =>
-      // Sometimes Flutter may not reliably call dispose(),
-      // therefore it is recommended to dispose the HERE SDK
-      // also when the AppLifecycleListener is detached.
-      // See more details: https://github.com/flutter/flutter/issues/40940
-      { print('AppLifecycleListener detached.'), _disposeHERESDK() },
+          // Sometimes Flutter may not reliably call dispose(),
+          // therefore it is recommended to dispose the HERE SDK
+          // also when the AppLifecycleListener is detached.
+          // See more details: https://github.com/flutter/flutter/issues/40940
+          {print('AppLifecycleListener detached.'), _disposeHERESDK()},
     );
   }
 
@@ -167,7 +173,7 @@ class _MyAppState extends State<MyApp> {
     // Free HERE SDK resources before the application shuts down.
     await SDKNativeEngine.sharedInstance?.dispose();
     SdkContext.release();
-    _listener.dispose();
+    _appLifecycleListener.dispose();
   }
 
   // A helper method to add a button on top of the HERE map.
@@ -180,7 +186,7 @@ class _MyAppState extends State<MyApp> {
           backgroundColor: Colors.lightBlueAccent,
         ),
         onPressed: () => callbackFunction(),
-        child: Text(buttonLabel, style: TextStyle(fontSize: 20)),
+        child: Text(buttonLabel, style: const TextStyle(fontSize: 20)),
       ),
     );
   }
@@ -202,7 +208,7 @@ class _MyAppState extends State<MyApp> {
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('OK'),
+              child: const Text('OK'),
               onPressed: () {
                 Navigator.of(context).pop();
               },

@@ -31,7 +31,7 @@ class CustomRasterLayersExample {
 
         // Configure the map.
         let camera = mapView.camera
-        let distanceInMeters = MapMeasure(kind: .distance, value: 60 * 1000)
+        let distanceInMeters = MapMeasure(kind: .distanceInMeters, value: 60 * 1000)
         camera.lookAt(point: GeoCoordinates(latitude: 52.518043, longitude: 13.405991),
                       zoom: distanceInMeters)
         

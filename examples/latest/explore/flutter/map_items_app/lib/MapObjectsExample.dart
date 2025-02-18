@@ -36,7 +36,7 @@ class MapObjectsExample {
       : _mapScene = hereMapController.mapScene,
         _mapCamera = hereMapController.camera {
     double distanceToEarthInMeters = 5000;
-    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
     hereMapController.camera
         .lookAtPointWithMeasure(GeoCoordinates(52.51760485151816, 13.380312380535472), mapMeasureZoom);
   }
@@ -187,7 +187,7 @@ class MapObjectsExample {
   void _flyTo(GeoCoordinates geoCoordinates) {
     GeoCoordinatesUpdate geoCoordinatesUpdate = GeoCoordinatesUpdate.fromGeoCoordinates(geoCoordinates);
     double distanceToEarthInMeters = 1000 * 8;
-    var mapMeasure = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+    var mapMeasure = MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
     double bowFactor = 1;
     MapCameraAnimation animation =
         MapCameraAnimationFactory.flyToWithZoom(geoCoordinatesUpdate, mapMeasure, bowFactor, Duration(seconds: 3));

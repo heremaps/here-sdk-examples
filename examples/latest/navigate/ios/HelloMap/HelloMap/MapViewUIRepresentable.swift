@@ -46,7 +46,7 @@ struct MapViewUIRepresentable: UIViewRepresentable {
             // Use the camera to specify where to look at the map.
             // For this example, we show Berlin in Germany.
             let camera = mapView.camera
-            let distanceInMeters = MapMeasure(kind: .distance, value: 1000)
+            let distanceInMeters = MapMeasure(kind: .distanceInMeters, value: 1000)
             camera.lookAt(point: GeoCoordinates(latitude: 52.517543, longitude: 13.408991), zoom: distanceInMeters)
         }
     }

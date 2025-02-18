@@ -38,7 +38,7 @@ class PublicTransportRoutingExample {
 
   PublicTransportRoutingExample(this._showDialog, this._hereMapController) {
     double distanceToEarthInMeters = 10000;
-    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
     _hereMapController.camera.lookAtPointWithMeasure(GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
 
     _transitRoutingEngine = TransitRoutingEngine();

@@ -44,7 +44,7 @@ class RoutingExample {
         
         // Configure the map.
         let camera = mapView.camera
-        let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 10)
+        let distanceInMeters = MapMeasure(kind: .distanceInMeters, value: 1000 * 10)
         camera.lookAt(point: GeoCoordinates(latitude: 52.520798, longitude: 13.409408),
                       zoom: distanceInMeters)
         

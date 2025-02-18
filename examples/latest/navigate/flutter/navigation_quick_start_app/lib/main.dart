@@ -98,7 +98,7 @@ class _MyAppState extends State<MyApp> {
       }
 
       const double distanceToEarthInMeters = 8000;
-      MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+      MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
       _hereMapController!.camera.lookAtPointWithMeasure(HERE.GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
 
       _startGuidanceExample();

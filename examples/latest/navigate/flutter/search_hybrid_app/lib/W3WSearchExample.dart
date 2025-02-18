@@ -46,7 +46,7 @@ class W3WSearchExample {
       : _showDialog = showDialogCallback {
     double distanceToEarthInMeters = 10000;
     MapMeasure mapMeasureZoom =
-        MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+        MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
     hereMapController.camera.lookAtPointWithMeasure(
         GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
 

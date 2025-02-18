@@ -200,7 +200,7 @@ class PositioningExample: NSObject, CLLocationManagerDelegate, LocationDelegate,
         locationIndicator.enable(for: mapView)
 
         // Point camera to current location.
-        let distanceInMeters = MapMeasure(kind: .distance, value: PositioningExample.defaultCameraDistance)
+        let distanceInMeters = MapMeasure(kind: .distanceInMeters, value: PositioningExample.defaultCameraDistance)
         mapView.camera.lookAt(point: myLocation.coordinates,
                               zoom: distanceInMeters)
     }

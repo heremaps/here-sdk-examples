@@ -37,7 +37,7 @@ class RoutingHybridExample {
         let camera = mapView.camera
 
         // Configure the map.
-        let distanceInMeters = MapMeasure(kind: .distance, value: 5000)
+        let distanceInMeters = MapMeasure(kind: .distanceInMeters, value: 5000)
         camera.lookAt(point: GeoCoordinates(latitude: 52.520798, longitude: 13.409408),
                       zoom: distanceInMeters)
 
