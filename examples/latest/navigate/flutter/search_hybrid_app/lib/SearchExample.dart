@@ -46,7 +46,7 @@ class SearchExample {
         _hereMapController = hereMapController,
         _camera = hereMapController.camera {
     double distanceToEarthInMeters = 5000;
-    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
     _camera.lookAtPointWithMeasure(GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
 
     try {
@@ -105,7 +105,7 @@ class SearchExample {
     // Set map to expected location.
     GeoCoordinates geoCoordinates = GeoCoordinates(52.53086, 13.38469);
     double distanceToEarthInMeters = 1000 * 5;
-    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
     _camera.lookAtPointWithMeasure(geoCoordinates, mapMeasureZoom);
 
     String queryString = "Invalidenstraße 116, Berlin";

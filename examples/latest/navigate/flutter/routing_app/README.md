@@ -1,4 +1,4 @@
-The Routing example app shows how to calculate a route from A to B that is visualized on the map. You can find how this is done in [RoutingExample.dart](lib/RoutingExample.dart).
+The Routing example app shows how to calculate a route from A to B that is visualized on the map. You can find how this is done in [routing_example.dart](lib/routing_example.dart).
 
 Build instructions:
 -------------------

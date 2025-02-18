@@ -48,7 +48,7 @@ class MapItemsExample {
         _hereMapController = hereMapController {
     double distanceToEarthInMeters = 8000;
     MapMeasure mapMeasureZoom =
-        MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+        MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
     _hereMapController.camera.lookAtPointWithMeasure(
         GeoCoordinates(52.51760485151816, 13.380312380535472), mapMeasureZoom);
 

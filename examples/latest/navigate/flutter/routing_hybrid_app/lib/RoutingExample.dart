@@ -51,7 +51,7 @@ class RoutingExample {
     _hereMapController.mapScene.enableFeatures({MapFeatures.trafficFlow: MapFeatureModes.defaultMode});
     _hereMapController.mapScene.enableFeatures({MapFeatures.trafficIncidents: MapFeatureModes.defaultMode});
     MapMeasure mapMeasureZoom =
-        MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+        MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
     _hereMapController.camera.lookAtPointWithMeasure(
         GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
 

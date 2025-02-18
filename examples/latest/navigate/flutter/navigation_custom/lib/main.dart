@@ -145,7 +145,7 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
       // Optionally, enable textured 3D landmarks.
       hereMapController.mapScene.enableFeatures({MapFeatures.landmarks: MapFeatureModes.landmarksTextured});
       
-      MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, _distanceInMeters);
+      MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, _distanceInMeters);
       _hereMapController!.camera.lookAtPointWithMeasure(_routeStartGeoCoordinates, mapMeasureZoom);
       _startAppLogic();
     });
@@ -318,7 +318,7 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
     var orientationUpdate = GeoOrientationUpdate(bearingInDegrees, tiltInDegrees);
 
     double distanceToEarthInMeters = 50;
-    var mapMeasure = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+    var mapMeasure = MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
 
     double bowFactor = 1;
     MapCameraAnimation animation = MapCameraAnimationFactory.flyToWithOrientationAndZoom(
@@ -335,7 +335,7 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
     double tiltInDegrees = 0;
     var orientationUpdate = GeoOrientationUpdate(bearingInDegrees, tiltInDegrees);
 
-    var mapMeasure = MapMeasure(MapMeasureKind.distance, _distanceInMeters);
+    var mapMeasure = MapMeasure(MapMeasureKind.distanceInMeters, _distanceInMeters);
 
     double bowFactor = 1;
     MapCameraAnimation animation = MapCameraAnimationFactory.flyToWithOrientationAndZoom(

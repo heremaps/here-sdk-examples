@@ -26,6 +26,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -53,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
     private MapFeaturesExample mapFeaturesExample;
     private MapSchemesExample mapSchemesExample;
     private MapScene mapScene;
-
+    private Button webMercatorButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,9 +69,14 @@ public class MainActivity extends AppCompatActivity {
         mapViewGlobe = findViewById(R.id.map_view_globe);
         mapViewGlobe.setVisibility(MapView.VISIBLE);
         mapViewWebMercator = findViewById(R.id.map_view_web_mercator);
+        webMercatorButton = findViewById(R.id.web_mercator_button);
         mapViewWebMercator.setVisibility(MapView.GONE);
         mapViewWebMercator.onCreate(savedInstanceState);
         mapViewGlobe.onCreate(savedInstanceState);
+
+        webMercatorButton.setOnClickListener(v -> {
+            changeMapProjection();
+        });
 
         handleAndroidPermissions();
     }
@@ -95,8 +101,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void changeMapProjection() {
         Map<String, String> enabledFeatures = mapFeaturesExample.getEnabledFeatures();
-        MapView mapViewToHide = mapViewGlobe.getVisibility() == View.VISIBLE ? mapViewGlobe : mapViewWebMercator;
-        MapView mapViewToShow = mapViewGlobe.getVisibility() == View.VISIBLE ? mapViewWebMercator : mapViewGlobe;
+        boolean isGlobeVisible = mapViewGlobe.getVisibility() == View.VISIBLE;
+
+        MapView mapViewToHide = isGlobeVisible ? mapViewGlobe : mapViewWebMercator;
+        MapView mapViewToShow = isGlobeVisible ? mapViewWebMercator : mapViewGlobe;
 
         mapViewToHide.setVisibility(View.GONE);
         mapViewToShow.setVisibility(View.VISIBLE);
@@ -118,6 +126,8 @@ public class MainActivity extends AppCompatActivity {
         for (Map.Entry<String, String> feature : enabledFeatures.entrySet()) {
             mapFeaturesExample.enableFeature(feature.getKey(), feature.getValue());
         }
+
+        webMercatorButton.setText(isGlobeVisible ? "Switch to Globe" : "Switch to Web Mercator");
     }
 
     private void handleAndroidPermissions() {
@@ -324,11 +334,9 @@ public class MainActivity extends AppCompatActivity {
             case R.id.low_speed_zones_menu_item:
                 mapFeaturesExample.enableLowSpeedZones();
                 return true;
-            case R.id.web_mercator:
-                changeMapProjection();
-                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 }
+

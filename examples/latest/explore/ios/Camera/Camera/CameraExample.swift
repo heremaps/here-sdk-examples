@@ -36,7 +36,7 @@ class CameraExample: TapDelegate, MapCameraDelegate {
 
         // Configure the map.
         camera = mapView.camera
-        let distanceInMeters = MapMeasure(kind: .distance, value: defaultDistanceToEarthInMeters)
+        let distanceInMeters = MapMeasure(kind: .distanceInMeters, value: defaultDistanceToEarthInMeters)
         camera.lookAt(point: GeoCoordinates(latitude: 52.750731,longitude: 13.007375),
                       zoom: distanceInMeters)
 

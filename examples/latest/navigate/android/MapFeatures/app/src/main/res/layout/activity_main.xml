@@ -10,13 +10,23 @@
         android:id="@+id/map_view_globe"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:projection="globe">
-    </com.here.sdk.mapview.MapView>
+        app:projection="globe" />
+
     <com.here.sdk.mapview.MapView
         android:id="@+id/map_view_web_mercator"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:projection="web_mercator">
-    </com.here.sdk.mapview.MapView>
+        app:projection="web_mercator"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/web_mercator_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Switch to Web Mercator"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintVertical_bias="0.95" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

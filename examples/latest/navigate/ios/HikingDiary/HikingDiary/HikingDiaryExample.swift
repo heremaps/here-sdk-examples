@@ -262,7 +262,7 @@ class HikingDiaryExample: LocationDelegate,
         if let currentLocation = herePositioningProvider.getLastKnownLocation() {
             let geoCoordinatesUpdate = GeoCoordinatesUpdate(currentLocation.coordinates)
             let durationInSeconds = TimeInterval(3)
-            let distanceInMeters = MapMeasure(kind: .distance, value: 500)
+            let distanceInMeters = MapMeasure(kind: .distanceInMeters, value: 500)
             let animation = MapCameraAnimationFactory.flyTo(target: geoCoordinatesUpdate,
                                                             zoom: distanceInMeters,
                                                             bowFactor: 1,
@@ -283,7 +283,7 @@ class HikingDiaryExample: LocationDelegate,
         let geoOrientationUpdate = GeoOrientationUpdate(bearing: bearing, tilt: tilt)
 
         // For very short polylines we want to have at least a distance of 100 meters.
-        let minDistanceInMeters = MapMeasure(kind: .distance, value: 100)
+        let minDistanceInMeters = MapMeasure(kind: .distanceInMeters, value: 100)
 
         let mapCameraUpdate = MapCameraUpdateFactory.lookAt(geoCoordinateList,
                                                             viewRectangle: mapViewport,

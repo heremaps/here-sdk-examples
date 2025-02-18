@@ -276,7 +276,7 @@ class PositioningExample extends State<MyApp>
     _locationIndicator!.enable(_hereMapController!);
 
     // Point camera at given location.
-    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, _cameraDistanceInMeters);
+    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, _cameraDistanceInMeters);
     _hereMapController!.camera.lookAtPointWithMeasure(
       myLocation.coordinates,
       mapMeasureZoom,
@@ -496,7 +496,7 @@ class PositioningExample extends State<MyApp>
                   text: TextSpan(
                       children: [
                         TextSpan(text: "Your privacy when using this application.\n\n", style: TextStyle(backgroundColor: Colors.white, color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold)),
-                        TextSpan(text: "(In this Privacy Policy example the following paragraph shows one way of informing app user about data collection. All other possible privacy related aspects are omitted in this example by purpose.)\n\n", style: TextStyle(backgroundColor: Colors.white, color: Colors.black, fontSize: 18)),
+                        TextSpan(text: "(In this Privacy Policy example, the following paragraph demonstrates one way to inform app users about data collection. All other potential privacy-related aspects are intentionally omitted from this example.)\n\n", style: TextStyle(backgroundColor: Colors.white, color: Colors.black, fontSize: 18)),
                         TextSpan(text: "This application uses location services provided by HERE Technologies. To maintain, improve and provide these services, HERE Technologies from time to time gathers characteristics information about the near-by network signals. For more information, please see the HERE Privacy Notice at ", style: TextStyle(backgroundColor: Colors.white, color: Colors.black, fontSize: 18)),
                         TextSpan(text: "https://legal.here.com/here-network-positioning-via-sdk", style: TextStyle(backgroundColor: Colors.white, color: Colors.blue, fontSize: 18, decoration: TextDecoration.underline)),
                         TextSpan(text: ".", style: TextStyle(backgroundColor: Colors.white, color: Colors.black, fontSize: 18)),

@@ -31,7 +31,7 @@ class MapItemsExample: TapDelegate {
 
     init(mapView: MapView) {
         self.mapView = mapView
-        let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 10)
+        let distanceInMeters = MapMeasure(kind: .distanceInMeters, value: 1000 * 10)
         mapView.camera.lookAt(point: mapCenterGeoCoordinates,
                               zoom: distanceInMeters)
 

@@ -268,7 +268,7 @@ class HikingApp implements LocationListener, LocationStatusListener {
     GeoOrientationUpdate geoOrientationUpdate = new GeoOrientationUpdate(bearing, tilt);
 
     // For very short polylines we want to have at least a distance of 100 meters.
-    MapMeasure minDistanceInMeters = new MapMeasure(MapMeasureKind.distance, 100);
+    MapMeasure minDistanceInMeters = new MapMeasure(MapMeasureKind.distanceInMeters, 100);
 
     MapCameraUpdate mapCameraUpdate =
         MapCameraUpdateFactory.lookAtPoints(geoCoordinateList, mapViewport, geoOrientationUpdate, minDistanceInMeters);
@@ -284,7 +284,7 @@ class HikingApp implements LocationListener, LocationStatusListener {
   void _animateCameraToCurrentLocation(Location currentLocation) {
     GeoCoordinatesUpdate geoCoordinatesUpdate = GeoCoordinatesUpdate.fromGeoCoordinates(currentLocation.coordinates);
     Duration durationInSeconds = Duration(seconds: 3);
-    MapMeasure distanceInMeters = new MapMeasure(MapMeasureKind.distance, 500);
+    MapMeasure distanceInMeters = new MapMeasure(MapMeasureKind.distanceInMeters, 500);
     MapCameraAnimation animation =
         MapCameraAnimationFactory.flyToWithZoom(geoCoordinatesUpdate, distanceInMeters, 1, durationInSeconds);
     mapView.camera.startAnimation(animation);

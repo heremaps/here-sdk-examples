@@ -32,7 +32,7 @@ class GesturesExample {
       : _showDialog = showDialogCallback,
         _hereMapController = hereMapController {
     double distanceToEarthInMeters = 8000;
-    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
     _hereMapController.camera.lookAtPointWithMeasure(GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
 
     _setTapGestureHandler();

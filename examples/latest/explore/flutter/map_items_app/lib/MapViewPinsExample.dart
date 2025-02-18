@@ -34,7 +34,7 @@ class MapViewPinsExample {
       : _hereMapController = hereMapController,
         _mapCamera = hereMapController.camera {
     double distanceToEarthInMeters = 7000;
-    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
     _mapCamera.lookAtPointWithMeasure(mapCenterGeoCoordinates, mapMeasureZoom);
 
     // Add circle to indicate map center.

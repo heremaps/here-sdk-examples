@@ -32,7 +32,7 @@ class CameraExample {
   CameraExample(HereMapController hereMapController) : _hereMapController = hereMapController {
     // Set initial map center to a location in Berlin.
     GeoCoordinates mapCenter = GeoCoordinates(52.530932, 13.384915);
-    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
     _hereMapController.camera.lookAtPointWithMeasure(mapCenter, mapMeasureZoom);
   }
 

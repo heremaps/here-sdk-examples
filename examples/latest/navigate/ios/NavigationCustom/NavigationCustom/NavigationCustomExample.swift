@@ -44,7 +44,7 @@ class NavigationCustomExample: AnimationDelegate, LocationDelegate {
         let camera = mapView.camera
         let distanceToEarthInMeters: Double = 1000
         camera.lookAt(point: routeStartGeoCoordinates,
-                      zoom: MapMeasure(kind: .distance, value: distanceToEarthInMeters))
+                      zoom: MapMeasure(kind: .distanceInMeters, value: distanceToEarthInMeters))
         
         // Load the map scene using a map scheme to render the map with.
         mapView.mapScene.loadScene(mapScheme: MapScheme.normalDay, completion: onLoadScene)
@@ -238,7 +238,7 @@ class NavigationCustomExample: AnimationDelegate, LocationDelegate {
         let orientationUpdate = GeoOrientationUpdate(bearing: bearingInDegrees, tilt: tiltInDegrees)
         
         let distanceInMeters: Double = 50
-        let mapMeasure = MapMeasure(kind: .distance, value: distanceInMeters)
+        let mapMeasure = MapMeasure(kind: .distanceInMeters, value: distanceInMeters)
 
         let durationInSeconds: TimeInterval = 3
         let animation = MapCameraAnimationFactory.flyTo(target: geoCoordinatesUpdate,
@@ -266,7 +266,7 @@ class NavigationCustomExample: AnimationDelegate, LocationDelegate {
         let tiltInDegrees: Double = 0
         let orientationUpdate = GeoOrientationUpdate(bearing: bearingInDegrees, tilt: tiltInDegrees)
         
-        let mapMeasure = MapMeasure(kind: .distance, value: distanceInMeters)
+        let mapMeasure = MapMeasure(kind: .distanceInMeters, value: distanceInMeters)
 
         let durationInSeconds: TimeInterval = 3
         let animation = MapCameraAnimationFactory.flyTo(target: geoCoordinatesUpdate,

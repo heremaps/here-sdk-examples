@@ -49,7 +49,7 @@ class NavigationAppLogic: ObservableObject, MessageDelegate, LongPressDelegate {
     func startExample(_ mapView: MapView) {
         self.mapView = mapView
         
-        let distanceInMeters = MapMeasure(kind: .distance, value: ConstantsEnum.DEFAULT_DISTANCE_IN_METERS)
+        let distanceInMeters = MapMeasure(kind: .distanceInMeters, value: ConstantsEnum.DEFAULT_DISTANCE_IN_METERS)
         mapView.camera.lookAt(point: ConstantsEnum.DEFAULT_MAP_CENTER,
                               zoom: distanceInMeters)
         

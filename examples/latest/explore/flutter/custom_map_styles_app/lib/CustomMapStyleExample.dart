@@ -27,7 +27,7 @@ class CustomMapStyleExample {
 
   CustomMapStyleExample(HereMapController this._hereMapController) {
     double distanceToEarthInMeters = 60000;
-    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
     _hereMapController.camera.lookAtPointWithMeasure(GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
   }
 

@@ -104,7 +104,7 @@ class _MainPageState extends State<MainPage> {
   void _resetCameraPosition() {
     const double distanceToEarthInMeters = 500;
     MapMeasure mapMeasureZoom =
-        MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+        MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
     _hereMapController.camera.lookAtPointWithMeasure(
         GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
 
@@ -810,7 +810,7 @@ class _MainPageState extends State<MainPage> {
 
       const double distanceToEarthInMeters = 500;
       MapMeasure mapMeasureZoom =
-          MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+          MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
       hereMapController.camera.lookAtPointWithMeasure(
           GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
 

@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "RoutingKotlin"
+rootProject.name = "Routing"
 include(":app")

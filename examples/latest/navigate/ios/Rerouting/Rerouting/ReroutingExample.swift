@@ -127,7 +127,7 @@ class ReroutingExample: LongPressDelegate,
         
         // Center map in Berlin.
         let camera = mapView.camera
-        let distanceInMeters = MapMeasure(kind: .distance, value: 1000 * 90)
+        let distanceInMeters = MapMeasure(kind: .distanceInMeters, value: 1000 * 90)
         camera.lookAt(point: GeoCoordinates(latitude: 52.520798, longitude: 13.409408),
                       zoom: distanceInMeters)
        
