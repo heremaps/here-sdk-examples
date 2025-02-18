@@ -39,7 +39,7 @@ For an overview of the existing features, please check the _Developer Guide_ for
 - **CameraKeyframeTracks**: Shows how to do custom camera animations with keyframe tracks.
 - **CustomMapStyles**: Shows how to load custom map schemes made with the _HERE Style Editor_. Exclusively available for the _Explore Edition_ and the _Navigate Edition_.
 - **CustomRasterLayers**: Shows how to load custom raster layers. Exclusively available for the _Explore Edition_ and the _Navigate Edition_.
-- **CustomRasterTileSource**: Shows how to load/create custom raster images at runtime - instead of fetching the data from the backend, so this should also work offline. Exclusively available for the _Explore Edition_ and the _Navigate Edition_.
+- **CustomTileSource**: This example app demonstrates how to load custom point layers, implement clustering functionality using a custom point tile source, and integrate custom raster layers. Exclusively available for the _Explore Edition_ and the _Navigate Edition_.
 - **Gestures**: Shows how to handle gestures.
 - **OfflineMaps**: Shows how the HERE SDK can work fully offline and how offline map data can be downloaded for continents and countries. Exclusively available for the _Navigate Edition_.
 - **MapItems**: Shows how to add circles, polygons and polylines, native views, 2D and 3D map markers to locate POIs (and more) on the map. 3D map markers are exclusively available for the _Explore and Navigate Editions_.
