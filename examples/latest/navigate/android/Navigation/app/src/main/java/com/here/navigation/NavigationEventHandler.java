@@ -49,6 +49,7 @@ import com.here.sdk.navigation.JunctionViewLaneAssistanceListener;
 import com.here.sdk.navigation.Lane;
 import com.here.sdk.navigation.LaneAccess;
 import com.here.sdk.navigation.LaneDirectionCategory;
+import com.here.sdk.navigation.LaneMarkings;
 import com.here.sdk.navigation.LaneRecommendationState;
 import com.here.sdk.navigation.LaneType;
 import com.here.sdk.navigation.LowSpeedZoneWarning;
@@ -929,9 +930,28 @@ public class NavigationEventHandler {
         // More information on each lane is available in these bitmasks (boolean):
         // LaneType provides lane properties such as if parking is allowed.
         LaneType laneType = lane.type;
+
         // LaneAccess provides which vehicle type(s) are allowed to access this lane.
         LaneAccess laneAccess = lane.access;
         logLaneAccess(laneNumber, laneAccess);
+
+        // LaneMarkings indicate the visual style of dividers between lanes as visible on a road.
+        LaneMarkings laneMarkings = lane.laneMarkings;
+        logLaneMarkings(laneMarkings);
+    }
+
+    private void logLaneMarkings(LaneMarkings laneMarkings){
+        if (laneMarkings.centerDividerMarker != null) {
+            // A CenterDividerMarker specifies the line type used for center dividers on bidirectional roads.
+            Log.d(TAG,"Center divider marker for lane " + laneMarkings.centerDividerMarker.value);
+        } else if (laneMarkings.laneDividerMarker != null) {
+            // A LaneDividerMarker specifies the line type of driving lane separators present on a road.
+            // It indicates the lane separator on the right side of the
+            // specified lane in the lane driving direction for right-side driving countries.
+            // For left-sided driving countries the it is indicating the
+            // lane separator on the left side of the specified lane in the lane driving direction.
+            Log.d(TAG, "Lane divider marker for lane " + laneMarkings.laneDividerMarker.value);
+        }
     }
 
     private void logLaneAccess(int laneNumber, LaneAccess laneAccess) {

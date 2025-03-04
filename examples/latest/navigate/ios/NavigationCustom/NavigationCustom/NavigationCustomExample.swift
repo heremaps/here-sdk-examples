@@ -23,7 +23,7 @@ import SwiftUI
 // This example shows how to customize the navigation experience.
 class NavigationCustomExample: AnimationDelegate, LocationDelegate {
     
-    private var mapView: MapView
+    private let mapView: MapView
     
     private let routeStartGeoCoordinates = GeoCoordinates(latitude: 52.520798, longitude: 13.409408)
     private let distanceInMeters: Double = 1000

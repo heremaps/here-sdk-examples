@@ -33,8 +33,8 @@ class ReroutingExample: LongPressDelegate,
                         OffRoadDestinationReachedDelegate {
 
     private let mapView: MapView
-    private var routingEngine: RoutingEngine
-    private var visualNavigator: VisualNavigator
+    private let routingEngine: RoutingEngine
+    private let visualNavigator: VisualNavigator
     private let herePositioningSimulator: HEREPositioningSimulator
     private var mapMarkers = [MapMarker]()
     private var mapPolylines = [MapPolyline]()

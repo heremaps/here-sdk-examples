@@ -26,9 +26,9 @@ class CameraKeyframeTracksExample: AnimationDelegate {
     
     private let geoCoordinates = GeoCoordinates(latitude: 40.685869754854544, longitude: -74.02550202768754)
     private var tracks: [MapCameraKeyframeTrack]!
-    private var mapView: MapView
+    private let mapView: MapView
     private var disableOptimization = true
-    private var waypoints: Array<Waypoint> = Array()
+    private var waypoints = [Waypoint]()
     
     init(_ mapView: MapView) {
         self.mapView = mapView

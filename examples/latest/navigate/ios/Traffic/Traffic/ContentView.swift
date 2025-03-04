@@ -43,8 +43,6 @@ struct ContentView: View {
                          trafficExample?.disableTrafficVisualization()
                      }
                  }
-             }
-             VStack {
                  HStack {
                      CustomButton(title: "Add route") {
                          routingExample?.addRoute()

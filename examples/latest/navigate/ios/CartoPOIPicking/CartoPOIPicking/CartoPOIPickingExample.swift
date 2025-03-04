@@ -22,8 +22,8 @@ import SwiftUI
 
 class CartoPOIPickingExample: TapDelegate {
     
-    private var mapView: MapView
-    private var searchEngine: SearchEngine
+    private let mapView: MapView
+    private let searchEngine: SearchEngine
     
     init(_ mapView: MapView) {
         self.mapView = mapView

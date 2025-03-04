@@ -48,6 +48,8 @@ import com.here.sdk.routing.CalculateIsolineCallback;
 import com.here.sdk.routing.CalculateRouteCallback;
 import com.here.sdk.routing.ChargingConnectorType;
 import com.here.sdk.routing.ChargingStation;
+import com.here.sdk.routing.ChargingStop;
+import com.here.sdk.routing.ChargingSupplyType;
 import com.here.sdk.routing.EVCarOptions;
 import com.here.sdk.routing.EVDetails;
 import com.here.sdk.routing.EVMobilityServiceProviderPreferences;
@@ -71,7 +73,7 @@ import com.here.sdk.search.SearchCallback;
 import com.here.sdk.search.SearchEngine;
 import com.here.sdk.search.SearchError;
 import com.here.sdk.search.SearchOptions;
-import com.here.sdk.search.TextQuery;
+import com.here.time.Duration;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -128,7 +130,9 @@ public class EVRoutingExample {
         }
     }
 
-    // Calculates an EV car route based on random start / destination coordinates near viewport center.
+    // Calculates an EV car route based on random start / destination coordinates near viewport center.  
+    // Includes a user waypoint to add an intermediate charging stop along the route, 
+    // in addition to charging stops that are added by the engine.
     public void addEVRouteButtonClicked() {
         chargingStationsIDs.clear();
 
@@ -136,8 +140,9 @@ public class EVRoutingExample {
         destinationGeoCoordinates = createRandomGeoCoordinatesInViewport();
         Waypoint startWaypoint = new Waypoint(startGeoCoordinates);
         Waypoint destinationWaypoint = new Waypoint(destinationGeoCoordinates);
+        Waypoint plannedChargingStopWaypoint = createUserPlannedChargingStopWaypoint();
         List<Waypoint> waypoints =
-                new ArrayList<>(Arrays.asList(startWaypoint, destinationWaypoint));
+                new ArrayList<>(Arrays.asList(startWaypoint, plannedChargingStopWaypoint, destinationWaypoint));
 
         routingEngine.calculateRoute(waypoints, getEVCarOptions(), new CalculateRouteCallback() {
             @Override
@@ -155,6 +160,35 @@ public class EVRoutingExample {
                 searchAlongARoute(route);
             }
         });
+    }
+
+    // Simulate a user planned stop based on random coordinates.
+    private  Waypoint createUserPlannedChargingStopWaypoint() {
+        // The rated power of the connector, in kilowatts (kW).
+        double powerInKilowatts = 350.0;
+
+        // The rated current of the connector, in amperes (A).
+        double currentInAmperes = 350.0;
+
+        // The rated voltage of the connector, in volts (V).
+        double voltageInVolts = 1000.0;
+
+        // The minimum duration (in seconds) the user plans to charge at the station.
+        Duration minimumDuration = Duration.ofSeconds(3000);
+
+        // The maximum duration (in seconds) the user plans to charge at the station.
+        Duration maximumDuration = Duration.ofSeconds(4000);
+
+        // Add a user-defined charging stop.
+        //
+        // Note: To specify a ChargingStop, you must also set totalCapacityInKilowattHours,
+        // initialChargeInKilowattHours, and chargingCurve using BatterySpecification in EVCarOptions.
+        // If any of these values are missing, the route calculation will fail with an invalid parameter error.
+        ChargingStop plannedChargingStop = new ChargingStop(powerInKilowatts, currentInAmperes, voltageInVolts, ChargingSupplyType.DC, minimumDuration, maximumDuration);
+
+        Waypoint plannedChargingStopWaypoint = new Waypoint(createRandomGeoCoordinatesInViewport());
+        plannedChargingStopWaypoint.chargingStop = plannedChargingStop;
+        return plannedChargingStopWaypoint;
     }
 
     // Note: This API is currently only accessible for alpha users.

@@ -25,7 +25,7 @@ class GesturesExample: TapDelegate,
                        TwoFingerTapDelegate,
                        LongPressDelegate {
 
-    private var mapView: MapView
+    private let mapView: MapView
 
     private lazy var gestureMapAnimator = GestureMapAnimator(mapView.camera)
 

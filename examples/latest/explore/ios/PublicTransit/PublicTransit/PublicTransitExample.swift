@@ -22,10 +22,10 @@ import SwiftUI
 
 class PublicTransitExample {
 
-    private var mapView: MapView
+    private let mapView: MapView
     private var mapMarkers = [MapMarker]()
     private var mapPolylineList = [MapPolyline]()
-    private var transitRoutingEngine: TransitRoutingEngine
+    private let transitRoutingEngine: TransitRoutingEngine
     private var startGeoCoordinates: GeoCoordinates?
     private var destinationGeoCoordinates: GeoCoordinates?
 

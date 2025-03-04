@@ -53,6 +53,7 @@ class NavigationEventHandler : NavigableLocationDelegate,
     private let routeCalculator: RouteCalculator
     private var lastTrafficUpdateInMilliseconds: Int = 0;
     var messageDelegate: MessageDelegate?
+    private let timeUtils = TimeUtils()
 
     init(_ visualNavigator: VisualNavigator,
          _ dynamicRoutingEngine: DynamicRoutingEngine,
@@ -119,14 +120,15 @@ class NavigationEventHandler : NavigableLocationDelegate,
         let action = nextManeuver.action
         let roadName = getRoadName(maneuver: nextManeuver)
         let logMessage = "'\(String(describing: action))' on \(roadName) in \(nextManeuverProgress.remainingDistanceInMeters) meters."
-
+        var currentETAString = getETA(routeProgress: routeProgress)
+        
         if previousManeuverIndex != nextManeuverIndex {
-            // Log only new maneuvers and ignore changes in distance.
-            updateMessage("New maneuver: " + logMessage)
+            currentETAString += "\nNew maneuver: \(logMessage)"
         } else {
             // A maneuver update contains a different distance to reach the next maneuver.
-            updateMessage("Maneuver update: " + logMessage)
+            currentETAString += "\nManeuver update: \(logMessage)"
         }
+        updateMessage(currentETAString)
 
         previousManeuverIndex = nextManeuverIndex
 
@@ -502,6 +504,25 @@ class NavigationEventHandler : NavigableLocationDelegate,
         _ = lane.type
         // LaneAccess provides which vehicle type(s) are allowed to access this lane.
         logLaneAccess(laneNumber, lane.access)
+
+        // LaneMarkings indicate the visual style of dividers between lanes as visible on a road.
+        let laneMarkings = lane.laneMarkings
+        logLaneMarkings(laneMarkings)
+    }
+    
+    // LaneMarkings indicate the visual style of dividers between lanes as visible on a road.
+    func logLaneMarkings(_ laneMarkings: LaneMarkings) {
+        if let centerDividerMarker: DividerMarker = laneMarkings.centerDividerMarker {
+            // A CenterDividerMarker specifies the line type used for center dividers on bidirectional roads.
+            print("Center divider marker for lane \(String(describing: centerDividerMarker))")
+        } else if let laneDividerMarker: DividerMarker = laneMarkings.laneDividerMarker {
+            // A LaneDividerMarker specifies the line type of driving lane separators present on a road.
+            // It indicates the lane separator on the right side of the
+            // specified lane in the lane driving direction for right-side driving countries.
+            // For left-sided driving countries, it indicates the
+            // lane separator on the left side of the specified lane in the lane driving direction.
+            print("Lane divider marker for lane \(String(describing: laneDividerMarker))")
+        }
     }
 
     func logLaneAccess(_ laneNumber: Int, _ laneAccess: LaneAccess) {
@@ -778,6 +799,22 @@ class NavigationEventHandler : NavigableLocationDelegate,
     func onRoadTextsUpdated(_ roadTexts: RoadTexts) {
         // See getRoadName() how to get the current road name from the provided RoadTexts.
     }
+    
+    private func getETA(routeProgress: RouteProgress) -> String {
+        let sectionProgressList = routeProgress.sectionProgress
+        // sectionProgressList is guaranteed to be non-empty.
+        let lastSectionProgress = sectionProgressList.last!
+
+        let currentETAString = "ETA: \(timeUtils.getETAinDeviceTimeZone(estimatedTravelTimeInSeconds: Int32(lastSectionProgress.remainingDuration)))"
+
+        print("Distance to destination in meters: \(lastSectionProgress.remainingDistanceInMeters)")
+        print("Traffic delay ahead in seconds: \(lastSectionProgress.trafficDelay)")
+        // Logs current ETA.
+        print(currentETAString)
+
+        return currentETAString
+    }
+
 
     private func setupBorderCrossingWarnings() {
         var borderCrossingWarningOptions = BorderCrossingWarningOptions()

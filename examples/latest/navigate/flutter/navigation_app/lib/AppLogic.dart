@@ -25,6 +25,7 @@ import 'package:here_sdk/gestures.dart';
 import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/routing.dart' as HERE;
 import 'package:navigation_app/RouteCalculator.dart';
+import 'package:navigation_app/time_utils.dart';
 
 import 'NavigationExample.dart';
 
@@ -38,6 +39,7 @@ class AppLogic {
   final Function _showDialogCallback;
   final List<MapMarker> _mapMarkerList = [];
   final List<MapPolyline> _mapPolylines = [];
+  final _timeUtils = TimeUtils();
 
   HERE.Waypoint? _startWaypoint;
   HERE.Waypoint? _destinationWaypoint;
@@ -144,27 +146,10 @@ class AppLogic {
     int lengthInMeters = route.lengthInMeters;
 
     String routeDetails =
-        "Travel Time: " + _formatTime(estimatedTravelTimeInSeconds) + ", Length: " + _formatLength(lengthInMeters);
+        "Travel Time: " + _timeUtils.formatTime(estimatedTravelTimeInSeconds) + ", Length: " + _timeUtils.formatLength(lengthInMeters);
 
     _showDialogCallback("Route Details", routeDetails);
     _startNavigationOnRoute(isSimulated, route);
-  }
-
-  String _formatTime(num sec) {
-    int hours = (sec ~/ 3600);
-    int minutes = ((sec % 3600) ~/ 60);
-    String formattedTime = '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}';
-
-    return formattedTime;
-  }
-
-  String _formatLength(int meters) {
-    int kilometers = (meters ~/ 1000);
-    int remainingMeters = (meters % 1000);
-    String formattedDistance =
-        '${kilometers.toString().padLeft(2, '0')}.${remainingMeters.toString().padLeft(2, '0')} km';
-
-    return formattedDistance;
   }
 
   void _startNavigationOnRoute(bool isSimulated, HERE.Route route) {

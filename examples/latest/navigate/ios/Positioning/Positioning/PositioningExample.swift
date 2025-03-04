@@ -27,8 +27,8 @@ class PositioningExample: NSObject, CLLocationManagerDelegate, LocationDelegate,
     private static let defaultGeoCoordinates = GeoCoordinates(latitude: 52.520798, longitude: 13.409408)
     private static let defaultCameraDistance = 1000.0
 
-    private var mapView: MapView
-    private var locationEngine: LocationEngine
+    private let mapView: MapView
+    private let locationEngine: LocationEngine
     private var locationIndicator: LocationIndicator!
 
     // This core location instance is needed for requesting location authorization from iOS.

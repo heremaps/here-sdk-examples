@@ -17,6 +17,8 @@
  * License-Filename: LICENSE
  */
 
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/core.errors.dart';
@@ -233,8 +235,6 @@ class RoutingExample {
   }
 
   double _getRandom(double min, double max) {
-    return min +
-        (max - min) *
-            (0.01 * (1 + 99 * 0.01)); // Adjusted random generation for Dart
+    return min + Random().nextDouble() * (max - min);
   }
 }
