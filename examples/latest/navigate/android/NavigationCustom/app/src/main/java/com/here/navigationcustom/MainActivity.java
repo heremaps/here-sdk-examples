@@ -245,10 +245,10 @@ public class MainActivity extends AppCompatActivity {
     // Toggle the halo color of the default LocationIndicator.
     public void colorButtonClicked(View view) {
         if (isCurrentColorBlue) {
-            defaultLocationIndicator.setHaloColor(IndicatorStyle.PEDESTRIAN, new Color(255F, 255F, 0F, 0.30F));
+            defaultLocationIndicator.setHaloColor(defaultLocationIndicator.getLocationIndicatorStyle(), new Color(255F, 255F, 0F, 0.30F));
             isCurrentColorBlue = false;
         } else {
-            defaultLocationIndicator.setHaloColor(IndicatorStyle.PEDESTRIAN, new Color(0F, 0F, 255F, 0.30F));
+            defaultLocationIndicator.setHaloColor(defaultLocationIndicator.getLocationIndicatorStyle(), new Color(0F, 0F, 255F, 0.30F));
             isCurrentColorBlue = true;
         }
     }

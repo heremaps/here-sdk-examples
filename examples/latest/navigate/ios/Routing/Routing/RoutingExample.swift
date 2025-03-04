@@ -22,15 +22,15 @@ import SwiftUI
 
 class RoutingExample {
     
-    private var mapView: MapView
+    private let mapView: MapView
     private var mapMarkers = [MapMarker]()
     private var mapPolylineList = [MapPolyline]()
-    private var routingEngine: RoutingEngine
+    private let routingEngine: RoutingEngine
     private var startGeoCoordinates: GeoCoordinates?
     private var destinationGeoCoordinates: GeoCoordinates?
     private var disableOptimization = true
-    private var waypoints: Array<Waypoint> = Array()
-    private var timeUtils: TimeUtils
+    private var waypoints = [Waypoint]()
+    private let timeUtils: TimeUtils
     
     init(_ mapView: MapView) {
         self.mapView = mapView

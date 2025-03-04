@@ -23,9 +23,9 @@ import SwiftUI
 class SearchHybridExample: TapDelegate,
                      LongPressDelegate {
 
-    private var mapView: MapView
+    private let mapView: MapView
+    private let searchEngine: SearchEngine
     private var mapMarkers = [MapMarker]()
-    private var searchEngine: SearchEngine
     private var offlineSearchEngine: OfflineSearchEngine
 
     // An application may define a logic to determine whether a device is connected or not.

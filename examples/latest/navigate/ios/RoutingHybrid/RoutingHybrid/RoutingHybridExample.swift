@@ -22,12 +22,12 @@ import SwiftUI
 
 class RoutingHybridExample {
 
-    private var mapView: MapView
+    private let mapView: MapView
     private var mapMarkers = [MapMarker]()
     private var mapPolylineList = [MapPolyline]()
     private var routingEngine: RoutingProtocol
-    private var onlineRoutingEngine: RoutingEngine
-    private var offlineRoutingEngine: OfflineRoutingEngine
+    private let onlineRoutingEngine: RoutingEngine
+    private let offlineRoutingEngine: OfflineRoutingEngine
     private var isDeviceConnected = false
     private var startGeoCoordinates: GeoCoordinates?
     private var destinationGeoCoordinates: GeoCoordinates?

@@ -26,18 +26,18 @@ import SwiftUI
 // (isoline routing).
 class EVRoutingExample {
     
-    private var mapView: MapView
+    private let mapView: MapView
+    private let searchEngine: SearchEngine
     private var mapMarkers = [MapMarker]()
     private var mapPolylineList = [MapPolyline]()
     private var mapPolygonList = [MapPolygon]()
-    private var routingEngine: RoutingEngine
-    private var searchEngine: SearchEngine
-    private var isolineRoutingEngine: IsolineRoutingEngine
+    private let routingEngine: RoutingEngine
+    private let isolineRoutingEngine: IsolineRoutingEngine
     private var startGeoCoordinates: GeoCoordinates?
     private var destinationGeoCoordinates: GeoCoordinates?
     private var chargingStationsIDs = [String]()
     private var disableOptimization = true
-    private var waypoints: Array<Waypoint> = Array()
+    private var waypoints = [Waypoint]()
     
     init(_ mapView: MapView) {
         self.mapView = mapView
@@ -84,13 +84,17 @@ class EVRoutingExample {
     }
 
     // Calculates an EV car route based on random start / destination coordinates near viewport center.
+    // Includes a user waypoint to add an intermediate charging stop along the route,
+    // in addition to charging stops that are added by the engine.
     func addRoute() {
         chargingStationsIDs.removeAll()
 
         startGeoCoordinates = createRandomGeoCoordinatesInViewport()
         destinationGeoCoordinates = createRandomGeoCoordinatesInViewport()
+        let plannedChargingStopWaypoint = createUserPlannedChargingStopWaypoint()
 
         routingEngine.calculateRoute(with: [Waypoint(coordinates: startGeoCoordinates!),
+                                            plannedChargingStopWaypoint,
                                             Waypoint(coordinates: destinationGeoCoordinates!)],
                                      evCarOptions: getEVCarOptions()) { (routingError, routes) in
 
@@ -106,6 +110,42 @@ class EVRoutingExample {
             self.logEVDetails(route: route!)
             self.searchAlongARoute(route: route!)
         }
+    }
+    
+    // Simulate a user planned stop based on random coordinates.
+    private func createUserPlannedChargingStopWaypoint() -> Waypoint {
+        // The rated power of the connector, in kilowatts (kW).
+        let powerInKilowatts: Double = 350.0
+
+        // The rated current of the connector, in amperes (A).
+        let currentInAmperes: Double = 350.0
+
+        // The rated voltage of the connector, in volts (V).
+        let voltageInVolts: Double = 1000.0
+
+        // The minimum duration (in seconds) the user plans to charge at the station.
+        let minimumDuration = TimeInterval(3000)
+
+        // The maximum duration (in seconds) the user plans to charge at the station.
+        let maximumDuration = TimeInterval(4000)
+
+        // Add a user-defined charging stop.
+        //
+        // Note: To specify a ChargingStop, you must also set totalCapacityInKilowattHours,
+        // initialChargeInKilowattHours, and chargingCurve using BatterySpecification in EVCarOptions.
+        // If any of these values are missing, the route calculation will fail with an invalid parameter error.
+        let plannedChargingStop = ChargingStop(
+            powerInKilowatts: powerInKilowatts,
+            currentInAmperes: currentInAmperes,
+            voltageInVolts: voltageInVolts,
+            supplyType: .dc,
+            minDuration: minimumDuration,
+            maxDuration: maximumDuration
+        )
+        
+        var plannedChargingStopWaypoint = Waypoint(coordinates: createRandomGeoCoordinatesInViewport())
+        plannedChargingStopWaypoint.chargingStop = plannedChargingStop
+        return plannedChargingStopWaypoint
     }
     
     // Note: This API is currently only accessible for alpha users.

@@ -121,7 +121,10 @@ public class OfflineMapsExample {
 
         // Note that the default storage path can be adapted when creating a new SDKNativeEngine.
         String storagePath = sdkNativeEngine.getOptions().cachePath;
-        Log.d("", "StoragePath: " + storagePath);
+        Log.d(TAG, "StoragePath: " + storagePath);
+
+        String persistentMapStoragePath = sdkNativeEngine.getOptions().persistentMapStoragePath;
+        Log.d(TAG, "PersistentMapStoragePath: " + persistentMapStoragePath);
 
         // In case you want to set a custom path for cache and map data, you can replace the
         // above initializtion of SDKNativeEngine with the code below using SDKOptions:

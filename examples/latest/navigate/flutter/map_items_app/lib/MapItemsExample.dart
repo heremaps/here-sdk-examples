@@ -491,7 +491,7 @@ class MapItemsExample {
           _showDialog("Map Marker picked", message);
           return;
         }
-        _showDialog("Map Marker picked", "No metadata attached.");
+        _showDialog("Map Marker picked", "Location: ${topmostMapMarker.coordinates.latitude}, ${topmostMapMarker.coordinates.longitude}");
       }
     });
   }

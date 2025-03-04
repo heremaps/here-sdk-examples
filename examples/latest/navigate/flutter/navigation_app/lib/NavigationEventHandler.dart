@@ -27,6 +27,7 @@ import 'package:here_sdk/routing.dart' as HERE;
 import 'package:here_sdk/routing.dart';
 import 'package:here_sdk/trafficawarenavigation.dart';
 import 'package:navigation_app/RouteCalculator.dart';
+import 'package:navigation_app/time_utils.dart';
 
 import 'LanguageCodeConverter.dart';
 
@@ -40,6 +41,7 @@ class NavigationEventHandler {
   int lastTrafficUpdateInMilliseconds = 0;
   final ValueChanged<String> _updateMessageState;
   RouteCalculator _routeCalculator;
+  final _timeUtils = TimeUtils();
 
   NavigationEventHandler(
       VisualNavigator visualNavigator,
@@ -96,12 +98,15 @@ class NavigationEventHandler {
           nextManeuverProgress.remainingDistanceInMeters.toString() +
           ' meters.';
 
+      String currentETAString = _getETA(routeProgress);
+
       if (_previousManeuverIndex != nextManeuverIndex) {
-        _updateMessageState('New maneuver: $logMessage');
+        currentETAString = '$currentETAString\nNew maneuver: $logMessage';
       } else {
         // A maneuver update contains a different distance to reach the next maneuver.
-        _updateMessageState("Maneuver update: $logMessage");
+        currentETAString = '$currentETAString\nManeuver update: $logMessage';
       }
+      _updateMessageState(currentETAString);
 
       _previousManeuverIndex = nextManeuverIndex;
 
@@ -741,6 +746,21 @@ class NavigationEventHandler {
     );
   }
 
+  String _getETA(RouteProgress routeProgress) {
+    List<SectionProgress> sectionProgressList = routeProgress.sectionProgress;
+    // sectionProgressList is guaranteed to be non-empty.
+    SectionProgress lastSectionProgress = sectionProgressList.last;
+
+    String currentETAString = 'ETA: ${_timeUtils.getETAinDeviceTimeZone(lastSectionProgress.remainingDuration.inSeconds)}';
+
+    print('Distance to destination in meters: ${lastSectionProgress.remainingDistanceInMeters}');
+    print('Traffic delay ahead in seconds: ${lastSectionProgress.trafficDelay.inSeconds}');
+    // Logs current ETA.
+    print(currentETAString);
+
+    return currentETAString;
+  }
+
   void _setupSpeedWarnings() {
     SpeedLimitOffset speedLimitOffset = SpeedLimitOffset();
     speedLimitOffset.lowSpeedOffsetInMetersPerSecond = 2;
@@ -834,9 +854,28 @@ class NavigationEventHandler {
     // More information on each lane is available in these bitmasks (boolean):
     // LaneType provides lane properties such as if parking is allowed.
     LaneType laneType = lane.type;
+
     // LaneAccess provides which vehicle type(s) are allowed to access this lane.
     LaneAccess laneAccess = lane.access;
     _logLaneAccess(laneNumber, laneAccess);
+
+    // LaneMarkings indicate the visual style of dividers between lanes as visible on a road.
+    LaneMarkings laneMarkings = lane.laneMarkings;
+    _logLaneMarkings(laneMarkings);
+  }
+
+  _logLaneMarkings(LaneMarkings laneMarkings) {
+    if (laneMarkings.centerDividerMarker != null) {
+      // A CenterDividerMarker specifies the line type used for center dividers on bidirectional roads.
+      print("Center divider marker for lane ${laneMarkings.centerDividerMarker?.name}");
+    } else if (laneMarkings.laneDividerMarker != null) {
+      // A LaneDividerMarker specifies the line type of driving lane separators present on a road.
+      // It indicates the lane separator on the right side of the
+      // specified lane in the lane driving direction for right-side driving countries.
+      // For left-sided driving countries, it indicates the
+      // lane separator on the left side of the specified lane in the lane driving direction.
+      print("Lane divider marker for lane ${laneMarkings.laneDividerMarker?.name}");
+    }
   }
 
   _logLaneAccess(int laneNumber, LaneAccess laneAccess) {

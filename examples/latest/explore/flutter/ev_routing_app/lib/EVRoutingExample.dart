@@ -77,6 +77,8 @@ class EVRoutingExample {
   }
 
   // Calculates an EV car route based on random start / destination coordinates near viewport center.
+  // Includes a user waypoint to add an intermediate charging stop along the route,
+  // in addition to charging stops that are added by the engine.
   void addEVRoute() {
     clearMap();
     chargingStationsIDs.clear();
@@ -85,7 +87,8 @@ class EVRoutingExample {
     _destinationGeoCoordinates = _createRandomGeoCoordinatesInViewport();
     var startWaypoint = Waypoint(_startGeoCoordinates!);
     var destinationWaypoint = Waypoint(_destinationGeoCoordinates!);
-    List<Waypoint> waypoints = [startWaypoint, destinationWaypoint];
+    var plannedChargingStopWaypoint = createUserPlannedChargingStopWaypoint();
+    List<Waypoint> waypoints = [startWaypoint, plannedChargingStopWaypoint ,destinationWaypoint];
 
     _routingEngine.calculateEVCarRoute(waypoints, _getEVCarOptions(),
         (RoutingError? routingError, List<here.Route>? routeList) {
@@ -101,6 +104,42 @@ class EVRoutingExample {
         _showDialog('Error', 'Error while calculating a route: $error');
       }
     });
+  }
+
+  // Simulate a user planned stop based on random coordinates.
+  Waypoint createUserPlannedChargingStopWaypoint() {
+    // The rated power of the connector, in kilowatts (kW).
+    double powerInKilowatts = 350.0;
+
+    // The rated current of the connector, in amperes (A).
+    double currentInAmperes = 350.0;
+
+    // The rated voltage of the connector, in volts (V).
+    double voltageInVolts = 1000.0;
+
+    // The minimum duration (in seconds) the user plans to charge at the station.
+    Duration minimumDuration = Duration(seconds: 3000);
+
+    // The maximum duration (in seconds) the user plans to charge at the station.
+    Duration maximumDuration = Duration(seconds: 4000);
+
+    // Add a user-defined charging stop.
+    //
+    // Note: To specify a ChargingStop, you must also set totalCapacityInKilowattHours,
+    // initialChargeInKilowattHours, and chargingCurve using BatterySpecification in EVCarOptions.
+    // If any of these values are missing, the route calculation will fail with an invalid parameter error.
+    ChargingStop plannedChargingStop = ChargingStop(
+      powerInKilowatts,
+      currentInAmperes,
+      voltageInVolts,
+      ChargingSupplyType.dc,
+      minimumDuration,
+      maximumDuration,
+    );
+
+    Waypoint plannedChargingStopWaypoint = Waypoint(_createRandomGeoCoordinatesInViewport());
+    plannedChargingStopWaypoint.chargingStop = plannedChargingStop;
+    return plannedChargingStopWaypoint;
   }
 
   // Note: This API is currently only accessible for alpha users.

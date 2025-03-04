@@ -23,7 +23,7 @@ import UIKit
 // A class to visualize the incoming raw location signals on the map during a trip.
 class HEREPositioningVisualizer {
 
-    private var mapView: MapView
+    private let mapView: MapView
     private var locationIndicator = LocationIndicator()
     private var mapCircles = [MapPolygon]()
     private var geoCoordinatesList: [GeoCoordinates] = []

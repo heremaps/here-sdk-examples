@@ -23,7 +23,7 @@ import SwiftUI
 // This example shows how to query traffic info on incidents with the TrafficEngine.
 class TrafficExample : TapDelegate {
 
-    private var mapView: MapView
+    private let mapView: MapView
     private var trafficEngine: TrafficEngine
     // Visualizes traffic incidents found with the TrafficEngine.
     private var mapPolylineList = [MapPolyline]()

@@ -70,18 +70,22 @@ class _MyAppState extends State<MyApp> {
         body: Stack(
           children: [
             HereMap(onMapCreated: _onMapCreated),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            Column(
               children: [
-                button('Enable All', _enableAllButtonClicked),
-                button('Disable All', _disableAllButtonClicked),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                button('Add route', _addRouteButtonClicked),
-                button('Clear map', _clearMapButtonClicked),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    button('Enable All', _enableAllButtonClicked),
+                    button('Disable All', _disableAllButtonClicked),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    button('Add route', _addRouteButtonClicked),
+                    button('Clear map', _clearMapButtonClicked),
+                  ],
+                ),
               ],
             ),
           ],

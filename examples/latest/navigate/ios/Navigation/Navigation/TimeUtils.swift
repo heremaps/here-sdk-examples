@@ -46,4 +46,39 @@ class TimeUtils{
         
         return "\(kilometers).\(remainingMeters) km"
     }
+    
+    /**
+     * Returns the ETA (as a string in ‘HH:mm’ format) in the current device’s timezone, derived from the estimatedTravelTimeInSeconds, which is sourced from the Route object.
+     *
+     * - Parameter route: Original route object from RoutingEngine.
+     * - Returns: A string representing the ETA in "HH:mm" format.
+     */
+     func getETAinDeviceTimeZone(estimatedTravelTimeInSeconds: Int32) -> String {
+        // Get an instance of the Calendar class initialized with the current date and time
+        let calendar = Calendar.current
+        var dateComponents = DateComponents()
+        dateComponents.second = Int(estimatedTravelTimeInSeconds)
+
+        // Add the estimated travel time (in seconds) to the current time
+        if let etaDate = calendar.date(byAdding: dateComponents, to: Date()) {
+            return getFormattedDate(etaDate)
+        } else {
+            return ""
+        }
+    }
+    
+    /**
+     * Formats the given date to a string representation using the device's default timezone.
+     *
+     * - Parameter date: The Date object to be formatted.
+     * - Returns: A string representing the formatted time in the default timezone.
+     */
+    private func getFormattedDate(_ date: Date) -> String {
+        // Create a DateFormatter instance that formats the time in a short format (e.g., "HH:mm a").
+        let dateFormatter = DateFormatter()
+        dateFormatter.timeStyle = .short
+
+        // Format the date using the configured DateFormatter and return the result as a string.
+        return dateFormatter.string(from: date)
+    }
 }

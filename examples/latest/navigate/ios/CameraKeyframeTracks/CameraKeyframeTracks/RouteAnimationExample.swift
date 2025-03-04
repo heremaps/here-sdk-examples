@@ -24,10 +24,10 @@ import heresdk
 /// This class provides functions to start and stop route animations, moving the camera to display a route with transitions.
 public class RouteAnimationExample {
  
-    private var mapView: MapView!
+    private let mapView: MapView!
     private var tracks: [MapCameraKeyframeTrack]!
     private var mapPolylines: [MapPolyline] = []
-    private var routeCalculator: RouteCalculator
+    private let routeCalculator: RouteCalculator
     private var route: Route?
     private let geoCoordinates = GeoCoordinates(latitude: 40.685869754854544, longitude: -74.02550202768754)
     

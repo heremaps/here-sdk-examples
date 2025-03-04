@@ -23,9 +23,9 @@ import SwiftUI
 class SearchExample: TapDelegate,
                      LongPressDelegate {
 
-    private var mapView: MapView
+    private let mapView: MapView
+    private let searchEngine: SearchEngine
     private var mapMarkers = [MapMarker]()
-    private var searchEngine: SearchEngine
 
     init(_ mapView: MapView) {
         self.mapView = mapView
