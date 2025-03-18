@@ -49,10 +49,16 @@
         <ToggleButton
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_weight="0.5"
             android:textOff="Traffic optimization -On"
             android:textOn="Traffic optimization -Off"
             android:onClick="toggleTrafficOptimization" />
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.5"
+            android:text="Update traffic on route"
+            android:onClick="updateTrafficOnRoute" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

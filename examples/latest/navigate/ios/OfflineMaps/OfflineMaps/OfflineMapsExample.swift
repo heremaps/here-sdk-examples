@@ -54,10 +54,18 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
             fatalError("SDKNativeEngine not initialized.")
         }
 
-        // Note that the default storage path can be adapted when creating a new SDKNativeEngine.
+        showMessage("This example allows to download the region Switzerland.") 
+  
+        // This is the default storage path for cached map data that is not already available as 
+        // installed region.
+        // Note that the default storage paths can be adapted when creating a new SDKNativeEngine.
         let storagePath = sdkNativeEngine.options.cachePath
-        showMessage("This example allows to download the region Switzerland. StoragePath: \(storagePath).")
-
+        print("Cache storage path: \(storagePath).")
+        
+        // This is the default path for storing downloaded regions.
+        // The application must have read/write access to this path if updating it.
+        let persistentMapStoragePath = sdkNativeEngine.options.persistentMapStoragePath
+        print("Persistent map storage path: \(persistentMapStoragePath).")
 
         // Create MapUpdater in background to not block the UI thread.
         MapUpdater.fromEngineAsync(sdkNativeEngine, { mapUpdater in

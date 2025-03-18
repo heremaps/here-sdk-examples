@@ -25,15 +25,15 @@ import 'package:here_sdk/mapview.dart';
 
 import 'routing_example.dart';
 
-void main() {
+void main() async {
   // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
-  _initializeHERESDK();
+  await _initializeHERESDK();
 
   // Ensure that all widgets, including MyApp, have a MaterialLocalizations object available.
   runApp(const MaterialApp(home: MyApp()));
 }
 
-void _initializeHERESDK() async {
+Future<void> _initializeHERESDK() async {
   // Needs to be called before accessing SDKOptions to load necessary libraries.
   SdkContext.init(IsolateOrigin.main);
 
@@ -113,6 +113,7 @@ class MyAppState extends State<MyApp> {
                           ),
                         ),
                       ]),
+                  button('Update traffic on route', _updateTrafficOnRoute),
                 ],
               ),
             ],
@@ -144,6 +145,10 @@ class MyAppState extends State<MyApp> {
 
   void _addRouteButtonClicked() {
     _routingExample?.addRoute();
+  }
+
+  void _updateTrafficOnRoute() {
+    _routingExample?.onUpdateTrafficOnRouteButtonClick();
   }
 
   void _clearMapButtonClicked() {

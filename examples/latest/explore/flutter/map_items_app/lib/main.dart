@@ -28,15 +28,15 @@ import 'MapItemsExample.dart';
 import 'MapObjectsExample.dart';
 import 'MapViewPinsExample.dart';
 
-void main() {
+void main() async {
   // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
-  _initializeHERESDK();
+  await _initializeHERESDK();
 
   // Ensure that all widgets, including MyApp, have a MaterialLocalizations object available.
   runApp(MaterialApp(home: MyApp()));
 }
 
-void _initializeHERESDK() async {
+Future<void> _initializeHERESDK() async {
   // Needs to be called before accessing SDKOptions to load necessary libraries.
   SdkContext.init(IsolateOrigin.main);
 

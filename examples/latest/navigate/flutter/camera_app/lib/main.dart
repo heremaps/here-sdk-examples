@@ -25,14 +25,14 @@ import 'package:here_sdk/mapview.dart';
 
 import 'CameraExample.dart';
 
-void main() {
+void main() async {
   // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
-  _initializeHERESDK();
+  await _initializeHERESDK();
 
   runApp(MyApp());
 }
 
-void _initializeHERESDK() async {
+Future<void> _initializeHERESDK() async {
   // Needs to be called before accessing SDKOptions to load necessary libraries.
   SdkContext.init(IsolateOrigin.main);
 
@@ -125,7 +125,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
       alignment: Alignment.topCenter,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.white, 
+          foregroundColor: Colors.white,
           backgroundColor: Colors.lightBlueAccent,
         ),
         onPressed: () => callbackFunction(),

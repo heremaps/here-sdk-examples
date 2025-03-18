@@ -17,7 +17,7 @@
  * License-Filename: LICENSE
  */
 
-package com.here.routing;
+package com.here.publictransit;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -32,9 +32,14 @@ import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.core.engine.SDKOptions;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.mapview.MapError;
+import com.here.sdk.mapview.MapFeatureModes;
+import com.here.sdk.mapview.MapFeatures;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -43,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     private PermissionsRequestor permissionsRequestor;
     private MapView mapView;
     private PublicTransportRoutingExample publicTransportRoutingExample;
+    private Map<String,String> mapFeatures = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,6 +106,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onLoadScene(@Nullable MapError mapError) {
                 if (mapError == null) {
+                     // Enable PUBLIC_TRANSIT map feature to displays public transit lines for systems like subway, tram, train, monorail, and ferry, based on the selected mode.
+                    // mapFeatures.put(MapFeatures.PUBLIC_TRANSIT, MapFeatureModes.PUBLIC_TRANSIT_ALL);
+                    // Currently, PUBLIC_TRANSIT map feature is only available for navigate edition.
+                    // mapView.getMapScene().enableFeatures(mapFeatures);
                     publicTransportRoutingExample = new PublicTransportRoutingExample(MainActivity.this, mapView);
                 } else {
                     Log.d(TAG, "Loading map failed: mapErrorCode: " + mapError.name());

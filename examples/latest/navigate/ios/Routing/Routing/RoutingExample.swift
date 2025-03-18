@@ -31,6 +31,7 @@ class RoutingExample {
     private var disableOptimization = true
     private var waypoints = [Waypoint]()
     private let timeUtils: TimeUtils
+    private var currentRoute: Route?;
     
     init(_ mapView: MapView) {
         self.mapView = mapView
@@ -71,6 +72,46 @@ class RoutingExample {
         calculateRoute(waypoints: waypoints)
     }
     
+    func onUpdateTrafficOnRouteButtonClick() {
+        updateTrafficOnRoute(route: currentRoute)
+    }
+
+    func updateTrafficOnRoute(route: Route?) {
+        guard !disableOptimization else {
+            showDialog(title: "Traffic", message: "Disabled traffic optimization.")
+            return
+        }
+        
+        // Since traffic is being calculated for the entire route, lastTraveledSectionIndex and traveledDistanceOnLastSectionInMeters are set to 0.
+        let lastTraveledSectionIndex = 0
+        let traveledDistanceOnLastSectionInMeters = 0
+        
+        routingEngine.calculateTrafficOnRoute(
+            route: route!,
+            lastTraveledSectionIndex: Int32(lastTraveledSectionIndex),
+            traveledDistanceOnLastSectionInMeters: Int32(traveledDistanceOnLastSectionInMeters)
+        ) { routingError, trafficOnRoute in
+            if let error = routingError {
+                print("CalculateTrafficOnRoute error: \(error)")
+            } else if let trafficOnRoute = trafficOnRoute {
+                self.showUpdatedETA(trafficOnRoute: trafficOnRoute)
+            }
+        }
+    }
+
+    private func showUpdatedETA(trafficOnRoute: TrafficOnRoute) {
+        for section in trafficOnRoute.trafficSections {
+            var updatedETAInSeconds = 0.0;
+            section.trafficSpans.forEach{ updatedETAInSeconds = updatedETAInSeconds + Double($0.duration)}
+            var updatedTrafficDelayInSeconds = 0.0;
+            section.trafficSpans.forEach{ updatedTrafficDelayInSeconds = updatedTrafficDelayInSeconds + Double($0.trafficDelay)}
+            let updatedETAString = String(format: "Updated travel duration %@\nUpdated traffic delay %@",
+                                          timeUtils.formatTime(sec: updatedETAInSeconds),
+                                          timeUtils.formatTime(sec: updatedTrafficDelayInSeconds))
+            showDialog(title: "Updated traffic", message: updatedETAString)
+        }
+    }
+
     private func calculateRoute(waypoints: Array<Waypoint>){
         routingEngine.calculateRoute(with: waypoints,
                                      carOptions: getCaroptions()) { (routingError, routes) in
@@ -82,12 +123,13 @@ class RoutingExample {
             
             // When routingError is nil, routes is guaranteed to contain at least one route.
             let route = routes!.first
-            self.showRouteDetails(route: route!)
-            self.showRouteOnMap(route: route!)
-            self.logRouteRailwayCrossingDetails(route: route!)
-            self.logRouteSectionDetails(route: route!)
-            self.logRouteViolations(route: route!)
-            self.logTollDetails(route: route!)
+            self.currentRoute = routes!.first!
+            self.showRouteDetails(route: self.currentRoute!)
+            self.showRouteOnMap(route: self.currentRoute!)
+            self.logRouteRailwayCrossingDetails(route: self.currentRoute!)
+            self.logRouteSectionDetails(route: self.currentRoute!)
+            self.logRouteViolations(route: self.currentRoute!)
+            self.logTollDetails(route: self.currentRoute!)
             self.showWaypointsOnMap()
         }
     }
@@ -122,6 +164,8 @@ class RoutingExample {
     private func getCaroptions() -> CarOptions {
         var carOptions = CarOptions()
         carOptions.routeOptions.enableTolls = true
+        // This is needed when e.g. requesting TrafficOnRoute data.
+        carOptions.routeOptions.enableRouteHandle = true
         // Disabled - Traffic optimization is completely disabled, including long-term road closures. It helps in producing stable routes.
         // Time dependent - Traffic optimization is enabled, the shape of the route will be adjusted according to the traffic situation which depends on departure time and arrival time.
         carOptions.routeOptions.trafficOptimizationMode = disableOptimization ? TrafficOptimizationMode.disabled : TrafficOptimizationMode.timeDependent

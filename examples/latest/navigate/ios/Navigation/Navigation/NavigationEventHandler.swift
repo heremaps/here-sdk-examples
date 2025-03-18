@@ -481,26 +481,19 @@ class NavigationEventHandler : NavigableLocationDelegate,
     }
 
     func logLaneDetails(_ laneNumber: Int, _ lane: Lane) {
-        // All directions can be true or false at the same time.
+        print("Directions for lane \(laneNumber):")
         // The possible lane directions are valid independent of a route.
         // If a lane leads to multiple directions and is recommended, then all directions lead to
         // the next maneuver.
-        // You can use this information like in a bitmask to visualize the possible directions
-        // with a set of image overlays.
-        let laneDirectionCategory = lane.directionCategory
-        print("Directions for lane \(laneNumber):")
-        print("laneDirectionCategory.straight: \(laneDirectionCategory.straight)")
-        print("laneDirectionCategory.slightlyLeft: \(laneDirectionCategory.slightlyLeft)")
-        print("laneDirectionCategory.quiteLeft: \(laneDirectionCategory.quiteLeft)")
-        print("laneDirectionCategory.hardLeft: \(laneDirectionCategory.hardLeft)")
-        print("laneDirectionCategory.uTurnLeft: \(laneDirectionCategory.uTurnLeft)")
-        print("laneDirectionCategory.slightlyRight: \(laneDirectionCategory.slightlyRight)")
-        print("laneDirectionCategory.quiteRight: \(laneDirectionCategory.quiteRight)")
-        print("laneDirectionCategory.hardRight: \(laneDirectionCategory.hardRight)")
-        print("laneDirectionCategory.uTurnRight: \(laneDirectionCategory.uTurnRight)")
+        // You can use this information to visualize all directions of a lane with a set of image overlays.
+        for laneDirection: LaneDirection in lane.directions {
+            let isLaneDirectionOnRoute = isLaneDirectionOnRoute(lane, laneDirection)
+            print("LaneDirection for this lane: \(laneDirection)")
+            print("This LaneDirection is on the route: \(isLaneDirectionOnRoute)")
+        }
 
         // More information on each lane is available in these bitmasks (boolean):
-        // LaneType provides lane properties such as if parking is allowed.
+        // LaneType provides lane properties such as if parking is allowed or is acceleration allowed or is express lane and many more.
         _ = lane.type
         // LaneAccess provides which vehicle type(s) are allowed to access this lane.
         logLaneAccess(laneNumber, lane.access)
@@ -539,6 +532,13 @@ class NavigationEventHandler : NavigableLocationDelegate,
         print("Motorcycles are allowed on this lane: \(laneAccess.motorcycles).")
     }
 
+    // A method to check if a given LaneDirection is on route or not.
+    // lane.directionsOnRoute gives only those LaneDirection that are on the route.
+    // When the driver is in tracking mode without following a route, this always returns false.
+    func isLaneDirectionOnRoute(_ lane: Lane, _ laneDirection: LaneDirection) -> Bool {
+        return lane.directionsOnRoute.contains(laneDirection)
+    }
+    
     // Conform to the RoadAttributesDelegate.
     // Notifies on the attributes of the current road including usage and physical characteristics.
     func onRoadAttributesUpdated(_ roadAttributes: RoadAttributes) {

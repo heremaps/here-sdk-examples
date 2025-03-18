@@ -43,6 +43,9 @@ struct ContentView: View {
                  CustomButton(title: "Toggle") {
                      navigationCustomExample?.toggleButtonClicked()
                  }
+                 CustomButton(title: "Color") {
+                     navigationCustomExample?.colorButtonClicked()
+                 }
              }
          }
          .onAppear {

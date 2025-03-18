@@ -135,6 +135,10 @@ public class MainActivity extends AppCompatActivity {
         routingExample.clearMap();
     }
 
+    public void updateTrafficOnRoute(View view) {
+        routingExample.onUpdateTrafficOnRouteButtonClick();
+    }
+
     @Override
     protected void onPause() {
         mapView.onPause();

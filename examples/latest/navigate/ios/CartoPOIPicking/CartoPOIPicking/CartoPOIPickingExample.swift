@@ -83,7 +83,7 @@ class CartoPOIPickingExample: TapDelegate {
         // mapItems is used when picking map items such as MapMarker, MapPolyline, MapPolygon etc.
         // Currently we need carto POIs so adding the mapContent filter.
         contentTypesToPickFrom.append(MapScene.MapPickFilter.ContentType.mapContent);
-        var filter = MapScene.MapPickFilter(filter: contentTypesToPickFrom);
+        let filter = MapScene.MapPickFilter(filter: contentTypesToPickFrom)
         mapView.pick(filter:filter,inside: rectangle2D, completion: onMapItemsPicked)
     }
 
@@ -118,15 +118,15 @@ class CartoPOIPickingExample: TapDelegate {
         // Now you can use the SearchEngine (via PickedPlace)
         // to retrieve the Place object containing more details.
         // Below we use the placeCategoryId.
-        fetchCartoPOIDetails(topmostCartoPOI.placeCategoryId);
+        fetchCartoPOIDetails(topmostCartoPOI)
     }
 
-    private func fetchCartoPOIDetails(_ placeCategoryId: String) {
+    private func fetchCartoPOIDetails(_ pickedPlace: PickedPlace) {
         // Set nil for LanguageCode to get the results in their local language.
         let languageCode: LanguageCode? = nil
-        searchEngine.searchByPlaceId(PlaceIdQuery(placeCategoryId),
-                                    languageCode: languageCode,
-                                    completion: onSearchCompleted)
+        searchEngine.searchByPickedPlace(pickedPlace,
+                                         languageCode: languageCode,
+                                         completion: onSearchCompleted)
     }
 
     // Completion handler to receive search results.

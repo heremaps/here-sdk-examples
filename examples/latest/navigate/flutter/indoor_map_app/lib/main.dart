@@ -37,14 +37,14 @@ import 'events.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:indoor_map_app/venue_search_controller.dart';
 
-void main() {
+void main() async {
   // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
-  _initializeHERESDK();
+  await _initializeHERESDK();
 
   runApp(MyApp());
 }
 
-void _initializeHERESDK() async {
+Future<void> _initializeHERESDK() async {
   // Needs to be called before accessing SDKOptions to load necessary libraries.
   SdkContext.init(IsolateOrigin.main);
 
@@ -426,8 +426,8 @@ class _MainPageState extends State<MainPage> {
                   _panelController.animatePanelToPosition(1.0);
                 },
                 decoration: InputDecoration(
-                  hintText: isMapLoading ? 
-		  	'Search for spaces' 
+                  hintText: isMapLoading ?
+		  	'Search for spaces'
 			: 'Search for venues',
                   prefixIcon: Icon(Icons.search),
                   border: InputBorder.none,

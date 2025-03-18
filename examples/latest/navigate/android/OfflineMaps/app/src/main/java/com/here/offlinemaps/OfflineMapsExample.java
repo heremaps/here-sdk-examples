@@ -119,10 +119,13 @@ public class OfflineMapsExample {
             throw new RuntimeException("SDKNativeEngine not initialized.");
         }
 
-        // Note that the default storage path can be adapted when creating a new SDKNativeEngine.
+        // This is the default storage path for cached map data that is not available as installed region. 
+        // Note that the default storage paths can be adapted when creating a new SDKNativeEngine.
         String storagePath = sdkNativeEngine.getOptions().cachePath;
-        Log.d(TAG, "StoragePath: " + storagePath);
+        Log.d(TAG, "Cache storagePath: " + storagePath);
 
+        // This is the default path for storing downloaded regions.
+        // The application must have read/write access to this path if updating it.
         String persistentMapStoragePath = sdkNativeEngine.getOptions().persistentMapStoragePath;
         Log.d(TAG, "PersistentMapStoragePath: " + persistentMapStoragePath);
 

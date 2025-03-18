@@ -49,6 +49,9 @@ struct ContentView: View {
                      CustomToggleButton(onLabel: "Traffic optimization: On", offLabel: "Traffic optimization: Off") {
                          routingExample?.toggleTrafficOptimization()
                      }
+                     CustomButton(title: "Update traffic on route") {
+                         routingExample?.onUpdateTrafficOnRouteButtonClick()
+                     }
                  }
              }
          }

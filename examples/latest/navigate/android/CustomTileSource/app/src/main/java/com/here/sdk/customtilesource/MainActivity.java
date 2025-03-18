@@ -45,9 +45,10 @@ public class MainActivity extends AppCompatActivity {
     private PermissionsRequestor permissionsRequestor;
     private CustomPointTileSourceExample customPointTileSourceExample;
     private CustomRasterTileSourceExample customRasterTileSourceExample;
+    private CustomLineTileSourceExample customLineTileSourceExample;
     private MapView mapView;
-    private boolean isPointTileSelected = true;
     private RadioGroup tileSourceGroup;
+    private int selectedTileSource = R.id.radioCustomPointTileSource;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +56,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
         initializeHERESDK();
-
         setContentView(R.layout.activity_main);
 
         // Get a MapView instance from the layout.
@@ -65,11 +65,12 @@ public class MainActivity extends AppCompatActivity {
         // Initialize tile source objects early
         customPointTileSourceExample = new CustomPointTileSourceExample();
         customRasterTileSourceExample = new CustomRasterTileSourceExample();
+        customLineTileSourceExample = new CustomLineTileSourceExample();
 
         // Setup RadioGroup for selecting tile source
         tileSourceGroup = findViewById(R.id.radioGroupTileSource);
         tileSourceGroup.setOnCheckedChangeListener((group, checkedId) -> {
-            isPointTileSelected = (checkedId == R.id.radioCustomPointTileSource);
+            selectedTileSource = checkedId;
         });
 
         handleAndroidPermissions();
@@ -106,9 +107,9 @@ public class MainActivity extends AppCompatActivity {
     private void loadMapScene() {
         mapView.getMapScene().loadScene(MapScheme.NORMAL_DAY, mapError -> {
             if (mapError == null) {
-                // Ensure objects are initialized
                 customPointTileSourceExample.onMapSceneLoaded(mapView, MainActivity.this);
                 customRasterTileSourceExample.onMapSceneLoaded(mapView, MainActivity.this);
+                customLineTileSourceExample.onMapSceneLoaded(mapView, MainActivity.this);
             } else {
                 Log.e(TAG, "onLoadScene failed: " + mapError.toString());
             }
@@ -116,34 +117,34 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void enableButtonClicked(View view) {
-        if (isPointTileSelected) {
-            if (customPointTileSourceExample != null) {
+        switch (selectedTileSource) {
+            case R.id.radioCustomPointTileSource:
                 customPointTileSourceExample.enableButtonClicked();
-            } else {
-                Log.e(TAG, "customPointTileSourceExample is null");
-            }
-        } else {
-            if (customRasterTileSourceExample != null) {
+                break;
+            case R.id.radioCustomRasterTileSource:
                 customRasterTileSourceExample.enableButtonClicked();
-            } else {
-                Log.e(TAG, "customRasterTileSourceExample is null");
-            }
+                break;
+            case R.id.radioCustomLineTileSource:
+                customLineTileSourceExample.enableButtonClicked();
+                break;
+            default:
+                Log.e(TAG, "Unknown tile source selected");
         }
     }
 
     public void disableButtonClicked(View view) {
-        if (isPointTileSelected) {
-            if (customPointTileSourceExample != null) {
+        switch (selectedTileSource) {
+            case R.id.radioCustomPointTileSource:
                 customPointTileSourceExample.disableButtonClicked();
-            } else {
-                Log.e(TAG, "customPointTileSourceExample is null");
-            }
-        } else {
-            if (customRasterTileSourceExample != null) {
+                break;
+            case R.id.radioCustomRasterTileSource:
                 customRasterTileSourceExample.disableButtonClicked();
-            } else {
-                Log.e(TAG, "customRasterTileSourceExample is null");
-            }
+                break;
+            case R.id.radioCustomLineTileSource:
+                customLineTileSourceExample.disableButtonClicked();
+                break;
+            default:
+                Log.e(TAG, "Unknown tile source selected");
         }
     }
 
@@ -166,6 +167,9 @@ public class MainActivity extends AppCompatActivity {
         }
         if (customRasterTileSourceExample != null) {
             customRasterTileSourceExample.onDestroy();
+        }
+        if (customLineTileSourceExample != null) {
+            customLineTileSourceExample.onDestroy();
         }
         mapView.onDestroy();
         disposeHERESDK();

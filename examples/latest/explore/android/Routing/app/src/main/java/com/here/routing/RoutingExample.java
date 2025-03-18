@@ -42,6 +42,7 @@ import com.here.sdk.mapview.MapPolyline;
 import com.here.sdk.mapview.MapView;
 import com.here.sdk.mapview.RenderSize;
 import com.here.sdk.routing.CalculateRouteCallback;
+import com.here.sdk.routing.CalculateTrafficOnRouteCallback;
 import com.here.sdk.routing.CarOptions;
 import com.here.sdk.routing.DynamicSpeedInfo;
 import com.here.sdk.routing.Maneuver;
@@ -56,6 +57,9 @@ import com.here.sdk.routing.SectionNotice;
 import com.here.sdk.routing.Span;
 import com.here.sdk.routing.Toll;
 import com.here.sdk.routing.TollFare;
+import com.here.sdk.routing.TrafficOnRoute;
+import com.here.sdk.routing.TrafficOnSection;
+import com.here.sdk.routing.TrafficOnSpan;
 import com.here.sdk.routing.TrafficOptimizationMode;
 import com.here.sdk.routing.Waypoint;
 
@@ -64,6 +68,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class RoutingExample {
 
@@ -78,6 +83,7 @@ public class RoutingExample {
     private GeoCoordinates destinationGeoCoordinates;
     private boolean trafficDisabled;
     private final TimeUtils timeUtils;
+    private Route currentRoute;
     List<Waypoint> waypoints = new ArrayList<>();
 
     public RoutingExample(Context context, MapView mapView) {
@@ -114,13 +120,13 @@ public class RoutingExample {
                     @Override
                     public void onRouteCalculated(@Nullable RoutingError routingError, @Nullable List<Route> routes) {
                         if (routingError == null) {
-                            Route route = routes.get(0);
-                            showRouteDetails(route);
-                            showRouteOnMap(route);
-                            logRouteRailwayCrossingDetails(route);
-                            logRouteSectionDetails(route);
-                            logRouteViolations(route);
-                            logTollDetails(route);
+                            currentRoute = routes.get(0);
+                            showRouteDetails(currentRoute);
+                            showRouteOnMap(currentRoute);
+                            logRouteRailwayCrossingDetails(currentRoute);
+                            logRouteSectionDetails(currentRoute);
+                            logRouteViolations(currentRoute);
+                            logTollDetails(currentRoute);
                             showWaypointsOnMap(waypoints);
                         } else {
                             showDialog("Error while calculating a route:", routingError.toString());
@@ -317,6 +323,9 @@ public class RoutingExample {
     private CarOptions getCarOptions() {
         CarOptions carOptions = new CarOptions();
         carOptions.routeOptions.enableTolls = true;
+        // This is needed when e.g. requesting TrafficOnRoute data.
+        carOptions.routeOptions.enableRouteHandle = true;
+
         // Disabled - Traffic optimization is completely disabled, including long-term road closures. It helps in producing stable routes.
         // Time dependent - Traffic optimization is enabled, the shape of the route will be adjusted according to the traffic situation which depends on departure time and arrival time.
         carOptions.routeOptions.trafficOptimizationMode = trafficDisabled ?
@@ -375,6 +384,51 @@ public class RoutingExample {
                 mapView.getMapScene().addMapPolyline(trafficSpanMapPolyline);
                 mapPolylines.add(trafficSpanMapPolyline);
             }
+        }
+    }
+
+    public void onUpdateTrafficOnRouteButtonClick() {
+        updateTrafficOnRoute(currentRoute);
+    }
+
+    public void updateTrafficOnRoute(Route route) {
+        if (trafficDisabled) {
+            showDialog("Traffic", "Disabled traffic optimization.");
+            return;
+        }
+
+        // Since traffic is being calculated for the entire route, lastTraveledSectionIndex and traveledDistanceOnLastSectionInMeters are set to 0.
+        int lastTraveledSectionIndex = 0;
+        int traveledDistanceOnLastSectionInMeters = 0;
+
+        routingEngine.calculateTrafficOnRoute(route, lastTraveledSectionIndex, traveledDistanceOnLastSectionInMeters, new CalculateTrafficOnRouteCallback() {
+            @Override
+            public void onTrafficOnRouteCalculated(@Nullable RoutingError routingError, @Nullable TrafficOnRoute trafficOnRoute) {
+                if (routingError != null) {
+                    Log.d(TAG, "CalculateTrafficOnRoute error: " + routingError.name());
+                } else {
+                    showUpdatedETA(trafficOnRoute);
+                }
+            }
+        });
+    }
+
+    private void showUpdatedETA(TrafficOnRoute trafficOnRoute) {
+        for (TrafficOnSection section : trafficOnRoute.trafficSections) {
+            List<TrafficOnSpan> spans = section.trafficSpans;
+
+            long updatedETAInSeconds = spans.stream()
+                    .mapToLong(span -> span.duration.getSeconds())
+                    .sum();
+
+            long updatedTrafficDelayInSeconds = spans.stream()
+                    .mapToLong(span -> span.trafficDelay.getSeconds())
+                    .sum();
+
+            String updatedETAString = String.format("Updated travel duration %s\nUpdated traffic delay %s",
+                    timeUtils.formatTime(updatedETAInSeconds),
+                    timeUtils.formatTime(updatedTrafficDelayInSeconds));
+            showDialog("Updated traffic", updatedETAString);
         }
     }
 

@@ -24,7 +24,7 @@ import SwiftUI
 // (indicated with red charging icon). In addition, all existing charging stations are searched along the route
 // (indicated with green charging icon). You can also visualize the reachable area from your starting point
 // (isoline routing).
-class EVRoutingExample {
+class EVRoutingExample: TapDelegate {
     
     private let mapView: MapView
     private let searchEngine: SearchEngine
@@ -38,6 +38,16 @@ class EVRoutingExample {
     private var chargingStationsIDs = [String]()
     private var disableOptimization = true
     private var waypoints = [Waypoint]()
+    
+    // Metadata keys used when picking a charging station on the map.
+    private let supplierNameMetadataKey = "supplierName"
+    private let connectorCountMetadataKey = "connectorCount"
+    private let availableConnectorsMetadataKey = "availableConnectors"
+    private let occupiedConnectorsMetadataKey = "occupiedConnectors"
+    private let outOfServiceConnectorsMetadataKey = "outOfServiceConnectors"
+    private let reservedConnectorsMetadataKey = "reservedConnectors"
+    private let lastUpdatedMetadataKey = "lastUpdated"
+    private let requiredChargingMetadataKey = "requiredCharging"
     
     init(_ mapView: MapView) {
         self.mapView = mapView
@@ -62,6 +72,9 @@ class EVRoutingExample {
         } catch let engineInstantiationError {
             fatalError("Failed to initialize search engine. Cause: \(engineInstantiationError)")
         }
+        
+        // Setting a tap delegate to pick markers from map.
+        mapView.gestures.tapDelegate = self
         
         // Configure the map.
         let camera = mapView.camera
@@ -256,14 +269,20 @@ class EVRoutingExample {
             if depStation != nil  && !chargingStationsIDs.contains(depStation?.id ?? "-1") {
                 print("Section \(sectionIndex), name of charging station: \(String(describing: depStation?.name))")
                 chargingStationsIDs.append(depStation?.id ?? "-1")
-                addCircleMapMarker(geoCoordinates: section.departurePlace.mapMatchedCoordinates, imageName: "required_charging.png")
+                let metadata = Metadata()
+                metadata.setString(key: requiredChargingMetadataKey, value: (depStation?.id ?? "-1"))
+                metadata.setString(key: supplierNameMetadataKey, value: (depStation?.name ?? "NA"))
+                addMapMarker(geoCoordinates: section.departurePlace.mapMatchedCoordinates, imageName: "required_charging.png", metadata: metadata)
             }
 
             let arrStation = section.departurePlace.chargingStation
             if arrStation != nil && !chargingStationsIDs.contains(arrStation?.id ?? "-1") {
                 print("Section \(sectionIndex), name of charging station: \(String(describing: arrStation?.name))")
                 chargingStationsIDs.append(arrStation?.id ?? "-1")
-                addCircleMapMarker(geoCoordinates: section.arrivalPlace.mapMatchedCoordinates, imageName: "required_charging.png")
+                let metadata = Metadata()
+                metadata.setString(key: requiredChargingMetadataKey, value: (arrStation?.id ?? "-1"))
+                metadata.setString(key: supplierNameMetadataKey, value: (arrStation?.name ?? "NA"))
+                addMapMarker(geoCoordinates: section.arrivalPlace.mapMatchedCoordinates, imageName: "required_charging.png", metadata: metadata)
             }
 
             sectionIndex += 1
@@ -323,9 +342,30 @@ class EVRoutingExample {
 
         let searchOptions = SearchOptions(languageCode: LanguageCode.enUs,
                                           maxItems: 30)
+        // Disable the following line when you are not part of the alpha group.
+        enableChargingStationAvailabilityRequest()
+        
         searchEngine.searchByCategory(categoryQuery,
                             options: searchOptions,
                             completion: onSearchCompleted)
+    }
+    
+    // Enable fetching online availability details for EV charging stations.
+    // It allows retrieving additional details, such as whether a charging station is currently occupied.
+    // If you are not part of the alpha group, do not use this call as a SearchError would occur,
+    // access to this feature requires appropriate credentials.
+    // Check the API Reference for more details.
+    private func enableChargingStationAvailabilityRequest() {
+        // Fetching additional charging stations details requires a custom option call.
+        if let error = searchEngine.setCustomOption(name: "browse.show", value: "ev,fuel") {
+        showDialog(
+            title: "Charging Station",
+            message: "Failed to enable EV charging station availability. "
+                     + "Disable the feature if you are not part of the alpha group."
+        )
+        } else {
+            print("EV charging station availability enabled successfully.")
+        }
     }
 
     // Completion handler to receive results for found charging stations along the route.
@@ -338,15 +378,126 @@ class EVRoutingExample {
         // If error is nil, it is guaranteed that the items will not be nil.
         print("Search along route found \(items!.count) charging stations:")
 
-        for place in items! {
-            if chargingStationsIDs.contains(place.id) {
-                print("Skipping: This charging station was already required to reach the destination (see red charging icon).")
-            } else {
-                // Only suggestions may not contain geoCoordinates, so it's safe to unwrap this search result's coordinates.
-                self.addCircleMapMarker(geoCoordinates: place.geoCoordinates!, imageName: "charging.png")
-                print(place.address.addressText)
+        for place in items ?? [] {
+            let details = place.details
+            let metadata = getMetadataForEVChargingPools(details)
+            var foundExistingChargingStation = false
+
+            for mapMarker in mapMarkers {
+                if let markerMetadata = mapMarker.metadata,
+                   let id = markerMetadata.getString(key: requiredChargingMetadataKey),
+                   id.lowercased() == place.id.lowercased() {
+                    print("Skipping: This charging station was already required to reach the destination (see red charging icon).")
+                    mapMarker.metadata = metadata
+                    foundExistingChargingStation = true
+                    break
+                }
+            }
+            if !foundExistingChargingStation {
+                self.addMapMarker(geoCoordinates: place.geoCoordinates!, imageName: "charging.png", metadata: metadata)
             }
         }
+    }
+    
+    // Conform to the TapDelegate protocol.
+    func onTap(origin: Point2D) {
+        let originInPixels = Point2D(x:origin.x,y:origin.y);
+        let sizeInPixels = Size2D(width:1,height:1);
+        let rectangle = Rectangle2D(origin: originInPixels, size: sizeInPixels);
+        
+        // If you do not want to specify any filter you can pass filter as NULL and all of the pickable contents will be picked.
+        var filter: MapScene.MapPickFilter? = nil
+        mapView.pick(filter: filter, inside: rectangle, completion:onMapItemsPicked);
+    }
+    
+    // Completion handler to receive picked map items.
+    // This method is used to pick a map marker when a user taps on a charging station icon on the map.
+    // When performing a search for charging stations along the route, clicking on a charging station icon
+    // will display its details, including the supplier name, connector count, availability status, last update time, etc.
+    func onMapItemsPicked(mapPickResults: MapPickResult?) {
+        if let mapPickResult = mapPickResults {
+            // Retrieve picked map items.
+            let pickMapItemsResult = mapPickResult.mapItems
+            
+            let mapMarkerList = pickMapItemsResult?.markers
+            let listSize = mapMarkerList?.count
+            
+            if listSize == 0 {
+                return
+            }
+            
+            let topmostMapMarker = (mapMarkerList?[0])!
+            showPickedChargingStationResults(topmostMapMarker)
+        }
+    }
+    
+    func showPickedChargingStationResults(_ mapMarker: MapMarker) {
+        guard let metadata = mapMarker.metadata else {
+            print("No metadata found for the picked marker.")
+            return
+        }
+
+        var details: [String] = []
+
+        if let supplierName = metadata.getString(key: supplierNameMetadataKey) {
+            details.append("Name: \(supplierName)")
+        }
+        if let connectorCount = metadata.getString(key: connectorCountMetadataKey) {
+            details.append("Connector Count: \(connectorCount)")
+        }
+        if let availableConnectors = metadata.getString(key: availableConnectorsMetadataKey) {
+            details.append("Available Connectors: \(availableConnectors)")
+        }
+        if let occupiedConnectors = metadata.getString(key: occupiedConnectorsMetadataKey) {
+            details.append("Occupied Connectors: \(occupiedConnectors)")
+        }
+        if let outOfServiceConnectors = metadata.getString(key: outOfServiceConnectorsMetadataKey) {
+            details.append("Out of Service Connectors: \(outOfServiceConnectors)")
+        }
+        if let reservedConnectors = metadata.getString(key: reservedConnectorsMetadataKey) {
+            details.append("Reserved Connectors: \(reservedConnectors)")
+        }
+        if let lastUpdated = metadata.getString(key: lastUpdatedMetadataKey) {
+            details.append("Last Updated: \(lastUpdated)")
+        }
+
+        if !details.isEmpty {
+            details.append("\n\nFor a full list of attributes please refer to the API Reference.")
+            showDialog(title: "Charging station details", message: details.joined(separator: "\n"))
+        } else {
+            print("No relevant metadata available for charging station.")
+        }
+    }
+    
+    func getMetadataForEVChargingPools(_ placeDetails: Details) -> Metadata {
+        let metadata = Metadata()
+        
+        if let chargingPool = placeDetails.evChargingPool {
+            for station in chargingPool.chargingStations {
+                if let supplierName = station.supplierName {
+                    metadata.setString(key: supplierNameMetadataKey, value: supplierName)
+                }
+                if let connectorCount = station.connectorCount {
+                    metadata.setString(key: connectorCountMetadataKey, value: "\(connectorCount)")
+                }
+                if let availableConnectorCount = station.availableConnectorCount {
+                    metadata.setString(key: availableConnectorsMetadataKey, value: "\(availableConnectorCount)")
+                }
+                if let occupiedConnectorCount = station.occupiedConnectorCount {
+                    metadata.setString(key: occupiedConnectorsMetadataKey, value: "\(occupiedConnectorCount)")
+                }
+                if let outOfServiceConnectorCount = station.outOfServiceConnectorCount {
+                    metadata.setString(key: outOfServiceConnectorsMetadataKey, value: "\(outOfServiceConnectorCount)")
+                }
+                if let reservedConnectorCount = station.reservedConnectorCount {
+                    metadata.setString(key: reservedConnectorsMetadataKey, value: "\(reservedConnectorCount)")
+                }
+                if let lastUpdated = station.lastUpdated {
+                    metadata.setString(key: lastUpdatedMetadataKey, value: "\(lastUpdated)")
+                }
+            }
+        }
+        return metadata
     }
 
     // Shows the reachable area for this electric vehicle from the current start coordinates and EV car options when the goal is
@@ -440,6 +591,20 @@ class EVRoutingExample {
         return Double.random(in: min ... max)
     }
 
+    private func addMapMarker(geoCoordinates: GeoCoordinates, imageName: String, metadata: Metadata) {
+        guard
+            let image = UIImage(named: imageName),
+            let imageData = image.pngData() else {
+                return
+        }
+        let mapMarker = MapMarker(at: geoCoordinates,
+                                  image: MapImage(pixelData: imageData,
+                                                  imageFormat: ImageFormat.png))
+        mapView.mapScene.addMapMarker(mapMarker)
+        mapMarker.metadata = metadata
+        mapMarkers.append(mapMarker)
+    }
+    
     private func addCircleMapMarker(geoCoordinates: GeoCoordinates, imageName: String) {
         guard
             let image = UIImage(named: imageName),

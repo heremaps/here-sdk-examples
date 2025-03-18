@@ -18,26 +18,40 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="8dp">
+        android:padding="8dp"
+        android:background="@android:color/white">
 
         <RadioGroup
             android:id="@+id/radioGroupTileSource"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:background="@android:color/white">
 
             <RadioButton
                 android:id="@+id/radioCustomPointTileSource"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Custom Point Tile Source"
-                android:checked="true" />
+                android:layout_weight="1"
+                android:text="Point Tile"
+                android:checked="true"
+                android:gravity="center" />
 
             <RadioButton
                 android:id="@+id/radioCustomRasterTileSource"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Custom Raster Tile Source" />
+                android:layout_weight="1"
+                android:text="Raster Tile"
+                android:gravity="center" />
+
+            <RadioButton
+                android:id="@+id/radioCustomLineTileSource"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Line Tile"
+                android:gravity="center" />
         </RadioGroup>
 
         <LinearLayout
@@ -58,7 +72,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Disable" 
+                android:text="Disable"
                 android:onClick="disableButtonClicked" />
         </LinearLayout>
     </LinearLayout>

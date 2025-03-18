@@ -79,9 +79,16 @@ class OfflineMapsExample {
     });
 
     // Note that the default storage path can be adapted when creating a new SDKNativeEngine.
+    _showDialog("Note", "This example allows to download the region Switzerland.");
+
+    // This is the default path for caching map data that is not available as installed region.
     String storagePath = sdkNativeEngine.options.cachePath;
-    _showDialog("This example allows to download the region Switzerland.",
-        "Storage path: $storagePath");
+    print("Cache storage path: $storagePath");
+
+    // This is the default path for storing map data permanently.
+    // The application must have read/write access to this path if updating it.
+    String persistentMapStoragePath = sdkNativeEngine.options.persistentMapStoragePath;
+    print("Persistent map storage path: $storagePath");
   }
 
   void _performUpdateChecks() {

@@ -824,35 +824,19 @@ class NavigationEventHandler {
   }
 
   void _logLaneDetails(int laneNumber, Lane lane) {
-    // All directions can be true or false at the same time.
+    print("Directions for lane " + laneNumber.toString());
     // The possible lane directions are valid independent of a route.
     // If a lane leads to multiple directions and is recommended, then all directions lead to
     // the next maneuver.
-    // You can use this information like in a bitmask to visualize the possible directions
-    // with a set of image overlays.
-    LaneDirectionCategory laneDirectionCategory = lane.directionCategory;
-    print("Directions for lane " + laneNumber.toString());
-    print("laneDirectionCategory.straight: " +
-        laneDirectionCategory.straight.toString());
-    print("laneDirectionCategory.slightlyLeft: " +
-        laneDirectionCategory.slightlyLeft.toString());
-    print("laneDirectionCategory.quiteLeft: " +
-        laneDirectionCategory.quiteLeft.toString());
-    print("laneDirectionCategory.hardLeft: " +
-        laneDirectionCategory.hardLeft.toString());
-    print("laneDirectionCategory.uTurnLeft: " +
-        laneDirectionCategory.uTurnLeft.toString());
-    print("laneDirectionCategory.slightlyRight: " +
-        laneDirectionCategory.slightlyRight.toString());
-    print("laneDirectionCategory.quiteRight: " +
-        laneDirectionCategory.quiteRight.toString());
-    print("laneDirectionCategory.hardRight: " +
-        laneDirectionCategory.hardRight.toString());
-    print("laneDirectionCategory.uTurnRight: " +
-        laneDirectionCategory.uTurnRight.toString());
-
+    // You can use this information to visualize all directions of a lane with a set of image overlays.
+    for (LaneDirection laneDirection in lane.directions) {
+      bool isLaneDirectionOnRoute = _isLaneDirectionOnRoute(lane, laneDirection);
+      print("LaneDirection for this lane: ${laneDirection.name}");
+      print("This LaneDirection is on the route: $isLaneDirectionOnRoute");
+    }
+    
     // More information on each lane is available in these bitmasks (boolean):
-    // LaneType provides lane properties such as if parking is allowed.
+    // LaneType provides lane properties such as if parking is allowed or is acceleration allowed or is express lane and many more.
     LaneType laneType = lane.type;
 
     // LaneAccess provides which vehicle type(s) are allowed to access this lane.
@@ -897,6 +881,13 @@ class NavigationEventHandler {
         laneAccess.emergencyVehicles.toString());
     print("Motorcycles are allowed on this lane: " +
         laneAccess.motorcycles.toString());
+  }
+
+  // A method to check if a given LaneDirection is on route or not.
+  // lane.directionsOnRoute gives only those LaneDirection that are on the route.
+  // When the driver is in tracking mode without following a route, this always returns false.
+  bool _isLaneDirectionOnRoute(Lane lane, LaneDirection laneDirection) {
+    return lane.directionsOnRoute.contains(laneDirection);
   }
 
   LanguageCode getLanguageCodeForDevice(

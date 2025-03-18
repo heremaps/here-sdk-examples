@@ -24,10 +24,11 @@ import 'package:here_sdk/core.errors.dart';
 import 'package:here_sdk/mapview.dart';
 import 'CustomPointTileSourceExample.dart';
 import 'CustomRasterTileSourceExample.dart';
+import 'CustomLineTileSourceExample.dart';
 
-void main() {
+void main() async {
   // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
-  _initializeHERESDK();
+  await _initializeHERESDK();
 
   runApp(
     MaterialApp(
@@ -36,7 +37,7 @@ void main() {
   );
 }
 
-void _initializeHERESDK() async {
+Future<void> _initializeHERESDK() async {
   // Needs to be called before accessing SDKOptions to load necessary libraries.
   SdkContext.init(IsolateOrigin.main);
 
@@ -61,6 +62,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   CustomPointTileSourceExample? _customPointTileSourceExample;
   CustomRasterTileSourceExample? _customRasterTileSourceExample;
+  CustomLineTileSourceExample? _customLineTileSourceExample;
   late final AppLifecycleListener _listener;
   String _selectedTileSource = "point";
 
@@ -69,7 +71,7 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: Text('Custom Point Tile Source'),
+          title: Text('Custom Tile Source Example'),
         ),
         body: Stack(
           children: [
@@ -77,41 +79,14 @@ class _MyAppState extends State<MyApp> {
             Align(
               alignment: Alignment.topCenter,
               child: Column(
-                mainAxisSize: MainAxisSize.min, // Prevent extra spacing
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Row(
-                        children: [
-                          Radio<String>(
-                            value: "point",
-                            groupValue: _selectedTileSource,
-                            onChanged: (value) {
-                              setState(() {
-                                _selectedTileSource = "point";
-                              });
-                            },
-                          ),
-                          Text("Point tile source",
-                              style: TextStyle(color: Colors.black)),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          Radio<String>(
-                            value: "raster",
-                            groupValue: _selectedTileSource,
-                            onChanged: (value) {
-                              setState(() {
-                                _selectedTileSource = "raster";
-                              });
-                            },
-                          ),
-                          Text("Raster tile source",
-                              style: TextStyle(color: Colors.black)),
-                        ],
-                      ),
+                      _radioButton("Point tile", "point"),
+                      _radioButton("Raster tile", "raster"),
+                      _radioButton("Line tile", "line"),
                     ],
                   ),
                   Row(
@@ -138,6 +113,9 @@ class _MyAppState extends State<MyApp> {
             CustomPointTileSourceExample(hereMapController);
         _customRasterTileSourceExample =
             CustomRasterTileSourceExample(hereMapController);
+        _customLineTileSourceExample =
+            CustomLineTileSourceExample(hereMapController);
+
         _customRasterTileSourceExample?.setup();
       } else {
         print("Map scene not loaded. MapError: " + error.toString());
@@ -148,16 +126,20 @@ class _MyAppState extends State<MyApp> {
   void _enableButtonClicked() {
     if (_selectedTileSource == "point") {
       _customPointTileSourceExample?.enableButtonClicked();
-    } else {
+    } else if (_selectedTileSource == "raster") {
       _customRasterTileSourceExample?.enableButtonClicked();
+    } else {
+      _customLineTileSourceExample?.enableButtonClicked();
     }
   }
 
   void _disableButtonClicked() {
     if (_selectedTileSource == "point") {
       _customPointTileSourceExample?.disableButtonClicked();
-    } else {
+    } else if (_selectedTileSource == "raster") {
       _customRasterTileSourceExample?.disableButtonClicked();
+    } else {
+      _customLineTileSourceExample?.disableButtonClicked();
     }
   }
 
@@ -181,14 +163,31 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _disposeHERESDK() async {
-    // Free HERE SDK resources before the application shuts down.
     _customPointTileSourceExample?.onDestroy();
+    _customRasterTileSourceExample?.onDestroy();
+    _customLineTileSourceExample?.onDestroy();
     await SDKNativeEngine.sharedInstance?.dispose();
     SdkContext.release();
     _listener.dispose();
   }
 
-  // A helper method to add a button on top of the HERE map.
+  Row _radioButton(String title, String value) {
+    return Row(
+      children: [
+        Radio<String>(
+          value: value,
+          groupValue: _selectedTileSource,
+          onChanged: (value) {
+            setState(() {
+              _selectedTileSource = value!;
+            });
+          },
+        ),
+        Text(title, style: TextStyle(color: Colors.black)),
+      ],
+    );
+  }
+
   Align button(String buttonLabel, Function callbackFunction) {
     return Align(
       alignment: Alignment.topCenter,
@@ -200,34 +199,6 @@ class _MyAppState extends State<MyApp> {
         onPressed: () => callbackFunction(),
         child: Text(buttonLabel, style: TextStyle(fontSize: 20)),
       ),
-    );
-  }
-
-  // A helper method to show a dialog.
-  Future<void> _showDialog(String title, String message) async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(title),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(message),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text("OK"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
     );
   }
 }

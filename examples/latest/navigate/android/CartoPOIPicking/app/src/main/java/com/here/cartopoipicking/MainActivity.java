@@ -50,7 +50,6 @@ import com.here.sdk.mapview.MapView;
 import com.here.sdk.mapview.PickMapContentResult;
 import com.here.sdk.search.SearchEngine;
 import com.here.sdk.search.Place;
-import com.here.sdk.search.PlaceIdQuery;
 import com.here.sdk.search.PlaceIdSearchCallback;
 import com.here.sdk.search.SearchError;
 import com.here.sdk.transport.VehicleRestriction;
@@ -213,13 +212,13 @@ public class MainActivity extends AppCompatActivity {
         // Now you can use the SearchEngine (via PickedPlace)
         // (via PickedPlace or placeCategoryId) to retrieve the Place object containing more details.
         // Below we use the placeCategoryId.
-        fetchCartoPOIDetails(topmostPickedPlace.placeCategoryId);
+        fetchCartoPOIDetails(topmostPickedPlace);
     }
 
-    private void fetchCartoPOIDetails(String placeCategoryId) {
+    private void fetchCartoPOIDetails(PickedPlace pickedPlace) {
         // Set null to get the results in their local language.
         LanguageCode languageCode = null;
-        searchEngine.searchByPlaceId(new PlaceIdQuery(placeCategoryId), languageCode, new PlaceIdSearchCallback() {
+        searchEngine.searchByPickedPlace(pickedPlace, languageCode, new PlaceIdSearchCallback() {
             @Override
             public void onPlaceIdSearchCompleted(@Nullable SearchError searchError, @Nullable Place place) {
                 if (searchError != null) {

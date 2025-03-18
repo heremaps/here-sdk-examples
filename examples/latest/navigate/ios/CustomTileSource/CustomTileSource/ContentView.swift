@@ -24,6 +24,7 @@ struct ContentView: View {
     @State private var mapView = MapView()
     @State private var customPointTileSourceExample: CustomPointTileSourceExample?
     @State private var customRasterTileSourceExample: CustomRasterTileSourceExample?
+    @State private var customLineTileSourceExample: CustomLineTileSourceExample?
     @State private var selectedTileSource: String = "customPointTileSource" // Default selection
     
     var body: some View {
@@ -33,11 +34,14 @@ struct ContentView: View {
             
             VStack {
                 HStack {
-                    RadioButton(title: "Custom Point Tile Source", isSelected: selectedTileSource == "customPointTileSource") {
+                    RadioButton(title: "Point Tile", isSelected: selectedTileSource == "customPointTileSource") {
                         selectedTileSource = "customPointTileSource"
                     }
-                    RadioButton(title: "Custom Raster Tile Source", isSelected: selectedTileSource == "customRasterTileSource") {
+                    RadioButton(title: "Raster Tile", isSelected: selectedTileSource == "customRasterTileSource") {
                         selectedTileSource = "customRasterTileSource"
+                    }
+                    RadioButton(title: "Line Tile", isSelected: selectedTileSource == "customLineTileSource") {
+                        selectedTileSource = "customLineTileSource"
                     }
                 }
                 .padding()
@@ -55,22 +59,33 @@ struct ContentView: View {
         .onAppear {
             customPointTileSourceExample = CustomTileSource.CustomPointTileSourceExample(mapView)
             customRasterTileSourceExample = CustomTileSource.CustomRasterTileSourceExample(mapView)
+            customLineTileSourceExample = CustomTileSource.CustomLineTileSourceExample(mapView)
         }
     }
     
     private func enableSelectedTileSource() {
-        if selectedTileSource == "customPointTileSource" {
+        switch selectedTileSource {
+        case "customPointTileSource":
             customPointTileSourceExample?.onEnableButtonClicked()
-        } else {
+        case "customRasterTileSource":
             customRasterTileSourceExample?.onEnableButtonClicked()
+        case "customLineTileSource":
+            customLineTileSourceExample?.onEnableButtonClicked()
+        default:
+            break
         }
     }
     
     private func disableSelectedTileSource() {
-        if selectedTileSource == "customPointTileSource" {
+        switch selectedTileSource {
+        case "customPointTileSource":
             customPointTileSourceExample?.onDisableButtonClicked()
-        } else {
+        case "customRasterTileSource":
             customRasterTileSourceExample?.onDisableButtonClicked()
+        case "customLineTileSource":
+            customLineTileSourceExample?.onDisableButtonClicked()
+        default:
+            break
         }
     }
 }
