@@ -29,6 +29,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.here.sdk.core.Color;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.LanguageCode;
 import com.here.sdk.core.UnitSystem;
@@ -48,6 +49,7 @@ import com.here.sdk.navigation.JunctionViewLaneAssistance;
 import com.here.sdk.navigation.JunctionViewLaneAssistanceListener;
 import com.here.sdk.navigation.Lane;
 import com.here.sdk.navigation.LaneAccess;
+import com.here.sdk.navigation.LaneDirection;
 import com.here.sdk.navigation.LaneDirectionCategory;
 import com.here.sdk.navigation.LaneMarkings;
 import com.here.sdk.navigation.LaneRecommendationState;
@@ -100,6 +102,7 @@ import com.here.sdk.navigation.TollStopWarningListener;
 import com.here.sdk.navigation.TruckRestrictionWarning;
 import com.here.sdk.navigation.TruckRestrictionsWarningListener;
 import com.here.sdk.navigation.VisualNavigator;
+import com.here.sdk.navigation.VisualNavigatorColors;
 import com.here.sdk.navigation.WarningNotificationDistances;
 import com.here.sdk.navigation.WarningType;
 import com.here.sdk.navigation.WeightRestrictionType;
@@ -909,26 +912,19 @@ public class NavigationEventHandler {
     }
 
     private void logLaneDetails(int laneNumber, Lane lane) {
-        // All directions can be true or false at the same time.
+        Log.d(TAG, "Directions for lane " + laneNumber);
         // The possible lane directions are valid independent of a route.
         // If a lane leads to multiple directions and is recommended, then all directions lead to
         // the next maneuver.
-        // You can use this information like in a bitmask to visualize the possible directions
-        // with a set of image overlays.
-        LaneDirectionCategory laneDirectionCategory = lane.directionCategory;
-        Log.d(TAG, "Directions for lane " + laneNumber);
-        Log.d(TAG, "laneDirectionCategory.straight: " + laneDirectionCategory.straight);
-        Log.d(TAG, "laneDirectionCategory.slightlyLeft: " + laneDirectionCategory.slightlyLeft);
-        Log.d(TAG, "laneDirectionCategory.quiteLeft: " + laneDirectionCategory.quiteLeft);
-        Log.d(TAG, "laneDirectionCategory.hardLeft: " + laneDirectionCategory.hardLeft);
-        Log.d(TAG, "laneDirectionCategory.uTurnLeft: " + laneDirectionCategory.uTurnLeft);
-        Log.d(TAG, "laneDirectionCategory.slightlyRight: " + laneDirectionCategory.slightlyRight);
-        Log.d(TAG, "laneDirectionCategory.quiteRight: " + laneDirectionCategory.quiteRight);
-        Log.d(TAG, "laneDirectionCategory.hardRight: " + laneDirectionCategory.hardRight);
-        Log.d(TAG, "laneDirectionCategory.uTurnRight: " + laneDirectionCategory.uTurnRight);
+        // You can use this information to visualize all directions of a lane with a set of image overlays.
+        for (LaneDirection laneDirection: lane.directions) {
+            boolean isLaneDirectionOnRoute = isLaneDirectionOnRoute(lane, laneDirection);
+            Log.d(TAG, "LaneDirection for this lane: " + laneDirection.name());
+            Log.d(TAG, "This LaneDirection is on the route: " + isLaneDirectionOnRoute);
+        }
 
         // More information on each lane is available in these bitmasks (boolean):
-        // LaneType provides lane properties such as if parking is allowed.
+        // LaneType provides lane properties such as if parking is allowed or is acceleration allowed or is express lane and many more.
         LaneType laneType = lane.type;
 
         // LaneAccess provides which vehicle type(s) are allowed to access this lane.
@@ -952,6 +948,13 @@ public class NavigationEventHandler {
             // lane separator on the left side of the specified lane in the lane driving direction.
             Log.d(TAG, "Lane divider marker for lane " + laneMarkings.laneDividerMarker.value);
         }
+    }
+
+    // A method to check if a given LaneDirection is on route or not.
+    // lane.directionsOnRoute gives only those LaneDirection that are on the route.
+    // When the driver is in tracking mode without following a route, this always returns false.
+    private boolean isLaneDirectionOnRoute(Lane lane, LaneDirection laneDirection) {
+        return lane.directionsOnRoute.contains(laneDirection);
     }
 
     private void logLaneAccess(int laneNumber, LaneAccess laneAccess) {

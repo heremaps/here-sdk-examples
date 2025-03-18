@@ -263,12 +263,14 @@ public class MainActivity extends AppCompatActivity {
             case R.id.road_network_night_menu_item:
                 mapSchemesExample.loadSchemeForCurrentView(currentMapView, MapScheme.ROAD_NETWORK_NIGHT);
                 return true;
-            case R.id.topo_day_menu_item:
-                mapSchemesExample.loadSchemeForCurrentView(currentMapView, MapScheme.TOPO_DAY);
-            case R.id.topo_night_menu_item:
-                mapSchemesExample.loadSchemeForCurrentView(currentMapView, MapScheme.TOPO_NIGHT);
             case R.id.satellite_menu_item:
                 mapSchemesExample.loadSchemeForCurrentView(currentMapView, MapScheme.SATELLITE);
+                return true;
+            case R.id.topo_day_menu_item:
+                mapSchemesExample.loadSchemeForCurrentView(currentMapView, MapScheme.TOPO_DAY);
+                return true;
+            case R.id.topo_night_menu_item:
+                mapSchemesExample.loadSchemeForCurrentView(currentMapView, MapScheme.TOPO_NIGHT);
                 return true;
 
             // Map Features:

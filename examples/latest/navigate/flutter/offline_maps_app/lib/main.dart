@@ -25,18 +25,18 @@ import 'package:here_sdk/mapview.dart';
 
 import 'OfflineMapsExample.dart';
 
-void main() {
+void main() async {
   String accessKeyId = "YOUR_ACCESS_KEY_ID";
   String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
 
   // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
-  _initializeHERESDK(accessKeyId,accessKeySecret);
+  await _initializeHERESDK(accessKeyId,accessKeySecret);
 
   // Ensure that all widgets, including MyApp, have a MaterialLocalizations object available.
   runApp(MaterialApp(home: MyApp(accessKeyId: accessKeyId,accessKeySecret: accessKeySecret)));
 }
 
-void _initializeHERESDK(String accessKeyId,String accessKeySecret) async {
+Future<void> _initializeHERESDK(String accessKeyId,String accessKeySecret) async {
   // Needs to be called before accessing SDKOptions to load necessary libraries.
   SdkContext.init(IsolateOrigin.main);
 

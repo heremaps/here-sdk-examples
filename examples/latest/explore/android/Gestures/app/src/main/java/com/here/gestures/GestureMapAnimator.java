@@ -33,7 +33,7 @@ public class GestureMapAnimator {
 
     private final MapCamera camera;
     private ValueAnimator zoomValueAnimator;
-    Point2D zoomOrigin;
+    private Point2D zoomOrigin;
 
     @SuppressLint("ClickableViewAccessibility")
     public GestureMapAnimator(MapCamera camera) {

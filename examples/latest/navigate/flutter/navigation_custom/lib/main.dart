@@ -28,15 +28,15 @@ import 'package:here_sdk/navigation.dart';
 import 'package:here_sdk/routing.dart' as HERE;
 import 'package:here_sdk/routing.dart';
 
-void main() {
+void main() async {
   // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
-  _initializeHERESDK();
+  await _initializeHERESDK();
 
   // Ensure that all widgets, including MyApp, have a MaterialLocalizations object available.
   runApp(MaterialApp(home: MyApp()));
 }
 
-void _initializeHERESDK() async {
+Future<void> _initializeHERESDK() async {
   // Needs to be called before accessing SDKOptions to load necessary libraries.
   SdkContext.init(IsolateOrigin.main);
 
@@ -74,6 +74,7 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
   Location? _lastKnownLocation;
   bool _isDefaultLocationIndicator = true;
   HERE.Route? myRoute;
+  bool _isCurrentColorBlue = false;
 
   Future<bool> _handleBackPress() async {
     // Handle the back press.
@@ -127,6 +128,7 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
                   button('Start', _startButtonClicked),
                   button('Stop', _stopButtonClicked),
                   button('Toggle', _toggleButtonClicked),
+                  button('Color', _colorButtonClicked)
                 ],
               ),
             ],
@@ -144,7 +146,7 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
 
       // Optionally, enable textured 3D landmarks.
       hereMapController.mapScene.enableFeatures({MapFeatures.landmarks: MapFeatureModes.landmarksTextured});
-      
+
       MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, _distanceInMeters);
       _hereMapController!.camera.lookAtPointWithMeasure(_routeStartGeoCoordinates, mapMeasureZoom);
       _startAppLogic();
@@ -202,6 +204,9 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
     // when the GPS accuracy is weak or no location was found.
     locationIndicator.setMarker3dModel(pedestrianMapMarker3DModel, scaleFactor, LocationIndicatorMarkerType.pedestrian);
     locationIndicator.setMarker3dModel(navigationMapMarker3DModel, scaleFactor, LocationIndicatorMarkerType.navigation);
+
+    locationIndicator.isAccuracyVisualized = true;
+    
     return locationIndicator;
   }
 
@@ -247,6 +252,32 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
     }
   }
 
+  // Toggle the halo color of the default LocationIndicator.
+  void _colorButtonClicked() {
+    if (_isCurrentColorBlue) {
+      _defaultLocationIndicator?.setHaloColor(
+          _defaultLocationIndicator!.locationIndicatorStyle,
+          Color.fromRGBO(255, 255, 0, 0.30)); // Yellow with 30% opacity
+
+      _customLocationIndicator?.setHaloColor(
+          _customLocationIndicator!.locationIndicatorStyle,
+          Color.fromRGBO(255, 255, 0, 0.30));
+
+      _isCurrentColorBlue = false;
+    } else {
+      _defaultLocationIndicator?.setHaloColor(
+          _defaultLocationIndicator!.locationIndicatorStyle,
+          Color.fromRGBO(0, 0, 255, 0.30)); // Blue with 30% opacity
+
+      _customLocationIndicator?.setHaloColor(
+          _customLocationIndicator!.locationIndicatorStyle,
+          Color.fromRGBO(0, 0, 255, 0.30));
+
+      _isCurrentColorBlue = true;
+    }
+  }
+
+
   void _switchToPedestrianLocationIndicator() {
     if (_isDefaultLocationIndicator) {
       _defaultLocationIndicator!.enable(_hereMapController!);
@@ -259,8 +290,8 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
     }
 
     // Set last location from LocationSimulator.
-    _defaultLocationIndicator!.updateLocation(getLastKnownLocationLocation());
-    _customLocationIndicator!.updateLocation(getLastKnownLocationLocation());
+    _defaultLocationIndicator!.updateLocation(getLastKnownLocation());
+    _customLocationIndicator!.updateLocation(getLastKnownLocation());
   }
 
   void _switchToNavigationLocationIndicator() {
@@ -284,7 +315,7 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
     // Location is set by VisualNavigator for smooth interpolation.
   }
 
-  Location getLastKnownLocationLocation() {
+  Location getLastKnownLocation() {
     if (_lastKnownLocation == null) {
       // A LocationIndicator is intended to mark the user's current location,
       // including a bearing direction.
@@ -292,7 +323,9 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
       // a GPS sensor instead. Check the Positioning example app for this.
       Location location = Location.withCoordinates(_routeStartGeoCoordinates);
       location.time = DateTime.now();
+      location.horizontalAccuracyInMeters = 30.0;
       return location;
+
     }
 
     // This location is taken from the LocationSimulator that provides locations along the route.

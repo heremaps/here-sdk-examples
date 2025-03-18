@@ -53,6 +53,11 @@ class PublicTransitExample {
         if let mapError = mapError {
             print("Error: Map scene not loaded, \(String(describing: mapError))")
         }
+        // Enable publicTransit map feature to displays public transit lines for systems like subway, tram, train, monorail, and ferry, based on the selected mode.
+        // Currently, publicTransit map feature is only available for navigate edition.
+        // var mapFeatures = [String: String]()
+        // mapFeatures[MapFeatures.publicTransit] = MapFeatureModes.publicTransitAll
+        // mapView.mapScene.enableFeatures(mapFeatures)
     }
     
     func addTransitRoute() {

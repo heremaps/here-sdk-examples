@@ -22,16 +22,23 @@ package com.here.evrouting;
 import android.content.Context;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 
 import com.here.sdk.core.Color;
+import com. here.sdk.core.Metadata;
 import com.here.sdk.core.GeoBox;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.GeoCorridor;
 import com.here.sdk.core.GeoPolygon;
 import com.here.sdk.core.GeoPolyline;
 import com.here.sdk.core.LanguageCode;
+import com.here.sdk.core.Point2D;
+import com.here.sdk.core.Rectangle2D;
+import com.here.sdk.core.Size2D;
 import com.here.sdk.core.errors.InstantiationErrorException;
+import com.here.sdk.gestures.TapListener;
 import com.here.sdk.mapview.LineCap;
 import com.here.sdk.mapview.MapCamera;
 import com.here.sdk.mapview.MapImage;
@@ -39,9 +46,13 @@ import com.here.sdk.mapview.MapImageFactory;
 import com.here.sdk.mapview.MapMarker;
 import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapMeasureDependentRenderSize;
+import com.here.sdk.mapview.MapPickResult;
 import com.here.sdk.mapview.MapPolygon;
 import com.here.sdk.mapview.MapPolyline;
+import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapView;
+import com.here.sdk.mapview.MapViewBase;
+import com.here.sdk.mapview.PickMapItemsResult;
 import com.here.sdk.mapview.RenderSize;
 import com.here.sdk.routing.AvoidanceOptions;
 import com.here.sdk.routing.CalculateIsolineCallback;
@@ -67,6 +78,8 @@ import com.here.sdk.routing.Section;
 import com.here.sdk.routing.SectionNotice;
 import com.here.sdk.routing.Waypoint;
 import com.here.sdk.search.CategoryQuery;
+import com.here.sdk.search.Details;
+import com.here.sdk.search.EVChargingStation;
 import com.here.sdk.search.Place;
 import com.here.sdk.search.PlaceCategory;
 import com.here.sdk.search.SearchCallback;
@@ -99,6 +112,15 @@ public class EVRoutingExample {
     private final List<String> chargingStationsIDs = new ArrayList<>();
     private final IsolineRoutingEngine isolineRoutingEngine;
 
+    // Metadata keys used when picking a charging station on the map.
+    private final String SUPPLIER_NAME_METADATA_KEY = "supplier_name";
+    private final String CONNECTOR_COUNT_METADATA_KEY = "connector_count";
+    private final String AVAILABLE_CONNECTORS_METADATA_KEY = "available_connectors";
+    private final String OCCUPIED_CONNECTORS_METADATA_KEY = "occupied_connectors";
+    private final String OUT_OF_SERVICE_CONNECTORS_METADATA_KEY = "out_of_service_connectors";
+    private final String RESERVED_CONNECTORS_METADATA_KEY = "reserved_connectors";
+    private final String LAST_UPDATED_METADATA_KEY = "last_updated";
+    private final String REQUIRED_CHARGING_METADATA_KEY = "required_charging";
 
     public EVRoutingExample(Context context, MapView mapView) {
         this.context = context;
@@ -128,6 +150,8 @@ public class EVRoutingExample {
         } catch (InstantiationErrorException e) {
             throw new RuntimeException("Initialization of SearchEngine failed: " + e.error.name());
         }
+
+        setTapGestureHandler();
     }
 
     // Calculates an EV car route based on random start / destination coordinates near viewport center.  
@@ -308,14 +332,21 @@ public class EVRoutingExample {
             if (depStation != null  && depStation.id != null && !chargingStationsIDs.contains(depStation.id)) {
                 Log.d("EVDetails", "Section " + sectionIndex + ", name of charging station: " + depStation.name);
                 chargingStationsIDs.add(depStation.id);
-                addCircleMapMarker(section.getDeparturePlace().mapMatchedCoordinates, R.drawable.required_charging);
+                Metadata metadata = new Metadata();
+                metadata.setString(REQUIRED_CHARGING_METADATA_KEY, depStation.id);
+                metadata.setString(SUPPLIER_NAME_METADATA_KEY, depStation.name);
+                addMapMarker(section.getDeparturePlace().mapMatchedCoordinates, R.drawable.required_charging, metadata);
             }
+
 
             ChargingStation arrStation = section.getDeparturePlace().chargingStation;
             if (arrStation != null && arrStation.id != null && !chargingStationsIDs.contains(arrStation.id)) {
                 Log.d("EVDetails", "Section " + sectionIndex + ", name of charging station: " + arrStation.name);
                 chargingStationsIDs.add(arrStation.id);
-                addCircleMapMarker(section.getArrivalPlace().mapMatchedCoordinates, R.drawable.required_charging);
+                Metadata metadata = new Metadata();
+                metadata.setString(REQUIRED_CHARGING_METADATA_KEY, arrStation.id);
+                metadata.setString(SUPPLIER_NAME_METADATA_KEY, depStation.name);
+                addMapMarker(section.getArrivalPlace().mapMatchedCoordinates, R.drawable.required_charging, metadata);
             }
 
             sectionIndex += 1;
@@ -362,7 +393,7 @@ public class EVRoutingExample {
 
         // Draw a circle to indicate starting point and destination.
         addCircleMapMarker(startPoint, R.drawable.green_dot);
-        addCircleMapMarker(destination, R.drawable.green_dot);
+        addCircleMapMarker(destination, R.drawable.red_dot);
     }
 
     // Perform a search for charging stations along the found route.
@@ -379,6 +410,9 @@ public class EVRoutingExample {
         searchOptions.languageCode = LanguageCode.EN_US;
         searchOptions.maxItems = 30;
 
+        // Disable the following line when you are not part of the alpha group.
+        enableChargingStationAvailabilityRequest();
+
         searchEngine.searchByCategory(categoryQuery, searchOptions, new SearchCallback() {
             @Override
             public void onSearchCompleted(SearchError searchError, List<Place> items) {
@@ -386,20 +420,148 @@ public class EVRoutingExample {
                     Log.d("Search", "No charging stations found along the route. Error: " + searchError);
                     return;
                 }
-
                 // If error is nil, it is guaranteed that the items will not be nil.
                 Log.d("Search","Search along route found " + items.size() + " charging stations:");
                 for (Place place : items) {
-                    if (chargingStationsIDs.contains(place.getId())) {
-                        Log.d("Search", "Skipping: This charging station was already required to reach the destination (see red charging icon).");
-                    } else {
-                        // Only suggestions may not contain geoCoordinates, so it's safe to unwrap this search result's coordinates.
-                        addCircleMapMarker(place.getGeoCoordinates(), R.drawable.charging);
-                        Log.d("Search", place.getAddress().addressText);
+                    Details details = place.getDetails();
+                    Metadata metadata = getMetadataForEVChargingPools(details);
+                    boolean foundExistingChargingStation = false;
+                    for (MapMarker mapMarker : mapMarkers) {
+                        if (mapMarker.getMetadata() != null) {
+                            String id = mapMarker.getMetadata().getString(REQUIRED_CHARGING_METADATA_KEY);
+                            if (id != null && id.equalsIgnoreCase(place.getId())) {
+                                Log.d("Search", "Insert metdata to existing charging station: This charging station was already required to reach the destination (see red charging icon).");
+                                mapMarker.setMetadata(metadata);
+                                foundExistingChargingStation = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!foundExistingChargingStation) {
+                        addMapMarker(place.getGeoCoordinates(), R.drawable.charging, metadata);
                     }
                 }
             }
         });
+    }
+
+    // Enable fetching online availability details for EV charging stations.
+    // It allows retrieving additional details, such as whether a charging station is currently occupied.
+    // If you are not part of the alpha group, do not use this call as a SearchError would occur,
+    // access to this feature requires appropriate credentials.
+    // Check the API Reference for more details.
+    private void enableChargingStationAvailabilityRequest() {
+        // Fetching additional charging stations details requires a custom option call.
+        SearchError error = searchEngine.setCustomOption("browse.show", "ev,fuel");
+        if (error != null) {
+            showDialog("Charging station",
+                    "Failed to enable EV charging station availability. " +
+                            "Disable the feature if you are not part of the alpha group.");
+        } else {
+            Log.d("ChargingStation", "EV charging station availability enabled successfully.");
+        }
+    }
+
+    private void setTapGestureHandler() {
+        mapView.getGestures().setTapListener(new TapListener() {
+            @Override
+            public void onTap(@NonNull Point2D touchPoint) {
+                pickMapMarker(touchPoint);
+            }
+        });
+    }
+
+     // This method is used to pick a map marker when a user taps on a charging station icon on the map.
+     // When performing a search for charging stations along the route, clicking on a charging station icon
+     // will display its details, including the supplier name, connector count, availability status, last update time, etc.
+    private void pickMapMarker(final Point2D touchPoint) {
+        Point2D originInPixels = new Point2D(touchPoint.x, touchPoint.y);
+        Size2D sizeInPixels = new Size2D(1, 1);
+        Rectangle2D rectangle = new Rectangle2D(originInPixels, sizeInPixels);
+
+        // If you do not want to specify any filter you can pass filter as NULL and all of the pickable contents will be picked.
+        MapScene.MapPickFilter filter = null;
+        mapView.pick(filter, rectangle, new MapViewBase.MapPickCallback() {
+            @Override
+            public void onPickMap(@Nullable MapPickResult mapPickResult) {
+                if (mapPickResult == null) {
+                    // An error occurred while performing the pick operation.
+                    return;
+                }
+                PickMapItemsResult pickMapItemsResult = mapPickResult.getMapItems();
+                List<MapMarker> mapMarkerList = pickMapItemsResult.getMarkers();
+                int listSize = mapMarkerList.size();
+                if (listSize == 0) {
+                    return;
+                }
+                MapMarker topmostMapMarker = mapMarkerList.get(0);
+                showPickedChargingStationResults(topmostMapMarker);
+            }
+        });
+    }
+
+    private void showPickedChargingStationResults(MapMarker mapMarker) {
+        Metadata metadata = mapMarker.getMetadata();
+        if (metadata == null) {
+            Log.d("MapPick", "No metadata found for picked marker.");
+            return;
+        }
+
+        StringBuilder messageBuilder = new StringBuilder();
+
+        appendMetadataValue(messageBuilder, "Name", metadata.getString(SUPPLIER_NAME_METADATA_KEY));
+        appendMetadataValue(messageBuilder, "Connector Count", metadata.getString(CONNECTOR_COUNT_METADATA_KEY));
+        appendMetadataValue(messageBuilder, "Available Connectors", metadata.getString(AVAILABLE_CONNECTORS_METADATA_KEY));
+        appendMetadataValue(messageBuilder, "Occupied Connectors", metadata.getString(OCCUPIED_CONNECTORS_METADATA_KEY));
+        appendMetadataValue(messageBuilder, "Out of Service Connectors", metadata.getString(OUT_OF_SERVICE_CONNECTORS_METADATA_KEY));
+        appendMetadataValue(messageBuilder, "Reserved Connectors", metadata.getString(RESERVED_CONNECTORS_METADATA_KEY));
+        appendMetadataValue(messageBuilder, "Last Updated", metadata.getString(LAST_UPDATED_METADATA_KEY));
+
+        if (messageBuilder.length() > 0) {
+            messageBuilder.append("\n\nFor a full list of attributes please refer to the API Reference.");
+            showDialog("Charging station details", messageBuilder.toString());
+        } else {
+            Log.d("MapPick", "No relevant metadata available for charging station.");
+        }
+    }
+
+    private void appendMetadataValue(StringBuilder builder, String label, String value) {
+        if (value != null) {
+            builder.append("\n").append(label).append(": ").append(value);
+        }
+    }
+
+    private Metadata getMetadataForEVChargingPools(Details placeDetails) {
+        Metadata metadata = new Metadata();
+        if (placeDetails.evChargingPool != null) {
+            for (EVChargingStation station : placeDetails.evChargingPool.chargingStations) {
+                if (station != null) {
+                    if (station.supplierName != null) {
+                        metadata.setString(SUPPLIER_NAME_METADATA_KEY, station.supplierName);
+                    }
+                    if (station.connectorCount != null) {
+                        metadata.setString(CONNECTOR_COUNT_METADATA_KEY, String.valueOf(station.connectorCount));
+                    }
+                    if (station.availableConnectorCount != null) {
+                        metadata.setString(AVAILABLE_CONNECTORS_METADATA_KEY, String.valueOf(station.availableConnectorCount));
+                    }
+                    if (station.occupiedConnectorCount != null) {
+                        metadata.setString(OCCUPIED_CONNECTORS_METADATA_KEY, String.valueOf(station.occupiedConnectorCount));
+                    }
+                    if (station.outOfServiceConnectorCount != null) {
+                        metadata.setString(OUT_OF_SERVICE_CONNECTORS_METADATA_KEY, String.valueOf(station.outOfServiceConnectorCount));
+                    }
+                    if (station.reservedConnectorCount != null) {
+                        metadata.setString(RESERVED_CONNECTORS_METADATA_KEY, String.valueOf(station.reservedConnectorCount));
+                    }
+                    if (station.lastUpdated != null) {
+                        metadata.setString(LAST_UPDATED_METADATA_KEY, String.valueOf(station.lastUpdated));
+                    }
+                }
+            }
+        }
+        return metadata;
     }
 
     // Shows the reachable area for this electric vehicle from the current start coordinates and EV car options when the goal is
@@ -498,6 +660,14 @@ public class EVRoutingExample {
 
     private double getRandom(double min, double max) {
         return min + Math.random() * (max - min);
+    }
+
+    private void addMapMarker(GeoCoordinates geoCoordinates, int resourceId, Metadata metadata) {
+        MapImage mapImage = MapImageFactory.fromResource(context.getResources(), resourceId);
+        MapMarker mapMarker = new MapMarker(geoCoordinates, mapImage);
+        mapView.getMapScene().addMapMarker(mapMarker);
+        mapMarker.setMetadata(metadata);
+        mapMarkers.add(mapMarker);
     }
 
     private void addCircleMapMarker(GeoCoordinates geoCoordinates, int resourceId) {

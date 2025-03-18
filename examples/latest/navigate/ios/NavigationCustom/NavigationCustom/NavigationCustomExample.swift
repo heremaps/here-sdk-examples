@@ -36,6 +36,7 @@ class NavigationCustomExample: AnimationDelegate, LocationDelegate {
     private var lastKnownLocation: Location?
     private var isDefaultLocationIndicator = true
     private var myRoute: Route?
+    private var isCurrentColorBlue = false
     
     init(_ mapView: MapView) {
         self.mapView = mapView
@@ -121,6 +122,9 @@ class NavigationCustomExample: AnimationDelegate, LocationDelegate {
         locationIndicator.setMarker3dModel(navigationMapMarker3DModel,
                                            scale: scaleFactor,
                                            type: LocationIndicator.MarkerType.navigation)
+        
+        locationIndicator.isAccuracyVisualized = true
+        
         return locationIndicator
     }
 
@@ -174,7 +178,24 @@ class NavigationCustomExample: AnimationDelegate, LocationDelegate {
             switchToPedestrianLocationIndicator()
         }
     }
-
+    
+    // Toggle the halo color of the default LocationIndicator.
+    func colorButtonClicked() {
+        if isCurrentColorBlue {
+            defaultLocationIndicator?.setHaloColor(defaultLocationIndicator?.locationIndicatorStyle ?? .pedestrian,
+                                                   color: UIColor(red: 1.0, green: 1.0, blue: 0.0, alpha: 0.3))
+            customLocationIndicator?.setHaloColor(customLocationIndicator?.locationIndicatorStyle ?? .pedestrian,
+                                                  color: UIColor(red: 1.0, green: 1.0, blue: 0.0, alpha: 0.3))
+            isCurrentColorBlue = false
+        } else {
+            defaultLocationIndicator?.setHaloColor(defaultLocationIndicator?.locationIndicatorStyle ?? .pedestrian,
+                                                   color: UIColor(red: 0.0, green: 0.0, blue: 1.0, alpha: 0.3))
+            customLocationIndicator?.setHaloColor(customLocationIndicator?.locationIndicatorStyle ?? .pedestrian,
+                                                  color: UIColor(red: 0.0, green: 0.0, blue: 1.0, alpha: 0.3))
+            isCurrentColorBlue = true
+        }
+    }
+    
     private func switchToPedestrianLocationIndicator() {
         if isDefaultLocationIndicator {
             defaultLocationIndicator?.enable(for: mapView)
@@ -187,8 +208,8 @@ class NavigationCustomExample: AnimationDelegate, LocationDelegate {
         }
 
         // Set last location from LocationSimulator.
-        defaultLocationIndicator?.updateLocation(getLastKnownLocationLocation())
-        customLocationIndicator?.updateLocation(getLastKnownLocationLocation())
+        defaultLocationIndicator?.updateLocation(getLastKnownLocation())
+        customLocationIndicator?.updateLocation(getLastKnownLocation())
     }
 
     private func switchToNavigationLocationIndicator() {
@@ -212,7 +233,7 @@ class NavigationCustomExample: AnimationDelegate, LocationDelegate {
         // Location is set by VisualNavigator for smooth interpolation.
     }
 
-    private func getLastKnownLocationLocation() -> Location {
+    private func getLastKnownLocation() -> Location {
         if lastKnownLocation == nil {
             // A LocationIndicator is intended to mark the user's current location,
             // including a bearing direction.
@@ -220,7 +241,9 @@ class NavigationCustomExample: AnimationDelegate, LocationDelegate {
             // a GPS sensor instead. Check the Positioning example app for this.
             var location = Location(coordinates: routeStartGeoCoordinates)
             location.time = Date()
+            location.horizontalAccuracyInMeters = 30.0
             return location
+            
         }
 
         // This location is taken from the LocationSimulator that provides locations along the route.

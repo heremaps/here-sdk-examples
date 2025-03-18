@@ -26,15 +26,15 @@ import 'package:here_sdk/gestures.dart';
 import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/search.dart';
 
-void main() {
+void main() async {
   // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
-  _initializeHERESDK();
+  await _initializeHERESDK();
 
   // Ensure that all widgets, including MyApp, have a MaterialLocalizations object available.
   runApp(MaterialApp(home: MyApp()));
 }
 
-void _initializeHERESDK() async {
+Future<void> _initializeHERESDK() async {
   // Needs to be called before accessing SDKOptions to load necessary libraries.
   SdkContext.init(IsolateOrigin.main);
 
@@ -131,8 +131,7 @@ class _MyAppState extends State<MyApp> {
     // mapItems is used when picking map items such as MapMarker, MapPolyline, MapPolygon etc.
     // Currently we need map content so adding the mapContent filter.
     contentTypesToPickFrom.add(MapSceneMapPickFilterContentType.mapContent);
-    MapSceneMapPickFilter filter =
-        MapSceneMapPickFilter(contentTypesToPickFrom);
+    MapSceneMapPickFilter filter = MapSceneMapPickFilter(contentTypesToPickFrom);
     _hereMapController?.pick(filter, rectangle, (pickMapResult) {
       if (pickMapResult == null) {
         // Pick operation failed.
@@ -146,8 +145,7 @@ class _MyAppState extends State<MyApp> {
       }
       _handlePickedCartoPOIs(pickMapContentResult.pickedPlaces);
       _handlePickedTrafficIncidents(pickMapContentResult.trafficIncidents);
-      _handlePickedVehicleRestrictions(
-          pickMapContentResult.vehicleRestrictions);
+      _handlePickedVehicleRestrictions(pickMapContentResult.vehicleRestrictions);
     });
   }
 
@@ -166,14 +164,13 @@ class _MyAppState extends State<MyApp> {
     // Now you can use the SearchEngine (via PickedPlace)
     // (via PickedPlace or placeCategoryId) to retrieve the Place object containing more details.
     // Below we use the placeCategoryId.
-    _fetchCartoPOIDetails(topmostPickedPlace.placeCategoryId);
+    _fetchCartoPOIDetails(topmostPickedPlace);
   }
 
-  void _fetchCartoPOIDetails(String placeCategoryId) {
+  void _fetchCartoPOIDetails(HERE.PickedPlace pickedPlace) {
     // Set null to get the results in their local language.
     LanguageCode? languageCode;
-    _searchEngine!.searchByPlaceId(PlaceIdQuery(placeCategoryId), languageCode,
-        (SearchError? searchError, Place? place) async {
+    _searchEngine!.searchByPickedPlace(pickedPlace, languageCode, (SearchError? searchError, Place? place) async {
       _handleSearchResult(searchError, place);
     });
   }
@@ -204,8 +201,7 @@ class _MyAppState extends State<MyApp> {
     PickVehicleRestrictionsResult topmostVehicleRestriction = vehicleRestrictions.first;
     var lat = topmostVehicleRestriction.coordinates.latitude;
     var lon = topmostVehicleRestriction.coordinates.longitude;
-    _showDialog("Vehicle restriction picked",
-        " Location: $lat, $lon.");
+    _showDialog("Vehicle restriction picked", " Location: $lat, $lon.");
   }
 
   @override

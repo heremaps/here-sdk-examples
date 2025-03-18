@@ -192,6 +192,7 @@ public class MainActivity extends AppCompatActivity {
         mapView.getMapScene().enableFeatures(mapFeatures);
 
         defaultLocationIndicator = new LocationIndicator();
+
         customLocationIndicator = createCustomLocationIndicator();
 
         // Show indicator on map. We start with the built-in default LocationIndicator.
@@ -218,6 +219,9 @@ public class MainActivity extends AppCompatActivity {
         // when the GPS accuracy is weak or no location was found.
         locationIndicator.setMarker3dModel(pedestrianMapMarker3DModel, scaleFactor, LocationIndicator.MarkerType.PEDESTRIAN);
         locationIndicator.setMarker3dModel(navigationMapMarker3DModel, scaleFactor, LocationIndicator.MarkerType.NAVIGATION);
+
+        locationIndicator.setAccuracyVisualized(true);
+        
         return locationIndicator;
     }
 
@@ -246,9 +250,11 @@ public class MainActivity extends AppCompatActivity {
     public void colorButtonClicked(View view) {
         if (isCurrentColorBlue) {
             defaultLocationIndicator.setHaloColor(defaultLocationIndicator.getLocationIndicatorStyle(), new Color(255F, 255F, 0F, 0.30F));
+            customLocationIndicator.setHaloColor(customLocationIndicator.getLocationIndicatorStyle(), new Color(255F, 255F, 0F, 0.30F));
             isCurrentColorBlue = false;
         } else {
             defaultLocationIndicator.setHaloColor(defaultLocationIndicator.getLocationIndicatorStyle(), new Color(0F, 0F, 255F, 0.30F));
+            customLocationIndicator.setHaloColor(customLocationIndicator.getLocationIndicatorStyle(), new Color(0F, 0F, 255F, 0.30F));
             isCurrentColorBlue = true;
         }
     }
@@ -285,8 +291,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Set last location from LocationSimulator.
-        defaultLocationIndicator.updateLocation(getLastKnownLocationLocation());
-        customLocationIndicator.updateLocation(getLastKnownLocationLocation());
+        defaultLocationIndicator.updateLocation(getLastKnownLocation());
+        customLocationIndicator.updateLocation(getLastKnownLocation());
     }
 
     private void switchToNavigationLocationIndicator() {
@@ -310,7 +316,7 @@ public class MainActivity extends AppCompatActivity {
         // Location is set by VisualNavigator for smooth interpolation.
     }
 
-    private Location getLastKnownLocationLocation() {
+    private Location getLastKnownLocation() {
         if (lastKnownLocation == null) {
             // A LocationIndicator is intended to mark the user's current location,
             // including a bearing direction.
@@ -319,9 +325,9 @@ public class MainActivity extends AppCompatActivity {
             Location location = new Location(routeStartGeoCoordinates);
             location.time = new Date();
             location.bearingInDegrees = 0.0;
+            location.horizontalAccuracyInMeters = 30.0;
             return location;
         }
-
         // This location is taken from the LocationSimulator that provides locations along the route.
         return lastKnownLocation;
     }

@@ -25,22 +25,23 @@ import 'package:here_sdk/mapview.dart';
 
 import 'PublicTransportRoutingExample.dart';
 
-void main() {
+void main() async {
   // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
-  _initializeHERESDK();
+  await _initializeHERESDK();
 
   // Ensure that all widgets, including MyApp, have a MaterialLocalizations object available.
   runApp(MaterialApp(home: MyApp()));
 }
 
-void _initializeHERESDK() async {
+Future<void> _initializeHERESDK() async {
   // Needs to be called before accessing SDKOptions to load necessary libraries.
   SdkContext.init(IsolateOrigin.main);
 
   // Set your credentials for the HERE SDK.
   String accessKeyId = "YOUR_ACCESS_KEY_ID";
   String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
-  AuthenticationMode authenticationMode = AuthenticationMode.withKeySecret(accessKeyId, accessKeySecret);
+  AuthenticationMode authenticationMode =
+      AuthenticationMode.withKeySecret(accessKeyId, accessKeySecret);
   SDKOptions sdkOptions = SDKOptions.withAuthenticationMode(authenticationMode);
 
   try {
@@ -81,12 +82,17 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _onMapCreated(HereMapController hereMapController) {
-    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
+    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay,
+        (MapError? error) {
       if (error == null) {
-        _routingExample = PublicTransportRoutingExample(_showDialog, hereMapController);
+        _routingExample =
+            PublicTransportRoutingExample(_showDialog, hereMapController);
       } else {
         print("Map scene not loaded. MapError: " + error.toString());
       }
+      // Displays public transit lines for systems like subway, tram, train, monorail, and ferry, based on the selected mode.
+      hereMapController.mapScene.enableFeatures(
+          {MapFeatures.publicTransit: MapFeatureModes.publicTransitAll});
     });
   }
 
@@ -102,12 +108,13 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     _listener = AppLifecycleListener(
-      onDetach: () =>
-      // Sometimes Flutter may not reliably call dispose(),
-      // therefore it is recommended to dispose the HERE SDK
-      // also when the AppLifecycleListener is detached.
-      // See more details: https://github.com/flutter/flutter/issues/40940
-      { print('AppLifecycleListener detached.'), _disposeHERESDK() },
+      onDetach: () => {
+        // Sometimes Flutter may not reliably call dispose(),
+        // therefore it is recommended to dispose the HERE SDK
+        // also when the AppLifecycleListener is detached.
+        // See more details: https://github.com/flutter/flutter/issues/40940
+        print('AppLifecycleListener detached.'), _disposeHERESDK()
+      },
     );
   }
 

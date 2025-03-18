@@ -41,6 +41,7 @@ class RoutingExample {
   List<Waypoint> waypoints = [];
   final _berlinGeoCoordinates = GeoCoordinates(52.530971, 13.385088);
   final _timeUtils = TimeUtils();
+  late here.Route _currentRoute;
 
   RoutingExample(ShowDialogFunction showDialogCallback,
       HereMapController hereMapController)
@@ -69,6 +70,49 @@ class RoutingExample {
     _calculateRoute(waypoints);
   }
 
+  void onUpdateTrafficOnRouteButtonClick() {
+    updateTrafficOnRoute(_currentRoute);
+  }
+
+  void updateTrafficOnRoute(here.Route route) {
+    if (!_trafficOptimization) {
+      _showDialog("Traffic", "Disabled traffic optimization.");
+      return;
+    }
+
+    // Since traffic is being calculated for the entire route,
+    // lastTraveledSectionIndex and traveledDistanceOnLastSectionInMeters are set to 0.
+    int lastTraveledSectionIndex = 0;
+    int traveledDistanceOnLastSectionInMeters = 0;
+
+    _routingEngine.calculateTrafficOnRoute(
+      route,
+      lastTraveledSectionIndex,
+      traveledDistanceOnLastSectionInMeters,
+          (RoutingError? routingError, TrafficOnRoute? trafficOnRoute) {
+        if (routingError != null) {
+          print("CalculateTrafficOnRoute error: ${routingError.name}");
+        } else {
+          showUpdatedETA(trafficOnRoute!);
+        }
+      },
+    );
+  }
+
+  void showUpdatedETA(TrafficOnRoute trafficOnRoute) {
+    for (var section in trafficOnRoute.trafficSections) {
+      List<TrafficOnSpan> spans = section.trafficSpans;
+
+      int updatedETAInSeconds = spans.fold(0, (sum, span) => sum + span.duration.inSeconds);
+      int updatedTrafficDelayInSeconds = spans.fold(0, (sum, span) => sum + span.trafficDelay.inSeconds);
+
+      String updatedETAString = "Updated travel duration ${_timeUtils.formatTime(updatedETAInSeconds)}\n"
+          "Updated traffic delay ${_timeUtils.formatTime(updatedTrafficDelayInSeconds)}";
+
+      _showDialog("Updated traffic", updatedETAString);
+    }
+  }
+
   void toggleTrafficOptimization() {
     _trafficOptimization = !_trafficOptimization;
     if (waypoints.isNotEmpty) {
@@ -79,6 +123,8 @@ class RoutingExample {
   void _calculateRoute(List<Waypoint> waypoints) {
     CarOptions carOptions = CarOptions();
     carOptions.routeOptions.enableTolls = true;
+    // This is needed when e.g. requesting TrafficOnRoute data.
+    carOptions.routeOptions.enableRouteHandle = true;
     // Disabled - Traffic optimization is completely disabled, including long-term road closures. It helps in producing stable routes.
     // Time dependent - Traffic optimization is enabled, the shape of the route will be adjusted according to the traffic situation which depends on departure time and arrival time.
     carOptions.routeOptions.trafficOptimizationMode = _trafficOptimization
@@ -89,14 +135,14 @@ class RoutingExample {
         (RoutingError? routingError, List<here.Route>? routeList) async {
       if (routingError == null) {
         // When error is null, then the list guaranteed to be not null.
-        here.Route route = routeList!.first;
-        _showRouteDetails(route);
-        _showRouteOnMap(route);
-        _logRouteRailwayCrossingDetails(route);
-        _logRouteSectionDetails(route);
-        _logRouteViolations(route);
-        _logTollDetails(route);
-        _animateToRoute(route);
+        _currentRoute = routeList!.first;
+        _showRouteDetails(_currentRoute);
+        _showRouteOnMap(_currentRoute);
+        _logRouteRailwayCrossingDetails(_currentRoute);
+        _logRouteSectionDetails(_currentRoute);
+        _logRouteViolations(_currentRoute);
+        _logTollDetails(_currentRoute);
+        _animateToRoute(_currentRoute);
       } else {
         var error = routingError.toString();
         _showDialog('Error', 'Error while calculating a route: $error');
