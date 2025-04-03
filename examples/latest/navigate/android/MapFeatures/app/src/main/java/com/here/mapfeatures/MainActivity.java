@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
             mapFeaturesExample.enableFeature(feature.getKey(), feature.getValue());
         }
 
-        webMercatorButton.setText(isGlobeVisible ? "Switch to Globe" : "Switch to Web Mercator");
+        webMercatorButton.setText(isGlobeVisible ? "  Switch to Globe  " : "  Switch to Web Mercator  ");
     }
 
     private void handleAndroidPermissions() {

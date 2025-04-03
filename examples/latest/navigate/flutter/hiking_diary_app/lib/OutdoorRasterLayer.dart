@@ -82,10 +82,8 @@ class OutdoorRasterLayer {
         .renderedBeforeLayer('&polyline_layer')
         .build();
 
-    double minimumZoomLevel = 0.0;
-    double maximumZoomLevel = 22.0 + 1.0;
-    // And it should be visible for all zoom levels.
-    final range = MapLayerVisibilityRange(minimumZoomLevel, maximumZoomLevel);
+    // And it should be visible for all zoom levels. The minimum tilt level is 0 and maximum zoom level is 23.
+    final range = MapLayerVisibilityRange(MapCameraLimits.minTilt, MapCameraLimits.maxZoomLevel);
 
     try {
       // Build and add the layer to the map.

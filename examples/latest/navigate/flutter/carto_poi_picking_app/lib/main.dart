@@ -60,6 +60,7 @@ class _MyAppState extends State<MyApp> {
   late HereMapController? _hereMapController;
   late SearchEngine? _searchEngine;
   late final AppLifecycleListener _listener;
+  late MapScheme _currentMapScheme;
 
   @override
   Widget build(BuildContext context) {
@@ -77,7 +78,8 @@ class _MyAppState extends State<MyApp> {
 
   void _onMapCreated(HereMapController hereMapController) {
     _hereMapController = hereMapController;
-    _hereMapController!.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
+    _currentMapScheme = MapScheme.normalDay;
+    _hereMapController!.mapScene.loadSceneForMapScheme(_currentMapScheme, (MapError? error) {
       if (error != null) {
         print('Map scene not loaded. MapError: ${error.toString()}');
         return;
@@ -199,9 +201,28 @@ class _MyAppState extends State<MyApp> {
     }
 
     PickVehicleRestrictionsResult topmostVehicleRestriction = vehicleRestrictions.first;
-    var lat = topmostVehicleRestriction.coordinates.latitude;
-    var lon = topmostVehicleRestriction.coordinates.longitude;
-    _showDialog("Vehicle restriction picked", " Location: $lat, $lon.");
+    _createVehicleRestrictionIcon(topmostVehicleRestriction);
+  }
+
+  void _createVehicleRestrictionIcon(PickVehicleRestrictionsResult vehicleRestrictionResult){
+    var iconProvider = IconProvider(_hereMapController!.mapContext);
+
+    void iconProviderCallback(ImageInfo? imageInfo, String? description, IconProviderError? iconProviderError) {
+      if (iconProviderError == null) {
+        _showDialogWithIcon("Vehicle Restriction", "Description: " + ((description==null || description.isEmpty)?"Not Available":description), imageInfo!);
+        return;
+      }
+      _showDialog("IconProvider error", "An error occurred while creating the icon: " + iconProviderError.name);
+    }
+
+    // Creates an image representing a vehicle restriction based on the picked content.
+    // Parameters:
+    // - vehicleRestrictionResult: The result of picking a vehicle restriction object from PickMapContentResult.
+    // - currentMapScheme: The current map scheme of the MapView.
+    // - IconProviderAssetType: Specifies icon optimization for either UI or MAP.
+    // - size: The size of the generated image in the callback.
+    // - iconProviderCallback: The callback object for receiving the generated icon.
+    iconProvider.createVehicleRestrictionIcon(vehicleRestrictionResult, _currentMapScheme, IconProviderAssetType.ui, Size2D(40,40), iconProviderCallback);
   }
 
   @override
@@ -257,4 +278,40 @@ class _MyAppState extends State<MyApp> {
       },
     );
   }
+
+  // A helper method to show a dialog with a custom ImageInfo icon.
+  Future<void> _showDialogWithIcon(String title, String message, ImageInfo icon) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    RawImage(image: icon.image), // Custom icon from ImageInfo
+                    SizedBox(width: 8), // Spacing
+                    Expanded(child: Text(message)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
 }

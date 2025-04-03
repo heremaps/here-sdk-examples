@@ -238,13 +238,8 @@ class EVRoutingExample {
         int sectionIndex = 0;
         List<Section> sections = route.sections;
         for (Section section in sections) {
-            EVDetails? evDetails = section.evDetails;
-            if (evDetails == null) {
-                print("No EVDetails found.");
-                return;
-            }
             print("EVDetails: Estimated net energy consumption in kWh for this section: " +
-                evDetails.consumptionInKilowattHour.toString());
+                section.consumptionInKilowattHours.toString());
             for (PostAction postAction in section.postActions) {
                 switch (postAction.action) {
                     case PostActionType.chargingSetup:
@@ -332,7 +327,7 @@ class EVRoutingExample {
         searchOptions.maxItems = 30;
 
         // Disable the following line when you are not part of the alpha group.
-        enableChargingStationAvailabilityRequest();
+        enableEVChargingStationDetails();
 
         _searchEngine.searchByCategory(categoryQuery, searchOptions, (SearchError? searchError, List<Place>? items) {
             if (searchError != null) {
@@ -370,13 +365,13 @@ class EVRoutingExample {
     // If you are not part of the alpha group, do not use this call as a SearchError would occur,
     // access to this feature requires appropriate credentials.
     // Check the API Reference for more details.
-    void enableChargingStationAvailabilityRequest() {
+    void enableEVChargingStationDetails() {
         // Fetching additional charging stations details requires a custom option call.
-        SearchError? error = _searchEngine.setCustomOption("browse.show", "ev,fuel");
+        SearchError? error = _searchEngine.setCustomOption("browse.show", "ev");
         if (error != null) {
             _showDialog(
                 "Charging Station",
-                "Failed to enable EV charging station availability. "
+                "Failed to enableEVChargingStationDetails. "
                     "Disable the feature if you are not part of the alpha group."
             );
         } else {
@@ -452,28 +447,26 @@ class EVRoutingExample {
         Metadata metadata = Metadata();
         if (placeDetails.evChargingPool != null) {
             for (var station in placeDetails.evChargingPool!.chargingStations) {
-                if (station != null) {
-                    if (station.supplierName != null) {
-                        metadata.setString(supplierNameMetadataKey, station.supplierName!);
-                    }
-                    if (station.connectorCount != null) {
-                        metadata.setString(connectorCountMetadataKey, station.connectorCount!.toString());
-                    }
-                    if (station.availableConnectorCount != null) {
-                        metadata.setString(availableConnectorsMetadataKey, station.availableConnectorCount!.toString());
-                    }
-                    if (station.occupiedConnectorCount != null) {
-                        metadata.setString(occupiedConnectorsMetadataKey, station.occupiedConnectorCount!.toString());
-                    }
-                    if (station.outOfServiceConnectorCount != null) {
-                        metadata.setString(outOfServiceConnectorsMetadataKey, station.outOfServiceConnectorCount!.toString());
-                    }
-                    if (station.reservedConnectorCount != null) {
-                        metadata.setString(reservedConnectorsMetadataKey, station.reservedConnectorCount!.toString());
-                    }
-                    if (station.lastUpdated != null) {
-                        metadata.setString(lastUpdatedMetadataKey, station.lastUpdated!.toString());
-                    }
+                if (station.supplierName != null) {
+                    metadata.setString(supplierNameMetadataKey, station.supplierName!);
+                }
+                if (station.connectorCount != null) {
+                    metadata.setString(connectorCountMetadataKey, station.connectorCount!.toString());
+                }
+                if (station.availableConnectorCount != null) {
+                    metadata.setString(availableConnectorsMetadataKey, station.availableConnectorCount!.toString());
+                }
+                if (station.occupiedConnectorCount != null) {
+                    metadata.setString(occupiedConnectorsMetadataKey, station.occupiedConnectorCount!.toString());
+                }
+                if (station.outOfServiceConnectorCount != null) {
+                    metadata.setString(outOfServiceConnectorsMetadataKey, station.outOfServiceConnectorCount!.toString());
+                }
+                if (station.reservedConnectorCount != null) {
+                    metadata.setString(reservedConnectorsMetadataKey, station.reservedConnectorCount!.toString());
+                }
+                if (station.lastUpdated != null) {
+                    metadata.setString(lastUpdatedMetadataKey, station.lastUpdated!.toString());
                 }
             }
         }

@@ -32,8 +32,6 @@ import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.core.engine.SDKOptions;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.mapview.MapError;
-import com.here.sdk.mapview.MapFeatureModes;
-import com.here.sdk.mapview.MapFeatures;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
@@ -48,7 +46,6 @@ public class MainActivity extends AppCompatActivity {
     private PermissionsRequestor permissionsRequestor;
     private MapView mapView;
     private PublicTransportRoutingExample publicTransportRoutingExample;
-    private Map<String,String> mapFeatures = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,17 +102,23 @@ public class MainActivity extends AppCompatActivity {
         mapView.getMapScene().loadScene(MapScheme.NORMAL_DAY, new MapScene.LoadSceneCallback() {
             @Override
             public void onLoadScene(@Nullable MapError mapError) {
-                if (mapError == null) {
-                     // Enable PUBLIC_TRANSIT map feature to displays public transit lines for systems like subway, tram, train, monorail, and ferry, based on the selected mode.
-                    // mapFeatures.put(MapFeatures.PUBLIC_TRANSIT, MapFeatureModes.PUBLIC_TRANSIT_ALL);
-                    // Currently, PUBLIC_TRANSIT map feature is only available for navigate edition.
-                    // mapView.getMapScene().enableFeatures(mapFeatures);
+                if (mapError == null) {                    
+                    enablePublicTransitFeatures();
                     publicTransportRoutingExample = new PublicTransportRoutingExample(MainActivity.this, mapView);
                 } else {
                     Log.d(TAG, "Loading map failed: mapErrorCode: " + mapError.name());
                 }
             }
         });
+    }
+
+    // Enable the PUBLIC_TRANSIT map feature to display public transit lines for subways, trams, trains, monorails, and ferries.
+    // Note that this API is only available for the Navigate Edition.
+    private void enablePublicTransitFeatures() {
+        // Optionally, uncomment the following three lines when you are using the Navigate Edition:
+        // Map<String,String> mapFeatures = new HashMap<>();
+        // mapFeatures.put(MapFeatures.PUBLIC_TRANSIT, MapFeatureModes.PUBLIC_TRANSIT_ALL);
+        // mapView.getMapScene().enableFeatures(mapFeatures);
     }
 
     public void addTransitRouteButtonClicked(View view) {

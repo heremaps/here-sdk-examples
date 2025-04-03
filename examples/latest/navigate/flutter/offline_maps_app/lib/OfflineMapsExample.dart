@@ -388,9 +388,11 @@ class OfflineMapsExample {
   toggleLayerConfiguration(String accessKeyId, String accessKeySecret,
       void Function() rebuildMapView) async {
     // Cached map data persists until the Least Recently Used (LRU) eviction policy is triggered.
-    // After modifying the "FeatureConfiguration" calling performFeatureUpdate()
-    // will also clear the cache if at least one region has been installed.
-    // This app allows the user to install one region for testing purposes.
+    // After modifying the "FeatureConfiguration", calling performUpdateChecks() will trigger an update to the map data.
+    // This will update all previously installed region map data and incomplete downloads which are in pending states.
+    // If no regions have been downloaded, this method will update only the map cache. 
+    // If no updates are available, the MapUpdateProgressListener.onComplete callback will be invoked immediately with a MapLoaderError.
+    // Note: This app allows the user to install one region for testing purposes.
     // In order to simplify testing when no region has been installed, we
     // explicitly clear the cache.
     // If the cache is not cleared, the HERE SDK will look for cached data, for example,
@@ -439,37 +441,13 @@ class OfflineMapsExample {
     });
 
     // Reinitialize MapUpdater in background to not block the UI thread.
+    // Reinitialize the map updater and perform feature update internally to "normalize" the new layer configuration.
+    // Normalization, in this context, is the process of aligning the currently downloaded layer group configuration in the map data with the requested one.
+    // Layer groups that are not in the requested layer configuration are removed and layer groups that were added to the requested configuration are downloaded.
     MapUpdater.fromSdkEngineAsync(SDKNativeEngine.sharedInstance!,
         (mapUpdater) {
       _mapUpdater = mapUpdater;
-      _mapUpdater.performFeatureUpdate(
-          MapUpdateProgressListener((regionId, percentage) {
-        // Handle feature update progress.
-        print(
-            "FeatureUpdate: Downloading and installing a map feature update. Progress for" +
-                regionId.id.toString() +
-                ":" +
-                percentage.toString());
-      }, (error) {
-        if (error == null) {
-          print(
-              "Feature update onPause error. The task tried to often to retry the update: " +
-                  error.toString());
-        } else {
-          print(
-              "FeatureUpdate: The map feature update was paused by the user.");
-        }
-      }, (error) {
-        if (error == null) {
-          print("Feature update completion error: " + error.toString());
-        } else {
-          print(
-              "FeatureUpdate: One or more map update has been successfully installed.");
-        }
-      }, () {
-        print(
-            "FeatureUpdate: A previously paused map feature update has been resumed.");
-      }));
+      _checkForMapUpdates();
     });
 
     // Reinitialize offline search engine.
@@ -574,6 +552,8 @@ class OfflineMapsExample {
       return;
     }
 
+    _logInstalledRegionsAndStorageUsage();
+
     // Note that this value will not change during the lifetime of an app.
     PersistentMapStatus persistentMapStatus =
         _mapDownloader.getInitialPersistentMapStatus();
@@ -622,6 +602,27 @@ class OfflineMapsExample {
       print("MapLoaderError" +
           "Fetching current map version failed: " +
           mapLoaderError.toString());
+    }
+  }
+
+  _getInstalledRegionsList() {
+    List<InstalledRegion> installedRegionList = [];
+    try {
+      installedRegionList = _mapDownloader.getInstalledRegions();
+    } on MapLoaderExceptionException catch (e) {
+      print("Error while fetching installed regions: ${e.error.toString()}");
+    }
+    return installedRegionList;
+  }
+
+  _logInstalledRegionsAndStorageUsage() {
+    List<InstalledRegion> installedRegionList = _getInstalledRegionsList();
+    if (installedRegionList.isEmpty) {
+      print("No installed region found.");
+    } else {
+      installedRegionList.forEach((region) => print("Downloaded region id: ${region.regionId.id}"));
+      int storage = installedRegionList.map((region) => region.sizeOnDiskInBytes).reduce((value, element) => value + element);
+      print("Storage usage: $storage Bytes");
     }
   }
 }

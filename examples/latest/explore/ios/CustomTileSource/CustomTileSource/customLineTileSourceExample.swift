@@ -55,7 +55,7 @@ class CustomLineTileSourceExample {
         self.mapView = mapView
 
         let camera = mapView.camera
-        let distanceInMeters = MapMeasure(kind: .distanceInMeters, value: 60 * 1000)
+        let distanceInMeters = MapMeasure(kind: MapMeasure.Kind.distanceInMeters, value: 60 * 1000)
         camera.lookAt(point: GeoCoordinates(latitude: 52.518043, longitude: 13.405991),
                       zoom: distanceInMeters)
 
@@ -96,8 +96,8 @@ class CustomLineTileSourceExample {
 
     // Creates a MapLayer for displaying custom line tiles.
     private func createMapLayer(dataSourceName: String) -> MapLayer {
-        // The layer should be visible for all zoom levels.
-        let range = MapLayerVisibilityRange(minimumZoomLevel: 0, maximumZoomLevel: 22 + 1)
+        //  The layer should be visible for all zoom levels. The minimum tilt level is 0 and maximum zoom level is 23.
+        let range = MapLayerVisibilityRange(minimumZoomLevel: MapCameraLimits.minTilt, maximumZoomLevel: MapCameraLimits.maxZoomLevel)
 
         let mapLayer: MapLayer
 

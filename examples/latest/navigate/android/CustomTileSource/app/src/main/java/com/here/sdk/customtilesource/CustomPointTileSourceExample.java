@@ -21,6 +21,7 @@
 
  import android.content.Context;
 
+import com.here.sdk.mapview.MapCameraLimits;
  import com.here.sdk.core.GeoCoordinates;
  import com.here.sdk.mapview.JsonStyleFactory;
  import com.here.sdk.mapview.MapCamera;
@@ -91,8 +92,8 @@
 
      // Creates a MapLayer for displaying custom point tiles.
      private MapLayer createMapLayer(String dataSourceName) {
-         // The layer should be visible for all zoom levels.
-         MapLayerVisibilityRange range = new MapLayerVisibilityRange(0, 22 + 1);
+         // The layer should be visible for all zoom levels. The minimum tilt level is 0 and maximum zoom level is 23.
+         MapLayerVisibilityRange range = new MapLayerVisibilityRange(MapCameraLimits.MIN_TILT, MapCameraLimits.MAX_ZOOM_LEVEL);
 
          try {
              // Build and add the layer to the map.

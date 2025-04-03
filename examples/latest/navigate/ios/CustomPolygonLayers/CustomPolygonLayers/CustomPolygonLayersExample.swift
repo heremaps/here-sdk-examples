@@ -95,8 +95,8 @@ class CustomPolygonLayersExample {
     private func createMapLayer(dataSourceName: String) -> MapLayer {
         // The layer should be rendered on top of other layers .
         let priority = MapLayerPriorityBuilder().renderedLast().build()
-        // And it should be visible for all zoom levels.
-        let range = MapLayerVisibilityRange(minimumZoomLevel: 0, maximumZoomLevel: 22 + 1)
+        // And it should be visible for all zoom levels. The minimum tilt level is 0 and maximum zoom level is 23.
+        let range = MapLayerVisibilityRange(minimumZoomLevel: MapCameraLimits.minTilt, maximumZoomLevel: MapCameraLimits.maxZoomLevel)
 
         let mapLayer: MapLayer
         do {

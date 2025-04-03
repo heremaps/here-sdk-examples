@@ -108,6 +108,9 @@ public class PositioningExample {
         locationEngine.addLocationStatusListener(locationStatusListener);
         locationEngine.addLocationIssueListener(locationIssueListener);
         locationEngine.addLocationListener(locationListener);
+        // By calling confirmHEREPrivacyNoticeInclusion() you confirm that this app informs on
+        // data collection, which is done for this app via PositioningTermsAndPrivacyHelper,
+        // which shows a possible example for this.
         locationEngine.confirmHEREPrivacyNoticeInclusion();
         locationEngine.start(LocationAccuracy.BEST_AVAILABLE);
     }

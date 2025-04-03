@@ -76,6 +76,7 @@ class _MyAppState extends State<MyApp> {
                 children: [
                   button('Add Route', _addRouteButtonClicked),
                   button('Add Waypoints', _addWaypointsButtonClicked),
+                  button('Load Segments', _loadSegmentsDataButtonClicked),
                 ],
               ),
               Row(
@@ -121,6 +122,10 @@ class _MyAppState extends State<MyApp> {
 
   void _clearMapButtonClicked() {
     _routingExample?.clearMap();
+  }
+
+  void _loadSegmentsDataButtonClicked() {
+    _routingExample?.loadAndProcessSegmentData();
   }
 
   @override

@@ -80,8 +80,8 @@ class CustomPointTileSourceExample {
 
   // Creates a MapLayer for displaying custom point tiles.
   MapLayer _createMapLayer(String dataSourceName) {
-    // The layer should be visible for all zoom levels.
-    MapLayerVisibilityRange range = MapLayerVisibilityRange(0, 22 + 1);
+    // The layer should be visible for all zoom levels. The minimum tilt level is 0 and maximum zoom level is 23.
+    MapLayerVisibilityRange range = MapLayerVisibilityRange(MapCameraLimits.minTilt, MapCameraLimits.maxZoomLevel);
 
     try {
       // Build and add the layer to the map.

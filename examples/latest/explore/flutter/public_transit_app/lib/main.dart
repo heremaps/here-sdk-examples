@@ -85,14 +85,20 @@ class _MyAppState extends State<MyApp> {
     hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay,
         (MapError? error) {
       if (error == null) {
-        _routingExample = PublicTransportRoutingExample(_showDialog, hereMapController);
+        _enablePublicTransitFeatures(hereMapController);
+        _routingExample =
+            PublicTransportRoutingExample(_showDialog, hereMapController);
       } else {
         print("Map scene not loaded. MapError: " + error.toString());
       }
-      // Enable publicTransit map feature to displays public transit lines for systems like subway, tram, train, monorail, and ferry, based on the selected mode.             
-      // hereMapController.mapScene.enableFeatures({MapFeatures.publicTransit: MapFeatureModes.publicTransitAll});
-      // Currently, publicTransit map feature is only available for navigate edition.
     });
+  }
+
+  // Enable the PUBLIC_TRANSIT map feature to display public transit lines for subways, trams, trains, monorails, and ferries.
+  // Note that this API is only available for the Navigate Edition.
+  void _enablePublicTransitFeatures(HereMapController hereMapController) {
+    // Optionally, uncomment the following line when you are using the Navigate Edition:
+    // hereMapController.mapScene.enableFeatures({MapFeatures.publicTransit: MapFeatureModes.publicTransitAll});
   }
 
   void _addTransitRouteButtonClicked() {

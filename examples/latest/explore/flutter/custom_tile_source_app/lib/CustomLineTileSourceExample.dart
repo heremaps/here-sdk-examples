@@ -84,7 +84,8 @@ class CustomLineTileSourceExample {
   }
 
   MapLayer? _createMapLayer(String dataSourceName) {
-    MapLayerVisibilityRange range = MapLayerVisibilityRange(0, 23);
+    // The layer should be visible for all zoom levels. The minimum tilt level is 0 and maximum zoom level is 23.
+    MapLayerVisibilityRange range = MapLayerVisibilityRange(MapCameraLimits.minTilt, MapCameraLimits.maxZoomLevel);
 
     try {
       return MapLayerBuilder()

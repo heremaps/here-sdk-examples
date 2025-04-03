@@ -31,6 +31,7 @@ class RoutingHybridExample {
     private var isDeviceConnected = false
     private var startGeoCoordinates: GeoCoordinates?
     private var destinationGeoCoordinates: GeoCoordinates?
+    private var segmentDataLoader: SegmentDataLoader?
 
     init(_ mapView: MapView) {
         self.mapView = mapView
@@ -55,8 +56,14 @@ class RoutingHybridExample {
             // to calculate a route, when not all map tiles are loaded. Especially, the
             // vector tiles for lower zoom levels are required to find possible paths.
             try offlineRoutingEngine = OfflineRoutingEngine()
-        } catch let engineInstantiationError {
-            fatalError("Failed to initialize offline routing engine. Cause: \(engineInstantiationError)")
+            
+            // It is recommended to download or to prefetch a route corridor beforehand to ensure a smooth user experience during navigation. For simplicity, this is left out for this example.
+
+            // With the segment data loader information can be retrieved from cached or installed offline map data, for example on road attributes. This feature can be used independent from a route. It is recommended to not rely on the cache alone. For simplicity, this is left out for this example.
+            try segmentDataLoader = SegmentDataLoader()
+                        
+        } catch let InstantiationError {
+            fatalError("Initialization failed. Cause: \(InstantiationError)")
         }
 
         // By default, use online routing engine.
@@ -76,7 +83,56 @@ class RoutingHybridExample {
         mapView.mapScene.enableFeatures([MapFeatures.trafficFlow : MapFeatureModes.defaultMode]);
         mapView.mapScene.enableFeatures([MapFeatures.trafficIncidents : MapFeatureModes.defaultMode]);
     }
+    // Load segment data and fetch information from the map around the starting point of the requested route.
+    func loadAndProcessSegmentData() {
+        
+        // The necessary SegmentDataLoaderOptions need to be turned on in order to find the requested information. It is recommended to turn on only the fields that you are interested in.
+        var segmentDataLoaderOptions = SegmentDataLoaderOptions()
+        segmentDataLoaderOptions.loadBaseSpeeds = true
+        segmentDataLoaderOptions.loadRoadAttributes = true
+        
+        let radiusInMeters = 500.0
+        
+        guard let startGeoCoordinates = startGeoCoordinates else {
+            showDialog(title: "SegmentDataLoader", message: "You need to add a route beforehand as we use the start coordinates to load segment data.")
+            return
+        }
 
+        do {
+            let segmentIds = try segmentDataLoader?.getSegmentsAroundCoordinates(startGeoCoordinates, radiusInMeters: radiusInMeters)
+            
+            guard let segmentDataLoader = segmentDataLoader, 
+                  let segmentIds = segmentIds else {
+                print("segmentDataLoader is nil")
+                return
+            }
+
+            for segmentId in segmentIds {
+                    let segmentData = try segmentDataLoader.loadData(segment: segmentId, options: segmentDataLoaderOptions)
+                    
+                    if (segmentData.spans.isEmpty) {
+                        print("SegmentSpanDataList is empty")
+                        continue
+                    }
+
+                    let segmentSpanDataList = segmentData.spans
+                    
+                    for span in segmentSpanDataList {
+                        print("Physical attributes of \(span) span.")
+                        
+                        print("Private roads: \(String(describing: span.physicalAttributes?.isPrivate))")
+                        print("Dirt roads: \(String(describing: span.physicalAttributes?.isDirtRoad))")
+                        print("Bridge: \(String(describing: span.physicalAttributes?.isBridge))")
+                        print("Tollway: \(String(describing: span.roadUsages?.isTollway))")
+                        print("Average expected speed: \(String(describing: span.positiveDirectionBaseSpeedInMetersPerSecond))")
+                    }
+            }
+        } catch let SegmentDataLoaderError {
+            print("Error loading segment data: \(SegmentDataLoaderError)")
+        }
+        
+    }
+    
     // Calculates a route with two waypoints (start / destination).
     func addRoute() {
         setRoutingEngine()

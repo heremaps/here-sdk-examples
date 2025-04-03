@@ -17,7 +17,7 @@
  * License-Filename: LICENSE
  */
 
-package com.here.routing;
+package com.here.publictransit;
 
 import android.Manifest;
 import android.app.Activity;

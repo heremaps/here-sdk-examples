@@ -40,6 +40,7 @@ class NavigationEventHandler : NavigableLocationDelegate,
                                JunctionViewLaneAssistanceDelegate,
                                RoadAttributesDelegate,
                                RoadSignWarningDelegate,
+                               TrafficMergeWarningDelegate,
                                TruckRestrictionsWarningDelegate,
                                SchoolZoneWarningDelegate,
                                RoadTextsDelegate,
@@ -82,6 +83,7 @@ class NavigationEventHandler : NavigableLocationDelegate,
         visualNavigator.junctionViewLaneAssistanceDelegate = self
         visualNavigator.roadAttributesDelegate = self
         visualNavigator.roadSignWarningDelegate = self
+        visualNavigator.trafficMergeWarningDelegate = self
         visualNavigator.truckRestrictionsWarningDelegate = self
         visualNavigator.schoolZoneWarningDelegate = self
         visualNavigator.roadTextsDelegate = self
@@ -272,6 +274,16 @@ class NavigationEventHandler : NavigableLocationDelegate,
         if status == SpeedWarningStatus.speedLimitRestored {
             print("Driver is again slower than current speed limit (plus an optional offset).")
         }
+    }
+
+    // Conform to TrafficMergeWarningDelegate.
+    // Notifies about merging traffic to the current road.
+    func onTrafficMergeWarningUpdated(_ trafficMergeWarning: TrafficMergeWarning) {
+        if trafficMergeWarning.distanceType == .ahead {
+            print("There is a merging \(trafficMergeWarning.distanceType) ahead in: \(trafficMergeWarning.distanceToTrafficMergeInMeters) meters, merging from the \(trafficMergeWarning.side) side, with lanes = \(trafficMergeWarning.laneCount)")
+        } else if trafficMergeWarning.distanceType == .passed {
+            print("A merging \(trafficMergeWarning.distanceType) passed: \(trafficMergeWarning.distanceToTrafficMergeInMeters) meters, merging from the \(trafficMergeWarning.side) side, with lanes = \(trafficMergeWarning.laneCount)")
+        } 
     }
 
     // Conform to SpeedLimitDelegate.

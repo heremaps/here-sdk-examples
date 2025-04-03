@@ -22,6 +22,7 @@
  import android.content.Context;
  import android.util.Log;
 
+import com.here.sdk.mapview.MapCameraLimits;
  import com.here.sdk.core.GeoCoordinates;
  import com.here.sdk.mapview.JsonStyleFactory;
  import com.here.sdk.mapview.MapCamera;
@@ -100,7 +101,7 @@
      }
 
      private MapLayer createMapLayer(String dataSourceName) {
-         MapLayerVisibilityRange range = new MapLayerVisibilityRange(0, 23);
+         MapLayerVisibilityRange range = new MapLayerVisibilityRange(MapCameraLimits.MIN_TILT, MapCameraLimits.MAX_ZOOM_LEVEL);
 
          try {
              return new MapLayerBuilder()

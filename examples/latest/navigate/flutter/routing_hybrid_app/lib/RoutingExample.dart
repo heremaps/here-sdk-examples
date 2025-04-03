@@ -23,6 +23,7 @@ import 'package:flutter/material.dart';
 import 'package:here_sdk/animation.dart' as here;
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/core.errors.dart';
+import 'package:here_sdk/mapdata.dart';
 import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/navigation.dart';
 import 'package:here_sdk/routing.dart';
@@ -38,6 +39,7 @@ class RoutingExample {
   late RoutingInterface _routingEngine;
   late RoutingEngine _onlineRoutingEngine;
   late OfflineRoutingEngine _offlineRoutingEngine;
+  late SegmentDataLoader _segmentDataLoader;
   GeoCoordinates? _startGeoCoordinates;
   GeoCoordinates? _destinationGeoCoordinates;
   ShowDialogFunction _showDialog;
@@ -69,12 +71,65 @@ class RoutingExample {
       // to calculate a route, when not all map tiles are loaded. Especially, the
       // vector tiles for lower zoom levels are required to find possible paths.
       _offlineRoutingEngine = OfflineRoutingEngine();
+
+      // It is recommended to download or to prefetch a route corridor beforehand to ensure a smooth user experience during navigation.
+      // For simplicity, this is left out for this example.
+      // With the segment data loader information can be retrieved from cached or installed offline map data, for example on road attributes.
+      // This feature can be used independent from a route.
+      // It is recommended to not rely on the cache alone. For simplicity, this is left out for this example.
+      _segmentDataLoader = SegmentDataLoader();
+
     } on InstantiationException {
-      throw ("Initialization of OfflineRoutingEngine failed.");
+      throw ("Initialization failed.");
     }
 
     // Use _onlineRoutingEngine by default.
     useOnlineRoutingEngine();
+  }
+
+  // Load segment data and fetch information from the map around the starting point of the requested route.
+  void loadAndProcessSegmentData() {
+    if (_startGeoCoordinates == null) {
+      _showDialog("SegmentData", "You need to add the route before loading the segment data.");
+      return;
+    }
+
+    _showDialog("SegmentData", "Loading attributes of a map segment. Check logs for details.");
+
+    double radiusInMeters = 500;
+
+    // The necessary SegmentDataLoaderOptions need to be turned on in order to find the requested information.
+    // It is recommended to turn on only the data you are interested in by setting the corresponding fields to true.
+    SegmentDataLoaderOptions options = SegmentDataLoaderOptions();
+
+    options.loadBaseSpeeds = true;
+    options.loadRoadAttributes = true;
+
+    try {
+      // Fetch segment IDs around the starting coordinates
+      List<OCMSegmentId> segmentIds = _segmentDataLoader.getSegmentsAroundCoordinates(_startGeoCoordinates!, radiusInMeters);
+
+      for (OCMSegmentId segmentId in segmentIds) {
+        SegmentData segmentData = _segmentDataLoader.loadData(segmentId, options);
+
+        List<SegmentSpanData> segmentSpanDataList = segmentData.spans;
+        if (segmentSpanDataList.isEmpty) {
+          debugPrint("SegmentSpanDataList is empty.");
+          continue;
+        }
+
+        for (SegmentSpanData span in segmentSpanDataList) {
+          debugPrint("Physical attributes of ${span.toString()} span.");
+          debugPrint("Private roads: ${span.physicalAttributes?.isPrivate}");
+          debugPrint("Dirt roads: ${span.physicalAttributes?.isDirtRoad}");
+          debugPrint("Bridge: ${span.physicalAttributes?.isBridge}");
+          debugPrint("Tollway: ${span.roadUsages?.isTollway}");
+          debugPrint("Average expected speed: ${span.positiveDirectionBaseSpeedInMetersPerSecond}");
+        }
+      }
+    } catch (e) {
+      debugPrint("Error loading segment data: $e");
+    }
   }
 
   // Calculates a route with two waypoints (start / destination).

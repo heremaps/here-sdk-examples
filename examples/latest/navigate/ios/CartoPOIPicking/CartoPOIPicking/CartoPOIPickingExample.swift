@@ -24,6 +24,7 @@ class CartoPOIPickingExample: TapDelegate {
     
     private let mapView: MapView
     private let searchEngine: SearchEngine
+    private let currentMapScheme: MapScheme
     
     init(_ mapView: MapView) {
         self.mapView = mapView
@@ -40,9 +41,10 @@ class CartoPOIPickingExample: TapDelegate {
         } catch let engineInstantiationError {
             fatalError("Failed to initialize SearchEngine. Cause: \(engineInstantiationError)")
         }
+        currentMapScheme = MapScheme.normalDay
         
         // Load the map scene using a map scheme to render the map with.
-        mapView.mapScene.loadScene(mapScheme: MapScheme.normalDay, completion: onLoadScene)
+        mapView.mapScene.loadScene(mapScheme: currentMapScheme, completion: onLoadScene)
     }
     
     // Completion handler for loadScene().
@@ -154,10 +156,30 @@ class CartoPOIPickingExample: TapDelegate {
 
         let topmostVehicleRestriction = vehicleRestrictions.first!
 
-        let lat = topmostVehicleRestriction.coordinates.latitude
-        let lon = topmostVehicleRestriction.coordinates.longitude
-        showDialog(title: "Vehicle restriction picked",
-                   message: " Location: \(lat), \(lon).")
+        createVehicleRestrictionIcon(vehicleRestrictionResult: topmostVehicleRestriction)
+    }
+    
+    private func createVehicleRestrictionIcon(vehicleRestrictionResult: PickMapContentResult.VehicleRestrictionResult){
+        let iconProvider = IconProvider(self.mapView.mapContext)
+        print("Mapview validity: \(self.mapView.isValid)")
+        let iconCallback: IconProviderCallback = { icon, description, error in
+            if let error = error {
+                self.showDialog(title: "IconProvider error ", message: "An error occurred while creating the icon: \(error)")
+            } else {
+                self.showDialog(title:"Vehicle restriction picked", message: " \(String(describing: description))", icon: icon)
+            }
+        }
+        let size = Size2D(width: 20.0, height: 20.0)
+        
+        // Creates an image representing a vehicle restriction based on the picked content.
+        // Parameters:
+        // - vehicleRestrictionResult: The result of picking a vehicle restriction object from PickMapContentResult.
+        // - currentMapScheme: The current map scheme of the MapView.
+        // - IconProviderAssetType: Specifies icon optimization for either ui or map.
+        // - size: The size of the generated image in the callback.
+        // - iconProviderCallback: The callback object for receiving the generated icon.
+        iconProvider.createVehicleRestrictionIcon(pickingResult: vehicleRestrictionResult, mapScheme: currentMapScheme, assetType: IconProviderAssetType.ui, sizeConstraintsInPixels: size, completion: iconCallback)
+        
     }
     
     private func showDialog(title: String, message: String) {
@@ -178,4 +200,67 @@ class CartoPOIPickingExample: TapDelegate {
             rootViewController.present(alert, animated: true, completion: nil)
         }
     }
+    
+    private func showDialog(title: String, message: String, icon: UIImage?) {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let rootViewController = windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController else {
+            return
+        }
+
+        let alertController = UIAlertController(title: nil, message: nil, preferredStyle: .alert)
+
+        // Create a view controller for the custom alert content
+        let customViewController = UIViewController()
+        customViewController.view.translatesAutoresizingMaskIntoConstraints = false
+
+        let stackView = UIStackView()
+        stackView.axis = .vertical
+        stackView.alignment = .center
+        stackView.spacing = 10
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+
+        // Icon
+        if let icon = icon {
+            let imageView = UIImageView(image: icon)
+            imageView.contentMode = .scaleAspectFit
+            imageView.translatesAutoresizingMaskIntoConstraints = false
+            imageView.widthAnchor.constraint(equalToConstant: 50).isActive = true
+            imageView.heightAnchor.constraint(equalToConstant: 50).isActive = true
+            stackView.addArrangedSubview(imageView)
+        }
+
+        // Title
+        let titleLabel = UILabel()
+        titleLabel.text = title
+        titleLabel.font = UIFont.boldSystemFont(ofSize: 18)
+        titleLabel.textAlignment = .center
+        stackView.addArrangedSubview(titleLabel)
+
+        // Message
+        let messageLabel = UILabel()
+        messageLabel.text = message
+        messageLabel.font = UIFont.systemFont(ofSize: 14)
+        messageLabel.textAlignment = .center
+        messageLabel.numberOfLines = 0
+        stackView.addArrangedSubview(messageLabel)
+
+        customViewController.view.addSubview(stackView)
+
+        NSLayoutConstraint.activate([
+            stackView.centerXAnchor.constraint(equalTo: customViewController.view.centerXAnchor),
+            stackView.centerYAnchor.constraint(equalTo: customViewController.view.centerYAnchor),
+            stackView.widthAnchor.constraint(lessThanOrEqualTo: customViewController.view.widthAnchor, constant: -20)
+        ])
+
+        alertController.setValue(customViewController, forKey: "contentViewController")
+
+        let okAction = UIAlertAction(title: "OK", style: .default) { _ in
+            alertController.dismiss(animated: true, completion: nil)
+        }
+
+        alertController.addAction(okAction)
+
+        rootViewController.present(alertController, animated: true, completion: nil)
+    }
+
 }

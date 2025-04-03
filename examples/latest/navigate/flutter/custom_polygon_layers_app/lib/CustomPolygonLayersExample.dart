@@ -84,10 +84,9 @@ class CustomPolygonLayersExample {
 
   MapLayer _createMapLayer(String dataSourceName) {
     // The layer should be rendered on top of other layer.
-    MapLayerPriority priority =
-        MapLayerPriorityBuilder().renderedLast().build();
-    // And it should be visible for all zoom levels.
-    MapLayerVisibilityRange range = MapLayerVisibilityRange(0, 22 + 1);
+    MapLayerPriority priority = MapLayerPriorityBuilder().renderedLast().build();
+    // And it should be visible for all zoom levels. The minimum tilt level is 0 and maximum zoom level is 23.
+    MapLayerVisibilityRange range = MapLayerVisibilityRange(MapCameraLimits.minTilt, MapCameraLimits.maxZoomLevel);
 
     try {
       // Build and add the layer to the map.

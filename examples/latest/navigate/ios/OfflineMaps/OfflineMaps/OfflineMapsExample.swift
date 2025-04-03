@@ -497,41 +497,16 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
         }
 
         // ReCreate MapUpdater in background to not block the UI thread.
+        // Reinitialize the map updater and perform feature update internally to "normalize" the new layer configuration.
+        // Normalization, in this context, is the process of aligning the currently downloaded layer group configuration in the map data with the requested one.
+        // Layer groups that are not in the requested layer configuration are removed and layer groups that were added to the requested configuration are downloaded.
         MapUpdater.fromEngineAsync(SDKNativeEngine.sharedInstance!) { mapUpdater in
             self.mapUpdater = mapUpdater
-            _ = mapUpdater.performFeatureUpdate(completion: MapUpdateprogressListenerImpl())
+            self.checkForMapUpdates()
         }
 
         // Initialize MapDownloader
         initMapDownloader(sdkNativeEngine: SDKNativeEngine.sharedInstance!)
-    }
-
-    private class MapUpdateprogressListenerImpl : MapUpdateProgressListener {
-        func onProgress(region: heresdk.RegionId, percentage: Int32) {
-            print("FeatureUpdate: Downloading and installing a map feature update. Progress for \(region.id): \(percentage)%.")
-        }
-
-        func onPause(error: heresdk.MapLoaderError?) {
-            if let mapLoaderError = error {
-                print("Feature update onPause error. The task tried to often to retry the update: \(mapLoaderError).")
-            } else {
-                print("FeatureUpdate: The map feature update was paused by the user.")
-            }
-        }
-
-        func onComplete(error: heresdk.MapLoaderError?) {
-            if let mapLoaderError = error {
-                print("FeatureUpdate completion error: \(mapLoaderError)")
-                return
-            }
-            print("FeatureUpdate: One or more map update has been successfully installed.")
-
-        }
-
-        func onResume() {
-            print("MapUpdate: A previously paused map feature update has been resumed.")
-        }
-
     }
 
     func initMapDownloader(sdkNativeEngine:SDKNativeEngine){
@@ -564,6 +539,8 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
             showMessage("MapDownloader instance not ready. Try again.")
             return
         }
+        
+        logInstalledRegionsAndStorageUsage()
 
         // Note that this value will not change during the lifetime of an app.
         let persistentMapStatus = mapDownloader.getInitialPersistentMapStatus()
@@ -591,4 +568,34 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
         // perform the recommended action.
         print("RepairPersistentMap: Repair operation failed: \(String(describing: persistentMapRepairError))")
     }
+    
+    func getInstalledRegionsList() -> [InstalledRegion] {
+            var installedRegionList: [InstalledRegion] = []
+            if let downloader = mapDownloader {
+                do {
+                    if let regions = try? downloader.getInstalledRegions() {
+                        installedRegionList = regions
+                    } else {
+                        print("Error: Installed regions not found.")
+                    }
+                }
+            } else {
+                print("Error: MapDownloader is nil.")
+            }
+
+            return installedRegionList
+        }
+
+        func logInstalledRegionsAndStorageUsage() {
+            let installedRegionList = getInstalledRegionsList()
+            if installedRegionList.isEmpty {
+                print("No installed region found")
+            } else {
+                for region in installedRegionList {
+                    print("Downloaded region id: \(region.regionId)")
+                }
+                let storage = installedRegionList.reduce(0) { $0 + $1.sizeOnDiskInBytes }
+                print("Storage usage: \(storage) Bytes")
+            }
+        }
 }
