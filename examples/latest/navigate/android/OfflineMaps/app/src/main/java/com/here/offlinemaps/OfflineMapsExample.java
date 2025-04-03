@@ -45,12 +45,12 @@ import com.here.sdk.maploader.CatalogUpdateTask;
 import com.here.sdk.maploader.CatalogsUpdateInfoCallback;
 import com.here.sdk.maploader.DownloadRegionsStatusListener;
 import com.here.sdk.maploader.DownloadableRegionsCallback;
+import com.here.sdk.maploader.InstalledRegion;
 import com.here.sdk.maploader.MapDownloader;
 import com.here.sdk.maploader.MapDownloaderConstructionCallback;
 import com.here.sdk.maploader.MapDownloaderTask;
 import com.here.sdk.maploader.MapLoaderError;
 import com.here.sdk.maploader.MapLoaderException;
-import com.here.sdk.maploader.MapUpdateProgressListener;
 import com.here.sdk.maploader.MapUpdater;
 import com.here.sdk.maploader.MapUpdaterConstructionCallback;
 import com.here.sdk.maploader.MapVersionHandle;
@@ -457,45 +457,14 @@ public class OfflineMapsExample {
         });
     }
 
-    // It is recommended to perform feature update after feature configuration changes.
-    // This will delete cached map data and subsequently update it. Also, the downloaded regions will be updated to reflect the changes.
-    // Note: Calling performFeatureUpdate() will do nothing when there is no region installed.
-    private void performFeatureUpdate() {
-        Log.d(TAG, "Map feature update called");
-        mapUpdater.performFeatureUpdate(new MapUpdateProgressListener() {
-            @Override
-            public void onProgress(@NonNull RegionId regionId, int i) {
-                Log.d(TAG, "Map feature update progress for " + regionId.toString() + " " + i);
-            }
-
-            @Override
-            public void onPause(@Nullable MapLoaderError mapLoaderError) {
-                Log.d(TAG, "Map feature update progress paused: " + mapLoaderError.name());
-            }
-
-            @Override
-            public void onComplete(@Nullable MapLoaderError mapLoaderError) {
-                if (mapLoaderError == null) {
-                    Log.d(TAG, "Map feature update progress completed: ");
-                } else {
-                    Log.d(TAG, "Map feature update progress error: " + mapLoaderError.name());
-                }
-            }
-
-            @Override
-            public void onResume() {
-                Log.d(TAG, "Map feature update progress resumed.");
-            }
-        });
-    }
-
-
     private void checkInstallationStatus() {
         if (mapDownloader == null) {
             String message = "MapDownloader instance not ready. Try again.";
             snackbar.setText(message).show();
             return;
         }
+
+        logInstalledRegionsAndStorageUsage();
 
         // Note that this value will not change during the lifetime of an app.
         PersistentMapStatus persistentMapStatus = mapDownloader.getInitialPersistentMapStatus();
@@ -526,9 +495,11 @@ public class OfflineMapsExample {
 
     public void toggleLayerConfiguration(String accessKeyID, String accessKeySecret, Context context, Bundle savedInstanceState) {
         // Cached map data persists until the Least Recently Used (LRU) eviction policy is triggered.
-        // After modifying the "FeatureConfiguration" calling performFeatureUpdate()
-        // will also clear the cache if at least one region has been installed.
-        // This app allows the user to install one region for testing purposes.
+        // After modifying the "FeatureConfiguration", calling performUpdateChecks() will trigger an update to the map data.
+        // This will update all previously installed region map data and incomplete downloads which are in pending states.
+        // If no regions have been downloaded, this method will update only the map cache. 
+        // If no updates are available, the MapUpdateProgressListener.onComplete callback will be invoked immediately with a MapLoaderError.
+        // Note: This app allows the user to install one region for testing purposes.
         // In order to simplify testing when no region has been installed, we
         // explicitly clear the cache.
         // If the cache is not cleared, the HERE SDK will look for cached data, for example,
@@ -550,8 +521,10 @@ public class OfflineMapsExample {
             SDKNativeEngine.makeSharedInstance(context, options);
             // Update the current MapView instance to recreate the rendering surface that was invalidated by the invocation of makeSharedInstance.
             updateMapView(savedInstanceState);
-            // Reinitialize the map updater and perform feature update to "normalize" the new layer configuration.
-            initMapUpdaterAndPerformFeatureUpdate(SDKNativeEngine.getSharedInstance());
+            // Reinitialize the map updater and perform feature update internally to "normalize" the new layer configuration.
+            // Normalization, in this context, is the process of aligning the currently downloaded layer group configuration in the map data with the requested one.
+            // Layer groups that are not in the requested layer configuration are removed and layer groups that were added to the requested configuration are downloaded.
+            initMapUpdater(SDKNativeEngine.getSharedInstance());
             // Reinitialize the map downloader using the new instance of SDKNativeEngine.
             initMapDownloader(SDKNativeEngine.getSharedInstance());
             offlineSearchEngine = new OfflineSearchEngine();
@@ -586,17 +559,6 @@ public class OfflineMapsExample {
             public void onMapUpdaterConstructe(@NonNull MapUpdater mapUpdater) {
                 OfflineMapsExample.this.mapUpdater = mapUpdater;
                 performUpdateChecks();
-            }
-        });
-    }
-
-    private void initMapUpdaterAndPerformFeatureUpdate(SDKNativeEngine sdkNativeEngine) {
-        MapUpdater.fromEngineAsync(sdkNativeEngine, new MapUpdaterConstructionCallback() {
-            @Override
-            public void onMapUpdaterConstructe(@NonNull MapUpdater mapUpdater) {
-                OfflineMapsExample.this.mapUpdater = mapUpdater;
-                // Checks and updates in cases of map feature configuration changes.
-                performFeatureUpdate();
             }
         });
     }
@@ -807,5 +769,32 @@ public class OfflineMapsExample {
         };
 
         offlineSearchEngine.setIndexOptions(sdkNativeEngine, offlineSearchIndexOptions, offlineSearchIndexListener);
+    }
+
+    private List<InstalledRegion> getInstalledRegionList() {
+        List<InstalledRegion> installedRegionList = new ArrayList<>();
+        try {
+            installedRegionList = mapDownloader.getInstalledRegions();
+        } catch (MapLoaderException e) {
+            Log.d("Fetching installedRegions failed", e.error.toString());
+        }
+        return installedRegionList;
+    }
+
+    public void logInstalledRegionsAndStorageUsage() {
+        List<InstalledRegion> installedRegionList = getInstalledRegionList();
+        if (installedRegionList.isEmpty()) {
+            Log.d("Installed Region", "No installed region found");
+        } else {
+            for (InstalledRegion region : installedRegionList) {
+                Log.d("Installed Region", "Downloaded region id: " + region.regionId);
+            }
+
+            long storage = installedRegionList.stream()
+                    .mapToLong(region -> region.sizeOnDiskInBytes)
+                    .sum();
+
+            Log.d("Installed Region",  "Storage usage : " + storage + " Bytes");
+        }
     }
 }

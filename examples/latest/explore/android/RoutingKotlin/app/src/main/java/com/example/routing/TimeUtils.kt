@@ -173,7 +173,6 @@ class TimeUtils {
         return TimeZone.getTimeZone(timeZoneId)
     }
 
-
     // Returns the arrival time at the final location of the route.
     private fun getArrivalLocationTime(route: Route): LocationTime? {
         val lastSectionIndex = route.sections.size - 1

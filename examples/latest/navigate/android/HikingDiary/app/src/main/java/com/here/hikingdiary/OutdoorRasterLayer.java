@@ -19,6 +19,7 @@
 
 package com.here.hikingdiary;
 
+import com.here.sdk.mapview.MapCameraLimits;
 import com.here.sdk.mapview.MapContentType;
 import com.here.sdk.mapview.MapLayer;
 import com.here.sdk.mapview.MapLayerBuilder;
@@ -103,11 +104,11 @@ public class OutdoorRasterLayer {
                 .renderedBeforeLayer("&polyline_layer")
                 .build();
 
-        // And it should be visible for all zoom levels.
-        MapLayerVisibilityRange range = new MapLayerVisibilityRange(0, 22 + 1);
+        // And it should be visible for all zoom levels. The minimum tilt level is 0 and maximum zoom level is 23.
+        MapLayerVisibilityRange range = new MapLayerVisibilityRange(MapCameraLimits.MIN_TILT, MapCameraLimits.MAX_ZOOM_LEVEL);
 
         try {
-            // Build and add the layer to the map.
+            // Build and add the layer to the map. 
             MapLayer mapLayer = new MapLayerBuilder()
                     .forMap(mapView.getHereMap()) // mandatory parameter
                     .withName(dataSourceName + "Layer") // mandatory parameter

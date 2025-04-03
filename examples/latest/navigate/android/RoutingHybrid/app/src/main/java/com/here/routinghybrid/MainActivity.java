@@ -31,6 +31,7 @@ import com.here.sdk.core.engine.AuthenticationMode;
 import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.core.engine.SDKOptions;
 import com.here.sdk.core.errors.InstantiationErrorException;
+import com.here.sdk.mapdata.SegmentDataLoaderException;
 import com.here.sdk.mapview.MapError;
 import com.here.sdk.mapview.MapFeatureModes;
 import com.here.sdk.mapview.MapFeatures;
@@ -71,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
         String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
         AuthenticationMode authenticationMode = AuthenticationMode.withKeySecret(accessKeyID, accessKeySecret);
         SDKOptions options = new SDKOptions(authenticationMode);
+
         try {
             Context context = this;
             SDKNativeEngine.makeSharedInstance(context, options);
@@ -113,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
                     mapView.getMapScene().enableFeatures(mapFeatures);
 
                     routingExample = new RoutingExample(MainActivity.this, mapView);
+
                 } else {
                     Log.d(TAG, "Loading map failed: mapErrorCode: " + mapError.name());
                 }
@@ -131,6 +134,8 @@ public class MainActivity extends AppCompatActivity {
     public void clearMapButtonClicked(View view) {
         routingExample.clearMap();
     }
+
+    public void loadSegmentDataButtonClicked(View view) {routingExample.loadAndProcessSegmentData();}
 
     public void switchOnlineButtonClicked(View view) {
         routingExample.onSwitchOnlineButtonClicked();
@@ -178,3 +183,4 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 }
+

@@ -99,6 +99,8 @@ import com.here.sdk.navigation.TollBoothLane;
 import com.here.sdk.navigation.TollCollectionMethod;
 import com.here.sdk.navigation.TollStop;
 import com.here.sdk.navigation.TollStopWarningListener;
+import com.here.sdk.navigation.TrafficMergeWarning;
+import com.here.sdk.navigation.TrafficMergeWarningListener;
 import com.here.sdk.navigation.TruckRestrictionWarning;
 import com.here.sdk.navigation.TruckRestrictionsWarningListener;
 import com.here.sdk.navigation.VisualNavigator;
@@ -310,6 +312,24 @@ public class NavigationEventHandler {
                     Log.d(TAG, "No speed limits on this road! Drive as fast as you feel safe ...");
                 } else {
                     Log.d(TAG, "Current speed limit (m/s):" + currentSpeedLimit);
+                }
+            }
+        });
+
+        // Notifies about merging traffic to the current road.
+        visualNavigator.setTrafficMergeWarningListener(new TrafficMergeWarningListener() {
+            @Override
+            public void onTrafficMergeWarningUpdated(@NonNull TrafficMergeWarning trafficMergeWarning) {
+                if (trafficMergeWarning.distanceType == DistanceType.AHEAD) {
+                    Log.d(TAG, "There is a merging " + trafficMergeWarning.roadType.name() + " ahead in: "
+                            + trafficMergeWarning.distanceToTrafficMergeInMeters + "meters, merging from the "
+                            + trafficMergeWarning.side.name() + "side, with lanes ="
+                            + trafficMergeWarning.laneCount);
+                } else if (trafficMergeWarning.distanceType == DistanceType.PASSED) {
+                    Log.d(TAG, "A merging " + trafficMergeWarning.roadType.name() + " passed: "
+                            + trafficMergeWarning.distanceToTrafficMergeInMeters + "meters, merging from the "
+                            + trafficMergeWarning.side.name() + "side, with lanes ="
+                            + trafficMergeWarning.laneCount);
                 }
             }
         });

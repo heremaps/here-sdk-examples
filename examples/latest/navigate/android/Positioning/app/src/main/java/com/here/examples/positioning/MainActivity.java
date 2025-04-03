@@ -19,21 +19,18 @@
 
 package com.here.examples.positioning;
 
-import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
 import com.here.examples.positioning.PermissionsRequestor.ResultListener;
 import com.here.sdk.core.engine.AuthenticationMode;
 import com.here.sdk.core.engine.SDKNativeEngine;
@@ -50,23 +47,13 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    /** Key for service terms*/
-    private static final String PREF_SERVICE_TERMS = "service_terms";
-
-    /** Preferences extension. */
-    private static final String PREF_NAME_EXTENSION = "_preferences";
-
     private PermissionsRequestor permissionsRequestor;
     private MapView mapView;
     private PositioningExample positioningExample;
-    private int serviceTerms;
-    private AlertDialog termsAndServicesDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        readAppPrefs();
 
         // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
         initializeHERESDK();
@@ -80,12 +67,12 @@ public class MainActivity extends AppCompatActivity {
         mapView = findViewById(R.id.map_view);
         mapView.onCreate(savedInstanceState);
 
-        // Shows example of application Terms & Privacy policy dialog as
-        // required by Legal Requirements in Development Guide under Positioning
-        // section.
-        if (!showAppTermsAndPrivacyPolicyDialog()) {
-          handleAndroidPermissions();
-        }
+        // Shows an example of how to present application terms and a privacy policy dialog as
+        // required by legal requirements when using HERE Positioning.
+        // See the Positioning section in our Developer Guide for more details.
+        // Afterwards, Android permissions need to be checked to allow using the device's sensors.
+        PositioningTermsAndPrivacyHelper privacyHelper = new PositioningTermsAndPrivacyHelper(this);
+        privacyHelper.showAppTermsAndPrivacyPolicyDialogIfNeeded(this::handleAndroidPermissions);
     }
 
     private void initializeHERESDK() {
@@ -113,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void permissionsDenied() {
-                showDialog("Error", "Cannot start app: Location service and permissions are needed for this app.");
+                showPermissionsDeniedDialog();
             }
         });
     }
@@ -177,10 +164,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void showDialog(String title, String message) {
+    private void showPermissionsDeniedDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(title);
-        builder.setMessage(message);
+        builder.setTitle("Error");
+        builder.setMessage("Cannot start app: Location service and permissions are needed for this app.");
         builder.setPositiveButton("OK", (dialog, which) -> {
             Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -190,73 +177,5 @@ public class MainActivity extends AppCompatActivity {
             finish();
         });
         builder.show();
-    }
-
-    /**
-     * Reads shared preferences
-     */
-    private void readAppPrefs() {
-        SharedPreferences sharedPreferences =
-                getSharedPreferences(
-                        getPackageName() + PREF_NAME_EXTENSION, Context.MODE_PRIVATE);
-        serviceTerms = sharedPreferences.getInt(PREF_SERVICE_TERMS, 0);
-    }
-
-    /**
-     * Writes shared preferences
-     */
-    private void writeAppPrefs() {
-        SharedPreferences.Editor sharedPrefsEditor =
-                getSharedPreferences(
-                        getPackageName() + PREF_NAME_EXTENSION, Context.MODE_PRIVATE).edit();
-        sharedPrefsEditor.putInt(PREF_SERVICE_TERMS, serviceTerms);
-        sharedPrefsEditor.apply();
-    }
-
-
-    /**
-     * Show dialog for application service terms
-     */
-    private boolean showAppTermsAndPrivacyPolicyDialog() {
-      if (serviceTerms == 1) {
-        return false;
-      }
-
-      WebView webView = new WebView(this);
-      webView.setWebViewClient(
-          new WebViewClient() {
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-              final Uri uri = request.getUrl();
-
-              if (uri.getScheme() != null && uri.getScheme().contains("http")) {
-                try {
-                  Intent browserIntent = new Intent(Intent.ACTION_VIEW, uri);
-                  startActivity(browserIntent);
-                } catch (ActivityNotFoundException e) {
-                  Log.d(TAG, "Opening browser failed: " + e.getMessage());
-                }
-                return true;
-              }
-              return false;
-            }
-          });
-      webView.loadUrl("file:///android_asset/APPLICATION_TERMS.html");
-      webView.requestLayout();
-
-      AlertDialog.Builder builder = new AlertDialog.Builder(this);
-      builder.setView(webView);
-
-      builder.setCancelable(false);
-      builder.setPositiveButton(R.string.button_agree, (dialog, id) -> {
-        serviceTerms = 1;
-        writeAppPrefs();
-        dialog.cancel();
-        // Check app permissions now
-        handleAndroidPermissions();
-      });
-      termsAndServicesDialog = builder.create();
-      termsAndServicesDialog.show();
-      return true;
     }
 }

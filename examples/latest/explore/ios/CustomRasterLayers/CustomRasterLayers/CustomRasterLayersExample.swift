@@ -107,8 +107,8 @@ class CustomRasterLayersExample {
         // so that we don't overlap the raster layer over POI markers.
         let priority = MapLayerPriorityBuilder().renderedAfterLayer(named: "labels").build()
         
-        // And it should be visible for all zoom levels.
-        let range = MapLayerVisibilityRange(minimumZoomLevel: 0, maximumZoomLevel: 22 + 1)
+        // And it should be visible for all zoom levels. The minimum tilt level is 0 and maximum zoom level is 23.
+        let range = MapLayerVisibilityRange(minimumZoomLevel: MapCameraLimits.minTilt, maximumZoomLevel: MapCameraLimits.maxZoomLevel)
 
         let mapLayer: MapLayer
 

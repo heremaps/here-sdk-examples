@@ -30,7 +30,7 @@ import 'package:here_sdk/mapview.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
+import 'PositioningTermsAndPrivacyHelper.dart';
 import 'main.dart';
 
 class PositioningExample extends State<MyApp>
@@ -43,7 +43,6 @@ class PositioningExample extends State<MyApp>
   static const double _labelHeight = 20;
   static const double _cameraDistanceInMeters = 400;
   static final GeoCoordinates _defaultGeoCoordinates = GeoCoordinates(52.530932, 13.384915);
-  static final String _prefServiceTerms = "service_terms";
 
   LocationEngine? _locationEngine;
 
@@ -53,12 +52,11 @@ class PositioningExample extends State<MyApp>
   LocationEngineStatus? _status;
   List<LocationIssueType> _issues = <LocationIssueType>[];
   late final AppLifecycleListener _appLifecycleListener;
-  bool? _serviceTermsAccepted;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance!.addObserver(this);
+    WidgetsBinding.instance.addObserver(this);
 
     _appLifecycleListener = AppLifecycleListener(
       onDetach: () =>
@@ -72,7 +70,7 @@ class PositioningExample extends State<MyApp>
 
   @override
   void dispose() {
-    WidgetsBinding.instance!.removeObserver(this);
+    WidgetsBinding.instance.removeObserver(this);
     _disposeHERESDK();
     super.dispose();
   }
@@ -191,40 +189,42 @@ class PositioningExample extends State<MyApp>
   void _onMapCreated(HereMapController hereMapController) {
     _hereMapController = hereMapController;
     hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) async {
-      if (error == null) {
-        if (Platform.isAndroid) {
-          await _readPrefs();
-
-          if (_serviceTermsAccepted == null ||
-              _serviceTermsAccepted == false) {
-            // Shows example of application Terms & Privacy policy dialog as
-            // required by Legal Requirements in Development Guide under Positioning
-            // section.
-            await _showApplicationTermsAndConditionsDialog();
-          }
-        }
-
-        // Before we start the app we want to ensure that the required permissions are handled.
-        if (!await _requestPermissions()) {
-          await _showDialog("Error", "Cannot start app: Location service and permissions are needed for this app.");
-          // Let the user set the permissions from the system settings as fallback.
-          openAppSettings();
-          SystemNavigator.pop();
-          return;
-        }
-
-        try {
-          _locationEngine = LocationEngine();
-        } on InstantiationException {
-          throw ("Initialization of LocationEngine failed.");
-        }
-
-        // Once permissions are granted, start locating.
-        _startLocating();
-      } else {
+      if (error != null) {
         print('Map scene not loaded. MapError: ' + error.toString());
+        return;
       }
+
+      if (Platform.isAndroid) {
+        // Shows an example of how to present application terms and a privacy policy dialog as
+        // required by legal requirements when using HERE Positioning.
+        // See the Positioning section in our Developer Guide for more details.
+        // Afterwards, Android permissions need to be checked to allow using the device's sensors.
+        final termsAndPrivacyHelper = PositioningTermsAndPrivacyHelper(context);
+        await termsAndPrivacyHelper.showAppTermsAndPrivacyPolicyDialogIfNeeded();
+      }
+
+      await _handlePermissions();
     });
+  }
+
+  Future<void> _handlePermissions() async {
+    // Before we start the app we want to ensure that the required permissions are handled.
+    if (!await _requestPermissions()) {
+      await _showDialog("Error", "Cannot start app: Location service and permissions are needed for this app.");
+      // Let the user set the permissions from the system settings as fallback.
+      openAppSettings();
+      SystemNavigator.pop();
+      return;
+    }
+
+    try {
+      _locationEngine = LocationEngine();
+    } on InstantiationException {
+      throw ("Initialization of LocationEngine failed.");
+    }
+
+    // Once permissions are granted, start locating.
+    _startLocating();
   }
 
   void _startLocating() {
@@ -251,6 +251,9 @@ class PositioningExample extends State<MyApp>
     _locationEngine!.addLocationStatusListener(this);
     _locationEngine!.addLocationIssueListener(this);
     if (Platform.isAndroid) {
+      // By calling confirmHEREPrivacyNoticeInclusion() you confirm that this app informs on
+      // data collection on Android devices, which is done for this app via PositioningTermsAndPrivacyHelper,
+      // which shows a possible example for this.
       _locationEngine!.confirmHEREPrivacyNoticeInclusion();
     }
     _locationEngine!.startWithLocationAccuracy(LocationAccuracy.bestAvailable);
@@ -356,21 +359,6 @@ class PositioningExample extends State<MyApp>
     return SizedBox(height: _labelHeight, child: Text(text));
   }
 
-  // A helper method to add a multiline button on top of the HERE map.
-  Align multiLineButton(String buttonLabel, Function callbackFunction) {
-    return Align(
-      alignment: Alignment.topCenter,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.lightBlueAccent,
-          foregroundColor: Colors.white,
-        ),
-        onPressed: () => callbackFunction(),
-        child: Container(width: 250, child: Text(buttonLabel, style: TextStyle(fontSize: 15))),
-      ),
-    );
-  }
-
   // A helper method to show a dialog.
   Future<void> _showDialog(String title, String message) async {
     return showDialog<void>(
@@ -434,116 +422,5 @@ class PositioningExample extends State<MyApp>
 
   String _getTimestampSinceBootString() {
     return '${_location?.timestampSinceBoot?.toString() ?? _notAvailable}' + ' ms';
-  }
-
-  // A helper method to show terms and conditions dialog.
-  Future<void> _showApplicationTermsAndConditionsDialog() async {
-    await showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        content: GestureDetector(
-          onTap: () async {
-            await _showPrivacyPolicyDialog();
-            Navigator.of(context).pop();
-          },
-          child: Padding(
-            padding: EdgeInsets.all(16.0),
-            child: RichText(
-              text: TextSpan(
-                children: [
-                  TextSpan(text: "You need to agree to the Service Terms and ", style: TextStyle(backgroundColor: Colors.white, color: Colors.black, fontSize: 18)),
-                  TextSpan(text: "Privacy Policy", style: TextStyle(backgroundColor: Colors.white, color: Colors.blue, fontSize: 18, decoration: TextDecoration.underline)),
-                  TextSpan(text: " to use this app.", style: TextStyle(backgroundColor: Colors.white, color: Colors.black, fontSize: 18)),
-                ],
-              ),
-            ),
-          ),
-        ),
-        actions: <Widget>[
-          TextButton(
-            style: TextButton.styleFrom(
-              textStyle: Theme.of(context).textTheme.labelLarge,
-            ),
-            child: const Text('Agree'),
-            onPressed: () {
-              _serviceTermsAccepted = true;
-              _savePrefs();
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  // A helper method to show terms and conditions dialog.
-  Future<void> _showPrivacyPolicyDialog() async {
-    await showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        content: GestureDetector(
-            onTap: () {
-              _launchUrl("https://legal.here.com/here-network-positioning-via-sdk");
-            },
-            child: Padding(
-              padding: EdgeInsets.all(16.0),
-              child: SingleChildScrollView(
-                child: RichText(
-                  text: TextSpan(
-                      children: [
-                        TextSpan(text: "Your privacy when using this application.\n\n", style: TextStyle(backgroundColor: Colors.white, color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold)),
-                        TextSpan(text: "(In this Privacy Policy example, the following paragraph demonstrates one way to inform app users about data collection. All other potential privacy-related aspects are intentionally omitted from this example.)\n\n", style: TextStyle(backgroundColor: Colors.white, color: Colors.black, fontSize: 18)),
-                        TextSpan(text: "This application uses location services provided by HERE Technologies. To maintain, improve and provide these services, HERE Technologies from time to time gathers characteristics information about the near-by network signals. For more information, please see the HERE Privacy Notice at ", style: TextStyle(backgroundColor: Colors.white, color: Colors.black, fontSize: 18)),
-                        TextSpan(text: "https://legal.here.com/here-network-positioning-via-sdk", style: TextStyle(backgroundColor: Colors.white, color: Colors.blue, fontSize: 18, decoration: TextDecoration.underline)),
-                        TextSpan(text: ".", style: TextStyle(backgroundColor: Colors.white, color: Colors.black, fontSize: 18)),
-                      ],
-                  ),
-                ),
-              ),
-            ),
-        ),
-        actions: <Widget>[
-          TextButton(
-            style: TextButton.styleFrom(
-              textStyle: Theme.of(context).textTheme.labelLarge,
-            ),
-            child: const Text('Agree'),
-            onPressed: () {
-              _serviceTermsAccepted = true;
-              _savePrefs();
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _savePrefs() async {
-      SharedPreferences preferences = await SharedPreferences.getInstance();
-      await preferences.setBool(_prefServiceTerms, _serviceTermsAccepted!);
-  }
-
-  Future<void> _readPrefs() async {
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    setState(() {
-      _serviceTermsAccepted = preferences.getBool(_prefServiceTerms);
-    });
-  }
-
-  void _launchUrl(String url) async {
-    final Uri uri = Uri.parse(url);
-    if (!uri.hasScheme) return; // Prevent invalid URLs
-
-    try {
-      const platform = MethodChannel('com.here.sdk.examples.positioning_app');
-      await platform.invokeMethod('openWebLink', url);
-    } catch (e) {
-      print("Could not open the URL: $e");
-    }
   }
 }

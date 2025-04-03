@@ -1,5 +1,5 @@
 name: positioning_app
-description: A new Flutter app that uses the HERE SDK for Flutter to pin images to the map.
+description: A Flutter app that uses the HERE SDK to track the user's location.
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `pub publish`. This is preferred for private packages.
@@ -18,13 +18,12 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ">=3.5.4 <4.0.0"
-  flutter: ">=3.24.5"
+  sdk: ">=3.6.2 <4.0.0"
+  flutter: ">=3.27.4"
 
 dependencies:
   flutter:
     sdk: flutter
-
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -36,6 +35,9 @@ dependencies:
 
   # The following adds the shared_preferences plugin, to save and read persistent preferences.
   shared_preferences: ^2.3.2
+
+  # The following is used to open a URL in the device's browser.
+  url_launcher: ^6.3.1
 
   # The following adds the HERE SDK for Flutter plugin folder to your application.
   here_sdk:

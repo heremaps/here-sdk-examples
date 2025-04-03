@@ -244,8 +244,7 @@ class EVRoutingExample: TapDelegate {
         var sectionIndex = 0
         let sections = route.sections
         for section in sections {
-            let evDetails = section.evDetails
-            print("Estimated net energy consumption in kWh for this section: \(String(describing: evDetails?.consumptionInKilowattHour))")
+            print("Estimated net energy consumption in kWh for this section: \(String(describing: section.consumptionInKilowattHours))")
             for postAction in section.postActions {
                 switch postAction.action {
                     case .chargingSetup:
@@ -343,7 +342,7 @@ class EVRoutingExample: TapDelegate {
         let searchOptions = SearchOptions(languageCode: LanguageCode.enUs,
                                           maxItems: 30)
         // Disable the following line when you are not part of the alpha group.
-        enableChargingStationAvailabilityRequest()
+        enableEVChargingStationDetails()
         
         searchEngine.searchByCategory(categoryQuery,
                             options: searchOptions,
@@ -355,12 +354,12 @@ class EVRoutingExample: TapDelegate {
     // If you are not part of the alpha group, do not use this call as a SearchError would occur,
     // access to this feature requires appropriate credentials.
     // Check the API Reference for more details.
-    private func enableChargingStationAvailabilityRequest() {
+    private func enableEVChargingStationDetails() {
         // Fetching additional charging stations details requires a custom option call.
-        if let error = searchEngine.setCustomOption(name: "browse.show", value: "ev,fuel") {
+        if let error = searchEngine.setCustomOption(name: "browse.show", value: "ev") {
         showDialog(
             title: "Charging Station",
-            message: "Failed to enable EV charging station availability. "
+            message: "Failed to enableEVChargingStationDetails. "
                      + "Disable the feature if you are not part of the alpha group."
         )
         } else {
@@ -473,7 +472,7 @@ class EVRoutingExample: TapDelegate {
         let metadata = Metadata()
         
         if let chargingPool = placeDetails.evChargingPool {
-            for station in chargingPool.chargingStations {
+            for station in chargingPool.chargingStations {                
                 if let supplierName = station.supplierName {
                     metadata.setString(key: supplierNameMetadataKey, value: supplierName)
                 }

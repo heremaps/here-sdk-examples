@@ -785,9 +785,9 @@ public class TruckGuidanceExample {
                         continue;
                     }
                     // The provided TruckSpecifications or TruckOptions are violated by the below values.
-                    if (details.maxGrossWeightInKilograms != null) {
+                    if (details.maxWeight != null) {
                         Log.d("ViolatedRestriction", "Section " + sectionNr + ": " +
-                                "Exceeded maxGrossWeightInKilograms: " + details.maxGrossWeightInKilograms);
+                                "Exceeded maxWeightInKilograms: " + details.maxWeight);
                     }
                     if (details.maxWeightPerAxleInKilograms != null) {
                         Log.d("ViolatedRestriction", "Section " + sectionNr + ": " +

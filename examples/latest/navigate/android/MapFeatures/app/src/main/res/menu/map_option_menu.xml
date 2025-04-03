@@ -113,7 +113,4 @@
                 android:title="Road Exit Labels Numbers Only"/>
         </menu>
     </item>
-    <item
-        android:id="@+id/web_mercator"
-        android:title="Web Mercator Projection"/>
 </menu>

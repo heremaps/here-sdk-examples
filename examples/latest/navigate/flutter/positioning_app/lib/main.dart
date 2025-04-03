@@ -18,7 +18,6 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:here_sdk/consent.dart';
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/core.engine.dart';
 import 'package:here_sdk/core.errors.dart';
@@ -31,24 +30,7 @@ void main() async {
 
   runApp(
     MaterialApp(
-      theme: ThemeData.dark().copyWith(
-        // Optional: force dark theme with custom consent dialog colors.
-        extensions: <ThemeExtension<dynamic>>[
-          const ConsentDialogColors(
-            text: Color.fromARGB(255, 0, 0, 0),
-            background: Color.fromARGB(255, 255, 255, 255),
-            learnMoreLink: Color.fromARGB(255, 0x28, 0x7e, 0xf7),
-            acceptButtonCaption: Color.fromARGB(255, 255, 255, 255),
-            acceptButtonPrimary: Color.fromARGB(255, 0x80, 0xaa, 0xff),
-            acceptButtonSecondary: Color.fromARGB(255, 0x7d, 0xe6, 0xe1),
-            rejectButtonCaption: Color.fromARGB(255, 0, 0, 0),
-            rejectButtonPrimary: Color.fromARGB(255, 255, 255, 255),
-            rejectButtonBorder: Color.fromARGB(0x1f, 0, 0, 0),
-          ),
-        ],
-      ),
-      localizationsDelegates: HereSdkConsentLocalizations.localizationsDelegates,
-      supportedLocales: HereSdkConsentLocalizations.supportedLocales,
+      theme: ThemeData.dark().copyWith(),
       home: MyApp(),
     ),
   );

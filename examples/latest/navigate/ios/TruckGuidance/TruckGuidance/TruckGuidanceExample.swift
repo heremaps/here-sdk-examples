@@ -735,8 +735,8 @@ class TruckGuidanceExample: TapDelegate,
                     print("timeDependent: \(timeDependent)")
                     if let details = violatedRestriction.details {
                         // The provided TruckSpecifications or TruckOptions are violated by the below values.
-                        if let maxGrossWeightInKilograms = details.maxGrossWeightInKilograms {
-                            print("Section \(sectionNr): Exceeded maxGrossWeightInKilograms: \(maxGrossWeightInKilograms)")
+                        if let maxWeightInKilograms = details.maxWeight {
+                            print("Section \(sectionNr): Exceeded maxWeightInKilograms: \(maxWeightInKilograms)")
                         }
                         if let maxWeightPerAxleInKilograms = details.maxWeightPerAxleInKilograms {
                             print("Section \(sectionNr): Exceeded maxWeightPerAxleInKilograms: \(maxWeightPerAxleInKilograms)")

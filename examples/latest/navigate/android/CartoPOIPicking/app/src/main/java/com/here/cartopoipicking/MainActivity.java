@@ -20,6 +20,8 @@
 package com.here.cartopoipicking;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -40,6 +42,9 @@ import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.core.engine.SDKOptions;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.gestures.TapListener;
+import com.here.sdk.mapview.IconProvider;
+import com.here.sdk.mapview.IconProviderAssetType;
+import com.here.sdk.mapview.IconProviderError;
 import com.here.sdk.mapview.MapError;
 import com.here.sdk.mapview.MapFeatureModes;
 import com.here.sdk.mapview.MapFeatures;
@@ -67,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
     private MapView mapView;
 
     private SearchEngine searchEngine;
+    private MapScheme currentMapScheme;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
         mapView = findViewById(R.id.map_view);
         mapView.onCreate(savedInstanceState);
 
+        currentMapScheme = MapScheme.NORMAL_DAY;
         handleAndroidPermissions();
     }
 
@@ -122,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadMapScene() {
         // Load a scene from the HERE SDK to render the map with a map scheme.
-        mapView.getMapScene().loadScene(MapScheme.NORMAL_DAY, new MapScene.LoadSceneCallback() {
+        mapView.getMapScene().loadScene(currentMapScheme, new MapScene.LoadSceneCallback() {
             @Override
             public void onLoadScene(@Nullable MapError mapError) {
                 if (mapError == null) {
@@ -244,9 +251,31 @@ public class MainActivity extends AppCompatActivity {
         }
 
         PickMapContentResult.VehicleRestrictionResult topmostVehicleRestriction = vehicleRestrictions.get(0);
-        showDialog("Vehicle restriction picked:", "Location: " +
-                topmostVehicleRestriction.coordinates.latitude + ", " +
-                topmostVehicleRestriction.coordinates.longitude + ". " );
+        createVehicleRestrictionIcon(topmostVehicleRestriction);
+    }
+
+    private void createVehicleRestrictionIcon(PickMapContentResult.VehicleRestrictionResult vehicleRestrictionResult) {
+        IconProvider iconProvider = new IconProvider(mapView.getMapContext());
+
+        IconProvider.IconCallback iconProviderCallback = new IconProvider.IconCallback() {
+            @Override
+            public void onCreateIconReply(@Nullable Bitmap bitmap, @Nullable String description, @Nullable IconProviderError iconProviderError) {
+                if (iconProviderError == null) {
+                    showDialog("Vehicle Restriction", "Description: " + ((description==null || description.isBlank())?"Not Available":description), bitmap);
+                    return;
+                }
+                showDialog("IconProvider error", "An error occurred while creating the icon: " + iconProviderError.name());
+            }
+        };
+
+        // Creates an image representing a vehicle restriction based on the picked content.
+        // Parameters:
+        // - vehicleRestrictionResult: The result of picking a vehicle restriction object from PickMapContentResult.
+        // - currentMapScheme: The current map scheme of the MapView.
+        // - IconProviderAssetType: Specifies icon optimization for either UI or MAP.
+        // - size: The size of the generated image in the callback.
+        // - iconProviderCallback: The callback object for receiving the generated icon.
+        iconProvider.createVehicleRestrictionIcon(vehicleRestrictionResult, currentMapScheme, IconProviderAssetType.UI, new Size2D(), iconProviderCallback);
     }
 
     @Override
@@ -291,6 +320,14 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(title)
                 .setMessage(message)
+                .show();
+    }
+
+    private void showDialog(String title, String message, Bitmap icon) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(title)
+                .setMessage(message)
+                .setIcon(new BitmapDrawable(getApplicationContext().getResources(),icon))
                 .show();
     }
 }

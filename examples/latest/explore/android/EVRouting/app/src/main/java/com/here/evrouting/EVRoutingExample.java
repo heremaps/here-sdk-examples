@@ -62,7 +62,6 @@ import com.here.sdk.routing.ChargingStation;
 import com.here.sdk.routing.ChargingStop;
 import com.here.sdk.routing.ChargingSupplyType;
 import com.here.sdk.routing.EVCarOptions;
-import com.here.sdk.routing.EVDetails;
 import com.here.sdk.routing.EVMobilityServiceProviderPreferences;
 import com.here.sdk.routing.Isoline;
 import com.here.sdk.routing.IsolineCalculationMode;
@@ -304,11 +303,7 @@ public class EVRoutingExample {
         int sectionIndex = 0;
         List<Section> sections = route.getSections();
         for (Section section : sections) {
-            EVDetails evDetails = section.getEvDetails();
-            if (evDetails == null) {
-                return;
-            }
-            Log.d("EVDetails", "Estimated net energy consumption in kWh for this section: " + evDetails.consumptionInKilowattHour);
+            Log.d("EVDetails", "Estimated net energy consumption in kWh for this section: " + section.getConsumptionInKilowattHours());
             for (PostAction postAction : section.getPostActions()) {
                 switch (postAction.action) {
                     case CHARGING_SETUP:
@@ -411,7 +406,7 @@ public class EVRoutingExample {
         searchOptions.maxItems = 30;
 
         // Disable the following line when you are not part of the alpha group.
-        enableChargingStationAvailabilityRequest();
+        enableEVChargingStationDetails();
 
         searchEngine.searchByCategory(categoryQuery, searchOptions, new SearchCallback() {
             @Override
@@ -451,12 +446,12 @@ public class EVRoutingExample {
     // If you are not part of the alpha group, do not use this call as a SearchError would occur,
     // access to this feature requires appropriate credentials.
     // Check the API Reference for more details.
-    private void enableChargingStationAvailabilityRequest() {
+    private void enableEVChargingStationDetails() {
         // Fetching additional charging stations details requires a custom option call.
-        SearchError error = searchEngine.setCustomOption("browse.show", "ev,fuel");
+        SearchError error = searchEngine.setCustomOption("browse.show", "ev");
         if (error != null) {
             showDialog("Charging station",
-                    "Failed to enable EV charging station availability. " +
+                    "Failed to enableEVChargingStationDetails. " +
                             "Disable the feature if you are not part of the alpha group.");
         } else {
             Log.d("ChargingStation", "EV charging station availability enabled successfully.");
@@ -536,28 +531,26 @@ public class EVRoutingExample {
         Metadata metadata = new Metadata();
         if (placeDetails.evChargingPool != null) {
             for (EVChargingStation station : placeDetails.evChargingPool.chargingStations) {
-                if (station != null) {
-                    if (station.supplierName != null) {
-                        metadata.setString(SUPPLIER_NAME_METADATA_KEY, station.supplierName);
-                    }
-                    if (station.connectorCount != null) {
-                        metadata.setString(CONNECTOR_COUNT_METADATA_KEY, String.valueOf(station.connectorCount));
-                    }
-                    if (station.availableConnectorCount != null) {
-                        metadata.setString(AVAILABLE_CONNECTORS_METADATA_KEY, String.valueOf(station.availableConnectorCount));
-                    }
-                    if (station.occupiedConnectorCount != null) {
-                        metadata.setString(OCCUPIED_CONNECTORS_METADATA_KEY, String.valueOf(station.occupiedConnectorCount));
-                    }
-                    if (station.outOfServiceConnectorCount != null) {
-                        metadata.setString(OUT_OF_SERVICE_CONNECTORS_METADATA_KEY, String.valueOf(station.outOfServiceConnectorCount));
-                    }
-                    if (station.reservedConnectorCount != null) {
-                        metadata.setString(RESERVED_CONNECTORS_METADATA_KEY, String.valueOf(station.reservedConnectorCount));
-                    }
-                    if (station.lastUpdated != null) {
-                        metadata.setString(LAST_UPDATED_METADATA_KEY, String.valueOf(station.lastUpdated));
-                    }
+                if (station.supplierName != null) {
+                    metadata.setString(SUPPLIER_NAME_METADATA_KEY, station.supplierName);
+                }
+                if (station.connectorCount != null) {
+                    metadata.setString(CONNECTOR_COUNT_METADATA_KEY, String.valueOf(station.connectorCount));
+                }
+                if (station.availableConnectorCount != null) {
+                    metadata.setString(AVAILABLE_CONNECTORS_METADATA_KEY, String.valueOf(station.availableConnectorCount));
+                }
+                if (station.occupiedConnectorCount != null) {
+                    metadata.setString(OCCUPIED_CONNECTORS_METADATA_KEY, String.valueOf(station.occupiedConnectorCount));
+                }
+                if (station.outOfServiceConnectorCount != null) {
+                    metadata.setString(OUT_OF_SERVICE_CONNECTORS_METADATA_KEY, String.valueOf(station.outOfServiceConnectorCount));
+                }
+                if (station.reservedConnectorCount != null) {
+                    metadata.setString(RESERVED_CONNECTORS_METADATA_KEY, String.valueOf(station.reservedConnectorCount));
+                }
+                if (station.lastUpdated != null) {
+                    metadata.setString(LAST_UPDATED_METADATA_KEY, String.valueOf(station.lastUpdated));
                 }
             }
         }
