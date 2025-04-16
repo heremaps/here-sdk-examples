@@ -17,6 +17,8 @@
  * License-Filename: LICENSE
  */
 
+import 'dart:io';
+
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/core.errors.dart';
 import 'package:here_sdk/location.dart';
@@ -52,6 +54,13 @@ class HEREPositioningProvider implements LocationStatusListener {
     // Set listeners to get location updates.
     _locationEngine.addLocationListener(updateListener);
     _locationEngine.addLocationStatusListener(this);
+
+    if (Platform.isAndroid) {
+      // By calling confirmHEREPrivacyNoticeInclusion() you confirm that this app informs on
+      // data collection on Android devices, which is done for this app via PositioningTermsAndPrivacyHelper,
+      // which shows a possible example for this.
+      _locationEngine.confirmHEREPrivacyNoticeInclusion();
+    }
 
     _locationEngine.startWithLocationAccuracy(accuracy);
   }

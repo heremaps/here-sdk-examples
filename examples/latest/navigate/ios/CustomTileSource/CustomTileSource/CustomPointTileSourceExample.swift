@@ -71,11 +71,11 @@ class CustomPointTileSourceExample {
         }
     }
     
-    func onEnableButtonClicked() {
+    func enableLayer() {
         pointMapLayer.setEnabled(true)
     }
 
-    func onDisableButtonClicked() {
+    func disableLayer() {
         pointMapLayer.setEnabled(false)
     }
 

@@ -29,7 +29,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.here.sdk.core.Color;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.LanguageCode;
 import com.here.sdk.core.UnitSystem;
@@ -38,6 +37,9 @@ import com.here.sdk.navigation.AspectRatio;
 import com.here.sdk.navigation.BorderCrossingWarning;
 import com.here.sdk.navigation.BorderCrossingWarningListener;
 import com.here.sdk.navigation.BorderCrossingWarningOptions;
+import com.here.sdk.navigation.CurrentSituationLaneAssistanceView;
+import com.here.sdk.navigation.CurrentSituationLaneAssistanceViewListener;
+import com.here.sdk.navigation.CurrentSituationLaneView;
 import com.here.sdk.navigation.DangerZoneWarning;
 import com.here.sdk.navigation.DangerZoneWarningListener;
 import com.here.sdk.navigation.DestinationReachedListener;
@@ -50,7 +52,6 @@ import com.here.sdk.navigation.JunctionViewLaneAssistanceListener;
 import com.here.sdk.navigation.Lane;
 import com.here.sdk.navigation.LaneAccess;
 import com.here.sdk.navigation.LaneDirection;
-import com.here.sdk.navigation.LaneDirectionCategory;
 import com.here.sdk.navigation.LaneMarkings;
 import com.here.sdk.navigation.LaneRecommendationState;
 import com.here.sdk.navigation.LaneType;
@@ -104,7 +105,6 @@ import com.here.sdk.navigation.TrafficMergeWarningListener;
 import com.here.sdk.navigation.TruckRestrictionWarning;
 import com.here.sdk.navigation.TruckRestrictionsWarningListener;
 import com.here.sdk.navigation.VisualNavigator;
-import com.here.sdk.navigation.VisualNavigatorColors;
 import com.here.sdk.navigation.WarningNotificationDistances;
 import com.here.sdk.navigation.WarningType;
 import com.here.sdk.navigation.WeightRestrictionType;
@@ -228,6 +228,32 @@ public class NavigationEventHandler {
             }
         });
 
+        
+        // Provides lane information for the road a user is currently driving on.
+        // It's supported for turn-by-turn navigation and in tracking mode.
+        // It does not notify on which lane the user is currently driving on.
+        visualNavigator.setCurrentSituationLaneAssistanceViewListener(new CurrentSituationLaneAssistanceViewListener() {
+            @Override
+            public void onCurrentSituationLaneAssistanceViewUpdate(@NonNull CurrentSituationLaneAssistanceView currentSituationLaneAssistanceView) {
+                // A list of lanes on the current road.
+                // Note: Lanes going in opposite direction are not included in the list.
+                // Only the lanes for the current driving direction are included.
+                List<CurrentSituationLaneView> lanesList = currentSituationLaneAssistanceView.lanes;
+
+                if (lanesList.isEmpty()) {
+                    Log.d("CurrentSituationLaneAssistanceView: ", "No data on lanes available.");
+                } else {
+                    // The lanes are sorted from left to right:
+                    // The lane at index 0 is the leftmost lane adjacent to the middle of the road.
+                    // The lane at the last index is the rightmost lane.
+                    // This is valid for right-hand and left-hand driving countries.
+                    for (int i = 0; i < lanesList.size(); i++) {
+                        logCurrentSituationLaneViewDetails(i, lanesList.get(i));
+                    }
+                }
+            }
+        });
+
         // Notifies when the destination of the route is reached.
         visualNavigator.setDestinationReachedListener(new DestinationReachedListener() {
             @Override
@@ -330,6 +356,9 @@ public class NavigationEventHandler {
                             + trafficMergeWarning.distanceToTrafficMergeInMeters + "meters, merging from the "
                             + trafficMergeWarning.side.name() + "side, with lanes ="
                             + trafficMergeWarning.laneCount);
+                } else if (trafficMergeWarning.distanceType == DistanceType.REACHED) {
+                    // Since the traffic merge warning is given relative to a single position on the route,
+                    // DistanceType.REACHED will never be given for this warning.
                 }
             }
         });
@@ -764,7 +793,7 @@ public class NavigationEventHandler {
                 int laneNumber = 0;
                 for (TollBoothLane tollBoothLane : lanes) {
                     // Log which vehicles types are allowed on this lane that leads to the toll booth.
-                    logLaneAccess(laneNumber, tollBoothLane.access);
+                    logLaneAccess("ToolBoothLane: ", laneNumber, tollBoothLane.access);
                     TollBooth tollBooth = tollBoothLane.booth;
                     List<TollCollectionMethod> tollCollectionMethods = tollBooth.tollCollectionMethods;
                     List<PaymentMethod> paymentMethods = tollBooth.paymentMethods;
@@ -776,6 +805,7 @@ public class NavigationEventHandler {
                     for (PaymentMethod paymentMethod : paymentMethods) {
                         Log.d(TAG, "This toll stop supports payment via: " + paymentMethod.name());
                     }
+                    laneNumber++;
                 }
             }
         });
@@ -949,14 +979,37 @@ public class NavigationEventHandler {
 
         // LaneAccess provides which vehicle type(s) are allowed to access this lane.
         LaneAccess laneAccess = lane.access;
-        logLaneAccess(laneNumber, laneAccess);
+        logLaneAccess("Lane Deatils: ", laneNumber, laneAccess);
 
         // LaneMarkings indicate the visual style of dividers between lanes as visible on a road.
         LaneMarkings laneMarkings = lane.laneMarkings;
-        logLaneMarkings(laneMarkings);
+        logLaneMarkings("Lane Details: ", laneMarkings);
     }
 
-    private void logLaneMarkings(LaneMarkings laneMarkings){
+    private void logCurrentSituationLaneViewDetails(int laneNumber, CurrentSituationLaneView currentSituationLaneView) {
+        Log.d("CurrentSituationLaneAssistanceView: ", "Directions for this CurrentSituationLaneView: " + laneNumber);
+        // You can use this information to visualize all directions of a lane with a set of image overlays.
+        for (LaneDirection laneDirection : currentSituationLaneView.directions) {
+            boolean isLaneDirectionOnRoute = isCurrentLaneViewDirectionOnRoute(currentSituationLaneView, laneDirection);
+            Log.d("CurrentSituationLaneAssistanceView: ", "LaneDirection for this CurrentSituationLaneView: " + laneDirection.name());
+            // When you are on tracking mode, there is no directionsOnRoute. So, isLaneDirectionOnRoute will be false.
+            Log.d("CurrentSituationLaneAssistanceView: ", "This LaneDirection is on the route: " + isLaneDirectionOnRoute);
+        }
+
+        // More information on each lane is available in these bitmasks (boolean):
+        // LaneType holds multiple boolean lane properties such as if parking is allowed or is acceleration allowed or is express lane and many more.
+        LaneType laneType = currentSituationLaneView.type;
+
+        // LaneAccess provides which vehicle type(s) are allowed to access this lane.
+        LaneAccess laneAccess = currentSituationLaneView.access;
+        logLaneAccess("CurrentSituationLaneView: ", laneNumber, laneAccess);
+
+        // LaneMarkings indicate the visual style of dividers between lanes as visible on a road.
+        LaneMarkings laneMarkings = currentSituationLaneView.laneMarkings;
+        logLaneMarkings("CurrentSituationLaneView: ", laneMarkings);
+    }
+
+    private void logLaneMarkings(String TAG, LaneMarkings laneMarkings) {
         if (laneMarkings.centerDividerMarker != null) {
             // A CenterDividerMarker specifies the line type used for center dividers on bidirectional roads.
             Log.d(TAG,"Center divider marker for lane " + laneMarkings.centerDividerMarker.value);
@@ -977,7 +1030,11 @@ public class NavigationEventHandler {
         return lane.directionsOnRoute.contains(laneDirection);
     }
 
-    private void logLaneAccess(int laneNumber, LaneAccess laneAccess) {
+    private boolean isCurrentLaneViewDirectionOnRoute(CurrentSituationLaneView currentSituationLaneView, LaneDirection laneDirection) {
+        return currentSituationLaneView.directionsOnRoute.contains(laneDirection);
+    }
+
+    private void logLaneAccess(String TAG, int laneNumber, LaneAccess laneAccess) {
         Log.d(TAG, "Lane access for lane " + laneNumber);
         Log.d(TAG, "Automobiles are allowed on this lane: " + laneAccess.automobiles);
         Log.d(TAG, "Buses are allowed on this lane: " + laneAccess.buses);

@@ -17,7 +17,7 @@
  * License-Filename: LICENSE
  */
 
-import 'dart:io' show Platform, Process;
+import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -28,7 +28,6 @@ import 'package:here_sdk/core.errors.dart';
 import 'package:here_sdk/location.dart';
 import 'package:here_sdk/mapview.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'PositioningTermsAndPrivacyHelper.dart';
 import 'main.dart';
@@ -199,7 +198,7 @@ class PositioningExample extends State<MyApp>
         // required by legal requirements when using HERE Positioning.
         // See the Positioning section in our Developer Guide for more details.
         // Afterwards, Android permissions need to be checked to allow using the device's sensors.
-        final termsAndPrivacyHelper = PositioningTermsAndPrivacyHelper(context);
+        final termsAndPrivacyHelper = HEREPositioningTermsAndPrivacyHelper(context);
         await termsAndPrivacyHelper.showAppTermsAndPrivacyPolicyDialogIfNeeded();
       }
 

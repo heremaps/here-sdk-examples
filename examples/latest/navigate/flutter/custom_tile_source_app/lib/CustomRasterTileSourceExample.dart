@@ -33,7 +33,7 @@ class CustomRasterTileSourceExample {
   CustomRasterTileSourceExample(this._hereMapController) {
     double distanceToEarthInMeters = 60 * 1000;
     MapMeasure mapMeasureZoom =
-    MapMeasure(MapMeasureKind.distance, distanceToEarthInMeters);
+    MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
     _hereMapController.camera.lookAtPointWithMeasure(
         GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
   }
@@ -50,11 +50,11 @@ class CustomRasterTileSourceExample {
     _addPOIMapMarker(GeoCoordinates(52.530932, 13.384915), 1);
   }
 
-  void enableButtonClicked() {
+  void enableLayer() {
     _rasterMapLayerStyle?.setEnabled(true);
   }
 
-  void disableButtonClicked() {
+  void disableLayer() {
     _rasterMapLayerStyle?.setEnabled(false);
   }
 

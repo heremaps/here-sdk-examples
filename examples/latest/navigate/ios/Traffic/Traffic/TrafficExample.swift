@@ -220,7 +220,6 @@ class TrafficExample : TapDelegate {
 
         for trafficIncident in trafficIncidentsList! {
             print(trafficIncident.description.text)
-            addTrafficIncidentsMapPolyline(geoPolyline: trafficIncident.location.polyline)
         }
     }
 

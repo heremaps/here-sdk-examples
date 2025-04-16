@@ -17,7 +17,6 @@
  * License-Filename: LICENSE
  */
 
-import 'package:flutter/services.dart';
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/mapview.datasource.dart';
@@ -68,11 +67,11 @@ class CustomLineTileSourceExample {
         GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
   }
 
-  void enableButtonClicked() {
+  void enableLayer() {
     _lineMapLayer?.setEnabled(true);
   }
 
-  void disableButtonClicked() {
+  void disableLayer() {
     _lineMapLayer?.setEnabled(false);
   }
 

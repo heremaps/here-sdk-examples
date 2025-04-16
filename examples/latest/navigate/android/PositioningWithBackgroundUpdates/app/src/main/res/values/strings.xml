@@ -26,7 +26,4 @@
     <string name="background_access_missing_text">Background location permission is missing. Please enable it from app settings.</string>
 
     <string name="post_notifications_access_missing_text">Notifications permission is missing. Please enable it from app settings.</string>
-
-    <string name="button_agree">Agree</string>
-
 </resources>

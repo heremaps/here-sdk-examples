@@ -20,14 +20,10 @@
 package com.here.navigation;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
@@ -86,8 +82,6 @@ public class MainActivity extends AppCompatActivity {
 
         mapView.onCreate(savedInstanceState);
 
-        handleAndroidPermissions();
-
         ToggleButton toggleTrackingButton = findViewById(R.id.toggleTrackingButton);
         toggleTrackingButton.setTextOn("Camera Tracking: ON");
         toggleTrackingButton.setTextOff("Camera Tracking: OFF");
@@ -100,6 +94,13 @@ public class MainActivity extends AppCompatActivity {
                 app.toggleTrackingButtonOffClicked();
             }
         });
+
+        // Shows an example of how to present application terms and a privacy policy dialog as
+        // required by legal requirements when using HERE Positioning.
+        // See the Positioning section in our Developer Guide for more details.
+        // Afterwards, Android permissions need to be checked to allow using the device's sensors.
+        HEREPositioningTermsAndPrivacyHelper privacyHelper = new HEREPositioningTermsAndPrivacyHelper(this);
+        privacyHelper.showAppTermsAndPrivacyPolicyDialogIfNeeded(this::handleAndroidPermissions);
     }
 
     private void initializeHERESDK() {
@@ -113,28 +114,6 @@ public class MainActivity extends AppCompatActivity {
             SDKNativeEngine.makeSharedInstance(context, options);
         } catch (InstantiationErrorException e) {
             throw new RuntimeException("Initialization of HERE SDK failed: " + e.error.name());
-        }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.example_menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle item selection
-        switch (item.getItemId()) {
-            case R.id.about:
-                // Required by HERE positioning.
-                // User must be able to see & to change his consent to collect data.
-                Intent intent = new Intent(this, ConsentStateActivity.class);
-                startActivity(intent);
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
         }
     }
 

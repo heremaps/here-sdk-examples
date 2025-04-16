@@ -55,22 +55,13 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    /** Key for service terms*/
-    private static final String PREF_SERVICE_TERMS = "service_terms";
-
-    /** Preferences extension. */
-    private static final String PREF_NAME_EXTENSION = "_preferences";
-
     private MapView mapView;
     private PermissionsRequestor permissionsRequestor;
     private BackgroundPositioningExample positioningExample;
-    private int serviceTerms;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        readAppPrefs();
 
         // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
         initializeHERESDK();
@@ -84,12 +75,8 @@ public class MainActivity extends AppCompatActivity {
         mapView = findViewById(R.id.map_view);
         mapView.onCreate(savedInstanceState);
 
-        // Shows example of application Terms & Privacy policy dialog as
-        // required by Legal Requirements in Development Guide under Positioning
-        // section.
-        if (!showServiceTermsDialog()) {
-            handleAndroidPermissions();
-        }
+        PositioningTermsAndPrivacyHelper privacyHelper = new PositioningTermsAndPrivacyHelper(this);
+        privacyHelper.showAppTermsAndPrivacyPolicyDialogIfNeeded(this::handleAndroidPermissions);
     }
 
     private void initializeHERESDK() {
@@ -253,72 +240,5 @@ public class MainActivity extends AppCompatActivity {
             finish();
         });
         builder.show();
-    }
-
-    /**
-     * Reads shared preferences
-     */
-    private void readAppPrefs() {
-        SharedPreferences sharedPreferences =
-                getSharedPreferences(
-                        getPackageName() + PREF_NAME_EXTENSION, Context.MODE_PRIVATE);
-        serviceTerms = sharedPreferences.getInt(PREF_SERVICE_TERMS, 0);
-    }
-
-    /**
-     * Writes shared preferences
-     */
-    private void writeAppPrefs() {
-        SharedPreferences.Editor sharedPrefsEditor =
-                getSharedPreferences(
-                        getPackageName() + PREF_NAME_EXTENSION, Context.MODE_PRIVATE).edit();
-        sharedPrefsEditor.putInt(PREF_SERVICE_TERMS, serviceTerms);
-        sharedPrefsEditor.apply();
-    }
-
-
-    /**
-     * Show dialog for application service terms
-     */
-    private boolean showServiceTermsDialog() {
-      if (serviceTerms == 1) {
-        return false;
-      }
-
-        WebView webView = new WebView(this);
-        webView.setWebViewClient(new WebViewClient() {
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                final Uri uri = request.getUrl();
-
-                if (uri.getScheme() != null && uri.getScheme().contains("http")) {
-                    try {
-                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, uri);
-                        startActivity(browserIntent);
-                    }  catch (ActivityNotFoundException e) {
-                        Log.d(TAG, "Opening browser failed: " + e.getMessage());
-                    }
-                    return true;
-                }
-                return false;
-            }
-        });
-        webView.loadUrl("file:///android_asset/APPLICATION_TERMS.html");
-
-        AlertDialog.Builder builder =  new AlertDialog.Builder(this);
-        builder.setView(webView);
-
-        builder.setCancelable(false);
-        builder.setPositiveButton(getString(R.string.button_agree),
-                                  (dialog, id) -> {
-                                    serviceTerms = 1;
-                                    writeAppPrefs();
-                                    dialog.cancel();
-                                    // Check app permissions now
-                                    handleAndroidPermissions();
-                                  });
-        AlertDialog termsAndServicesDialog = builder.create();
-        termsAndServicesDialog.show();
-        return true;
     }
 }

@@ -35,14 +35,14 @@ class LocalRasterTileSource : RasterTileSource {
     
     init() {
         // Create a set of images to provide as tile data.
-        tileData.append(createTileData(width: 512, height: 512, color: UIColor.red))
-        tileData.append(createTileData(width: 512, height: 512, color: UIColor.blue))
-        tileData.append(createTileData(width: 512, height: 512, color: UIColor.green))
-        tileData.append(createTileData(width: 512, height: 512, color: UIColor.black))
-        tileData.append(createTileData(width: 512, height: 512, color: UIColor.white))
-        tileData.append(createTileData(width: 512, height: 512, color: UIColor.yellow))
-        tileData.append(createTileData(width: 512, height: 512, color: UIColor.cyan))
-        tileData.append(createTileData(width: 512, height: 512, color: UIColor.magenta))
+        tileData.append(createTileData(width: 512, height: 512, color: UIColor(red: 1.0, green: 0.0, blue: 0.0, alpha: 0.4)))  // Red
+        tileData.append(createTileData(width: 512, height: 512, color: UIColor(red: 0.0, green: 0.0, blue: 1.0, alpha: 0.4)))  // Blue
+        tileData.append(createTileData(width: 512, height: 512, color: UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 0.4)))  // Green
+        tileData.append(createTileData(width: 512, height: 512, color: UIColor(red: 0.0, green: 0.0, blue: 0.0, alpha: 0.4)))  // Black
+        tileData.append(createTileData(width: 512, height: 512, color: UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 0.4)))  // White
+        tileData.append(createTileData(width: 512, height: 512, color: UIColor(red: 1.0, green: 1.0, blue: 0.0, alpha: 0.4)))  // Yellow
+        tileData.append(createTileData(width: 512, height: 512, color: UIColor(red: 0.0, green: 1.0, blue: 1.0, alpha: 0.4)))  // Cyan
+        tileData.append(createTileData(width: 512, height: 512, color: UIColor(red: 1.0, green: 0.0, blue: 1.0, alpha: 0.4)))  // Magenta
     }
     func getDataVersion(tileKey: TileKey) -> TileSourceDataVersion {
         // Latest version of the tile data.

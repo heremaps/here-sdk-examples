@@ -39,8 +39,7 @@ Future<void> _initializeHERESDK() async {
 
   // Set your credentials for the HERE SDK.
   String accessKeyId = "YOUR_ACCESS_KEY_ID";
-  String accessKeySecret =
-      "YOUR_ACCESS_KEY_SECRET";
+  String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
   AuthenticationMode authenticationMode =
       AuthenticationMode.withKeySecret(accessKeyId, accessKeySecret);
   SDKOptions sdkOptions = SDKOptions.withAuthenticationMode(authenticationMode);
@@ -80,6 +79,7 @@ class MyAppState extends State<MyApp> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   button('Add Route', _addRouteButtonClicked),
+                  button(' Add\nWaypoints', _addWaypointButtonClicked),
                   button('Clear Map', _clearMapButtonClicked),
                 ],
               ),
@@ -108,12 +108,12 @@ class MyAppState extends State<MyApp> {
                                 : 'Traffic Optimization-OFF',
                             style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 18.0,
+                              fontSize: 15.0,
                             ),
                           ),
                         ),
                       ]),
-                  button('Update traffic on route', _updateTrafficOnRoute),
+                  button('Update traffic \n on route', _updateTrafficOnRoute),
                 ],
               ),
             ],
@@ -145,6 +145,10 @@ class MyAppState extends State<MyApp> {
 
   void _addRouteButtonClicked() {
     _routingExample?.addRoute();
+  }
+
+  void _addWaypointButtonClicked() {
+    _routingExample?.addWaypoints();
   }
 
   void _updateTrafficOnRoute() {
@@ -191,7 +195,7 @@ class MyAppState extends State<MyApp> {
           backgroundColor: Colors.lightBlueAccent,
         ),
         onPressed: () => callbackFunction(),
-        child: Text(buttonLabel, style: const TextStyle(fontSize: 20)),
+        child: Text(buttonLabel, style: const TextStyle(fontSize: 15)),
       ),
     );
   }

@@ -44,6 +44,7 @@ import androidx.appcompat.widget.SwitchCompat;
 import androidx.appcompat.widget.Toolbar;
 
 import com.here.HikingDiary.R;
+import com.here.hikingdiary.backgroundpositioning.HEREPositioningTermsAndPrivacyHelper;
 import com.here.hikingdiary.menu.MenuActivity;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.engine.AuthenticationMode;
@@ -160,13 +161,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        handleAndroidPermissions();
-
-        String message = "For this example app, an outdoor layer from thunderforest.com is used. " +
-                "Without setting a valid API key, these raster tiles will show a watermark (terms of usage: https://www.thunderforest.com/terms/)." +
-                "\n Attribution for the outdoor layer: \n Maps © www.thunderforest.com, \n Data © www.osm.org/copyright.";
-
-        showDialog("Note", message);
+        // Shows an example of how to present application terms and a privacy policy dialog as
+        // required by legal requirements when using HERE Positioning.
+        // See the Positioning section in our Developer Guide for more details.
+        // Afterwards, start the app and check the Android permissions
+        // to allow using the device's sensors for HERE Positioning.
+        HEREPositioningTermsAndPrivacyHelper privacyHelper = new HEREPositioningTermsAndPrivacyHelper(this);
+        privacyHelper.showAppTermsAndPrivacyPolicyDialogIfNeeded(this::handleAndroidPermissions);
     }
 
     @Override
@@ -178,12 +179,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle item selection
+        // Handle menu item selection.
         switch (item.getItemId()) {
-            case R.id.about:
-                Intent intent = new Intent(this, ConsentStateActivity.class);
-                startActivity(intent);
-                return true;
             case R.id.stop:
                 if (hikingApp != null) {
                     hikingApp.hereBackgroundPositioningServiceProvider.stopForegroundService();
@@ -208,6 +205,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // Required for HERE Positioning to allow access of the device's sensors.
     private void handleAndroidPermissions() {
         permissionsRequestor = new PermissionsRequestor(this);
         permissionsRequestor.request(new PermissionsRequestor.ResultListener() {
@@ -276,6 +274,11 @@ public class MainActivity extends AppCompatActivity {
                     hikingApp = new HikingApp(mapView, MainActivity.this);
                     hikingApp.hereBackgroundPositioningServiceProvider.startForegroundService();
                     enableMapFeatures();
+
+                    String message = "For this example app, an outdoor layer from thunderforest.com is used. " +
+                            "Without setting a valid API key, these raster tiles will show a watermark (terms of usage: https://www.thunderforest.com/terms/)." +
+                            "\n Attribution for the outdoor layer: \n Maps © www.thunderforest.com, \n Data © www.osm.org/copyright.";
+                    showDialog("Note", message);
                 } else {
                     Log.d(TAG, "Loading map failed: mapError: " + mapError.name());
                 }

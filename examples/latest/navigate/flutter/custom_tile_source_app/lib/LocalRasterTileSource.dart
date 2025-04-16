@@ -17,11 +17,9 @@
  * License-Filename: LICENSE
  */
 
-import 'dart:async';
 import 'dart:core';
 import 'dart:typed_data';
 import 'dart:ui';
-import 'package:flutter/material.dart';
 import 'package:here_sdk/mapview.datasource.dart';
 
 class LocalRasterTileSource implements RasterTileSource {
@@ -31,17 +29,27 @@ class LocalRasterTileSource implements RasterTileSource {
   // Local tile data (auto-generated).
   var tileData = <Uint8List>[];
 
+  // Transparent Colors for raster layers
+  final int SEMI_TRANSPARENT_RED = 0x44FF0000;
+  final int SEMI_TRANSPARENT_BLUE = 0x440000FF;
+  final int SEMI_TRANSPARENT_GREEN = 0x4400FF00;
+  final int SEMI_TRANSPARENT_BLACK = 0x44000000;
+  final int SEMI_TRANSPARENT_WHITE = 0x44FFFFFF;
+  final int SEMI_TRANSPARENT_YELLOW = 0x44FFFF00;
+  final int SEMI_TRANSPARENT_CYAN = 0x4400FFFF;
+  final int SEMI_TRANSPARENT_MAGENTA = 0x44FF00FF;
+
   Future<void> setupSource() async {
     // Create a set of images to provide as tile data.
     List<Uint8List?> generatedTileData = [
-      await createTileData(512, 512, Colors.red),
-      await createTileData(512, 512, Colors.blue),
-      await createTileData(512, 512, Colors.green),
-      await createTileData(512, 512, Colors.black),
-      await createTileData(512, 512, Colors.white),
-      await createTileData(512, 512, Colors.yellow),
-      await createTileData(512, 512, Colors.cyan),
-      await createTileData(512, 512, Colors.purple)
+      await createTileData(512, 512, Color(SEMI_TRANSPARENT_RED)),
+      await createTileData(512, 512, Color(SEMI_TRANSPARENT_BLUE)),
+      await createTileData(512, 512, Color(SEMI_TRANSPARENT_GREEN)),
+      await createTileData(512, 512, Color(SEMI_TRANSPARENT_BLACK)),
+      await createTileData(512, 512, Color(SEMI_TRANSPARENT_WHITE)),
+      await createTileData(512, 512, Color(SEMI_TRANSPARENT_YELLOW)),
+      await createTileData(512, 512, Color(SEMI_TRANSPARENT_CYAN)),
+      await createTileData(512, 512, Color(SEMI_TRANSPARENT_MAGENTA))
     ];
 
     tileData = generatedTileData.whereType<Uint8List>().toList();

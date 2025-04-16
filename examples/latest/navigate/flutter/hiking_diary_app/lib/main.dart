@@ -21,7 +21,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:here_sdk/consent.dart';
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/core.engine.dart';
 import 'package:here_sdk/core.errors.dart';
@@ -31,6 +30,7 @@ import 'package:hiking_diary_app/menu/MenuScreen.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'MessageNotifier.dart';
+import 'positioning/HEREPositioningTermsAndPrivacyHelper.dart';
 
 void main() async {
   // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
@@ -38,10 +38,6 @@ void main() async {
 
   runApp(
     MaterialApp(
-      // Enable localizations for the ConsentEngine's dialog widget.
-      localizationsDelegates:
-          HereSdkConsentLocalizations.localizationsDelegates,
-      supportedLocales: HereSdkConsentLocalizations.supportedLocales,
       home: MyApp(messageNotifier: MessageNotifier()),
     ),
   );
@@ -77,16 +73,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   bool _mapLayerSwitch = false;
   HikingApp? hikingApp;
   late final AppLifecycleListener _listener;
-
   bool _isLocationPermissionGranted = false;
-
-  // When using HERE Positioning in your app, it is required to request and to show the user's consent decision.
-  // In addition, users must be able to change their consent decision at any time.
-  // Note that this is only needed when running on Android devices.
-  ConsentEngine? _consentEngine;
-  String _consentState = "Pending ...";
-  bool showConsentStateInfo = true;
-
   HereMapController? _hereMapController;
 
   @override
@@ -246,32 +233,12 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               ),
             ),
           ),
-          Visibility(
-            visible: showConsentStateInfo,
-            child: Positioned(
-              top: 52.0,
-              left: 0.0,
-              right: 0.0,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  multiLineButton(_consentState, _requestConsent),
-                ],
-              ),
-            ),
-          ),
         ],
       ),
     );
   }
 
   void _onMapCreated(HereMapController hereMapController) {
-    try {
-      _consentEngine = ConsentEngine();
-    } on InstantiationException {
-      throw ("Initialization of ConsentEngine failed.");
-    }
-
     _hereMapController = hereMapController;
 
     // Load the map scene using a map scheme to render the map with.
@@ -279,7 +246,17 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         (MapError? error) async {
       _updateMessageState("Loading MapView ...");
       if (error == null) {
-        // 1. Before we start the app we want to ensure that the required permissions are handled.
+        // 1. We request the user's agreement to use HERE Positioning.
+        // Note that this is not required for iOS.
+        if (Platform.isAndroid) {
+          // Shows an example of how to present application terms and a privacy policy dialog as
+          // required by legal requirements when using HERE Positioning.
+          // See the Positioning section in our Developer Guide for more details.
+          final termsAndPrivacyHelper = HEREPositioningTermsAndPrivacyHelper(context);
+          await termsAndPrivacyHelper.showAppTermsAndPrivacyPolicyDialogIfNeeded();
+        }
+
+        // 2. Ensure that the required permissions are handled.
         if (!await _requestPermissions()) {
           await _showDialog("Error",
               "Cannot start app: Location service and permissions are needed for this app.");
@@ -289,14 +266,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           return;
         }
 
-        // 2. Once permissions are granted, we request the user's consent decision which is required for HERE Positioning.
-        if (_consentEngine?.userConsentState == ConsentUserReply.notHandled) {
-          await _requestConsent();
-        } else {
-          _updateConsentState();
-        }
-
-        // 3. User has granted required permissions and made a consent decision.
+        // 3. User has granted required permissions.
         _updateMessageState("MapView loaded");
 
         String message =
@@ -364,38 +334,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     return true;
   }
 
-  Future<void> _requestConsent() async {
-    if (!Platform.isIOS) {
-      // This shows a localized widget that asks the user if data can be collected or not.
-      await _consentEngine?.requestUserConsent(context);
-    }
-
-    _updateConsentState();
-  }
-
-  // Update the button's text showing the current consent decision of the user.
-  void _updateConsentState() {
-    String stateMessage;
-    if (Platform.isIOS) {
-      stateMessage =
-          "Info: On iOS no consent is required as on iOS no data is collected.";
-    } else if (_consentEngine?.userConsentState == ConsentUserReply.granted) {
-      stateMessage =
-          "Positioning consent: You have granted consent to the data collection.";
-    } else {
-      stateMessage =
-          "Positioning consent: You have denied consent to the data collection.";
-    }
-
-    setState(() {
-      _consentState = stateMessage;
-    });
-  }
-
   void _onStartHikeButtonPressed() {
     if (hikingApp != null) {
       hikingApp!.onStartHikingButtonClicked();
-      showConsentStateInfo = false;
     }
   }
 

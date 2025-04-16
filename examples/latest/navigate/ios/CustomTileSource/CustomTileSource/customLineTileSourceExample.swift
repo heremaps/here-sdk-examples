@@ -79,11 +79,11 @@ class CustomLineTileSourceExample {
         }
     }
     
-    func onEnableButtonClicked() {
+    func enableLayer() {
         lineMapLayer.setEnabled(true)
     }
 
-    func onDisableButtonClicked() {
+    func disableLayer() {
         lineMapLayer.setEnabled(false)
     }
 

@@ -35,7 +35,6 @@
         </activity>
         <activity android:name="com.here.hikingdiary.menu.MenuActivity" />
 
-        <activity android:name="com.here.hikingdiary.ConsentStateActivity" />
         <service
             android:name="com.here.hikingdiary.backgroundpositioning.HEREBackgroundPositioningService"
             android:exported="false"

@@ -17,6 +17,7 @@
  * License-Filename: LICENSE
  */
 
+import 'package:custom_tile_source_app/CustomPolygonTileSourceExample.dart';
 import 'package:flutter/material.dart';
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/core.engine.dart';
@@ -61,10 +62,14 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   CustomPointTileSourceExample? _customPointTileSourceExample;
-  CustomRasterTileSourceExample? _customRasterTileSourceExample;
   CustomLineTileSourceExample? _customLineTileSourceExample;
+  CustomRasterTileSourceExample? _customRasterTileSourceExample;
+  CustomPolygonTileSourceExample? _customPolygonTileSourceExample;
   late final AppLifecycleListener _listener;
-  String _selectedTileSource = "point";
+  bool _isPointTileChecked = true;
+  bool _isLineTileChecked = false;
+  bool _isRasterTileChecked = false;
+  bool _isPolygonTileChecked = false;
 
   @override
   Widget build(BuildContext context) {
@@ -78,25 +83,27 @@ class _MyAppState extends State<MyApp> {
             HereMap(onMapCreated: _onMapCreated),
             Align(
               alignment: Alignment.topCenter,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _radioButton("Point tile", "point"),
-                      _radioButton("Raster tile", "raster"),
-                      _radioButton("Line tile", "line"),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      button('Enable', _enableButtonClicked),
-                      button('Disable', _disableButtonClicked),
-                    ],
-                  ),
-                ],
+              child: Container(
+                color: Colors.white,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        _customSwitch("Point tile", _isPointTileChecked),
+                        _customSwitch("Raster tile", _isRasterTileChecked),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _customSwitch("Line tile", _isLineTileChecked),
+                        _customSwitch("Polygon tile", _isPolygonTileChecked),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -115,6 +122,8 @@ class _MyAppState extends State<MyApp> {
             CustomRasterTileSourceExample(hereMapController);
         _customLineTileSourceExample =
             CustomLineTileSourceExample(hereMapController);
+        _customPolygonTileSourceExample =
+            CustomPolygonTileSourceExample(hereMapController);
 
         _customRasterTileSourceExample?.setup();
       } else {
@@ -123,23 +132,35 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  void _enableButtonClicked() {
-    if (_selectedTileSource == "point") {
-      _customPointTileSourceExample?.enableButtonClicked();
-    } else if (_selectedTileSource == "raster") {
-      _customRasterTileSourceExample?.enableButtonClicked();
+  void _enableLayer(String _selectedTileSource) {
+    if (_selectedTileSource == "Point tile") {
+      _customPointTileSourceExample?.enableLayer();
+      _isPointTileChecked = true;
+    } else if (_selectedTileSource == "Raster tile") {
+      _customRasterTileSourceExample?.enableLayer();
+      _isRasterTileChecked = true;
+    } else if (_selectedTileSource == "Line tile") {
+      _customLineTileSourceExample?.enableLayer();
+      _isLineTileChecked = true;
     } else {
-      _customLineTileSourceExample?.enableButtonClicked();
+      _customPolygonTileSourceExample?.enableLayer();
+      _isPolygonTileChecked = true;
     }
   }
 
-  void _disableButtonClicked() {
-    if (_selectedTileSource == "point") {
-      _customPointTileSourceExample?.disableButtonClicked();
-    } else if (_selectedTileSource == "raster") {
-      _customRasterTileSourceExample?.disableButtonClicked();
+  void _disableLayer(String _selectedTileSource) {
+    if (_selectedTileSource == "Point tile") {
+      _customPointTileSourceExample?.disableLayer();
+      _isPointTileChecked = false;
+    } else if (_selectedTileSource == "Raster tile") {
+      _customRasterTileSourceExample?.disableLayer();
+      _isRasterTileChecked = false;
+    } else if (_selectedTileSource == "Line tile") {
+      _customLineTileSourceExample?.disableLayer();
+      _isLineTileChecked = false;
     } else {
-      _customLineTileSourceExample?.disableButtonClicked();
+      _customPolygonTileSourceExample?.disableLayer();
+      _isPolygonTileChecked = false;
     }
   }
 
@@ -166,38 +187,27 @@ class _MyAppState extends State<MyApp> {
     _customPointTileSourceExample?.onDestroy();
     _customRasterTileSourceExample?.onDestroy();
     _customLineTileSourceExample?.onDestroy();
+    _customPolygonTileSourceExample?.onDestroy();
     await SDKNativeEngine.sharedInstance?.dispose();
     SdkContext.release();
     _listener.dispose();
   }
 
-  Row _radioButton(String title, String value) {
-    return Row(
-      children: [
-        Radio<String>(
-          value: value,
-          groupValue: _selectedTileSource,
-          onChanged: (value) {
-            setState(() {
-              _selectedTileSource = value!;
-            });
-          },
-        ),
-        Text(title, style: TextStyle(color: Colors.black)),
-      ],
-    );
-  }
-
-  Align button(String buttonLabel, Function callbackFunction) {
-    return Align(
-      alignment: Alignment.topCenter,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.white,
-          backgroundColor: Colors.lightBlueAccent,
-        ),
-        onPressed: () => callbackFunction(),
-        child: Text(buttonLabel, style: TextStyle(fontSize: 20)),
+  Widget _customSwitch(String title, bool isChecked) {
+    return Expanded(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Text(title, style: TextStyle(color: Colors.black)),
+          Switch(
+            value: isChecked, 
+            onChanged: (value) {
+              setState(() {
+                isChecked ? _disableLayer(title) : _enableLayer(title);
+              });
+            }
+          ),
+        ],
       ),
     );
   }

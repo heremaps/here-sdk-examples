@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		839113372DA9A75C0023E8AF /* LocalPolygonTileSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 839113362DA9A75C0023E8AF /* LocalPolygonTileSource.swift */; };
+		839113382DA9A75C0023E8AF /* CustomPolygonTileSourceExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 839113352DA9A75C0023E8AF /* CustomPolygonTileSourceExample.swift */; };
 		83AB15472CD50BB600615BA9 /* LocalPointTileSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83AB15462CD50BB600615BA9 /* LocalPointTileSource.swift */; };
 		83C837BC2C207F340004F54E /* CustomTileSourceApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C837BB2C207F340004F54E /* CustomTileSourceApp.swift */; };
 		83C837BE2C207F340004F54E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C837BD2C207F340004F54E /* ContentView.swift */; };
@@ -36,13 +38,15 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		839113352DA9A75C0023E8AF /* CustomPolygonTileSourceExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomPolygonTileSourceExample.swift; sourceTree = "<group>"; };
+		839113362DA9A75C0023E8AF /* LocalPolygonTileSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalPolygonTileSource.swift; sourceTree = "<group>"; };
 		83AB15462CD50BB600615BA9 /* LocalPointTileSource.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalPointTileSource.swift; sourceTree = "<group>"; };
 		83C837B82C207F340004F54E /* CustomTileSource.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CustomTileSource.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		83C837BB2C207F340004F54E /* CustomTileSourceApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTileSourceApp.swift; sourceTree = "<group>"; };
 		83C837BD2C207F340004F54E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		83C837BF2C207F360004F54E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		83C837C22C207F360004F54E /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		83C837CA2C20AAE50004F54E /* heresdk.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:PQEP8H94J7:HERE Deutschland GmbH"; lastKnownFileType = wrapper.xcframework; path = heresdk.xcframework; sourceTree = "<group>"; };
+		83C837CA2C20AAE50004F54E /* heresdk.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = heresdk.xcframework; sourceTree = "<group>"; };
 		83C837D02C20EFA70004F54E /* CustomPointTileSourceExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomPointTileSourceExample.swift; sourceTree = "<group>"; };
 		AC51AE732D533EF200186CCA /* CustomRasterTileSourceExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomRasterTileSourceExample.swift; sourceTree = "<group>"; };
 		AC51AE752D533F4900186CCA /* LocalRasterTileSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalRasterTileSource.swift; sourceTree = "<group>"; };
@@ -82,14 +86,16 @@
 		83C837BA2C207F340004F54E /* CustomTileSource */ = {
 			isa = PBXGroup;
 			children = (
-				83C837BB2C207F340004F54E /* CustomTileSourceApp.swift */,
 				83C837BD2C207F340004F54E /* ContentView.swift */,
+				83C837BB2C207F340004F54E /* CustomTileSourceApp.swift */,
 				83C837D02C20EFA70004F54E /* CustomPointTileSourceExample.swift */,
-				83AB15462CD50BB600615BA9 /* LocalPointTileSource.swift */,
-				AC51AE732D533EF200186CCA /* CustomRasterTileSourceExample.swift */,
-				AC51AE752D533F4900186CCA /* LocalRasterTileSource.swift */,
 				ACF297052D782F8000B430D0 /* CustomLineTileSourceExample.swift */,
+				839113352DA9A75C0023E8AF /* CustomPolygonTileSourceExample.swift */,
+				AC51AE732D533EF200186CCA /* CustomRasterTileSourceExample.swift */,
+				83AB15462CD50BB600615BA9 /* LocalPointTileSource.swift */,
 				ACF297072D782FD000B430D0 /* LocalLineTileSource.swift */,
+				839113362DA9A75C0023E8AF /* LocalPolygonTileSource.swift */,
+				AC51AE752D533F4900186CCA /* LocalRasterTileSource.swift */,
 				83C837BF2C207F360004F54E /* Assets.xcassets */,
 				83C837C12C207F360004F54E /* Preview Content */,
 			);
@@ -184,6 +190,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				AC51AE742D533EF200186CCA /* CustomRasterTileSourceExample.swift in Sources */,
+				839113372DA9A75C0023E8AF /* LocalPolygonTileSource.swift in Sources */,
+				839113382DA9A75C0023E8AF /* CustomPolygonTileSourceExample.swift in Sources */,
 				83C837BE2C207F340004F54E /* ContentView.swift in Sources */,
 				83AB15472CD50BB600615BA9 /* LocalPointTileSource.swift in Sources */,
 				83C837BC2C207F340004F54E /* CustomTileSourceApp.swift in Sources */,

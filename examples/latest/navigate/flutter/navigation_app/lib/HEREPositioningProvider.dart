@@ -17,6 +17,8 @@
  * License-Filename: LICENSE
  */
 
+import 'dart:io';
+
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/core.errors.dart';
 import 'package:here_sdk/location.dart';
@@ -29,11 +31,6 @@ import 'package:here_sdk/location.dart';
 // iOS: navigation_app/ios/Runner/Info.plist
 //
 // This app uses the permission_handler plugin to handle the permissions for iOS and Android.
-//
-// Important: When using HERE Positioning in your app on Android devices,
-// it is required to request and to show the user's consent decision.
-// In addition, users must be able to change their consent decision at any time.
-// In main.dart you can see an example how the consent handling can be implemented.
 //
 // Note that this app does not show how to get background location updates. If you want to enable
 // background location updates, please refer to the "Get Locations" section in the Developer's Guide.
@@ -64,6 +61,13 @@ class HEREPositioningProvider implements LocationStatusListener {
     // Set listeners to get location updates.
     _locationEngine.addLocationListener(updateListener);
     _locationEngine.addLocationStatusListener(this);
+
+    if (Platform.isAndroid) {
+      // By calling confirmHEREPrivacyNoticeInclusion() you confirm that this app informs on
+      // data collection on Android devices, which is done for this app via PositioningTermsAndPrivacyHelper,
+      // which shows a possible example for this.
+      _locationEngine.confirmHEREPrivacyNoticeInclusion();
+    }
 
     _locationEngine.startWithLocationAccuracy(accuracy);
   }

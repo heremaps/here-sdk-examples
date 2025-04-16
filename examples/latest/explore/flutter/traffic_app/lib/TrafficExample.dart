@@ -212,7 +212,6 @@ class TrafficExample {
 
       for (TrafficIncident trafficIncident in trafficIncidentsList) {
         print(trafficIncident.description.text);
-        _addTrafficIncidentsMapPolyline(trafficIncident.location.polyline);
       }
     });
   }

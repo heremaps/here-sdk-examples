@@ -34,12 +34,12 @@ typedef ShowDialogFunction = void Function(String title, String message);
 
 class RoutingExample {
   final HereMapController _hereMapController;
+  List<MapMarker> _mapMarkers = [];
   final List<MapPolyline> _mapPolylines = [];
   late RoutingEngine _routingEngine;
   bool _trafficOptimization = true;
   final ShowDialogFunction _showDialog;
   List<Waypoint> waypoints = [];
-  final _berlinGeoCoordinates = GeoCoordinates(52.530971, 13.385088);
   final _timeUtils = TimeUtils();
   late here.Route _currentRoute;
 
@@ -61,12 +61,19 @@ class RoutingExample {
   }
 
   Future<void> addRoute() async {
-    var startGeoCoordinates = _berlinGeoCoordinates;
+    // Optionally, clear any previous route.
+    clearMap();
+
+    var startGeoCoordinates = _createRandomGeoCoordinatesInViewport();
     var destinationGeoCoordinates = _createRandomGeoCoordinatesInViewport();
     var startWaypoint = Waypoint.withDefaults(startGeoCoordinates);
     var destinationWaypoint = Waypoint.withDefaults(destinationGeoCoordinates);
 
     waypoints = [startWaypoint, destinationWaypoint];
+
+    _addMapMarker(startGeoCoordinates, "assets/poi_start.png");
+    _addMapMarker(destinationGeoCoordinates, "assets/poi_destination.png");
+
     _calculateRoute(waypoints);
   }
 
@@ -203,6 +210,18 @@ class RoutingExample {
   }
 
   void clearMap() {
+    _clearWaypointMapMarker();
+    _clearRoute();
+  }
+
+  void _clearWaypointMapMarker() {
+    for (MapMarker mapMarker in _mapMarkers) {
+      _hereMapController.mapScene.removeMapMarker(mapMarker);
+    }
+    _mapMarkers.clear();
+  }
+
+  void _clearRoute() {
     for (var mapPolyline in _mapPolylines) {
       _hereMapController.mapScene.removeMapPolyline(mapPolyline);
     }
@@ -241,6 +260,29 @@ class RoutingExample {
     }
   }
 
+  Future<void> addWaypoints() async {
+    // Optionally, clear any previous route.
+    clearMap();
+
+    var startGeoCoordinates = _createRandomGeoCoordinatesInViewport();
+    var destinationGeoCoordinates = _createRandomGeoCoordinatesInViewport();
+    var waypoint1GeoCoordinates = _createRandomGeoCoordinatesInViewport();
+    var waypoint2GeoCoordinates = _createRandomGeoCoordinatesInViewport();
+    var startWaypoint = Waypoint.withDefaults(startGeoCoordinates);
+    var waypoint1 = Waypoint.withDefaults(waypoint1GeoCoordinates);
+    var waypoint2 = Waypoint.withDefaults(waypoint2GeoCoordinates);
+    var destinationWaypoint = Waypoint.withDefaults(destinationGeoCoordinates);
+
+    waypoints = [startWaypoint, waypoint1, waypoint2, destinationWaypoint];
+
+    _addMapMarker(startGeoCoordinates, "assets/poi_start.png");
+    _addMapMarker(waypoint1GeoCoordinates, "assets/waypoint_one.png");
+    _addMapMarker(waypoint2GeoCoordinates, "assets/waypoint_two.png");
+    _addMapMarker(destinationGeoCoordinates, "assets/poi_destination.png");
+
+    _calculateRoute(waypoints);
+  }
+
   void _showRouteDetails(here.Route route) {
     // estimatedTravelTimeInSeconds includes traffic delay.
     int estimatedTravelTimeInSeconds = route.duration.inSeconds;
@@ -265,7 +307,6 @@ class RoutingExample {
   }
 
   _showRouteOnMap(here.Route route) {
-    clearMap();
     // Show route as polyline.
     GeoPolyline routeGeoPolyline = route.geometry;
     double widthInPixels = 20;
@@ -397,5 +438,16 @@ class RoutingExample {
             const Duration(milliseconds: 3000),
             here.Easing(here.EasingFunction.inCubic));
     _hereMapController.camera.startAnimation(animation);
+  }
+
+  void _addMapMarker(GeoCoordinates geoCoordinates, String imageName) {
+    // For this app, we only add images of size 100x100 pixels.
+    int imageWidth = 100;
+    int imageHeight = 100;
+    // Note that you can optionally optimize by reusing the mapImage instance for other MapMarker instance.
+    MapImage mapImage = MapImage.withFilePathAndWidthAndHeight(imageName, imageWidth, imageHeight);
+    MapMarker mapMarker = MapMarker(geoCoordinates, mapImage);
+    _hereMapController.mapScene.addMapMarker(mapMarker);
+    _mapMarkers.add(mapMarker);
   }
 }
