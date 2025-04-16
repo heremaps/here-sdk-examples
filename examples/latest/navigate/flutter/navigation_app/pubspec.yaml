@@ -33,6 +33,12 @@ dependencies:
   # permissions from the user.
   permission_handler: ^11.0.1
 
+  # The following adds the shared_preferences plugin, to save and read persistent preferences.
+  shared_preferences: ^2.3.2
+
+  # The following is used to open a URL in the device's browser.
+  url_launcher: ^6.3.1
+
   # The following adds the HERE SDK for Flutter plugin folder to your application.
   here_sdk:
     path: plugins/here_sdk

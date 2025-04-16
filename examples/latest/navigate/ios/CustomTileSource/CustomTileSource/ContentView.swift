@@ -24,8 +24,13 @@ struct ContentView: View {
     @State private var mapView = MapView()
     @State private var customPointTileSourceExample: CustomPointTileSourceExample?
     @State private var customRasterTileSourceExample: CustomRasterTileSourceExample?
+    @State private var customPolygonTileSourceExample: CustomPolygonTileSourceExample?
     @State private var customLineTileSourceExample: CustomLineTileSourceExample?
-    @State private var selectedTileSource: String = "customPointTileSource" // Default selection
+    // Default selection
+    @State private var isPointTileOn = true
+    @State private var isLineTileOn = false
+    @State private var isRasterTileOn = false
+    @State private var isPolygonTileOn = false
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -34,56 +39,65 @@ struct ContentView: View {
             
             VStack {
                 HStack {
-                    RadioButton(title: "Point Tile", isSelected: selectedTileSource == "customPointTileSource") {
-                        selectedTileSource = "customPointTileSource"
-                    }
-                    RadioButton(title: "Raster Tile", isSelected: selectedTileSource == "customRasterTileSource") {
-                        selectedTileSource = "customRasterTileSource"
-                    }
-                    RadioButton(title: "Line Tile", isSelected: selectedTileSource == "customLineTileSource") {
-                        selectedTileSource = "customLineTileSource"
-                    }
+                    Toggle("Point Tile", isOn: $isPointTileOn)
+                        .onChange(of: isPointTileOn) { isOn in
+                            isOn ? enableSelectedTileSource(selectedTileSource: "customPointTileSource") : disableSelectedTileSource(selectedTileSource: "customPointTileSource")
+                        }
+                        .padding()
+                    Toggle("Raster Tile", isOn: $isRasterTileOn)
+                        .onChange(of: isRasterTileOn) { isOn in
+                            isOn ? enableSelectedTileSource(selectedTileSource: "customRasterTileSource") : disableSelectedTileSource(selectedTileSource: "customRasterTileSource")
+                        }
+                        .padding()
                 }
-                .padding()
-                
                 HStack {
-                    CustomButton(title: "Enable") {
-                        enableSelectedTileSource()
-                    }
-                    CustomButton(title: "Disable") {
-                        disableSelectedTileSource()
-                    }
+                    Toggle("Line Tile", isOn: $isLineTileOn)
+                        .onChange(of: isLineTileOn) { isOn in
+                            isOn ? enableSelectedTileSource(selectedTileSource: "customLineTileSource") : disableSelectedTileSource(selectedTileSource: "customLineTileSource")
+                        }
+                        .padding()
+                    Toggle("Polygon Tile", isOn: $isPolygonTileOn)
+                        .onChange(of: isPolygonTileOn) { isOn in
+                            isOn ? enableSelectedTileSource(selectedTileSource: "customPolygonTileSource") : disableSelectedTileSource(selectedTileSource: "customPolygonTileSource")
+                        }
+                        .padding()
                 }
             }
+            .background(Color.white)
         }
         .onAppear {
             customPointTileSourceExample = CustomTileSource.CustomPointTileSourceExample(mapView)
             customRasterTileSourceExample = CustomTileSource.CustomRasterTileSourceExample(mapView)
+            customPolygonTileSourceExample = CustomTileSource.CustomPolygonTileSourceExample(mapView)
             customLineTileSourceExample = CustomTileSource.CustomLineTileSourceExample(mapView)
         }
     }
     
-    private func enableSelectedTileSource() {
+    private func enableSelectedTileSource(selectedTileSource: String) {
         switch selectedTileSource {
         case "customPointTileSource":
-            customPointTileSourceExample?.onEnableButtonClicked()
+            customPointTileSourceExample?.enableLayer()
         case "customRasterTileSource":
-            customRasterTileSourceExample?.onEnableButtonClicked()
+            customRasterTileSourceExample?.enableLayer()
         case "customLineTileSource":
-            customLineTileSourceExample?.onEnableButtonClicked()
+            customLineTileSourceExample?.enableLayer()
+        case "customPolygonTileSource":
+            customPolygonTileSourceExample?.enableLayer()
         default:
             break
         }
     }
     
-    private func disableSelectedTileSource() {
+    private func disableSelectedTileSource(selectedTileSource: String) {
         switch selectedTileSource {
         case "customPointTileSource":
-            customPointTileSourceExample?.onDisableButtonClicked()
+            customPointTileSourceExample?.disableLayer()
         case "customRasterTileSource":
-            customRasterTileSourceExample?.onDisableButtonClicked()
+            customRasterTileSourceExample?.disableLayer()
         case "customLineTileSource":
-            customLineTileSourceExample?.onDisableButtonClicked()
+            customLineTileSourceExample?.disableLayer()
+        case "customPolygonTileSource":
+            customPolygonTileSourceExample?.disableLayer()
         default:
             break
         }
@@ -108,29 +122,5 @@ struct CustomButton: View {
                 .foregroundColor(.white)
                 .cornerRadius(5)
         }
-    }
-}
-
-struct RadioButton: View {
-    let title: String
-    let isSelected: Bool
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            HStack {
-                Image(systemName: isSelected ? "largecircle.fill.circle" : "circle")
-                    .foregroundColor(.blue)
-                Text(title)
-                    .foregroundColor(.black)
-            }
-            .padding()
-        }
-    }
-}
-
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
     }
 }

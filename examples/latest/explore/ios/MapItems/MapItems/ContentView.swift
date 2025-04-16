@@ -166,7 +166,7 @@ struct ContentView: View {
     }
 
     private func onMapItemArrowClicked() {
-        mapObjectsExample?.onMapCircleClicked()
+        mapObjectsExample?.onMapArrowClicked()
     }
 
     private func onDefaultPinButtonClicked() {

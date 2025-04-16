@@ -25,6 +25,7 @@ import SwiftUI
 // Note that this class does not show an exhaustive list of all possible events.
 class NavigationEventHandler : NavigableLocationDelegate,
                                BorderCrossingWarningDelegate,
+                               CurrentSituationLaneAssistanceViewDelegate,
                                DangerZoneWarningDelegate,
                                LowSpeedZoneWarningDelegate,
                                DestinationReachedDelegate,
@@ -68,6 +69,7 @@ class NavigationEventHandler : NavigableLocationDelegate,
 
         visualNavigator.navigableLocationDelegate = self
         visualNavigator.borderCrossingWarningDelegate = self
+        visualNavigator.currentSituationLaneAssistanceViewDelegate = self
         visualNavigator.dangerZoneWarningListenerDelegate = self
         visualNavigator.lowSpeedZoneWarningDelegate = self
         visualNavigator.destinationReachedDelegate = self
@@ -221,6 +223,28 @@ class NavigationEventHandler : NavigableLocationDelegate,
         return roadName ?? "unnamed road"
     }
 
+    // Conform to CurrentSituationLaneAssistanceViewDelegate.
+    // Provides lane information for the road a user is currently driving on.
+    // It's supported for turn-by-turn navigation and in tracking mode.
+    // It does not notify on which lane the user is currently driving on.
+    func onCurrentSituationLaneAssistanceViewUpdate(_ currentSituationLaneAssistanceView: heresdk.CurrentSituationLaneAssistanceView) {
+        // A list of lanes on the current road.
+        let lanesList: [CurrentSituationLaneView] = currentSituationLaneAssistanceView.lanes
+        
+        if (lanesList.isEmpty) {
+            print("CurrentSituationLaneAssistanceView: No data on lanes available.")
+        } else {
+            //
+            // The lanes are sorted from left to right:
+            // The lane at index 0 is the leftmost lane adjacent to the middle of the road.
+            // The lane at the last index is the rightmost lane.
+            // This is valid for right-hand and left-hand driving countries.
+            for i in 0..<lanesList.count {
+                logCurrentSituationLaneViewDetails(i,lanesList[i])
+            }
+          }
+    }
+
     // Conform to DestinationReachedDelegate.
     // Notifies when the destination of the route is reached.
     func onDestinationReached() {
@@ -283,7 +307,10 @@ class NavigationEventHandler : NavigableLocationDelegate,
             print("There is a merging \(trafficMergeWarning.distanceType) ahead in: \(trafficMergeWarning.distanceToTrafficMergeInMeters) meters, merging from the \(trafficMergeWarning.side) side, with lanes = \(trafficMergeWarning.laneCount)")
         } else if trafficMergeWarning.distanceType == .passed {
             print("A merging \(trafficMergeWarning.distanceType) passed: \(trafficMergeWarning.distanceToTrafficMergeInMeters) meters, merging from the \(trafficMergeWarning.side) side, with lanes = \(trafficMergeWarning.laneCount)")
-        } 
+        } else if trafficMergeWarning.distanceType == .reached {
+            // Since the traffic merge warning is given relative to a single position on the route,
+            // DistanceType.reached will never be given for this warning.
+        }
     }
 
     // Conform to SpeedLimitDelegate.
@@ -418,10 +445,10 @@ class NavigationEventHandler : NavigableLocationDelegate,
 
         // The lane at index 0 is the leftmost lane adjacent to the middle of the road.
         // The lane at the last index is the rightmost lane.
-        let laneNumber = 0
+        var laneNumber = 0
         for tollBoothLane in lanes {
             // Log which vehicles types are allowed on this lane that leads to the toll booth.
-            logLaneAccess(laneNumber, tollBoothLane.access)
+            logLaneAccess("ToolBoothLane: ", laneNumber, tollBoothLane.access)
             let tollBooth = tollBoothLane.booth
             let tollCollectionMethods = tollBooth.tollCollectionMethods
             let paymentMethods = tollBooth.paymentMethods
@@ -433,6 +460,7 @@ class NavigationEventHandler : NavigableLocationDelegate,
             for paymentMethod in paymentMethods {
                 print("This toll stop supports payment via: \(paymentMethod).")
             }
+            laneNumber += 1
         }
     }
 
@@ -508,40 +536,61 @@ class NavigationEventHandler : NavigableLocationDelegate,
         // LaneType provides lane properties such as if parking is allowed or is acceleration allowed or is express lane and many more.
         _ = lane.type
         // LaneAccess provides which vehicle type(s) are allowed to access this lane.
-        logLaneAccess(laneNumber, lane.access)
+        logLaneAccess("Lane Details: ", laneNumber, lane.access)
 
         // LaneMarkings indicate the visual style of dividers between lanes as visible on a road.
         let laneMarkings = lane.laneMarkings
-        logLaneMarkings(laneMarkings)
+        logLaneMarkings("Lane Details: ", laneMarkings)
+    }
+
+    func logCurrentSituationLaneViewDetails(_ laneNumber: Int, _ currentSituationLaneView: CurrentSituationLaneView) {
+        print("CurrentSituationLaneAssistanceView: Directions for CurrentSituationLaneView: \(laneNumber):")
+        // You can use this information to visualize all directions of a lane with a set of image overlays.
+        for laneDirection: LaneDirection in currentSituationLaneView.directions {
+            let isLaneDirectionOnRoute = isCurrentSituationLaneViewDirectionOnRoute(currentSituationLaneView, laneDirection)
+            print("CurrentSituationLaneAssistanceView: LaneDirection for this lane: \(laneDirection)")
+            // When you are on tracking mode, there is no directionsOnRoute. So, isLaneDirectionOnRoute will be false.
+            print("CurrentSituationLaneAssistanceView: This LaneDirection is on the route: \(isLaneDirectionOnRoute)")
+        }
+
+        // More information on each lane is available in these bitmasks (boolean):
+        // LaneType provides lane properties such as if parking is allowed or is acceleration allowed or is express lane and many more.
+        _ = currentSituationLaneView.type
+        // LaneAccess provides which vehicle type(s) are allowed to access this lane.
+        logLaneAccess("CurrentSituationLaneAssistanceView: ", laneNumber, currentSituationLaneView.access)
+
+        // LaneMarkings indicate the visual style of dividers between lanes as visible on a road.
+        let laneMarkings = currentSituationLaneView.laneMarkings
+        logLaneMarkings("CurrentSituationLaneAssistanceView: ", laneMarkings)
     }
     
     // LaneMarkings indicate the visual style of dividers between lanes as visible on a road.
-    func logLaneMarkings(_ laneMarkings: LaneMarkings) {
+    func logLaneMarkings(_ TAG: String, _ laneMarkings: LaneMarkings) {
         if let centerDividerMarker: DividerMarker = laneMarkings.centerDividerMarker {
             // A CenterDividerMarker specifies the line type used for center dividers on bidirectional roads.
-            print("Center divider marker for lane \(String(describing: centerDividerMarker))")
+            print("\(TAG) Center divider marker for lane \(String(describing: centerDividerMarker))")
         } else if let laneDividerMarker: DividerMarker = laneMarkings.laneDividerMarker {
             // A LaneDividerMarker specifies the line type of driving lane separators present on a road.
             // It indicates the lane separator on the right side of the
             // specified lane in the lane driving direction for right-side driving countries.
             // For left-sided driving countries, it indicates the
             // lane separator on the left side of the specified lane in the lane driving direction.
-            print("Lane divider marker for lane \(String(describing: laneDividerMarker))")
+            print("\(TAG) Lane divider marker for lane \(String(describing: laneDividerMarker))")
         }
     }
 
-    func logLaneAccess(_ laneNumber: Int, _ laneAccess: LaneAccess) {
-        print("Lane access for lane \(laneNumber).")
-        print("Automobiles are allowed on this lane: \(laneAccess.automobiles).")
-        print("Buses are allowed on this lane: \(laneAccess.buses).")
-        print("Taxis are allowed on this lane: \(laneAccess.taxis).")
-        print("Carpools are allowed on this lane: \(laneAccess.carpools).")
-        print("Pedestrians are allowed on this lane: \(laneAccess.pedestrians).")
-        print("Trucks are allowed on this lane: \(laneAccess.trucks).")
-        print("ThroughTraffic is allowed on this lane: \(laneAccess.throughTraffic).")
-        print("DeliveryVehicles are allowed on this lane: \(laneAccess.deliveryVehicles).")
-        print("EmergencyVehicles are allowed on this lane: \(laneAccess.emergencyVehicles).")
-        print("Motorcycles are allowed on this lane: \(laneAccess.motorcycles).")
+    func logLaneAccess(_ TAG: String, _ laneNumber: Int, _ laneAccess: LaneAccess) {
+        print("\(TAG) Lane access for lane \(laneNumber).")
+        print("\(TAG) Automobiles are allowed on this lane: \(laneAccess.automobiles).")
+        print("\(TAG) Buses are allowed on this lane: \(laneAccess.buses).")
+        print("\(TAG) Taxis are allowed on this lane: \(laneAccess.taxis).")
+        print("\(TAG) Carpools are allowed on this lane: \(laneAccess.carpools).")
+        print("\(TAG) Pedestrians are allowed on this lane: \(laneAccess.pedestrians).")
+        print("\(TAG) Trucks are allowed on this lane: \(laneAccess.trucks).")
+        print("\(TAG) ThroughTraffic is allowed on this lane: \(laneAccess.throughTraffic).")
+        print("\(TAG) DeliveryVehicles are allowed on this lane: \(laneAccess.deliveryVehicles).")
+        print("\(TAG) EmergencyVehicles are allowed on this lane: \(laneAccess.emergencyVehicles).")
+        print("\(TAG) Motorcycles are allowed on this lane: \(laneAccess.motorcycles).")
     }
 
     // A method to check if a given LaneDirection is on route or not.
@@ -549,6 +598,10 @@ class NavigationEventHandler : NavigableLocationDelegate,
     // When the driver is in tracking mode without following a route, this always returns false.
     func isLaneDirectionOnRoute(_ lane: Lane, _ laneDirection: LaneDirection) -> Bool {
         return lane.directionsOnRoute.contains(laneDirection)
+    }
+
+    func isCurrentSituationLaneViewDirectionOnRoute(_ currentSituationLaneView: CurrentSituationLaneView, _ laneDirection: LaneDirection) -> Bool {
+        return currentSituationLaneView.directionsOnRoute.contains(laneDirection)
     }
     
     // Conform to the RoadAttributesDelegate.

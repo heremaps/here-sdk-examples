@@ -43,6 +43,7 @@ import com.here.sdk.maploader.CatalogUpdateInfo;
 import com.here.sdk.maploader.CatalogUpdateProgressListener;
 import com.here.sdk.maploader.CatalogUpdateTask;
 import com.here.sdk.maploader.CatalogsUpdateInfoCallback;
+import com.here.sdk.maploader.DeletedRegionsCallback;
 import com.here.sdk.maploader.DownloadRegionsStatusListener;
 import com.here.sdk.maploader.DownloadableRegionsCallback;
 import com.here.sdk.maploader.InstalledRegion;
@@ -79,6 +80,7 @@ import com.here.sdk.search.TextQuery;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class OfflineMapsExample {
 
@@ -119,7 +121,7 @@ public class OfflineMapsExample {
             throw new RuntimeException("SDKNativeEngine not initialized.");
         }
 
-        // This is the default storage path for cached map data that is not available as installed region. 
+        // This is the default storage path for cached map data that is not available as installed region.
         // Note that the default storage paths can be adapted when creating a new SDKNativeEngine.
         String storagePath = sdkNativeEngine.getOptions().cachePath;
         Log.d(TAG, "Cache storagePath: " + storagePath);
@@ -497,7 +499,7 @@ public class OfflineMapsExample {
         // Cached map data persists until the Least Recently Used (LRU) eviction policy is triggered.
         // After modifying the "FeatureConfiguration", calling performUpdateChecks() will trigger an update to the map data.
         // This will update all previously installed region map data and incomplete downloads which are in pending states.
-        // If no regions have been downloaded, this method will update only the map cache. 
+        // If no regions have been downloaded, this method will update only the map cache.
         // If no updates are available, the MapUpdateProgressListener.onComplete callback will be invoked immediately with a MapLoaderError.
         // Note: This app allows the user to install one region for testing purposes.
         // In order to simplify testing when no region has been installed, we
@@ -659,7 +661,7 @@ public class OfflineMapsExample {
                 // Note: It is recommended to store this ID with a human readable name,
                 // as this will make it easier to delete the downloaded area in the future by calling
                 // mapDownloader.deleteRegions(...). The ID itself is accessible from InstalledRegions.
-                // For simplicity, this is not shown here.
+                // This ID is used for future operations like deletion, which simplifies region management.
                 String message = "Completed 100% for area! ID: " + list.get(0).id;
                 snackbar.setText(message).show();
                 Log.d(TAG, message);
@@ -779,6 +781,35 @@ public class OfflineMapsExample {
             Log.d("Fetching installedRegions failed", e.error.toString());
         }
         return installedRegionList;
+
+    }
+
+    public void deleteInstalledRegions() {
+        List<InstalledRegion> installedRegionList = getInstalledRegionList();
+
+        // Retrieving the RegionIds from the list of installed regions, which will be used for the deletion process.
+        List<RegionId> regionIds = installedRegionList.stream()
+                .map(region -> region.regionId)
+                .collect(Collectors.toList());
+
+        // Asynchronous operation to delete map data for regions specified by a list of RegionId.
+        // Deleting a region when there is a pending download returns error MapLoaderError.INTERNAL_ERROR.
+        // Also, deleting a region when there is an ongoing download returns error MapLoaderError.NOT_READY
+        mapDownloader.deleteRegions(regionIds, new DeletedRegionsCallback() {
+            @Override
+            public void onCompleted(@Nullable MapLoaderError mapLoaderError, @Nullable List<RegionId> list) {
+                // When error is null, the list is guaranteed to be not null.
+                if (mapLoaderError == null && list != null) {
+                    for (RegionId regionID : list) {
+                        Log.d("deleteRegions", "Successfully deleted region: " + regionID.toString());
+                    }
+                    snackbar.setText("Successfully deleted regions!").show();
+                } else {
+                    Log.e("deleteRegions", "Deleting regions failed:" + mapLoaderError.name());
+                    snackbar.setText("Deleting regions failed: " + mapLoaderError.name()).show();
+                }
+            }
+        });
     }
 
     public void logInstalledRegionsAndStorageUsage() {

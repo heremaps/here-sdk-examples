@@ -56,11 +56,11 @@ class CustomRasterTileSourceExample {
         }
     }
 
-    func onEnableButtonClicked() {
+    func enableLayer() {
         rasterMapLayerStyle.setEnabled(true)
     }
 
-    func onDisableButtonClicked() {
+    func disableLayer() {
         rasterMapLayerStyle.setEnabled(false)
     }
 

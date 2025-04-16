@@ -65,10 +65,17 @@ class RoutingExample {
     }
     
     func addRoute() {
+        // Optionally, clear any previous route.
+        clearMap()
+
         startGeoCoordinates = createRandomGeoCoordinatesAroundMapCenter()
         destinationGeoCoordinates = createRandomGeoCoordinatesAroundMapCenter()
         waypoints = [Waypoint(coordinates: startGeoCoordinates!),
                      Waypoint(coordinates: destinationGeoCoordinates!)]
+
+        addMapMarker(geoCoordinates: startGeoCoordinates!, imageName: "poi_start.png")
+        addMapMarker(geoCoordinates: destinationGeoCoordinates!, imageName: "poi_destination.png")
+
         calculateRoute(waypoints: waypoints)
     }
     
@@ -130,7 +137,6 @@ class RoutingExample {
             self.logRouteSectionDetails(route: self.currentRoute!)
             self.logRouteViolations(route: self.currentRoute!)
             self.logTollDetails(route: self.currentRoute!)
-            self.showWaypointsOnMap()
         }
     }
     
@@ -272,9 +278,6 @@ class RoutingExample {
     }
     
     private func showRouteOnMap(route: Route) {
-        // Optionally, clear any previous route.
-        clearMap()
-        
         // Show route as polyline.
         let routeGeoPolyline = route.geometry
         let widthInPixels = 20.0
@@ -319,6 +322,9 @@ class RoutingExample {
     }
     
     func addWaypoints() {
+        // Optionally, clear any previous route.
+        clearMap()
+
         guard
             let startGeoCoordinates = startGeoCoordinates,
             let destinationGeoCoordinates = destinationGeoCoordinates else {
@@ -332,20 +338,15 @@ class RoutingExample {
                          Waypoint(coordinates: waypoint1GeoCoordinates),
                          Waypoint(coordinates: waypoint2GeoCoordinates),
                          Waypoint(coordinates: destinationGeoCoordinates)]
+        
+        addMapMarker(geoCoordinates: startGeoCoordinates, imageName: "poi_start.png")
+        addMapMarker(geoCoordinates: waypoint1GeoCoordinates, imageName: "waypoint_one.png")
+        addMapMarker(geoCoordinates: waypoint2GeoCoordinates, imageName: "waypoint_two.png")
+        addMapMarker(geoCoordinates: destinationGeoCoordinates, imageName: "poi_destination.png")
+        
         calculateRoute(waypoints: waypoints)
     }
-    
-    private func showWaypointsOnMap(){
-        // Draw a green circle to indicate starting point and destination.
-        addCircleMapMarker(geoCoordinates: waypoints.first!.coordinates, imageName: "green_dot.png")
-        addCircleMapMarker(geoCoordinates: waypoints.last!.coordinates, imageName: "green_dot.png")
-        
-        for i in 1...waypoints.count-1{
-            // Draw a circle to indicate the location of the waypoints.
-            addCircleMapMarker(geoCoordinates: waypoints[i].coordinates, imageName: "red_dot.png")
-        }
-    }
-    
+
     // This renders the traffic jam factor on top of the route as multiple MapPolylines per span.
     private func showTrafficOnRoute(_ route: Route) {
         if route.lengthInMeters / 1000 > 5000 {
@@ -438,7 +439,7 @@ class RoutingExample {
         return Double.random(in: min ... max)
     }
     
-    private func addCircleMapMarker(geoCoordinates: GeoCoordinates, imageName: String) {
+    private func addMapMarker(geoCoordinates: GeoCoordinates, imageName: String) {
         guard
             let image = UIImage(named: imageName),
             let imageData = image.pngData() else {

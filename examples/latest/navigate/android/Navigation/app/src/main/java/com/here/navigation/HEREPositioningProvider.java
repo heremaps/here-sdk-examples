@@ -24,8 +24,6 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.here.sdk.consent.Consent;
-import com.here.sdk.consent.ConsentEngine;
 import com.here.sdk.core.Location;
 import com.here.sdk.core.LocationListener;
 import com.here.sdk.core.errors.InstantiationErrorException;
@@ -61,18 +59,10 @@ public class HEREPositioningProvider {
     };
 
     public HEREPositioningProvider() {
-        ConsentEngine consentEngine;
-
         try {
-            consentEngine = new ConsentEngine();
             locationEngine = new LocationEngine();
         } catch (InstantiationErrorException e) {
             throw new RuntimeException("Initialization failed: " + e.getMessage());
-        }
-
-        // Ask user to optionally opt in to HERE's data collection / improvement program.
-        if (consentEngine.getUserConsentState() == Consent.UserReply.NOT_HANDLED) {
-            consentEngine.requestUserConsent();
         }
     }
 
@@ -92,6 +82,11 @@ public class HEREPositioningProvider {
         // Set listeners to get location updates.
         locationEngine.addLocationListener(updateListener);
         locationEngine.addLocationStatusListener(locationStatusListener);
+
+        // By calling confirmHEREPrivacyNoticeInclusion() you confirm that this app informs on
+        // data collection, which is done for this app via HEREPositioningTermsAndPrivacyHelper,
+        // which shows a possible example for this.
+        locationEngine.confirmHEREPrivacyNoticeInclusion();
 
         locationEngine.start(accuracy);
     }

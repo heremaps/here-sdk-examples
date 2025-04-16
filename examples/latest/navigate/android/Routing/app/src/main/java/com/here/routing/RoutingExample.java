@@ -102,6 +102,9 @@ public class RoutingExample {
     }
 
     public void addRoute() {
+        // Optionally, clear any previous route.
+        clearMap();
+
         startGeoCoordinates = createRandomGeoCoordinatesAroundMapCenter();
         destinationGeoCoordinates = createRandomGeoCoordinatesAroundMapCenter();
         Waypoint startWaypoint = new Waypoint(startGeoCoordinates);
@@ -109,6 +112,10 @@ public class RoutingExample {
 
         waypoints =
                 new ArrayList<>(Arrays.asList(startWaypoint, destinationWaypoint));
+
+        addMapMarker(startGeoCoordinates, R.drawable.poi_start);
+        addMapMarker(destinationGeoCoordinates, R.drawable.poi_destination);
+
         calculateRoute(waypoints);
     }
 
@@ -127,7 +134,6 @@ public class RoutingExample {
                             logRouteSectionDetails(currentRoute);
                             logRouteViolations(currentRoute);
                             logTollDetails(currentRoute);
-                            showWaypointsOnMap(waypoints);
                         } else {
                             showDialog("Error while calculating a route:", routingError.toString());
                         }
@@ -247,9 +253,6 @@ public class RoutingExample {
     }
 
     private void showRouteOnMap(Route route) {
-        // Optionally, clear any previous route.
-        clearMap();
-
         // Show route as polyline.
         GeoPolyline routeGeoPolyline = route.getGeometry();
         float widthInPixels = 20;
@@ -280,20 +283,6 @@ public class RoutingExample {
         }
     }
 
-    private void showWaypointsOnMap(List<Waypoint> waypoints) {
-        int n = waypoints.size();
-        for (int i = 0; i < n; i++) {
-            GeoCoordinates currentGeoCoordinates = waypoints.get(i).coordinates;
-            if (i == 0 || i == n - 1) {
-                // Draw a green circle to indicate starting point and destination.
-                addCircleMapMarker(currentGeoCoordinates, R.drawable.green_dot);
-            } else {
-                // Draw a red circle to indicate intermediate waypoints, if any.
-                addCircleMapMarker(currentGeoCoordinates, R.drawable.red_dot);
-            }
-        }
-    }
-
     private void logManeuverInstructions(Section section) {
         Log.d(TAG, "Log maneuver instructions per route section:");
         List<Maneuver> maneuverInstructions = section.getManeuvers();
@@ -308,15 +297,27 @@ public class RoutingExample {
     }
 
     public void addWaypoints() {
+        // Optionally, clear any previous route.
+        clearMap();
+
         if (startGeoCoordinates == null || destinationGeoCoordinates == null) {
             showDialog("Error", "Please add a route first.");
             return;
         }
 
-        Waypoint waypoint1 = new Waypoint(createRandomGeoCoordinatesAroundMapCenter());
-        Waypoint waypoint2 = new Waypoint(createRandomGeoCoordinatesAroundMapCenter());
+        GeoCoordinates waypoint1GeoCoordinates = createRandomGeoCoordinatesAroundMapCenter();
+        GeoCoordinates waypoint2GeoCoordinates = createRandomGeoCoordinatesAroundMapCenter();
+
+        Waypoint waypoint1 = new Waypoint(waypoint1GeoCoordinates);
+        Waypoint waypoint2 = new Waypoint(waypoint2GeoCoordinates);
         waypoints = new ArrayList<>(Arrays.asList(new Waypoint(startGeoCoordinates),
                 waypoint1, waypoint2, new Waypoint(destinationGeoCoordinates)));
+
+        addMapMarker(startGeoCoordinates, R.drawable.poi_start);
+        addMapMarker(waypoint1GeoCoordinates, R.drawable.waypoint_one);
+        addMapMarker(waypoint2GeoCoordinates, R.drawable.waypoint_two);
+        addMapMarker(destinationGeoCoordinates, R.drawable.poi_destination);
+
         calculateRoute(waypoints);
     }
 
@@ -467,7 +468,7 @@ public class RoutingExample {
         return min + Math.random() * (max - min);
     }
 
-    private void addCircleMapMarker(GeoCoordinates geoCoordinates, int resourceId) {
+    private void addMapMarker(GeoCoordinates geoCoordinates, int resourceId) {
         MapImage mapImage = MapImageFactory.fromResource(context.getResources(), resourceId);
         MapMarker mapMarker = new MapMarker(geoCoordinates, mapImage);
         mapView.getMapScene().addMapMarker(mapMarker);

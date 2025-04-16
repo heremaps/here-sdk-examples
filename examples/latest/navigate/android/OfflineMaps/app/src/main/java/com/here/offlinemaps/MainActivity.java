@@ -69,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
         // Set your credentials for the HERE SDK.
         accessKeyID = "YOUR_ACCESS_KEY_ID";
         accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
+
         AuthenticationMode authenticationMode = AuthenticationMode.withKeySecret(accessKeyID, accessKeySecret);
         SDKOptions options = new SDKOptions(authenticationMode);
         // Enable a default layer configuration.
@@ -177,6 +178,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void clearCache(View view){
         offlineMapsExample.clearCache();
+    }
+
+    public void deleteInstalledRegions(View view) {
+        offlineMapsExample.deleteInstalledRegions();
     }
 
     public void toggleConfiguration(View view) {

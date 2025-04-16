@@ -111,6 +111,27 @@ class NavigationEventHandler {
       updateTrafficOnRoute(routeProgress);
     });
 
+    // Provides lane information for the road a user is currently driving on.
+    // It's supported for turn-by-turn navigation and in tracking mode.
+    // It does not notify on which lane the user is currently driving on.
+    _visualNavigator.currentSituationLaneAssistanceViewListener =
+        CurrentSituationLaneAssistanceViewListener((CurrentSituationLaneAssistanceView currentSituationLaneAssistanceView) {
+          // A list of lanes on the current road.
+          List<CurrentSituationLaneView>  lanesList = currentSituationLaneAssistanceView.lanes;
+
+          if (lanesList.isEmpty) {
+            print("CurrentSituationLaneAssistanceView: No data on lanes available.");
+          } else {
+            // The lanes are sorted from left to right:
+            // The lane at index 0 is the leftmost lane adjacent to the middle of the road.
+            // The lane at the last index is the rightmost lane.
+            // This is valid for right-hand and left-hand driving countries.
+            for (int i = 0; i < lanesList.length; i++) {
+              _logCurrentSituationLaneViewDetails(i, lanesList[i]);
+            }
+          }
+        });
+        
     // Notifies on the current map-matched location and other useful information while driving or walking.
     // The map-matched location is used to update the map view.
     _visualNavigator.navigableLocationListener =
@@ -322,6 +343,9 @@ class NavigationEventHandler {
             trafficMergeWarning.side.name +
             "side, with lanes =" +
             trafficMergeWarning.laneCount.toString());
+      } else if (trafficMergeWarning.distanceType == DistanceType.reached) {
+        // Since the traffic merge warning is given relative to a single position on the route,
+        // DistanceType.reached will never be given for this warning.
       }
     });
 
@@ -631,7 +655,7 @@ class NavigationEventHandler {
       int laneNumber = 0;
       for (TollBoothLane tollBoothLane in lanes) {
         // Log which vehicles types are allowed on this lane that leads to the toll booth.
-        _logLaneAccess(laneNumber, tollBoothLane.access);
+        _logLaneAccess("ToolBoothLane: ", laneNumber, tollBoothLane.access);
         TollBooth tollBooth = tollBoothLane.booth;
         List<TollCollectionMethod> tollCollectionMethods = tollBooth.tollCollectionMethods;
         List<PaymentMethod> paymentMethods = tollBooth.paymentMethods;
@@ -643,6 +667,7 @@ class NavigationEventHandler {
         for (PaymentMethod paymentMethod in paymentMethods) {
           print("This toll stop supports payment via: " + paymentMethod.name);
         }
+        laneNumber++;
       }
     });
   }
@@ -786,39 +811,62 @@ class NavigationEventHandler {
 
     // LaneAccess provides which vehicle type(s) are allowed to access this lane.
     LaneAccess laneAccess = lane.access;
-    _logLaneAccess(laneNumber, laneAccess);
+    _logLaneAccess("LaneDetails: ", laneNumber, laneAccess);
 
     // LaneMarkings indicate the visual style of dividers between lanes as visible on a road.
     LaneMarkings laneMarkings = lane.laneMarkings;
-    _logLaneMarkings(laneMarkings);
+    _logLaneMarkings("LaneDetails: ", laneMarkings);
   }
 
-  _logLaneMarkings(LaneMarkings laneMarkings) {
+  void _logCurrentSituationLaneViewDetails(int laneNumber, CurrentSituationLaneView currentSituationLaneView) {
+    print("CurrentSituationLaneAssistanceView: Directions for CurrentSituationLaneView " + laneNumber.toString());
+    // You can use this information to visualize all directions of a lane with a set of image overlays.
+    for (LaneDirection laneDirection in currentSituationLaneView.directions) {
+      bool isLaneDirectionOnRoute = _isCurrentSituationLaneViewDirectionOnRoute(currentSituationLaneView, laneDirection);
+      print("CurrentSituationLaneAssistanceView: LaneDirection for this lane: ${laneDirection.name}");
+      // When you are on tracking mode, there is no directionsOnRoute. So, isLaneDirectionOnRoute will be false.
+      print("CurrentSituationLaneAssistanceView: This LaneDirection is on the route: $isLaneDirectionOnRoute");
+    }
+
+    // More information on each lane is available in these bitmasks (boolean):
+    // LaneType provides lane properties such as if parking is allowed or is acceleration allowed or is express lane and many more.
+    LaneType laneType = currentSituationLaneView.type;
+
+    // LaneAccess provides which vehicle type(s) are allowed to access this lane.
+    LaneAccess laneAccess = currentSituationLaneView.access;
+    _logLaneAccess("CurrentSituationLaneAssistanceView: ", laneNumber, laneAccess);
+
+    // LaneMarkings indicate the visual style of dividers between lanes as visible on a road.
+    LaneMarkings laneMarkings = currentSituationLaneView.laneMarkings;
+    _logLaneMarkings("CurrentSituationLaneAssistanceView: ", laneMarkings);
+  }
+
+  _logLaneMarkings(String TAG, LaneMarkings laneMarkings) {
     if (laneMarkings.centerDividerMarker != null) {
       // A CenterDividerMarker specifies the line type used for center dividers on bidirectional roads.
-      print("Center divider marker for lane ${laneMarkings.centerDividerMarker?.name}");
+      print(TAG + "Center divider marker for lane ${laneMarkings.centerDividerMarker?.name}");
     } else if (laneMarkings.laneDividerMarker != null) {
       // A LaneDividerMarker specifies the line type of driving lane separators present on a road.
       // It indicates the lane separator on the right side of the
       // specified lane in the lane driving direction for right-side driving countries.
       // For left-sided driving countries, it indicates the
       // lane separator on the left side of the specified lane in the lane driving direction.
-      print("Lane divider marker for lane ${laneMarkings.laneDividerMarker?.name}");
+      print(TAG + "Lane divider marker for lane ${laneMarkings.laneDividerMarker?.name}");
     }
   }
 
-  _logLaneAccess(int laneNumber, LaneAccess laneAccess) {
-    print("Lane access for lane " + laneNumber.toString());
-    print("Automobiles are allowed on this lane: " + laneAccess.automobiles.toString());
-    print("Buses are allowed on this lane: " + laneAccess.buses.toString());
-    print("Taxis are allowed on this lane: " + laneAccess.taxis.toString());
-    print("Carpools are allowed on this lane: " + laneAccess.carpools.toString());
-    print("Pedestrians are allowed on this lane: " + laneAccess.pedestrians.toString());
-    print("Trucks are allowed on this lane: " + laneAccess.trucks.toString());
-    print("ThroughTraffic is allowed on this lane: " + laneAccess.throughTraffic.toString());
-    print("DeliveryVehicles are allowed on this lane: " + laneAccess.deliveryVehicles.toString());
-    print("EmergencyVehicles are allowed on this lane: " + laneAccess.emergencyVehicles.toString());
-    print("Motorcycles are allowed on this lane: " + laneAccess.motorcycles.toString());
+  _logLaneAccess(String TAG, int laneNumber, LaneAccess laneAccess) {
+    print(TAG + "Lane access for lane " + laneNumber.toString());
+    print(TAG + "Automobiles are allowed on this lane: " + laneAccess.automobiles.toString());
+    print(TAG + "Buses are allowed on this lane: " + laneAccess.buses.toString());
+    print(TAG + "Taxis are allowed on this lane: " + laneAccess.taxis.toString());
+    print(TAG + "Carpools are allowed on this lane: " + laneAccess.carpools.toString());
+    print(TAG + "Pedestrians are allowed on this lane: " + laneAccess.pedestrians.toString());
+    print(TAG + "Trucks are allowed on this lane: " + laneAccess.trucks.toString());
+    print(TAG + "ThroughTraffic is allowed on this lane: " + laneAccess.throughTraffic.toString());
+    print(TAG + "DeliveryVehicles are allowed on this lane: " + laneAccess.deliveryVehicles.toString());
+    print(TAG + "EmergencyVehicles are allowed on this lane: " + laneAccess.emergencyVehicles.toString());
+    print(TAG + "Motorcycles are allowed on this lane: " + laneAccess.motorcycles.toString());
   }
 
   // A method to check if a given LaneDirection is on route or not.
@@ -826,6 +874,10 @@ class NavigationEventHandler {
   // When the driver is in tracking mode without following a route, this always returns false.
   bool _isLaneDirectionOnRoute(Lane lane, LaneDirection laneDirection) {
     return lane.directionsOnRoute.contains(laneDirection);
+  }
+
+  bool _isCurrentSituationLaneViewDirectionOnRoute(CurrentSituationLaneView currentSituationLaneView, LaneDirection laneDirection) {
+    return currentSituationLaneView.directionsOnRoute.contains(laneDirection);
   }
 
   LanguageCode getLanguageCodeForDevice(List<LanguageCode> supportedVoiceSkins) {

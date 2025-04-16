@@ -32,8 +32,6 @@ import androidx.annotation.NonNull;
 
 import com.here.HikingDiary.R;
 import com.here.hikingdiary.MainActivity;
-import com.here.sdk.consent.Consent;
-import com.here.sdk.consent.ConsentEngine;
 import com.here.sdk.core.Location;
 import com.here.sdk.core.LocationListener;
 import com.here.sdk.core.errors.InstantiationErrorException;
@@ -168,24 +166,11 @@ public class HEREBackgroundPositioningService extends Service {
                         R.drawable.update_notification_status_bar,
                         R.string.status_yellow_title,
                         R.string.status_yellow));
-        handleConsent();
         if (!startLocating()) {
             setStateStopped();
             stopSelf();
         }
         return START_NOT_STICKY;
-    }
-
-    // Handle SDK user consent.
-    private void handleConsent() {
-        try {
-            final ConsentEngine consentEngine = new ConsentEngine();
-            if (consentEngine.getUserConsentState() == Consent.UserReply.NOT_HANDLED) {
-                consentEngine.requestUserConsent();
-            }
-        } catch (InstantiationErrorException ex) {
-            Log.e(TAG, "checkConsent: " + ex.getMessage());
-        }
     }
 
     // Start location updates.
@@ -195,6 +180,10 @@ public class HEREBackgroundPositioningService extends Service {
             locationEngine = new LocationEngine();
             locationEngine.addLocationListener(locationListener);
             locationEngine.addLocationStatusListener(statusListener);
+            // By calling confirmHEREPrivacyNoticeInclusion() you confirm that this app informs on
+            // data collection, which is done for this app via PositioningTermsAndPrivacyHelper,
+            // which shows a possible example for this.
+            locationEngine.confirmHEREPrivacyNoticeInclusion();
             final LocationEngineStatus status = locationEngine.start(LocationAccuracy.BEST_AVAILABLE);
             switch (status) {
                 case ENGINE_STARTED:

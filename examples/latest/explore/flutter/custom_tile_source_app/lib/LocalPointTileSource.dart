@@ -19,7 +19,6 @@
 
 import 'dart:core';
 import 'dart:math';
-import 'package:flutter/material.dart';
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/mapview.datasource.dart';
 
