@@ -67,7 +67,7 @@ For an overview of the existing features, please check the _Developer Guide_ for
 - **UnitTesting**: Shows how to mock HERE SDK classes when writing unit tests (the example app is available for the _Explore Edition_ and the _Navigate Edition_).
 - **GesturesKotlin**: Shows how to handle gestures on the map view. Exclusively available for the _Explore Edition_ and the _Navigate Edition_.
 - **TrafficKotlin**: Shows how to search for real-time traffic and how to visualize it on the map. Exclusively available for the _Explore Edition_ and the _Navigate Edition_.
-- **CameraKotlin**: Shows how to change the target and the target anchor point and how to move to another location using custom map animations (the example app is available for the _Explore Edition_ and the _Navigate Edition_).
+- **CameraKotlin**: Shows how to change the target and the target anchor point and how to move to another location using custom map animations. Exclusively available for the _Explore Edition_ and the _Navigate Edition_.
 - **MapItemsKotlin**: Shows how to add circles, polygons and polylines, native views, 2D and 3D map markers to locate POIs (and more) on the map. 3D map markers are exclusively (the example app is available for the _Explore Edition_ and the _Navigate Edition_).
 - **SearchKotlin**: Shows how to search POIs and add them to the map. Shows also geocoding and reverse geocoding (the example app is available for the _Explore Edition_ and the _Navigate Edition_).
 - **NavigationHeadless**: Shows how the HERE SDK can be set up to navigate without following a route in the most simplest way - and without showing a map view (the example app is available for the _Navigate Edition_).
