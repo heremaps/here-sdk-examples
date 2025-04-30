@@ -24,10 +24,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -35,9 +33,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 
 import com.here.examples.positioningwithbackgroundupdates.PermissionsRequestor.ResultListener;
 import com.here.sdk.core.engine.AuthenticationMode;
@@ -157,9 +152,6 @@ public class MainActivity extends AppCompatActivity {
                     showDialog(R.string.error, R.string.dialog_msg_cannot_start_app_text);
                 } else if (permissionsRequestor.isPostNotificationsAccessDenied()) {
                     showDialog(R.string.error, R.string.post_notifications_access_missing_text);
-                } else if (!permissionsRequestor.isBackgroundLocationAccessInProgress() &&
-                        permissionsRequestor.isBackgroundLocationAccessDenied()) {
-                    showDialog(R.string.error, R.string.background_access_missing_text);
                 }
             }
         });

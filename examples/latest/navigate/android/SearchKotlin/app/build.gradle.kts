@@ -5,15 +5,16 @@ plugins {
 }
 
 android {
-    namespace = "com.example.search"
+    namespace = "com.here.searchkotlin"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.search"
+        applicationId = "com.here.searchkotlin"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+        signingConfig = signingConfigs.getByName("debug")
     }
 
     buildTypes {

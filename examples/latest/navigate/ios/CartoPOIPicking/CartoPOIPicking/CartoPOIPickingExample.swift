@@ -25,10 +25,11 @@ class CartoPOIPickingExample: TapDelegate {
     private let mapView: MapView
     private let searchEngine: SearchEngine
     private let currentMapScheme: MapScheme
-    
+    private let iconProvider: IconProvider
+
     init(_ mapView: MapView) {
         self.mapView = mapView
-        
+        iconProvider = IconProvider(self.mapView.mapContext)
         // Configure the map.
         let camera = mapView.camera
         let distanceInMeters = MapMeasure(kind: .distanceInMeters, value: 1000 * 10)
@@ -160,7 +161,6 @@ class CartoPOIPickingExample: TapDelegate {
     }
     
     private func createVehicleRestrictionIcon(vehicleRestrictionResult: PickMapContentResult.VehicleRestrictionResult){
-        let iconProvider = IconProvider(self.mapView.mapContext)
         print("Mapview validity: \(self.mapView.isValid)")
         let iconCallback: IconProviderCallback = { icon, description, error in
             if let error = error {

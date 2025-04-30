@@ -5,15 +5,16 @@ plugins {
 }
 
 android {
-    namespace = "com.example.mapitems"
+    namespace = "com.here.mapitemskotlin"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.mapitems"
+        applicationId = "com.here.mapitemskotlin"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+        signingConfig = signingConfigs.getByName("debug")
     }
 
     buildTypes {

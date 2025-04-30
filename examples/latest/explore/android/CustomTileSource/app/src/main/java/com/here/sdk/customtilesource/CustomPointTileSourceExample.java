@@ -58,12 +58,12 @@ import com.here.sdk.mapview.MapCameraLimits;
              + "  ]\n"
              + "}";
 
-     private MapView mapView;
-     private MapLayer pointMapLayer;
-     private PointTileDataSource pointDataSource;
-     private Context context;
+     private final MapView mapView;
+     private final MapLayer pointMapLayer;
+     private final PointTileDataSource pointDataSource;
+     private final Context context;
 
-     public void onMapSceneLoaded(MapView mapView, Context context) {
+     CustomPointTileSourceExample(MapView mapView, Context context) {
          this.mapView = mapView;
          this.context = context;
 
@@ -76,11 +76,11 @@ import com.here.sdk.mapview.MapCameraLimits;
          pointMapLayer = createMapLayer(dataSourceName);
      }
 
-     public void enableButtonClicked() {
+     public void enableLayer() {
          pointMapLayer.setEnabled(true);
      }
 
-     public void disableButtonClicked() {
+     public void disableLayer() {
          pointMapLayer.setEnabled(false);
      }
 

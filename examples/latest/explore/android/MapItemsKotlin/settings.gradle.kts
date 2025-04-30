@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "MapItems"
+rootProject.name = "MapItemsKotlin"
 include(":app")

@@ -78,7 +78,11 @@ class RoutingExample {
   }
 
   void onUpdateTrafficOnRouteButtonClick() {
-    updateTrafficOnRoute(_currentRoute);
+    if (_currentRoute != null) {
+      updateTrafficOnRoute(_currentRoute);
+    } else {
+      _showDialog("Error", "Add a route first to get traffic information on route.");
+    }
   }
 
   void updateTrafficOnRoute(here.Route route) {

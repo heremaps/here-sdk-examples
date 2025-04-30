@@ -64,7 +64,7 @@ import com.here.sdk.mapview.MapCameraLimits;
      private LineTileDataSource lineDataSource;
      private Context context;
 
-     public void onMapSceneLoaded(MapView mapView, Context context) {
+     CustomLineTileSourceExample(MapView mapView, Context context) {
          this.mapView = mapView;
          this.context = context;
 
@@ -81,14 +81,14 @@ import com.here.sdk.mapview.MapCameraLimits;
          }
      }
 
-     public void enableButtonClicked() {
+     public void enableLayer() {
          if (lineMapLayer != null) {
              lineMapLayer.setEnabled(true);
              Log.d(TAG, "Line layer enabled");
          }
      }
 
-     public void disableButtonClicked() {
+     public void disableLayer() {
          if (lineMapLayer != null) {
              lineMapLayer.setEnabled(false);
              Log.d(TAG, "Line layer disabled");

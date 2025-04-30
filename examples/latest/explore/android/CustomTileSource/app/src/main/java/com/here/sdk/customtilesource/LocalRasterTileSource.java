@@ -51,16 +51,26 @@
      // Local tile data (auto-generated).
      final List<byte[]> mTileData = new ArrayList<>();
 
+     // Transparent Colors for raster layers
+     private static final int SEMI_TRANSPARENT_RED = 0x44FF0000;
+     private static final int SEMI_TRANSPARENT_BLUE = 0x440000FF;
+     private static final int SEMI_TRANSPARENT_GREEN = 0x4400FF00;
+     private static final int SEMI_TRANSPARENT_BLACK = 0x44000000;
+     private static final int SEMI_TRANSPARENT_WHITE = 0x44FFFFFF;
+     private static final int SEMI_TRANSPARENT_YELLOW = 0x44FFFF00;
+     private static final int SEMI_TRANSPARENT_CYAN = 0x4400FFFF;
+     private static final int SEMI_TRANSPARENT_MAGENTA = 0x44FF00FF;
+
      LocalRasterTileSource() {
          // Create a set of images to provide as tile data.
-         mTileData.add(createTileData(512, 512, Color.RED));
-         mTileData.add(createTileData(512, 512, Color.BLUE));
-         mTileData.add(createTileData(512, 512, Color.GREEN));
-         mTileData.add(createTileData(512, 512, Color.BLACK));
-         mTileData.add(createTileData(512, 512, Color.WHITE));
-         mTileData.add(createTileData(512, 512, Color.YELLOW));
-         mTileData.add(createTileData(512, 512, Color.CYAN));
-         mTileData.add(createTileData(512, 512, Color.MAGENTA));
+         mTileData.add(createTileData(512, 512, SEMI_TRANSPARENT_RED));
+         mTileData.add(createTileData(512, 512, SEMI_TRANSPARENT_BLUE));
+         mTileData.add(createTileData(512, 512, SEMI_TRANSPARENT_GREEN));
+         mTileData.add(createTileData(512, 512, SEMI_TRANSPARENT_BLACK));
+         mTileData.add(createTileData(512, 512, SEMI_TRANSPARENT_WHITE));
+         mTileData.add(createTileData(512, 512, SEMI_TRANSPARENT_YELLOW));
+         mTileData.add(createTileData(512, 512, SEMI_TRANSPARENT_CYAN));
+         mTileData.add(createTileData(512, 512, SEMI_TRANSPARENT_MAGENTA));
      }
 
      @Nullable

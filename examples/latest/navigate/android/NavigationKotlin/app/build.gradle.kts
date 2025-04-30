@@ -5,15 +5,16 @@ plugins {
 }
 
 android {
-    namespace = "com.example.navigation"
+    namespace = "com.here.navigationkotlin"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.navigation"
+        applicationId = "com.here.navigationkotlin"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+        signingConfig = signingConfigs.getByName("debug")
     }
 
     buildTypes {

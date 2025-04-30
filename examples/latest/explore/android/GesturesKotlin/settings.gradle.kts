@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Gestures"
+rootProject.name = "GesturesKotlin"
 include(":app")

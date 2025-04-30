@@ -12,68 +12,53 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <LinearLayout
-        android:id="@+id/controlLayout"
-        app:layout_constraintTop_toTopOf="parent"
+    <GridLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="8dp"
-        android:background="@android:color/white">
+        android:columnCount="2"
+        android:background="@android:color/white"
+        android:orientation="horizontal"
+        android:rowCount="2"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <RadioGroup
-            android:id="@+id/radioGroupTileSource"
-            android:layout_width="match_parent"
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switchPointTileSource"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:background="@android:color/white">
+            android:layout_rowWeight="1"
+            android:layout_columnWeight="1"
+            android:checked="true"
+            android:gravity="center"
+            android:text="Point Tile"
+            android:textOff="off"
+            android:textOn="test" />
 
-            <RadioButton
-                android:id="@+id/radioCustomPointTileSource"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Point Tile"
-                android:checked="true"
-                android:gravity="center" />
-
-            <RadioButton
-                android:id="@+id/radioCustomRasterTileSource"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Raster Tile"
-                android:gravity="center" />
-
-            <RadioButton
-                android:id="@+id/radioCustomLineTileSource"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Line Tile"
-                android:gravity="center" />
-        </RadioGroup>
-
-        <LinearLayout
-            android:layout_width="match_parent"
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switchRasterTileSource"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_rowWeight="1"
+            android:layout_columnWeight="1"
+            android:gravity="center"
+            android:text="Raster Tile" />
 
-            <Button
-                android:id="@+id/btnEnable"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Enable"
-                android:onClick="enableButtonClicked" />
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switchLineTileSource"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_rowWeight="1"
+            android:layout_columnWeight="1"
+            android:gravity="center"
+            android:text="Line Tile" />
 
-            <Button
-                android:id="@+id/btnDisable"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Disable"
-                android:onClick="disableButtonClicked" />
-        </LinearLayout>
-    </LinearLayout>
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switchPolygonTileSource"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_rowWeight="1"
+            android:layout_columnWeight="1"
+            android:gravity="center"
+            android:text="Polygon Tile" />
+
+    </GridLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

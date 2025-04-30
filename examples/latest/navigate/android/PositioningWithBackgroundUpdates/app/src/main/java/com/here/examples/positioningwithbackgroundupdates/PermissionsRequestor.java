@@ -21,13 +21,12 @@ package com.here.examples.positioningwithbackgroundupdates;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -39,13 +38,9 @@ import androidx.core.content.ContextCompat;
  */
 public class PermissionsRequestor {
 
-    private static final String TAG = PermissionsRequestor.class.getSimpleName();
-
     private static final int PERMISSIONS_REQUEST_CODE = 42;
     private ResultListener resultListener;
     private final Activity activity;
-    private static boolean requestBackgroundLocation = false;
-    private boolean backgroundLocationRequestInProgress = false;
 
     public PermissionsRequestor(Activity activity) {
         this.activity = activity;
@@ -86,11 +81,6 @@ public class PermissionsRequestor {
                 for (String permission : packageInfo.requestedPermissions) {
                     if (ContextCompat.checkSelfPermission(
                             activity, permission) != PackageManager.PERMISSION_GRANTED) {
-                        // ACCESS_BACKGROUND_LOCATION is needed on Android 10+ (API 29+)
-                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q &&
-                                permission.equals(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
-                            continue;
-                        }
                         // FOREGROUND_SERVICE is needed on Android 9+ (API 28+)
                         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P &&
                                 permission.equals(Manifest.permission.FOREGROUND_SERVICE)) {
@@ -122,29 +112,10 @@ public class PermissionsRequestor {
 
     private void requestPermissions(String[] permissions) {
         List<String> newPermissionList = new LinkedList<>();
-        for (final String permission : permissions) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && permission.equals(
-                    Manifest.permission.ACCESS_BACKGROUND_LOCATION) && !requestBackgroundLocation) {
-                // In >= Android 11 background location access cannot be requested at the same time
-                // as basic location access (fine or coarse) but user should be provided a way to
-                // enable it from application settings after basic location access has been granted.
-
-                // This flag enables this functionality in onRequestPermissionsResult()
-                requestBackgroundLocation = true;
-
-                if (permissions.length == 1) {
-                    // Only background access requested -> request it now.
-                    requestBackgroundLocationAccess();
-                }
-            } else {
-                newPermissionList.add(permission);
-            }
-        }
-
+        Collections.addAll(newPermissionList, permissions);
         if (!newPermissionList.isEmpty()) {
             ActivityCompat.requestPermissions(activity, newPermissionList.toArray(new String[0]), PERMISSIONS_REQUEST_CODE);
         }
-        // else might be zero if only background location access was requested (see handling above).
     }
 
     public void onRequestPermissionsResult(
@@ -152,27 +123,8 @@ public class PermissionsRequestor {
         boolean result = true;
         if (requestCode == PERMISSIONS_REQUEST_CODE) {
             for (int i = 0; i < permissions.length; i++) {
-                final String permission = permissions[i];
                 final int grantResult = grantResults[i];
-
-                if ((permission.equals(Manifest.permission.ACCESS_FINE_LOCATION) ||
-                        permission.equals(Manifest.permission.ACCESS_COARSE_LOCATION) ||
-                        permission.equals(Manifest.permission.POST_NOTIFICATIONS)) &&
-                        (grantResult == PackageManager.PERMISSION_DENIED)) {
-                    // Do not request background location if basic location and notifications access has been denied.
-                    requestBackgroundLocation = false;
-                }
-
                 result &= grantResult == PackageManager.PERMISSION_GRANTED;
-            }
-
-            if (!backgroundLocationRequestInProgress) {
-                if (requestBackgroundLocationAccess()) {
-                    // Signal that not all permissions have been granted yet.
-                    result = false;
-                }
-            } else {
-                backgroundLocationRequestInProgress = false;
             }
 
             if (result) {
@@ -181,42 +133,6 @@ public class PermissionsRequestor {
                 resultListener.permissionsDenied();
             }
         }
-    }
-
-    private boolean requestBackgroundLocationAccess() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R &&
-                requestBackgroundLocation &&
-                ActivityCompat.shouldShowRequestPermissionRationale(
-                        activity,
-                        Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
-            // Show alert dialog to set background location access enabled.
-            AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-            builder.setTitle(R.string.background_access_dialog_title);
-
-            builder.setMessage(String.format(activity.getString(R.string.background_access_dialog_text), activity.getPackageManager().getBackgroundPermissionOptionLabel()));
-            builder.setPositiveButton(R.string.background_access_button_settings, (dialog, which) -> {
-                requestPermissions(new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION});
-                requestBackgroundLocation = false;
-            });
-            backgroundLocationRequestInProgress = true;
-            AlertDialog dialog = builder.create();
-            dialog.show();
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public boolean isBackgroundLocationAccessInProgress() {
-        return backgroundLocationRequestInProgress;
-    }
-
-    public boolean isBackgroundLocationAccessDenied() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            return ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-                    == PackageManager.PERMISSION_DENIED;
-        }
-        return false;
     }
 
     public boolean isPostNotificationsAccessDenied() {
