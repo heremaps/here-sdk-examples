@@ -4,17 +4,18 @@ plugins {
 }
 
 android {
-    namespace = "com.example.hellomapkotlin"
+    namespace = "com.here.hellomapkotlin"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.hellomapkotlin"
+        applicationId = "com.here.hellomapkotlin"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        signingConfig = signingConfigs.getByName("debug")
     }
 
     buildTypes {

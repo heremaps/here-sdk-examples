@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Search"
+rootProject.name = "SearchKotlin"
 include(":app")

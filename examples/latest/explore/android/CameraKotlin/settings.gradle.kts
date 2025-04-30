@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Camera"
+rootProject.name = "CameraKotlin"
 include(":app")

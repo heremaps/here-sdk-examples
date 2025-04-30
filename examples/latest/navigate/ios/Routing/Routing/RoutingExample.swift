@@ -31,7 +31,7 @@ class RoutingExample {
     private var disableOptimization = true
     private var waypoints = [Waypoint]()
     private let timeUtils: TimeUtils
-    private var currentRoute: Route?;
+    private var currentRoute: Route?
     
     init(_ mapView: MapView) {
         self.mapView = mapView
@@ -80,7 +80,11 @@ class RoutingExample {
     }
     
     func onUpdateTrafficOnRouteButtonClick() {
-        updateTrafficOnRoute(route: currentRoute)
+        if currentRoute != nil {
+            updateTrafficOnRoute(route: currentRoute)
+        } else {
+            showDialog(title: "Error", message: "Add a route first to get traffic information on route.")
+        }
     }
 
     func updateTrafficOnRoute(route: Route?) {
@@ -119,7 +123,7 @@ class RoutingExample {
         }
     }
 
-    private func calculateRoute(waypoints: Array<Waypoint>){
+    private func calculateRoute(waypoints: Array<Waypoint>) {
         routingEngine.calculateRoute(with: waypoints,
                                      carOptions: getCaroptions()) { (routingError, routes) in
             
@@ -178,7 +182,7 @@ class RoutingExample {
         return carOptions
     }
     
-    func toggleTrafficOptimization(){
+    func toggleTrafficOptimization() {
         disableOptimization = !disableOptimization
         if !waypoints.isEmpty {
             calculateRoute(waypoints: waypoints)

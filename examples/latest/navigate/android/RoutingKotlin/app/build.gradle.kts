@@ -5,15 +5,16 @@ plugins {
 }
 
 android {
-    namespace = "com.example.routing"
+    namespace = "com.here.routingkotlin"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.routing"
+        applicationId = "com.here.routingkotlin"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+        signingConfig = signingConfigs.getByName("debug")
     }
 
     buildTypes {

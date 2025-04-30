@@ -70,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
     private PermissionsRequestor permissionsRequestor;
     private MapView mapView;
+    private IconProvider iconProvider;
 
     private SearchEngine searchEngine;
     private MapScheme currentMapScheme;
@@ -150,6 +151,7 @@ public class MainActivity extends AppCompatActivity {
                 "This app shows how to pick vehicle restrictions and embedded markers on the map, such as subway stations and ATMs.");
 
         enableVehicleRestrictionsOnMap();
+        iconProvider = new IconProvider(mapView.getMapContext());
 
         try {
             // Allows to search online.
@@ -255,7 +257,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void createVehicleRestrictionIcon(PickMapContentResult.VehicleRestrictionResult vehicleRestrictionResult) {
-        IconProvider iconProvider = new IconProvider(mapView.getMapContext());
 
         IconProvider.IconCallback iconProviderCallback = new IconProvider.IconCallback() {
             @Override

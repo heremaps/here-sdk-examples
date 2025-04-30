@@ -43,9 +43,6 @@ class CustomRasterTileSourceExample {
 
         // We want to start with the default map style.
         rasterMapLayerStyle.setEnabled(false)
-
-        // Add a POI marker
-        addPOIMapMarker(geoCoordinates: GeoCoordinates(latitude: 52.530932, longitude: 13.384915))
     }
     
     // Completion handler for loadScene().
@@ -96,24 +93,5 @@ class CustomRasterTileSourceExample {
         } catch let InstantiationException {
             fatalError("MapLayer creation failed Cause: \(InstantiationException)")
         }
-    }
-
-    private func addPOIMapMarker(geoCoordinates: GeoCoordinates) {
-        guard
-            let image = UIImage(named: "poi.png"),
-            let imageData = image.pngData() else {
-                print("Error: Image not found.")
-                return
-        }
-
-        // The bottom, middle position should point to the location.
-        // By default, the anchor point is set to 0.5, 0.5.
-        let anchorPoint = Anchor2D(horizontal: 0.5, vertical: 1)
-        let mapMarker = MapMarker(at: geoCoordinates,
-                                  image: MapImage(pixelData: imageData,
-                                                  imageFormat: ImageFormat.png),
-                                  anchor: anchorPoint)
-
-        mapView.mapScene.addMapMarker(mapMarker)
     }
 }

@@ -5,15 +5,16 @@ plugins {
 }
 
 android {
-    namespace = "com.example.gestures"
+    namespace = "com.here.gestureskotlin"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.gestures"
+        applicationId = "com.here.gestureskotlin"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+        signingConfig = signingConfigs.getByName("debug")
     }
 
     buildTypes {

@@ -53,7 +53,6 @@ public class BackgroundPositioningExample {
     private MapView mapView;
     private Context context;
     private Activity activity;
-    private LocationEngine locationEngine;
     private LocationIndicator locationIndicator;
     private boolean shouldUnbind;
     private HEREBackgroundPositioningService positioningService;
@@ -63,6 +62,7 @@ public class BackgroundPositioningExample {
         this.context = context;
         activity = (Activity) context;
 
+        LocationEngine locationEngine;
         try {
             locationEngine = new LocationEngine();
         } catch (InstantiationErrorException e) {

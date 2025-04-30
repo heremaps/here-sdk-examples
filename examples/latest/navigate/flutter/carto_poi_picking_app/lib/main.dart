@@ -61,6 +61,7 @@ class _MyAppState extends State<MyApp> {
   late SearchEngine? _searchEngine;
   late final AppLifecycleListener _listener;
   late MapScheme _currentMapScheme;
+  late IconProvider? _iconProvider;
 
   @override
   Widget build(BuildContext context) {
@@ -79,6 +80,7 @@ class _MyAppState extends State<MyApp> {
   void _onMapCreated(HereMapController hereMapController) {
     _hereMapController = hereMapController;
     _currentMapScheme = MapScheme.normalDay;
+    _iconProvider = IconProvider(hereMapController.mapContext);
     _hereMapController!.mapScene.loadSceneForMapScheme(_currentMapScheme, (MapError? error) {
       if (error != null) {
         print('Map scene not loaded. MapError: ${error.toString()}');
@@ -205,7 +207,6 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _createVehicleRestrictionIcon(PickVehicleRestrictionsResult vehicleRestrictionResult){
-    var iconProvider = IconProvider(_hereMapController!.mapContext);
 
     void iconProviderCallback(ImageInfo? imageInfo, String? description, IconProviderError? iconProviderError) {
       if (iconProviderError == null) {
@@ -222,7 +223,7 @@ class _MyAppState extends State<MyApp> {
     // - IconProviderAssetType: Specifies icon optimization for either UI or MAP.
     // - size: The size of the generated image in the callback.
     // - iconProviderCallback: The callback object for receiving the generated icon.
-    iconProvider.createVehicleRestrictionIcon(vehicleRestrictionResult, _currentMapScheme, IconProviderAssetType.ui, Size2D(40,40), iconProviderCallback);
+    _iconProvider!.createVehicleRestrictionIcon(vehicleRestrictionResult, _currentMapScheme, IconProviderAssetType.ui, Size2D(40,40), iconProviderCallback);
   }
 
   @override

@@ -28,7 +28,6 @@ class CustomRasterTileSourceExample {
   HereMapController _hereMapController;
   MapLayer? _rasterMapLayerStyle;
   RasterDataSource? _rasterDataSourceStyle;
-  MapImage? _poiMapImage;
 
   CustomRasterTileSourceExample(this._hereMapController) {
     double distanceToEarthInMeters = 60 * 1000;
@@ -45,9 +44,6 @@ class CustomRasterTileSourceExample {
 
     // We want to start with the default map style.
     _rasterMapLayerStyle?.setEnabled(false);
-
-    // Add a POI marker
-    _addPOIMapMarker(GeoCoordinates(52.530932, 13.384915), 1);
   }
 
   void enableLayer() {
@@ -96,31 +92,5 @@ class CustomRasterTileSourceExample {
   void onDestroy() {
     _rasterMapLayerStyle?.destroy();
     _rasterDataSourceStyle?.destroy();
-  }
-
-  Future<void> _addPOIMapMarker(
-      GeoCoordinates geoCoordinates, int drawOrder) async {
-    // Reuse existing MapImage for new map markers.
-    if (_poiMapImage == null) {
-      Uint8List imagePixelData = await _loadFileAsUint8List('assets/poi.png');
-      _poiMapImage =
-          MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
-    }
-
-    // By default, the anchor point is set to 0.5, 0.5 (= centered).
-    // Here the bottom, middle position should point to the location.
-    Anchor2D anchor2D = Anchor2D.withHorizontalAndVertical(0.5, 1);
-
-    MapMarker mapMarker =
-    MapMarker.withAnchor(geoCoordinates, _poiMapImage!, anchor2D);
-    mapMarker.drawOrder = drawOrder;
-
-    _hereMapController.mapScene.addMapMarker(mapMarker);
-  }
-
-  Future<Uint8List> _loadFileAsUint8List(String assetPathToFile) async {
-    // The path refers to the assets directory as specified in pubspec.yaml.
-    ByteData fileData = await rootBundle.load(assetPathToFile);
-    return Uint8List.view(fileData.buffer);
   }
 }

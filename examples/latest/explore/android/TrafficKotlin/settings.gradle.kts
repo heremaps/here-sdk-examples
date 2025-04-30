@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Traffic"
+rootProject.name = "TrafficKotlin"
 include(":app")

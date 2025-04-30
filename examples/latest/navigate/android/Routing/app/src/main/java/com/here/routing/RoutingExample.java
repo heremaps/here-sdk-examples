@@ -389,7 +389,11 @@ public class RoutingExample {
     }
 
     public void onUpdateTrafficOnRouteButtonClick() {
-        updateTrafficOnRoute(currentRoute);
+        if (currentRoute != null) {
+            updateTrafficOnRoute(currentRoute);
+        } else {
+            showDialog("Error", "Add a route first to get traffic information on route.");
+        }
     }
 
     public void updateTrafficOnRoute(Route route) {

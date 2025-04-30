@@ -34,7 +34,6 @@
  import com.here.sdk.mapview.MapLayerPriority;
  import com.here.sdk.mapview.MapLayerPriorityBuilder;
  import com.here.sdk.mapview.MapLayerVisibilityRange;
- import com.here.sdk.mapview.MapMarker;
  import com.here.sdk.mapview.MapMeasure;
  import com.here.sdk.mapview.MapView;
  import com.here.sdk.mapview.datasource.RasterDataSource;
@@ -43,12 +42,12 @@
 
      private static final float DEFAULT_DISTANCE_TO_EARTH_IN_METERS = 60 * 1000;
 
-     private MapView mapView;
-     private MapLayer rasterMapLayerStyle;
-     private RasterDataSource rasterDataSourceStyle;
-     private Context context;
+     private final MapView mapView;
+     private final MapLayer rasterMapLayerStyle;
+     private final RasterDataSource rasterDataSourceStyle;
+     private final Context context;
 
-     public void onMapSceneLoaded(MapView mapView, Context context) {
+     CustomRasterTileSourceExample(MapView mapView, Context context) {
          this.mapView = mapView;
          this.context = context;
 
@@ -62,16 +61,13 @@
 
          // We want to start with the default map style.
          rasterMapLayerStyle.setEnabled(false);
-
-         // Add a POI marker
-         addPOIMapMarker(new GeoCoordinates(52.530932, 13.384915));
      }
 
-     public void enableButtonClicked() {
+     public void enableLayer() {
          rasterMapLayerStyle.setEnabled(true);
      }
 
-     public void disableButtonClicked() {
+     public void disableLayer() {
          rasterMapLayerStyle.setEnabled(false);
      }
 
@@ -107,16 +103,5 @@
      public void onDestroy() {
          rasterMapLayerStyle.destroy();
          rasterDataSourceStyle.destroy();
-     }
-
-     private void addPOIMapMarker(GeoCoordinates geoCoordinates) {
-         MapImage mapImage = MapImageFactory.fromResource(context.getResources(), R.drawable.poi);
-
-         // The bottom, middle position should point to the location.
-         // By default, the anchor point is set to 0.5, 0.5.
-         Anchor2D anchor2D = new Anchor2D(0.5F, 1);
-         MapMarker mapMarker = new MapMarker(geoCoordinates, mapImage, anchor2D);
-
-         mapView.getMapScene().addMapMarker(mapMarker);
      }
  }
