@@ -65,7 +65,7 @@ For an overview of the existing features, please check the _Developer Guide_ for
 - **IndoorMap**: Shows how to integrate private venues. Exclusively available for the _Navigate Edition_.
 - **UnitTesting**: Shows how to mock HERE SDK classes when writing unit tests (the example app is available for the _Explore Edition_ and the _Navigate Edition_).
 - **NavigationHeadless**: Shows how the HERE SDK can be set up to navigate without following a route in the most simplest way - and without showing a map view. Exclusively available for the _Navigate Edition_.
-- **RoutingWithAvoidanceOptions**: Shows how to calculate routes with AvoidanceOptions and how to use the SegmentDataLoader to retrieve data from the map. It also allows to pick segments from the map to avoid certain areas or roads. Exclusively available for the _Navigate Edition_.
+- **RoutingWithAvoidanceOptions**: Shows how to calculate routes with AvoidanceOptions and how to use the SegmentDataLoader to retrieve data from the map. It also allows to pick segments from the map to avoid certain areas or roads. Exclusively available for the _Navigate Edition_ (Android and iOS only).
 
 Most example apps contain a class named "XY-Example" where XY stands for the feature, which is in most cases equal to the name of the app. If you are looking for example code that shows how to use a certain HERE SDK feature, then please look for this class as it contains the most interesting parts. 
 
