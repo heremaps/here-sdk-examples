@@ -84,6 +84,7 @@ public class RoutingExample {
     private boolean trafficDisabled;
     private final TimeUtils timeUtils;
     private Route currentRoute;
+    private static final double OFFROAD_DISTANCE_THRESHOLD_METERS = 500.0;
     List<Waypoint> waypoints = new ArrayList<>();
 
     public RoutingExample(Context context, MapView mapView) {
@@ -319,6 +320,41 @@ public class RoutingExample {
         addMapMarker(destinationGeoCoordinates, R.drawable.poi_destination);
 
         calculateRoute(waypoints);
+        checkWaypointOffRoad(waypoints);
+    }
+
+    private void checkWaypointOffRoad(List<Waypoint> waypoints) {
+        List<Section> sections = currentRoute.getSections();
+
+        for (int i = 0; i < Math.min(waypoints.size(), sections.size()); i++) {
+            Waypoint waypoint = waypoints.get(i);
+            Section section = sections.get(i);
+
+            GeoCoordinates matchedCoordinate = section.getDeparturePlace().mapMatchedCoordinates;
+            double distance = getDistanceBetweenCoordinates(
+                    waypoint.coordinates.latitude, waypoint.coordinates.longitude,
+                    matchedCoordinate.latitude, matchedCoordinate.longitude
+            );
+
+            if (distance > OFFROAD_DISTANCE_THRESHOLD_METERS) {
+                Toast.makeText(context, "Waypoint is off-road by more than 500 meters", Toast.LENGTH_LONG).show();
+                break;
+            }
+        }
+    }
+
+    // Helper function to calculate distance in meters
+    private double getDistanceBetweenCoordinates(double startLatitude, double startLongitude, double endLatitude, double endLongitude) {
+        final int EARTH_RADIUS_METERS = 6371000;
+
+        double deltaLatitude = Math.toRadians(endLatitude - startLatitude);
+        double deltaLongitude = Math.toRadians(endLongitude - startLongitude);
+        double a = Math.sin(deltaLatitude / 2) * Math.sin(deltaLatitude / 2)
+                + Math.cos(Math.toRadians(startLatitude)) * Math.cos(Math.toRadians(endLatitude))
+                * Math.sin(deltaLongitude / 2) * Math.sin(deltaLongitude / 2);
+        double angularDistance = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return EARTH_RADIUS_METERS * angularDistance; // Distance in meters
     }
 
     private CarOptions getCarOptions() {

@@ -71,3 +71,4 @@ class UnitTests: XCTestCase {
         XCTAssertEqual(mapView.camera.state.orientationAtTarget, expectedMapCameraState.orientationAtTarget)
     }
 }
+

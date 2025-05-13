@@ -214,7 +214,6 @@ public class EVRoutingExample {
         return plannedChargingStopWaypoint;
     }
 
-    // Note: This API is currently only accessible for alpha users.
     private void applyEMSPPreferences(EVCarOptions evCarOptions) {
         // You can get a list of all E-Mobility Service Providers and their partner IDs by using the request described here:
         // https://www.here.com/docs/bundle/ev-charge-points-api-developer-guide/page/topics/example-charging-station.html.
@@ -280,8 +279,7 @@ public class EVRoutingExample {
         }};
 
         // Apply EV mobility service provider preferences (eMSP).
-        // This API is currently in alpha stage. Comment it out when you are participating.
-        // applyEMSPPreferences(evCarOptions);
+        applyEMSPPreferences(evCarOptions);
 
         // Note: More EV options are available, the above shows only the minimum viable options.
 
@@ -405,7 +403,6 @@ public class EVRoutingExample {
         searchOptions.languageCode = LanguageCode.EN_US;
         searchOptions.maxItems = 30;
 
-        // Disable the following line when you are not part of the alpha group.
         enableEVChargingStationDetails();
 
         searchEngine.searchByCategory(categoryQuery, searchOptions, new SearchCallback() {
@@ -443,16 +440,13 @@ public class EVRoutingExample {
 
     // Enable fetching online availability details for EV charging stations.
     // It allows retrieving additional details, such as whether a charging station is currently occupied.
-    // If you are not part of the alpha group, do not use this call as a SearchError would occur,
-    // access to this feature requires appropriate credentials.
     // Check the API Reference for more details.
     private void enableEVChargingStationDetails() {
         // Fetching additional charging stations details requires a custom option call.
         SearchError error = searchEngine.setCustomOption("browse.show", "ev");
         if (error != null) {
             showDialog("Charging station",
-                    "Failed to enableEVChargingStationDetails. " +
-                            "Disable the feature if you are not part of the alpha group.");
+                    "Failed to enableEVChargingStationDetails. ");
         } else {
             Log.d("ChargingStation", "EV charging station availability enabled successfully.");
         }

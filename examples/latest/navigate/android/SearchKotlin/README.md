@@ -1,5 +1,7 @@
 The Search example app shows how to search for places including autosuggestions, for the address that belongs to certain geographic coordinates (_reverse geocoding_) and for the geographic coordinates that belong to an address (_geocoding_). You can find how this is done in [SearchExample.kt](app/src/main/java/com/example/search/SearchExample.kt).
 
+**Note**: This is the same app as the "**Search**" app, but implemented in Kotlin instead of Java.
+
 Build instructions:
 -------------------
 

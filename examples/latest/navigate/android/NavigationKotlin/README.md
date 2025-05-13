@@ -1,5 +1,7 @@
 The Navigation example app shows how to calculate a route from A to B and how to start turn-by-turn navigation with voice commands. You can find how this is done in [NavigationExample.kt](app/src/main/java/com/here/navigation/NavigationExample.kt). It also shows how to set a tracking view when navigation is stopped.
 
+**Note**: This is the same app as the "**Navigation**" app, but implemented in Kotlin instead of Java.
+
 Build instructions:
 -------------------
 

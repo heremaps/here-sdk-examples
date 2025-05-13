@@ -200,6 +200,8 @@ public class RoutingWithAvoidanceOptionExample {
                 assert pickMapItemsResult != null;
                 List<MapPolyline> polylines = pickMapItemsResult.getPolylines();
                 int listSize = polylines.size();
+
+                // If no polyLines are selected, load the segments.
                 if (listSize == 0) {
                     loadSegmentData(geoCoordinates);
                     return;
@@ -224,12 +226,8 @@ public class RoutingWithAvoidanceOptionExample {
         }
     }
 
-    // Load segment data and fetch information from the map around
-    // the given geo-coordinate.
+    // Load segment data synchronously and fetch information from the map around the given GeoCoordinates.
     public void loadSegmentData(GeoCoordinates geoCoordinates) {
-        clearMap();
-        clearSegmentPolyLines();
-        segmentAvoidanceList.clear();
 
         List<OCMSegmentId> segmentIds;
         SegmentData segmentData;
@@ -413,13 +411,6 @@ public class RoutingWithAvoidanceOptionExample {
             mapView.getMapScene().removeMapPolyline(mapPolyline);
         }
         mapPolylines.clear();
-    }
-
-    private void clearSegmentPolyLines() {
-        for (MapPolyline segmentPolyline : segmentPolyLines) {
-            mapView.getMapScene().removeMapPolyline(segmentPolyline);
-        }
-        segmentPolyLines.clear();
     }
 
     private MapMarker addMapMarker(GeoCoordinates geoCoordinates, int resourceId) {

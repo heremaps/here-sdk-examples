@@ -51,6 +51,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
         // Before creating a MapView instance please make sure that the HERE SDK is initialized.
+        // Since in this example we inflate the MapView from a layout, make sure to initialize
+        // the HERE SDK before calling setContentView(...).
         initializeHERESDK();
 
         setContentView(R.layout.activity_main);

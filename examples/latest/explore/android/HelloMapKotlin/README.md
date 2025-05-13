@@ -1,5 +1,7 @@
 The HelloMapKotlin example app shows how the HERE SDK can be integrated into your project and how to display a map.
 
+**Note**: This is the same app as the "**HelloMapKotlin**" app, but implemented in Kotlin instead of Java.
+
 Build instructions:
 -------------------
 

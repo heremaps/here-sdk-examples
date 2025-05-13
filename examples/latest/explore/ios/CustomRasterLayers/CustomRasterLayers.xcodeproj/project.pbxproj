@@ -37,7 +37,7 @@
 		83C837D02C20EFA70004F54E /* CustomRasterLayersExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomRasterLayersExample.swift; sourceTree = "<group>"; };
 		86D2C6FA2CCBA2B30060CAA8 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		86D2C6FE2CCBA3180060CAA8 /* CustomRasterLayersApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomRasterLayersApp.swift; sourceTree = "<group>"; };
-		86F767F82CCBC58B006A22E8 /* heresdk.xcframework */ = {isa = PBXFileReference; expectedSignature = ""; lastKnownFileType = wrapper.xcframework; path = heresdk.xcframework; sourceTree = "<group>"; };
+		86F767F82CCBC58B006A22E8 /* heresdk.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = heresdk.xcframework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */

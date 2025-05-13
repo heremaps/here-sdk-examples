@@ -466,7 +466,7 @@ public class OfflineMapsExample {
             return;
         }
 
-        logInstalledRegionsAndStorageUsage();
+        logInstalledRegions();
 
         // Note that this value will not change during the lifetime of an app.
         PersistentMapStatus persistentMapStatus = mapDownloader.getInitialPersistentMapStatus();
@@ -812,20 +812,22 @@ public class OfflineMapsExample {
         });
     }
 
-    public void logInstalledRegionsAndStorageUsage() {
+    private void logInstalledRegions() {
         List<InstalledRegion> installedRegionList = getInstalledRegionList();
-        if (installedRegionList.isEmpty()) {
-            Log.d("Installed Region", "No installed region found");
-        } else {
-            for (InstalledRegion region : installedRegionList) {
-                Log.d("Installed Region", "Downloaded region id: " + region.regionId);
-            }
 
-            long storage = installedRegionList.stream()
-                    .mapToLong(region -> region.sizeOnDiskInBytes)
-                    .sum();
-
-            Log.d("Installed Region",  "Storage usage : " + storage + " Bytes");
+        for (InstalledRegion region : installedRegionList) {
+            Log.d("Installed region", "Downloaded region id: " + region.regionId);
+            Log.d("Installed region", "sizeOnDiskInBytes: " + region.sizeOnDiskInBytes);
+            Log.d("Installed region", "InstalledRegionStatus: " + region.status.toString());
         }
+
+        long occupiedStorageSize = getSizeOfInstalledRegionsInBytes(installedRegionList);
+        Log.d("Installed Region",  "Total storage size in bytes: " + occupiedStorageSize);  
+    }
+
+    private long getSizeOfInstalledRegionsInBytes(List<InstalledRegion> installedRegionList) {
+        return installedRegionList.stream()
+                .mapToLong(region -> region.sizeOnDiskInBytes)
+                .sum();  
     }
 }

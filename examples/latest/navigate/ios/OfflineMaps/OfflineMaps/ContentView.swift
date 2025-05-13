@@ -79,7 +79,6 @@ struct ContentView: View {
                      CustomToggleButton(onLabel: "Offline Mode: On", offLabel: "Offline Mode: Off") {
                          offlineMapsExample!.toggleOfflineMode()
                      }
-                     
                  }
                  HStack(){
                      MessageView(message: messageText)                 }
