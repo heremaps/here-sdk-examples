@@ -45,7 +45,6 @@ class RoutingWithAvoidanceOptionsExample : LongPressDelegate, TapDelegate {
     private var segmentAvoidanceList: [String: SegmentReference] = [:]
     private var segmentsAvoidanceViolated = false
     
-    
     init(_ mapView: MapView) {
         self.mapView = mapView
         
@@ -74,7 +73,6 @@ class RoutingWithAvoidanceOptionsExample : LongPressDelegate, TapDelegate {
         // Add markers to indicate the currently selected starting point and destination.
         startMapMarker = addMapMarker(geoCoordinates: startGeoCoordinates!, imageName: "poi_start.png")!
         destinationMapMarker = addMapMarker(geoCoordinates: destinationGeoCoordinates!, imageName: "poi_destination.png")!
-        
         
         // Fallback if no segments have been picked by the user.
         let segmentReferenceInBerlin = createSegmentInBerlin()
@@ -114,8 +112,9 @@ class RoutingWithAvoidanceOptionsExample : LongPressDelegate, TapDelegate {
         let polylines = pickMapItemsResult?.polylines
         let listSize = polylines?.count
 
+        // If no polyLines are selected, load the segments.
         if listSize == 0 {
-            loadAndProcessSegmentData(startGeoCoordinates: tappedCoordinates!)
+            loadSegmentData(startGeoCoordinates: tappedCoordinates!)
             return
         }
 
@@ -146,9 +145,8 @@ class RoutingWithAvoidanceOptionsExample : LongPressDelegate, TapDelegate {
         }
     }
 
-    
-    // Load segment data and fetch information from the map around the starting point of the requested route.
-    func loadAndProcessSegmentData(startGeoCoordinates : GeoCoordinates) {
+    // Load segment data synchronously and fetch information from the map around the given GeoCoordinates.
+    func loadSegmentData(startGeoCoordinates : GeoCoordinates) {
         
         // The necessary SegmentDataLoaderOptions need to be turned on in order to find the requested information.
         // It is recommended to turn on only the fields that you are interested in.
@@ -158,10 +156,8 @@ class RoutingWithAvoidanceOptionsExample : LongPressDelegate, TapDelegate {
         
         let radiusInMeters = 5.0
         
-        
         do {
             let segmentIds = try segmentDataLoader.getSegmentsAroundCoordinates(startGeoCoordinates, radiusInMeters: radiusInMeters)
-            
             
             for segmentId in segmentIds {
                 let segmentData = try segmentDataLoader.loadData(segment: segmentId, options: segmentDataLoaderOptions)
@@ -183,7 +179,6 @@ class RoutingWithAvoidanceOptionsExample : LongPressDelegate, TapDelegate {
                     segmentAvoidanceList[segmentReference.segmentId] = segmentReference
                 }
                 
-                
                 for span in segmentSpanDataList {
                     print("Physical attributes of \(span) span.")
                     
@@ -197,7 +192,6 @@ class RoutingWithAvoidanceOptionsExample : LongPressDelegate, TapDelegate {
         } catch let SegmentDataLoaderError {
             print("Error loading segment data: \(SegmentDataLoaderError)")
         }
-        
     }
     
     // Conform to LongPressDelegate protocol.
@@ -231,7 +225,6 @@ class RoutingWithAvoidanceOptionsExample : LongPressDelegate, TapDelegate {
         return segmentReference
     }
     
-    
     // Completion handler for loadScene().
     private func onLoadScene(mapError: MapError?) {
         guard mapError == nil else {
@@ -242,7 +235,6 @@ class RoutingWithAvoidanceOptionsExample : LongPressDelegate, TapDelegate {
         // Optionally, enable low speed zone map layer.
         mapView.mapScene.enableFeatures([MapFeatures.lowSpeedZones : MapFeatureModes.lowSpeedZonesAll]);
     }
-    
     
     func addRoute() {
         guard let startGeoCoordinates = startGeoCoordinates,
@@ -303,7 +295,6 @@ class RoutingWithAvoidanceOptionsExample : LongPressDelegate, TapDelegate {
             }
         }
     }
-    
     
     private func toString(geoCoordinates: GeoCoordinates) -> String {
         return String(geoCoordinates.latitude) + ", " + String(geoCoordinates.longitude);
@@ -375,13 +366,6 @@ class RoutingWithAvoidanceOptionsExample : LongPressDelegate, TapDelegate {
             mapView.mapScene.removeMapPolyline(mapPolyline)
         }
         mapPolylines.removeAll()
-    }
-    
-    private func clearSegmentPolylines() {
-        for segmentPolyline in segmentPolylines {
-            mapView.mapScene.removeMapPolyline(segmentPolyline)
-        }
-        segmentPolylines.removeAll()
     }
     
     private func addMapMarker(geoCoordinates: GeoCoordinates, imageName: String) -> MapMarker? {

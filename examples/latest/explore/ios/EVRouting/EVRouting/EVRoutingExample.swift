@@ -161,7 +161,6 @@ class EVRoutingExample: TapDelegate {
         return plannedChargingStopWaypoint
     }
     
-    // Note: This API is currently only accessible for alpha users.
     private func applyEMSPPreferences(evCarOptions: inout EVCarOptions) {
         // You can get a list of all E-Mobility Service Providers and their partner IDs by using the request described here:
         // https://www.here.com/docs/bundle/ev-charge-points-api-developer-guide/page/topics/example-charging-station.html.
@@ -221,8 +220,7 @@ class EVRoutingExample: TapDelegate {
                                                             72: 1.0]
 
         // Apply EV mobility service provider preferences (eMSP).
-        // This API is currently in alpha stage. Comment it out when you are participating.
-        // applyEMSPPreferences(evCarOptions: &evCarOptions)
+        applyEMSPPreferences(evCarOptions: &evCarOptions)
 
         // Note: More EV options are available, the above shows only the minimum viable options.
 
@@ -341,7 +339,6 @@ class EVRoutingExample: TapDelegate {
 
         let searchOptions = SearchOptions(languageCode: LanguageCode.enUs,
                                           maxItems: 30)
-        // Disable the following line when you are not part of the alpha group.
         enableEVChargingStationDetails()
         
         searchEngine.searchByCategory(categoryQuery,
@@ -351,17 +348,13 @@ class EVRoutingExample: TapDelegate {
     
     // Enable fetching online availability details for EV charging stations.
     // It allows retrieving additional details, such as whether a charging station is currently occupied.
-    // If you are not part of the alpha group, do not use this call as a SearchError would occur,
-    // access to this feature requires appropriate credentials.
     // Check the API Reference for more details.
     private func enableEVChargingStationDetails() {
         // Fetching additional charging stations details requires a custom option call.
         if let error = searchEngine.setCustomOption(name: "browse.show", value: "ev") {
         showDialog(
             title: "Charging Station",
-            message: "Failed to enableEVChargingStationDetails. "
-                     + "Disable the feature if you are not part of the alpha group."
-        )
+            message: "Failed to enableEVChargingStationDetails. ")
         } else {
             print("EV charging station availability enabled successfully.")
         }

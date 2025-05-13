@@ -35,6 +35,7 @@ class OfflineMapsExample {
   late MapDownloader _mapDownloader;
   late MapUpdater _mapUpdater;
   late OfflineSearchEngine _offlineSearchEngine;
+  late OfflineSearchIndexListener _offlineSearchIndexListener;
   List<Region> _downloadableRegions = [];
   List<MapDownloaderTask> _mapDownloaderTasks = [];
   ShowDialogFunction _showDialog;
@@ -89,6 +90,9 @@ class OfflineMapsExample {
     // The application must have read/write access to this path if updating it.
     String persistentMapStoragePath = sdkNativeEngine.options.persistentMapStoragePath;
     print("Persistent map storage path: $storagePath");
+
+    // Enable indexing to improve the search experience.
+    _enableOfflineSearchIndexing(sdkNativeEngine);
   }
 
   void _performUpdateChecks() {
@@ -605,6 +609,38 @@ class OfflineMapsExample {
     }
   }
 
+  _enableOfflineSearchIndexing(SDKNativeEngine sdkNativeEngine) {
+    var offlineSearchIndexOptions = OfflineSearchIndexOptions();
+    offlineSearchIndexOptions.enabled = true;
+
+    _offlineSearchIndexListener = OfflineSearchIndexListener(
+          //onStarted operation
+          (OfflineSearchIndexOperation operation) {
+        print("OfflineSearchIndexListener" + "Indexing started. Operation: " + operation.toString());
+      },
+          //onProgress operation
+          (int percentage) {
+        print("OfflineSearchIndexListener" + "Indexing progress: " + percentage.toString());
+      },
+          //onComplete operation
+          (OfflineSearchIndexError? error) {
+        if (error == null) {
+          print("OfflineSearchIndexListener" + "Indexing completed successfully");
+        } else {
+          print("OfflineSearchIndexListener" + "Indexing failed: " + error.name);
+        }
+      },
+    );
+
+    var offlineSearchIndexError = OfflineSearchEngine.setIndexOptions(sdkNativeEngine, offlineSearchIndexOptions, _offlineSearchIndexListener);
+
+    if (offlineSearchIndexError != null) {
+      print("Error occurred while enabling indexing:" + offlineSearchIndexError.name);
+    } else {
+      print("Indexing enabled successfully.");
+    }
+  }
+
   _getInstalledRegionsList() {
     List<InstalledRegion> installedRegionList = [];
     try {
@@ -617,12 +653,14 @@ class OfflineMapsExample {
 
   _logInstalledRegionsAndStorageUsage() {
     List<InstalledRegion> installedRegionList = _getInstalledRegionsList();
-    if (installedRegionList.isEmpty) {
-      print("No installed region found.");
-    } else {
-      installedRegionList.forEach((region) => print("Downloaded region id: ${region.regionId.id}"));
-      int storage = installedRegionList.map((region) => region.sizeOnDiskInBytes).reduce((value, element) => value + element);
-      print("Storage usage: $storage Bytes");
+    
+    for (var region in installedRegionList) {
+      print("Downloaded region id: ${region.regionId.id}");
+      print("sizeOnDiskInBytes: ${region.sizeOnDiskInBytes}");
+      print("InstalledRegionStatus: ${region.status.name}");
     }
+    
+    int storage = installedRegionList.map((region) => region.sizeOnDiskInBytes).reduce((value, element) => value + element);
+    print("Storage usage: $storage Bytes");
   }
 }

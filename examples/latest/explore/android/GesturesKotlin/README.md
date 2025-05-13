@@ -1,5 +1,7 @@
 The Gesture example app shows how to handle common map interactions and gestures, for example, double tap to zoom in. It also shows a custom zoom animation. You can find how this is done in [GesturesExample.kt](app/src/main/java/com/here/gestures/GesturesExample.kt).
 
+**Note**: This is the same app as the "**Gesture**" app, but implemented in Kotlin instead of Java.
+
 Build instructions:
 -------------------
 

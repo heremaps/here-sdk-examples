@@ -30,7 +30,8 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
     private var showMessage: (String) -> Void
     private var offlineMode = false
     private var offlineSearchEnabled = true;
-    private var mapViewObservable : MapViewObservable
+    private var mapViewObservable: MapViewObservable
+    private var offlineSearchIndexListener: OfflineSearchIndexListener
 
     init(mapViewObservable : MapViewObservable, showMessageClosure: @escaping (String) -> Void) {
         self.showMessage = showMessageClosure
@@ -54,18 +55,20 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
             fatalError("SDKNativeEngine not initialized.")
         }
 
-        showMessage("This example allows to download the region Switzerland.") 
-  
-        // This is the default storage path for cached map data that is not already available as 
+        showMessage("This example allows to download the region Switzerland.")
+      
+        // This is the default storage path for cached map data that is not already available as
         // installed region.
         // Note that the default storage paths can be adapted when creating a new SDKNativeEngine.
         let storagePath = sdkNativeEngine.options.cachePath
         print("Cache storage path: \(storagePath).")
-        
+            
         // This is the default path for storing downloaded regions.
         // The application must have read/write access to this path if updating it.
         let persistentMapStoragePath = sdkNativeEngine.options.persistentMapStoragePath
         print("Persistent map storage path: \(persistentMapStoragePath).")
+        
+        offlineSearchIndexListener = OfflineSearchIndexListenerImpl()
 
         // Create MapUpdater in background to not block the UI thread.
         MapUpdater.fromEngineAsync(sdkNativeEngine, { mapUpdater in
@@ -78,8 +81,11 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
 
         // Load the map scene using a map scheme to render the map with.
         self.mapViewObservable.configureMapView()
+        
+        // Enable indexing to improve the search experience.
+        enableOfflineSearchIndexing(sdkNativeEngine: sdkNativeEngine)
     }
-
+    
     // Completion handler for loadScene().
     private func onLoadScene(mapError: MapError?) {
         if let mapError = mapError {
@@ -540,7 +546,7 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
             return
         }
         
-        logInstalledRegionsAndStorageUsage()
+        logInstalledRegions()
 
         // Note that this value will not change during the lifetime of an app.
         let persistentMapStatus = mapDownloader.getInitialPersistentMapStatus()
@@ -569,6 +575,38 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
         print("RepairPersistentMap: Repair operation failed: \(String(describing: persistentMapRepairError))")
     }
     
+    func enableOfflineSearchIndexing(sdkNativeEngine: SDKNativeEngine) {
+        var offlineSearchIndexOptions = OfflineSearchIndex.Options()
+        offlineSearchIndexOptions.enabled = true
+
+        let error = OfflineSearchEngine.setIndexOptions(sdkEngine: sdkNativeEngine,
+                                                        options: offlineSearchIndexOptions,
+                                                        listener: offlineSearchIndexListener)
+        if let error = error {
+            print("Failed to set index options: \(error)")
+            showMessage("Failed to set index options: \(error)")
+        }
+    }
+    
+    class OfflineSearchIndexListenerImpl: OfflineSearchIndexListener {
+        
+        func onStarted(operation: OfflineSearchIndex.Operation) {
+            print("Indexing started. Operation: \(operation)")
+        }
+
+        func onProgress(percentage: Int32) {
+            print("Indexing progress: \(percentage)%")
+        }
+
+        func onComplete(error: OfflineSearchIndex.Error?) {
+            if let error = error {
+                print("Indexing failed: \(error)")
+            } else {
+                print("Indexing completed successfully.")
+            }
+        }
+    }
+    
     func getInstalledRegionsList() -> [InstalledRegion] {
             var installedRegionList: [InstalledRegion] = []
             if let downloader = mapDownloader {
@@ -584,18 +622,18 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
             }
 
             return installedRegionList
-        }
+    }
 
-        func logInstalledRegionsAndStorageUsage() {
+        func logInstalledRegions() {
             let installedRegionList = getInstalledRegionsList()
-            if installedRegionList.isEmpty {
-                print("No installed region found")
-            } else {
-                for region in installedRegionList {
-                    print("Downloaded region id: \(region.regionId)")
-                }
-                let storage = installedRegionList.reduce(0) { $0 + $1.sizeOnDiskInBytes }
-                print("Storage usage: \(storage) Bytes")
+            
+            for region in installedRegionList {
+                print("Downloaded region id: \(region.regionId)")
+                print("sizeOnDiskInBytes: \(region.sizeOnDiskInBytes)")
+                print("InstalledRegionStatus: \(region.status)")
             }
+            
+            let occupiedStorageSize = installedRegionList.reduce(0) { $0 + $1.sizeOnDiskInBytes }
+            print("Storage usage: \(occupiedStorageSize) Bytes")
         }
 }

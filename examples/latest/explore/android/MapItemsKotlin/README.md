@@ -1,5 +1,7 @@
 The MapItems example app shows how to pin images, native views and 3D objects to mark specific spots on the map. You can find how this is done in [MapItemsExample.kt](app/src/main/java/com/here/mapitems/MapItemsExample.kt).
 
+**Note**: This is the same app as the "**MapItems**" app, but implemented in Kotlin instead of Java.
+
 Build instructions:
 -------------------
 

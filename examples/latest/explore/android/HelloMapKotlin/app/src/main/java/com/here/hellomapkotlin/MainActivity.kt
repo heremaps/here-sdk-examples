@@ -43,10 +43,17 @@ class MainActivity : AppCompatActivity() {
 
         // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
         // Before creating a MapView instance please make sure that the HERE SDK is initialized.
+        // Since in this example we inflate the MapView from a layout, make sure to initialize
+        // the HERE SDK before calling setContentView(...).
         initializeHERESDK()
 
         enableEdgeToEdge()
+
+        // Note that this example uses XML layouts. If you want to use Jetpack Compose,
+        // take a look at other example apps on GitHub, for example,
+        // "RoutingKotlin" uses declarative UIs with Jetpack Compose.
         setContentView(R.layout.activity_main)
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)

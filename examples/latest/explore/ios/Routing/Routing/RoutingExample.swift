@@ -32,6 +32,7 @@ class RoutingExample {
     private var waypoints = [Waypoint]()
     private let timeUtils: TimeUtils
     private var currentRoute: Route?
+    private let offroadDistanceThresholdMeters: Double = 500
     
     init(_ mapView: MapView) {
         self.mapView = mapView
@@ -349,6 +350,48 @@ class RoutingExample {
         addMapMarker(geoCoordinates: destinationGeoCoordinates, imageName: "poi_destination.png")
         
         calculateRoute(waypoints: waypoints)
+        checkWaypointOffRoad(waypoints: waypoints, route: currentRoute!)
+    }
+
+    func checkWaypointOffRoad(waypoints: [Waypoint], route: Route) {
+        let sections = route.sections
+        let count = min(waypoints.count, sections.count)
+
+        for i in 0..<count {
+            let waypoint = waypoints[i]
+            let section = sections[i]
+
+            let matched = section.departurePlace.mapMatchedCoordinates
+
+            let distance = getDistanceBetweenCoordinates(
+                lat1: waypoint.coordinates.latitude,
+                lon1: waypoint.coordinates.longitude,
+                lat2: matched.latitude,
+                lon2: matched.longitude
+            )
+
+            if distance > offroadDistanceThresholdMeters {
+                showDialog(
+                    title: "Waypoint Alert",
+                    message: "Waypoint is off-road by more than 500 meters."
+                )
+                break
+            }
+        }
+    }
+
+    // Helper function to calculate distance in meters
+    func getDistanceBetweenCoordinates(lat1: Double, lon1: Double, lat2: Double, lon2: Double) -> Double {
+        let earthRadiusInMeters = 6371000.0
+        let deltaLatitude = (lat2 - lat1) * .pi / 180
+        let deltaLongitude = (lon2 - lon1) * .pi / 180
+
+        let a = sin(deltaLatitude / 2) * sin(deltaLatitude / 2) +
+                cos(lat1 * .pi / 180) * cos(lat2 * .pi / 180) *
+                sin(deltaLongitude / 2) * sin(deltaLongitude / 2)
+
+        let angularDistance = 2 * atan2(sqrt(a), sqrt(1 - a))
+        return earthRadiusInMeters * angularDistance
     }
 
     // This renders the traffic jam factor on top of the route as multiple MapPolylines per span.
