@@ -100,7 +100,6 @@ public class OfflineMapsExample {
     private OfflineSearchIndex.Options offlineSearchIndexOptions;
     private OfflineSearchIndexListener offlineSearchIndexListener;
 
-
     public OfflineMapsExample(MapView mapView, Context context) {
         this.context = context;
 
@@ -166,6 +165,7 @@ public class OfflineMapsExample {
          */
         initMapDownloader(sdkNativeEngine);
         initMapUpdater(sdkNativeEngine);
+
         // Enable indexing to improve the search experience.
         enableOfflineSearchIndexing(sdkNativeEngine);
 
@@ -509,6 +509,7 @@ public class OfflineMapsExample {
         try {
             AuthenticationMode authenticationMode = AuthenticationMode.withKeySecret(accessKeyID, accessKeySecret);
             SDKOptions options = new SDKOptions(authenticationMode);
+
             // Toggle the layer configuration.
             offlineSearchLayerEnabled = !offlineSearchLayerEnabled;
             // LayerConfiguration can only be updated before HERE SDK initialization.
@@ -598,6 +599,9 @@ public class OfflineMapsExample {
 
     // With this layer configuration we enable only the listed layers.
     // All the other layers including the default layers will be disabled.
+    // enabledFeatures will enable all layers from the list in the downloaded regions for offline use.
+    // implicitlyPrefetchedFeatures will enable all layers from the list for the map cache when panning the map view during online use.
+    // If the implicitlyPrefetchedFeatures setting is set to an empty list, no features will be implicitly prefetched.
     public static LayerConfiguration getLayerConfigurationWithOfflineSearch() {
         ArrayList<LayerConfiguration.Feature> features = new ArrayList<>();
         features.add(LayerConfiguration.Feature.DETAIL_RENDERING);
@@ -605,18 +609,23 @@ public class OfflineMapsExample {
         features.add(LayerConfiguration.Feature.OFFLINE_SEARCH);
         LayerConfiguration layerConfiguration = new LayerConfiguration();
         layerConfiguration.enabledFeatures = features;
+        layerConfiguration.implicitlyPrefetchedFeatures = features;
         return layerConfiguration;
     }
 
     // Here we disable the OFFLINE_SEARCH layer to show what happens when we search offline:
     // When the layer is enabled then the OfflineSearchEngine can find results in the cached map data or installed regions.
     // When the layer is disabled, the OfflineSearchEngine will yield either no results or very few limited results.
+    // enabledFeatures will enable all layers from the list in the downloaded regions for offline use.
+    // implicitlyPrefetchedFeatures will enable all layers from the list for the map cache when panning the map view during online use.
+    // If the implicitlyPrefetchedFeatures setting is set to an empty list, no features will be implicitly prefetched.
     private LayerConfiguration getLayerConfigurationWithoutOfflineSearch() {
         ArrayList<LayerConfiguration.Feature> features = new ArrayList<>();
         features.add(LayerConfiguration.Feature.DETAIL_RENDERING);
         features.add(LayerConfiguration.Feature.RENDERING);
         LayerConfiguration layerConfiguration = new LayerConfiguration();
         layerConfiguration.enabledFeatures = features;
+        layerConfiguration.implicitlyPrefetchedFeatures = features;
         return layerConfiguration;
     }
 

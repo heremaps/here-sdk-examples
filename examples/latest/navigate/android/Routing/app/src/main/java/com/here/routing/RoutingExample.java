@@ -49,6 +49,7 @@ import com.here.sdk.routing.Maneuver;
 import com.here.sdk.routing.ManeuverAction;
 import com.here.sdk.routing.PaymentMethod;
 import com.here.sdk.routing.Route;
+import com.here.sdk.routing.RoutePlace;
 import com.here.sdk.routing.RouteRailwayCrossing;
 import com.here.sdk.routing.RoutingEngine;
 import com.here.sdk.routing.RoutingError;
@@ -242,15 +243,22 @@ public class RoutingExample {
         // For instance, when calculating a route, the device's current timezone may differ from that of the destination.
         // Consider a scenario where a user calculates a route from Berlin to London — each city operates in a different timezone.
         // To address this, you can display the Estimated Time of Arrival (ETA) in multiple timezones: the device's current timezone (Berlin), the destination's timezone (London), and UTC (Coordinated Universal Time), which serves as a global reference.
-        String routeDetails =
-                "Travel Duration: " + timeUtils.formatTime(estimatedTravelTimeInSeconds) +
-                        "\nTraffic delay: " + timeUtils.formatTime(estimatedTrafficDelayInSeconds)
-                        + "\nRoute length (m): " + timeUtils.formatLength(lengthInMeters) +
-                        "\nETA in device timezone: " + timeUtils.getETAinDeviceTimeZone(route) +
-                        "\nETA in destination timezone: " + timeUtils.getETAinDestinationTimeZone(route) +
-                        "\nETA in UTC: " + timeUtils.getEstimatedTimeOfArrivalInUTC(route);
+        StringBuilder routeDetails = new StringBuilder();
+        routeDetails.append("Travel Duration: ").append(timeUtils.formatTime(estimatedTravelTimeInSeconds))
+                .append("\nTraffic delay: ").append(timeUtils.formatTime(estimatedTrafficDelayInSeconds))
+                .append("\nRoute length (m): ").append(timeUtils.formatLength(lengthInMeters))
+                .append("\nETA in device timezone: ").append(timeUtils.getETAinDeviceTimeZone(route))
+                .append("\nETA in destination timezone: ").append(timeUtils.getETAinDestinationTimeZone(route))
+                .append("\nETA in UTC: ").append(timeUtils.getEstimatedTimeOfArrivalInUTC(route));
 
-        showDialog("Route Details", routeDetails);
+        // Add off-road warning.
+        if (checkIfWaypointsAreOffRoad(route)) {
+            routeDetails.append("\n\nNote: At least one waypoint is off-road by more than ")
+                    .append(OFFROAD_DISTANCE_THRESHOLD_METERS)
+                    .append(" meters.");
+        }
+
+        showDialog("Route Details", routeDetails.toString());
     }
 
     private void showRouteOnMap(Route route) {
@@ -320,41 +328,49 @@ public class RoutingExample {
         addMapMarker(destinationGeoCoordinates, R.drawable.poi_destination);
 
         calculateRoute(waypoints);
-        checkWaypointOffRoad(waypoints);
     }
 
-    private void checkWaypointOffRoad(List<Waypoint> waypoints) {
-        List<Section> sections = currentRoute.getSections();
+     // A waypoint is considered off-road if its original coordinates (as specified by the user)
+     // are more than OFFROAD_DISTANCE_THRESHOLD_METERS meters away from the location map-matched to the road network during route calculation.
+     // This function ensures that only waypoints explicitly added by the user are evaluated.
+     // Automatically generated waypoints are skipped.
+     // Returns true if at least one user-defined waypoint is off-road, false otherwise.
+    private boolean checkIfWaypointsAreOffRoad(Route route) {
+        List<Section> sections = route.getSections();
 
-        for (int i = 0; i < Math.min(waypoints.size(), sections.size()); i++) {
-            Waypoint waypoint = waypoints.get(i);
-            Section section = sections.get(i);
+        for (Section section : sections) {
+            // Check departure waypoint.
+            RoutePlace departure = section.getDeparturePlace();
+            if (isWaypointOffRoad(departure)) {
+                return true;
+            }
 
-            GeoCoordinates matchedCoordinate = section.getDeparturePlace().mapMatchedCoordinates;
-            double distance = getDistanceBetweenCoordinates(
-                    waypoint.coordinates.latitude, waypoint.coordinates.longitude,
-                    matchedCoordinate.latitude, matchedCoordinate.longitude
-            );
-
-            if (distance > OFFROAD_DISTANCE_THRESHOLD_METERS) {
-                Toast.makeText(context, "Waypoint is off-road by more than 500 meters", Toast.LENGTH_LONG).show();
-                break;
+            // Check arrival waypoint.
+            RoutePlace arrival = section.getArrivalPlace();
+            if (isWaypointOffRoad(arrival)) {
+                return true;
             }
         }
+
+        // All user-defined waypoints are close to the road network. 
+        return false;
     }
 
-    // Helper function to calculate distance in meters
-    private double getDistanceBetweenCoordinates(double startLatitude, double startLongitude, double endLatitude, double endLongitude) {
-        final int EARTH_RADIUS_METERS = 6371000;
+     // Helper method to check if a single waypoint is off-road.
+     // Compares the original (user-specified) coordinates with the map-matched coordinates.
+     // If originalCoordinates is null (e.g., the waypoint was added automatically during routing), it is skipped.
+     // Returns true if the waypoint is off-road (more than OFFROAD_DISTANCE_THRESHOLD_METERS meters away), false otherwise.
+    private boolean isWaypointOffRoad(RoutePlace place) {
+        GeoCoordinates originalCoordinates = place.originalCoordinates; // User-defined input location
+        GeoCoordinates matchedCoordinates = place.mapMatchedCoordinates; // Road network-matchedCoordinates location
 
-        double deltaLatitude = Math.toRadians(endLatitude - startLatitude);
-        double deltaLongitude = Math.toRadians(endLongitude - startLongitude);
-        double a = Math.sin(deltaLatitude / 2) * Math.sin(deltaLatitude / 2)
-                + Math.cos(Math.toRadians(startLatitude)) * Math.cos(Math.toRadians(endLatitude))
-                * Math.sin(deltaLongitude / 2) * Math.sin(deltaLongitude / 2);
-        double angularDistance = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        if (originalCoordinates == null) {
+            // Skip waypoints that were not explicitly defined by the user.
+            return false;
+        }
 
-        return EARTH_RADIUS_METERS * angularDistance; // Distance in meters
+        double distance = originalCoordinates.distanceTo(matchedCoordinates);
+        return distance > OFFROAD_DISTANCE_THRESHOLD_METERS;
     }
 
     private CarOptions getCarOptions() {

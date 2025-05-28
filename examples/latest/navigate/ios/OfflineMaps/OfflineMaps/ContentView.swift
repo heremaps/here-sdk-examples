@@ -79,6 +79,9 @@ struct ContentView: View {
                      CustomToggleButton(onLabel: "Offline Mode: On", offLabel: "Offline Mode: Off") {
                          offlineMapsExample!.toggleOfflineMode()
                      }
+                     CustomButton(title: "Delete Regions") {
+                         offlineMapsExample!.deleteDownloadedRegions()
+                     }
                  }
                  HStack(){
                      MessageView(message: messageText)                 }

@@ -114,6 +114,12 @@ class _MyAppState extends State<MyApp> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
+                  button('Delete Regions', _deleteRegionsClicked),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
                   ToggleButtons(
                       children: [
                         Container(
@@ -223,7 +229,7 @@ class _MyAppState extends State<MyApp> {
     _offlineMapsExample?.onSearchPlaceClicked();
   }
 
-  void _toggleOnlineMode(){
+  void _toggleOnlineMode() {
     if(_selectedOfflineMode[0]){
       _offlineMapsExample?.onOnlineButtonClicked();
     }else{
@@ -231,11 +237,15 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  void _clearCacheClicked(){
+  void _clearCacheClicked() {
     _offlineMapsExample?.onClearCache();
   }
 
-  void _toggleConfiguration(){
+  void _deleteRegionsClicked() {
+    _offlineMapsExample?.deleteDownloadedRegions();
+  }
+
+  void _toggleConfiguration() {
     _offlineMapsExample?.toggleLayerConfiguration(widget.accessKeyId!, widget.accessKeySecret!, _rebuildMap);
   }
 
