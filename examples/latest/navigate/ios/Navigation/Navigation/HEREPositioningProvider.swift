@@ -19,6 +19,7 @@
 
 import CoreLocation
 import heresdk
+import SwiftUI
 
 // A reference implementation using HERE Positioning to get notified on location updates
 // from various location sources available from a device and HERE services.
@@ -71,6 +72,7 @@ class HEREPositioningProvider : NSObject,
         switch status {
             case .restricted, .denied, .notDetermined:
                 print("Native location services denied or disabled by user in device settings.")
+                showDialog(title: "Error", message: "Location service and permissions are needed for this app.")
                 break
             case .authorizedWhenInUse, .authorizedAlways:
                 if let locationUpdateDelegate = locationUpdateDelegate, isLocating {
@@ -125,6 +127,25 @@ class HEREPositioningProvider : NSObject,
     func onFeaturesNotAvailable(features: [LocationFeature]) {
         for feature in features {
             print("Location feature not available: '%s'", String(describing: feature))
+        }
+    }
+    
+    private func showDialog(title: String, message: String) {
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootViewController = windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController {
+            
+            let alert = UIAlertController(
+                title: title,
+                message: message,
+                preferredStyle: .alert
+            )
+            
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+                // Handle OK button action.
+                alert.dismiss(animated: true, completion: nil)
+            }))
+            
+            rootViewController.present(alert, animated: true, completion: nil)
         }
     }
 }

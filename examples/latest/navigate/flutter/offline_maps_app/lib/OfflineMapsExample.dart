@@ -402,11 +402,15 @@ class OfflineMapsExample {
     // If the cache is not cleared, the HERE SDK will look for cached data, for example,
     // when using the OfflineSearchEngine.
     // Needs to be called before accessing SDKOptions to load necessary libraries.
+    // enabledFeatures will enable all layers from the list in the downloaded regions for offline use.
+    // implicitlyPrefetchedFeatures will enable all layers from the list for the map cache when panning the map view during online use.
+    // If the implicitlyPrefetchedFeatures setting is set to an empty list, no features will be implicitly prefetched.
     _offlineSearchLayerEnabled = !_offlineSearchLayerEnabled;
     var enabledFeatures = [
       LayerConfigurationFeature.detailRendering,
       LayerConfigurationFeature.rendering
     ];
+
     if (_offlineSearchLayerEnabled) {
       enabledFeatures.add(LayerConfigurationFeature.offlineSearch);
       _showDialog("Note",
@@ -415,8 +419,11 @@ class OfflineMapsExample {
       _showDialog("Note",
           "Enabled minimal layer configuration without offlineSearch layer.");
     }
+
     // LayerConfiguration can only be updated before HERE SDK initialization.
-    var layerConfiguration = LayerConfiguration(enabledFeatures);
+    var layerConfiguration = LayerConfiguration.withDefaults();
+    layerConfiguration.enabledFeatures = enabledFeatures;
+    layerConfiguration.implicitlyPrefetchedFeatures = enabledFeatures;
 
     // Set your credentials for the HERE SDK.
     AuthenticationMode authenticationMode = AuthenticationMode.withKeySecret(accessKeyId, accessKeySecret);
@@ -662,5 +669,28 @@ class OfflineMapsExample {
     
     int storage = installedRegionList.map((region) => region.sizeOnDiskInBytes).reduce((value, element) => value + element);
     print("Storage usage: $storage Bytes");
+  }
+
+  deleteDownloadedRegions() {
+    List<InstalledRegion> _installedRegionList = _getInstalledRegionsList();
+
+    // Retrieving the RegionIds from the list of installed regions, which will be used for the deletion process.
+    List<RegionId> _regionIds = _installedRegionList.map((region) => region.regionId).toList();
+
+    // Asynchronous operation to delete map data for regions specified by a list of RegionId.
+    // Deleting a region when there is a pending download returns error MapLoaderError.INTERNAL_ERROR.
+    // Also, deleting a region when there is an ongoing download returns error MapLoaderError.NOT_READY
+    _mapDownloader.deleteRegions(_regionIds, (MapLoaderError? _error, List<RegionId>? _deletedRegions) {
+      // When error is null, the deletedRegions list is guaranteed to be non-null.
+      if (_error == null && _deletedRegions != null) {
+        for (var _regionId in _deletedRegions) {
+          print("Successfully deleted region: ${_regionId}");
+        }
+        _showDialog("Deleted regions", "Successfully deleted regions.");
+      } else {
+        print("Deleting regions failed: {$_error}");
+        _showDialog("Deleted regions", "Deleting regions failed: {$_error}");
+      }
+    });
   }
 }

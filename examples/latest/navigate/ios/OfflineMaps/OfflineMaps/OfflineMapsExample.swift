@@ -92,7 +92,7 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
             print("Error: Map scene not loaded, \(String(describing: mapError))")
         }
     }
-
+    
     private func performUpdateChecks() {
         logCurrentSDKVersion()
         logCurrentMapVersion()
@@ -465,7 +465,10 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
             showMessage("The app is allowed to go online.")
         }
     }
-
+    
+    // enabledFeatures will enable all layers from the list in the downloaded regions for offline use.
+    // implicitlyPrefetchedFeatures will enable all layers from the list for the map cache when panning the map view during online use.
+    // If the implicitlyPrefetchedFeatures setting is set to an empty list, no features will be implicitly prefetched.
     func toggleConfiguration() {
         let authenticationMode = AuthenticationMode.withKeySecret(accessKeyId: OfflineMapsApp.accessKeyID, accessKeySecret: OfflineMapsApp.accessKeySecret)
         var options = SDKOptions(authenticationMode: authenticationMode)
@@ -481,8 +484,10 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
             features = [.detailRendering, .rendering]
             showMessage("Enabled minimal layer configuration without offlineSearch layer.")
         }
-        options.layerConfiguration = LayerConfiguration(enabledFeatures: features)
-
+        
+        options.layerConfiguration = LayerConfiguration(enabledFeatures: features)        
+        options.layerConfiguration.implicitlyPrefetchedFeatures = features        
+        
         do {
             // Initialize the SDKNativeEngine
             try SDKNativeEngine.makeSharedInstance(options: options)
@@ -608,32 +613,54 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
     }
     
     func getInstalledRegionsList() -> [InstalledRegion] {
-            var installedRegionList: [InstalledRegion] = []
-            if let downloader = mapDownloader {
-                do {
-                    if let regions = try? downloader.getInstalledRegions() {
-                        installedRegionList = regions
-                    } else {
-                        print("Error: Installed regions not found.")
-                    }
+        var installedRegionList: [InstalledRegion] = []
+        if let downloader = mapDownloader {
+            do {
+                if let regions = try? downloader.getInstalledRegions() {
+                    installedRegionList = regions
+                } else {
+                    print("Error: Installed regions not found.")
                 }
-            } else {
-                print("Error: MapDownloader is nil.")
             }
-
-            return installedRegionList
+        } else {
+            print("Error: MapDownloader is nil.")
+        }
+        return installedRegionList
     }
 
-        func logInstalledRegions() {
-            let installedRegionList = getInstalledRegionsList()
-            
-            for region in installedRegionList {
-                print("Downloaded region id: \(region.regionId)")
-                print("sizeOnDiskInBytes: \(region.sizeOnDiskInBytes)")
-                print("InstalledRegionStatus: \(region.status)")
-            }
-            
-            let occupiedStorageSize = installedRegionList.reduce(0) { $0 + $1.sizeOnDiskInBytes }
-            print("Storage usage: \(occupiedStorageSize) Bytes")
+    func logInstalledRegions() {
+        let installedRegionList = getInstalledRegionsList()
+        
+        for region in installedRegionList {
+            print("Downloaded region id: \(region.regionId)")
+            print("sizeOnDiskInBytes: \(region.sizeOnDiskInBytes)")
+            print("InstalledRegionStatus: \(region.status)")
         }
+        
+        let occupiedStorageSize = installedRegionList.reduce(0) { $0 + $1.sizeOnDiskInBytes }
+        print("Storage usage: \(occupiedStorageSize) Bytes")
+    }
+    
+    func deleteDownloadedRegions() {
+        var installedRegionsList: [InstalledRegion] = getInstalledRegionsList()
+        
+        // Retrieving the RegionIds from the list of installed regions, which will be used for the deletion process.
+        let regionIds: [RegionId] = installedRegionsList.map {$0.regionId}
+        
+        // Asynchronous operation to delete map data for regions specified by a list of RegionId.
+        // Deleting a region when there is a pending download returns error MapLoaderError.INTERNAL_ERROR.
+        // Also, deleting a region when there is an ongoing download returns error MapLoaderError.NOT_READY
+        mapDownloader?.deleteRegions(regions: regionIds) { [self] error, deletedRegions in
+            // When error is null, the deletedRegions list is guaranteed to be non-null.
+            if error == nil, let deletedRegions = deletedRegions {
+                for regionId in deletedRegions {
+                    print("Successfully deleted region: \(regionId)")
+                }
+                showMessage("Successfully deleted regions.")
+            } else {
+                print("Deleting regions failed: \(String(describing: error))")
+                showMessage("Deleting regions failed: \(String(describing: error))")
+            }
+        }
+    }
 }

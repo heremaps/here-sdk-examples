@@ -42,6 +42,7 @@ class RoutingExample {
   List<Waypoint> waypoints = [];
   final _timeUtils = TimeUtils();
   late here.Route _currentRoute;
+  final offroadDistanceThresholdMeters = 500.0;
 
   RoutingExample(ShowDialogFunction showDialogCallback,
       HereMapController hereMapController)
@@ -287,6 +288,50 @@ class RoutingExample {
     _calculateRoute(waypoints);
   }
 
+  // A waypoint is considered off-road if its original coordinates (as specified by the user)
+  // are more than offroadDistanceThresholdMeters away from the location map-matched to the road network during route calculation.
+  // This function ensures that only waypoints explicitly added by the user are evaluated.
+  // Automatically generated waypoints are skipped.
+  // Returns true if at least one user-defined waypoint is off-road, false otherwise.
+  bool _checkIfWaypointsAreOffRoad(here.Route route) {
+    List<Section> sections = route.sections;
+
+    for (final section in sections) {
+      // Check departure waypoint.
+      RoutePlace departure = section.departurePlace;
+      if (_isWaypointOffRoad(departure)) {
+        return true;
+      }
+
+      // Check arrival waypoint.
+      RoutePlace arrival = section.arrivalPlace;
+      if (_isWaypointOffRoad(arrival)) {
+        return true;
+      }
+    }
+
+    return false; // All user-defined waypoints are close to the road network
+  }
+
+  // Helper method to check if a waypoint is off-road.
+  // Compares the original (user-specified) coordinates with the map-matched coordinates.
+  // If originalCoordinates is null (e.g., the waypoint was added automatically during routing), it is skipped.
+  // Returns true if the waypoint is off-road (more than offroadDistanceThresholdMeters meters away), false otherwise.
+  bool _isWaypointOffRoad(RoutePlace place) {
+    final originalCoordinates = place.originalCoordinates;
+    final matchedCoordinates = place.mapMatchedCoordinates;
+
+    if (originalCoordinates == null) {
+      // Skip waypoints that were not explicitly defined by the user.
+      return false;
+    }
+
+    final distance = originalCoordinates.distanceTo(matchedCoordinates);
+
+    return distance > offroadDistanceThresholdMeters;
+  }
+
+
   void _showRouteDetails(here.Route route) {
     // estimatedTravelTimeInSeconds includes traffic delay.
     int estimatedTravelTimeInSeconds = route.duration.inSeconds;
@@ -306,6 +351,12 @@ class RoutingExample {
         '\nETA in device timezone: ${_timeUtils.getETAinDeviceTimeZone(route)}'
         '\nETA in destination timezone: ${_timeUtils.getETAinDestinationTimeZone(route)}'
         '\nETA in UTC: ${_timeUtils.getEstimatedTimeOfArrivalInUTC(route)}';
+
+    // Add off-road warning if applicable.
+    if (_checkIfWaypointsAreOffRoad(route)) {
+      routeDetails += '\n\nNote: At least one waypoint is off-road by more than '
+          '${offroadDistanceThresholdMeters} meters.';
+    }
 
     _showDialog('Route Details', routeDetails);
   }

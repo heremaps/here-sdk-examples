@@ -32,7 +32,7 @@ class RoutingExample {
     private var waypoints = [Waypoint]()
     private let timeUtils: TimeUtils
     private var currentRoute: Route?
-    private let offroadDistanceThresholdMeters: Double = 500
+    private let offroadDistanceThresholdMeters: Double = 500.0
     
     init(_ mapView: MapView) {
         self.mapView = mapView
@@ -258,13 +258,20 @@ class RoutingExample {
         // For instance, when calculating a route, the device's current timezone may differ from that of the destination.
         // Consider a scenario where a user calculates a route from Berlin to London — each city operates in a different timezone.
         // To address this, you can display the Estimated Time of Arrival (ETA) in multiple timezones: the device's current timezone (Berlin), the destination's timezone (London), and UTC (Coordinated Universal Time), which serves as a global reference.
-        let routeDetails = "Travel Time (h:m): " + timeUtils.formatTime(sec: estimatedTravelTimeInSeconds)
-        + ", Traffic Delay (h:m): " + timeUtils.formatTime(sec: estimatedTrafficDelayInSeconds)
-        + ", Length: " + timeUtils.formatLength(meters: lengthInMeters)
-        + "\nETA in device timezone: " + timeUtils.getETAinDeviceTimeZone(route: route)
-        + "\nETA in destination timezone: " + timeUtils.getETAinDestinationTimeZone(route: route)
-        + "\nETA in UTC: "+timeUtils.getEstimatedTimeOfArrivalInUTC(route: route)
-        
+        var routeDetails = ""
+        routeDetails += "Travel Time (h:m): " + timeUtils.formatTime(sec: estimatedTravelTimeInSeconds)
+        routeDetails += "\nTraffic Delay (h:m): " + timeUtils.formatTime(sec: estimatedTrafficDelayInSeconds)
+        routeDetails += "\nLength: " + timeUtils.formatLength(meters: lengthInMeters)
+        routeDetails += "\nETA in device timezone: " + timeUtils.getETAinDeviceTimeZone(route: route)
+        routeDetails += "\nETA in destination timezone: " + timeUtils.getETAinDestinationTimeZone(route: route)
+        routeDetails += "\nETA in UTC: " + timeUtils.getEstimatedTimeOfArrivalInUTC(route: route)
+
+        // Add off-road warning.
+        if checkIfWaypointsAreOffRoad(route: route) {
+            routeDetails += "\n\nNote: At least one waypoint is off-road by more than "
+            routeDetails += "\(Int(offroadDistanceThresholdMeters)) meters."
+        }
+
         showDialog(title: "Route Details", message: routeDetails)
     }
     
@@ -350,48 +357,48 @@ class RoutingExample {
         addMapMarker(geoCoordinates: destinationGeoCoordinates, imageName: "poi_destination.png")
         
         calculateRoute(waypoints: waypoints)
-        checkWaypointOffRoad(waypoints: waypoints, route: currentRoute!)
     }
 
-    func checkWaypointOffRoad(waypoints: [Waypoint], route: Route) {
+    // A waypoint is considered off-road if its original coordinates (as specified by the user)
+    // are more than offroadDistanceThresholdMeters away from the location map-matched to the road network during route calculation.
+    // This function ensures that only waypoints explicitly added by the user are evaluated.
+    // Automatically generated waypoints are skipped.
+    // Returns true if at least one user-defined waypoint is off-road, false otherwise.
+    func checkIfWaypointsAreOffRoad(route: Route) -> Bool {
         let sections = route.sections
-        let count = min(waypoints.count, sections.count)
 
-        for i in 0..<count {
-            let waypoint = waypoints[i]
-            let section = sections[i]
+        for section in sections {
+            // Check departure waypoint.
+            let departure = section.departurePlace
+            if isWaypointOffRoad(place: departure) {
+                return true
+            }
 
-            let matched = section.departurePlace.mapMatchedCoordinates
-
-            let distance = getDistanceBetweenCoordinates(
-                lat1: waypoint.coordinates.latitude,
-                lon1: waypoint.coordinates.longitude,
-                lat2: matched.latitude,
-                lon2: matched.longitude
-            )
-
-            if distance > offroadDistanceThresholdMeters {
-                showDialog(
-                    title: "Waypoint Alert",
-                    message: "Waypoint is off-road by more than 500 meters."
-                )
-                break
+            // Check arrival waypoint.
+            let arrival = section.arrivalPlace
+            if isWaypointOffRoad(place: arrival) {
+                return true
             }
         }
+
+        return false // All user-defined waypoints are close to the road network
     }
 
-    // Helper function to calculate distance in meters
-    func getDistanceBetweenCoordinates(lat1: Double, lon1: Double, lat2: Double, lon2: Double) -> Double {
-        let earthRadiusInMeters = 6371000.0
-        let deltaLatitude = (lat2 - lat1) * .pi / 180
-        let deltaLongitude = (lon2 - lon1) * .pi / 180
+    // Helper method to check if a waypoint is off-road.
+    // Compares the original (user-specified) coordinates with the map-matched coordinates.
+    // If originalCoordinates is null (e.g., the waypoint was added automatically during routing), it is skipped.
+    // Returns true if the waypoint is off-road (more than offroadDistanceThresholdMeters meters away), false otherwise.
+    func isWaypointOffRoad(place: RoutePlace) -> Bool {
+        guard let originalCoordinates = place.originalCoordinates else {
+            // Skip waypoints that were not explicitly defined by the user.
+            return false
+        }
 
-        let a = sin(deltaLatitude / 2) * sin(deltaLatitude / 2) +
-                cos(lat1 * .pi / 180) * cos(lat2 * .pi / 180) *
-                sin(deltaLongitude / 2) * sin(deltaLongitude / 2)
+        let matchedCoordinates = place.mapMatchedCoordinates
 
-        let angularDistance = 2 * atan2(sqrt(a), sqrt(1 - a))
-        return earthRadiusInMeters * angularDistance
+        let distance = originalCoordinates.distance(to: matchedCoordinates)
+
+        return distance > offroadDistanceThresholdMeters
     }
 
     // This renders the traffic jam factor on top of the route as multiple MapPolylines per span.
