@@ -159,6 +159,7 @@ class EVRoutingExample {
     void _applyEMSPPreferences(EVCarOptions evCarOptions) {
         // You can get a list of all E-Mobility Service Providers and their partner IDs by using the request described here:
         // https://www.here.com/docs/bundle/ev-charge-points-api-developer-guide/page/topics/example-charging-station.html.
+        // No more than 10 E-Mobility Service Providers should be specified.
         // The RoutingEngine will follow the priority order you specify when calculating routes, so try to specify at least most preferred providers.
         // Note that this may impact the route geometry.
 
@@ -172,15 +173,10 @@ class EVRoutingExample {
         // Example code for an alternative provider.
         List<String> alternativeProviders = ["12345678-0000-abcd-0000-000123456789"];
 
-        // Excluded provider that should not be considered for route calculation.
-        // Example code for an excluded provider.
-        List<String> excludedProviders = ["00000000-abcd-0000-1234-123000000000"];
-
         evCarOptions.evMobilityServiceProviderPreferences = EVMobilityServiceProviderPreferences();
         evCarOptions.evMobilityServiceProviderPreferences.high = preferredProviders;
         evCarOptions.evMobilityServiceProviderPreferences.low = leastPreferredProviders;
         evCarOptions.evMobilityServiceProviderPreferences.medium = alternativeProviders;
-        evCarOptions.evMobilityServiceProviderPreferences.exclude = excludedProviders;
     }
 
     EVCarOptions _getEVCarOptions() {
@@ -569,8 +565,8 @@ class EVRoutingExample {
         }
 
         // Draw a circle to indicate starting point and destination.
-        _addCircleMapMarker(_startGeoCoordinates!, "assets/green_dot.png");
-        _addCircleMapMarker(_destinationGeoCoordinates!, "assets/red_dot.png");
+        _addCircleMapMarker(_startGeoCoordinates!, "assets/poi_start.png");
+        _addCircleMapMarker(_destinationGeoCoordinates!, "assets/poi_destination.png");
     }
 
     void _addMapMarker(GeoCoordinates geoCoordinates, String imageName, Metadata metadata) {
@@ -586,9 +582,8 @@ class EVRoutingExample {
     }
 
     void _addCircleMapMarker(GeoCoordinates geoCoordinates, String imageName) {
-        // For this app, we only add images of size 60x60 pixels.
-        int imageWidth = 60;
-        int imageHeight = 60;
+        int imageWidth = 100;
+        int imageHeight = 100;
         // Note that you can optionally optimize by reusing the mapImage instance for other MapMarker instance.
         MapImage mapImage = MapImage.withFilePathAndWidthAndHeight(imageName, imageWidth, imageHeight);
         MapMarker mapMarker = MapMarker(geoCoordinates, mapImage);

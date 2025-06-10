@@ -164,6 +164,7 @@ class EVRoutingExample: TapDelegate {
     private func applyEMSPPreferences(evCarOptions: inout EVCarOptions) {
         // You can get a list of all E-Mobility Service Providers and their partner IDs by using the request described here:
         // https://www.here.com/docs/bundle/ev-charge-points-api-developer-guide/page/topics/example-charging-station.html.
+        // No more than 10 E-Mobility Service Providers should be specified.
         // The RoutingEngine will follow the priority order you specify when calculating routes, so try to specify at least most preferred providers.
         // Note that this may impact the route geometry.
 
@@ -177,15 +178,10 @@ class EVRoutingExample: TapDelegate {
         // Example code for an alternative provider.
         let alternativeProviders: [String] = ["12345678-0000-abcd-0000-000123456789"]
 
-        // Excluded provider that should not be considered for route calculation.
-        // Example code for an excluded provider.
-        let excludedProviders: [String] = ["00000000-abcd-0000-1234-123000000000"]
-
         evCarOptions.evMobilityServiceProviderPreferences = EVMobilityServiceProviderPreferences()
         evCarOptions.evMobilityServiceProviderPreferences.high = preferredProviders;
         evCarOptions.evMobilityServiceProviderPreferences.low = leastPreferredProviders;
         evCarOptions.evMobilityServiceProviderPreferences.medium = alternativeProviders;
-        evCarOptions.evMobilityServiceProviderPreferences.exclude = excludedProviders;
     }
     
     private func getEVCarOptions() -> EVCarOptions {
@@ -323,8 +319,8 @@ class EVRoutingExample: TapDelegate {
         let destination = route.sections.last!.arrivalPlace.mapMatchedCoordinates
 
         // Draw a circle to indicate starting point and destination.
-        addCircleMapMarker(geoCoordinates: startPoint, imageName: "green_dot.png")
-        addCircleMapMarker(geoCoordinates: destination, imageName: "green_dot.png")
+        addCircleMapMarker(geoCoordinates: startPoint, imageName: "poi_start.png")
+        addCircleMapMarker(geoCoordinates: destination, imageName: "poi_destination.png")
     }
 
     // Perform a search for charging stations along the found route.

@@ -41,7 +41,7 @@ class RoutingExample {
   final ShowDialogFunction _showDialog;
   List<Waypoint> waypoints = [];
   final _timeUtils = TimeUtils();
-  late here.Route _currentRoute;
+  here.Route? _currentRoute;
   final offroadDistanceThresholdMeters = 500.0;
 
   RoutingExample(ShowDialogFunction showDialogCallback,
@@ -80,7 +80,7 @@ class RoutingExample {
 
   void onUpdateTrafficOnRouteButtonClick() {
     if (_currentRoute != null) {
-      updateTrafficOnRoute(_currentRoute);
+      updateTrafficOnRoute(_currentRoute!);
     } else {
       _showDialog("Error", "Add a route first to get traffic information on route.");
     }
@@ -145,16 +145,16 @@ class RoutingExample {
 
     _routingEngine.calculateCarRoute(waypoints, carOptions,
         (RoutingError? routingError, List<here.Route>? routeList) async {
-      if (routingError == null) {
+      if (routingError == null && _currentRoute != null) {
         // When error is null, then the list guaranteed to be not null.
         _currentRoute = routeList!.first;
-        _showRouteDetails(_currentRoute);
-        _showRouteOnMap(_currentRoute);
-        _logRouteRailwayCrossingDetails(_currentRoute);
-        _logRouteSectionDetails(_currentRoute);
-        _logRouteViolations(_currentRoute);
-        _logTollDetails(_currentRoute);
-        _animateToRoute(_currentRoute);
+        _showRouteDetails(_currentRoute!);
+        _showRouteOnMap(_currentRoute!);
+        _logRouteRailwayCrossingDetails(_currentRoute!);
+        _logRouteSectionDetails(_currentRoute!);
+        _logRouteViolations(_currentRoute!);
+        _logTollDetails(_currentRoute!);
+        _animateToRoute(_currentRoute!);
       } else {
         var error = routingError.toString();
         _showDialog('Error', 'Error while calculating a route: $error');

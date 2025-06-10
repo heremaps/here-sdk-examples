@@ -125,7 +125,7 @@ struct ContentView: View {
 
     private func buildWebMercatorProjectionMenu() -> MenuSection {
         return MenuSection(title: "Web Mercator", items: [
-            MenuItem(title: "Web Mercator Projection", onSelect: onWebMercatorClicked),
+            MenuItem(title: isWebMercatorProjection ? "Switch to Globe" : "Switch to Web Mercator", onSelect: onWebMercatorClicked),
         ])
     }
 

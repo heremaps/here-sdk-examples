@@ -208,7 +208,9 @@ class HikingDiaryExample: LocationDelegate,
     private func saveDiaryEntry() {
         // Permanently store the trip on the device.
         let result = gpxManager.saveGPXTrack(gpxTrackWriter.track)
-        pastHikingDiaryEntries.append(HikingDiaryEntry(title: gpxTrackWriter.track.name, description: gpxTrackWriter.track.description))
+        if result == true {
+            pastHikingDiaryEntries.append(HikingDiaryEntry(title: gpxTrackWriter.track.name, description: gpxTrackWriter.track.description))
+        }
         updateMessage("Saved Hike: \(result).")
     }
 

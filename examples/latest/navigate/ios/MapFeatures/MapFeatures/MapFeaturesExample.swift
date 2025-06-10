@@ -52,6 +52,7 @@ class MapFeaturesExample {
     
     func disableFeatures() {
         mapScene.disableFeatures(Array(mapFeatures.keys))
+        mapFeatures.removeAll()
     }
     
     func enableBuildingFootprints() {
