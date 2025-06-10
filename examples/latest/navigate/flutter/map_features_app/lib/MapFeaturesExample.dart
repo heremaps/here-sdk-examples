@@ -39,6 +39,7 @@ class MapFeaturesExample {
 
   void disableFeatures() {
     _mapScene.disableFeatures(_mapFeatures.keys.toList());
+    _mapFeatures.clear();
   }
 
   void enableBuildingFootprints() {

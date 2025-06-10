@@ -38,6 +38,7 @@ public class MapFeaturesExample {
 
     public void disableFeatures() {
         mapScene.disableFeatures(new ArrayList<>(mapFeatures.keySet()));
+        mapFeatures.clear();
     }
 
 

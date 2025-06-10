@@ -217,6 +217,7 @@ public class EVRoutingExample {
     private void applyEMSPPreferences(EVCarOptions evCarOptions) {
         // You can get a list of all E-Mobility Service Providers and their partner IDs by using the request described here:
         // https://www.here.com/docs/bundle/ev-charge-points-api-developer-guide/page/topics/example-charging-station.html.
+        // No more than 10 E-Mobility Service Providers should be specified.
         // The RoutingEngine will follow the priority order you specify when calculating routes, so try to specify at least most preferred providers.
         // Note that this may impact the route geometry.
 
@@ -230,15 +231,10 @@ public class EVRoutingExample {
         // Example code for an alternative provider.
         List<String> alternativeProviders = Collections.singletonList("12345678-0000-abcd-0000-000123456789");
 
-        // Excluded provider that should not be considered for route calculation.
-        // Example code for an excluded provider.
-        List<String> excludedProviders = Collections.singletonList("00000000-abcd-0000-1234-123000000000");
-
         evCarOptions.evMobilityServiceProviderPreferences = new EVMobilityServiceProviderPreferences();
         evCarOptions.evMobilityServiceProviderPreferences.high = preferredProviders;
         evCarOptions.evMobilityServiceProviderPreferences.low = leastPreferredProviders;
         evCarOptions.evMobilityServiceProviderPreferences.medium = alternativeProviders;
-        evCarOptions.evMobilityServiceProviderPreferences.exclude = excludedProviders;
     }
 
     private EVCarOptions getEVCarOptions()  {
@@ -385,8 +381,8 @@ public class EVRoutingExample {
                 route.getSections().get(route.getSections().size() - 1).getArrivalPlace().mapMatchedCoordinates;
 
         // Draw a circle to indicate starting point and destination.
-        addCircleMapMarker(startPoint, R.drawable.green_dot);
-        addCircleMapMarker(destination, R.drawable.red_dot);
+        addCircleMapMarker(startPoint, R.drawable.poi_start);
+        addCircleMapMarker(destination, R.drawable.poi_destination);
     }
 
     // Perform a search for charging stations along the found route.

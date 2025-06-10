@@ -83,6 +83,19 @@ class RoutingWithAvoidanceOptionsExample : LongPressDelegate, TapDelegate {
         
         mapView.gestures.tapDelegate = self
         mapView.gestures.longPressDelegate = self
+
+        showDialog(
+            title: "How to use this app",
+            message:
+            """
+            
+            - Long press to set origin and destination of a route.
+
+            - Tap anywhere on the map to load segments to avoidance list.
+
+            - Again tap on the same segment to remove it from avoidance list when calculating a route.
+            """
+        )
     }
     
     // Conform to the TapDelegate protocol.
