@@ -1,0 +1,20 @@
+{
+  "buildFiles": [
+    "/opt/flutter/packages/flutter_tools/gradle/src/main/groovy/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/Applications/android/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/Users/bldadmin/builds/y3qhLRL-/0/here-sdk/documentation/documentation/examples/flutter/map_items_app/android/app/.cxx/RelWithDebInfo/6o5a2h5j/armeabi-v7a",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/Applications/android/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/Users/bldadmin/builds/y3qhLRL-/0/here-sdk/documentation/documentation/examples/flutter/map_items_app/android/app/.cxx/RelWithDebInfo/6o5a2h5j/armeabi-v7a",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {}
+}

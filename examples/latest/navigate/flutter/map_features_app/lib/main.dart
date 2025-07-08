@@ -113,70 +113,87 @@ class _MyAppState extends State<MyApp> {
   // Map Schemes
   void _loadSceneLiteNightScheme() {
     _mapSchemesExample?.loadSceneForMapScheme(MapScheme.liteNight);
+    _mapFeaturesExample?.applyEnabledFeaturesForMapScene(_mapFeaturesExample?.getEnabledFeatures());
   }
 
   void _loadSceneHybridDayScheme() {
     _mapSchemesExample?.loadSceneForMapScheme(MapScheme.hybridDay);
+    _mapFeaturesExample?.applyEnabledFeaturesForMapScene(_mapFeaturesExample?.getEnabledFeatures());
   }
 
   void _loadSceneHybridNightScheme() {
     _mapSchemesExample?.loadSceneForMapScheme(MapScheme.hybridNight);
+    _mapFeaturesExample?.applyEnabledFeaturesForMapScene(_mapFeaturesExample?.getEnabledFeatures());
   }
 
   void _loadSceneLiteDayScheme() {
     _mapSchemesExample?.loadSceneForMapScheme(MapScheme.liteDay);
+    _mapFeaturesExample?.applyEnabledFeaturesForMapScene(_mapFeaturesExample?.getEnabledFeatures());
   }
 
   void _loadSceneLiteHybridDayScheme() {
     _mapSchemesExample?.loadSceneForMapScheme(MapScheme.liteHybridDay);
+    _mapFeaturesExample?.applyEnabledFeaturesForMapScene(_mapFeaturesExample?.getEnabledFeatures());
   }
 
   void _loadSceneLiteHybridNightScheme() {
     _mapSchemesExample?.loadSceneForMapScheme(MapScheme.liteHybridNight);
+    _mapFeaturesExample?.applyEnabledFeaturesForMapScene(_mapFeaturesExample?.getEnabledFeatures());
   }
 
   void _loadSceneLogisticsDayScheme() {
     _mapSchemesExample?.loadSceneForMapScheme(MapScheme.logisticsDay);
+    _mapFeaturesExample?.applyEnabledFeaturesForMapScene(_mapFeaturesExample?.getEnabledFeatures());
   }
 
   void _loadSceneLogisticsHybridDayScheme() {
     _mapSchemesExample?.loadSceneForMapScheme(MapScheme.logisticsHybridDay);
+    _mapFeaturesExample?.applyEnabledFeaturesForMapScene(_mapFeaturesExample?.getEnabledFeatures());
   }
 
   void _loadSceneLogisticsNightScheme() {
     _mapSchemesExample?.loadSceneForMapScheme(MapScheme.logisticsNight);
+    _mapFeaturesExample?.applyEnabledFeaturesForMapScene(_mapFeaturesExample?.getEnabledFeatures());
   }
 
   void _loadSceneLogisticsHybridNightScheme() {
     _mapSchemesExample?.loadSceneForMapScheme(MapScheme.liteHybridNight);
+    _mapFeaturesExample?.applyEnabledFeaturesForMapScene(_mapFeaturesExample?.getEnabledFeatures());
   }
 
   void _loadSceneNormalDayScheme() {
     _mapSchemesExample?.loadSceneForMapScheme(MapScheme.normalDay);
+    _mapFeaturesExample?.applyEnabledFeaturesForMapScene(_mapFeaturesExample?.getEnabledFeatures());
   }
 
   void _loadSceneNormalNightScheme() {
     _mapSchemesExample?.loadSceneForMapScheme(MapScheme.normalNight);
+    _mapFeaturesExample?.applyEnabledFeaturesForMapScene(_mapFeaturesExample?.getEnabledFeatures());
   }
 
   void _loadSceneRoadNetworkDayScheme() {
     _mapSchemesExample?.loadSceneForMapScheme(MapScheme.roadNetworkDay);
+    _mapFeaturesExample?.applyEnabledFeaturesForMapScene(_mapFeaturesExample?.getEnabledFeatures());
   }
 
   void _loadSceneRoadNetworkNightScheme() {
     _mapSchemesExample?.loadSceneForMapScheme(MapScheme.roadNetworkNight);
+    _mapFeaturesExample?.applyEnabledFeaturesForMapScene(_mapFeaturesExample?.getEnabledFeatures());
   }
 
   void _loadSceneSatelliteScheme() {
     _mapSchemesExample?.loadSceneForMapScheme(MapScheme.satellite);
+    _mapFeaturesExample?.applyEnabledFeaturesForMapScene(_mapFeaturesExample?.getEnabledFeatures());
   }
 
   void _loadSceneTopoDayScheme() {
     _mapSchemesExample?.loadSceneForMapScheme(MapScheme.topoDay);
+    _mapFeaturesExample?.applyEnabledFeaturesForMapScene(_mapFeaturesExample?.getEnabledFeatures());
   }
 
   void _loadSceneTopoNightScheme() {
     _mapSchemesExample?.loadSceneForMapScheme(MapScheme.topoNight);
+    _mapFeaturesExample?.applyEnabledFeaturesForMapScene(_mapFeaturesExample?.getEnabledFeatures());
   }
 
   // Map Features

@@ -77,6 +77,7 @@ import com.here.sdk.navigation.RoadSignVehicleType;
 import com.here.sdk.navigation.RoadSignWarning;
 import com.here.sdk.navigation.RoadSignWarningListener;
 import com.here.sdk.navigation.RoadSignWarningOptions;
+import com.here.sdk.navigation.RoadSignType;
 import com.here.sdk.navigation.RoadTextsListener;
 import com.here.sdk.navigation.RouteDeviation;
 import com.here.sdk.navigation.RouteDeviationListener;
@@ -135,7 +136,7 @@ public class NavigationEventHandler {
     private final Context context;
     private int previousManeuverIndex = -1;
     private MapMatchedLocation lastMapMatchedLocation;
-    private final VoiceAssistant voiceAssistant;
+    private VoiceAssistant voiceAssistant;
     private final TextView messageView;
     private final TimeUtils timeUtils;
     private final RoutingEngine routingEngine;
@@ -145,8 +146,6 @@ public class NavigationEventHandler {
         this.context = context;
         this.messageView = messageView;
 
-        // A helper class for TTS.
-        voiceAssistant = new VoiceAssistant(context);
         timeUtils = new TimeUtils();
         try {
             routingEngine = new RoutingEngine();
@@ -158,7 +157,14 @@ public class NavigationEventHandler {
     public void setupListeners(VisualNavigator visualNavigator, DynamicRoutingEngine dynamicRoutingEngine) {
 
         setupSpeedWarnings(visualNavigator);
-        setupVoiceGuidance(visualNavigator);
+
+        // A helper class for TTS.
+        voiceAssistant = new VoiceAssistant(context, new VoiceAssistant.VoiceAssistantListener() {
+            @Override
+            public void onInitialized() {
+                setupVoiceGuidance(visualNavigator);
+            }
+        });
 
         // Notifies on the progress along the route including maneuver instructions.
         visualNavigator.setRouteProgressListener(new RouteProgressListener() {
@@ -228,7 +234,7 @@ public class NavigationEventHandler {
             }
         });
 
-        
+
         // Provides lane information for the road a user is currently driving on.
         // It's supported for turn-by-turn navigation and in tracking mode.
         // It does not notify on which lane the user is currently driving on.
@@ -557,8 +563,13 @@ public class NavigationEventHandler {
         visualNavigator.setRoadSignWarningListener(new RoadSignWarningListener() {
             @Override
             public void onRoadSignWarningUpdated(@NonNull RoadSignWarning roadSignWarning) {
-                Log.d(TAG, "Road sign distance (m): " + roadSignWarning.distanceToRoadSignInMeters);
-                Log.d(TAG, "Road sign type: " + roadSignWarning.type.name());
+                RoadSignType roadSignType = roadSignWarning.type;
+                if (roadSignWarning.distanceType == DistanceType.AHEAD) {
+                    Log.d(TAG, "A RoadSignWarning of road sign type: " + roadSignType.name()
+                    + " ahead in (m): " + roadSignWarning.distanceToRoadSignInMeters);
+                } else if (roadSignWarning.distanceType == DistanceType.PASSED) {
+                    Log.d(TAG, "A RoadSignWarning of road sign type: " + roadSignType.name() + " just passed.");
+                }
 
                 if (roadSignWarning.signValue != null) {
                     // Optional text as it is printed on the local road sign.

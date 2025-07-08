@@ -28,15 +28,19 @@ class NavigationCustomExample: AnimationDelegate, LocationDelegate {
     private let routeStartGeoCoordinates = GeoCoordinates(latitude: 52.520798, longitude: 13.409408)
     private let distanceInMeters: Double = 1000
 
-    private var routingEngine: RoutingEngine?
-    private var visualNavigator: VisualNavigator?
+    private var routingEngine: RoutingEngine
+    private var visualNavigator: VisualNavigator
     private var locationSimulator: LocationSimulator?
-    private var defaultLocationIndicator: LocationIndicator?
-    private var customLocationIndicator: LocationIndicator?
+    private var defaultLocationIndicator = LocationIndicator()
+    private var customLocationIndicator = LocationIndicator()
     private var lastKnownLocation: Location?
     private var isDefaultLocationIndicator = true
     private var myRoute: Route?
-    private var isCurrentColorBlue = false
+    private var isCustomHaloColor = false
+    private var defaultHaloColor: UIColor = .cyan
+    private let defaultHaloAccurarcyInMeters = 30.0
+    private let cameraTiltInDegrees = 40.0
+    private let cameraDistanceInMeters = 200.0
     
     init(_ mapView: MapView) {
         self.mapView = mapView
@@ -47,24 +51,6 @@ class NavigationCustomExample: AnimationDelegate, LocationDelegate {
         camera.lookAt(point: routeStartGeoCoordinates,
                       zoom: MapMeasure(kind: .distanceInMeters, value: distanceToEarthInMeters))
         
-        // Load the map scene using a map scheme to render the map with.
-        mapView.mapScene.loadScene(mapScheme: MapScheme.normalDay, completion: onLoadScene)
-    }
-    
-    // Completion handler for loadScene().
-    private func onLoadScene(mapError: MapError?) {
-        guard mapError == nil else {
-            print("Error: Map scene not loaded, \(String(describing: mapError))")
-            return
-        }
-
-        // Optionally, enable textured 3D landmarks.
-        mapView.mapScene.enableFeatures([MapFeatures.landmarks : MapFeatureModes.landmarksTextured])
-        
-        startAppLogic()
-    }
-    
-    private func startAppLogic() {
         do {
             try routingEngine = RoutingEngine()
         } catch let engineInstantiationError {
@@ -78,23 +64,45 @@ class NavigationCustomExample: AnimationDelegate, LocationDelegate {
             fatalError("Failed to initialize VisualNavigator. Cause: \(engineInstantiationError)")
         }
 
+        // Load the map scene using a map scheme to render the map with.
+        mapView.mapScene.loadScene(mapScheme: MapScheme.normalDay, completion: onLoadScene)
+        
+        showDialog(title: "Custom Navigation",
+                   message: "Start / stop simulated route guidance. Toggle between custom / default LocationIndicator.")
+    }
+    
+    // Completion handler for loadScene().
+    private func onLoadScene(mapError: MapError?) {
+        guard mapError == nil else {
+            print("Error: Map scene not loaded, \(String(describing: mapError))")
+            return
+        }
+
         // Enable a few map layers that might be useful to see for drivers.
         mapView.mapScene.enableFeatures([MapFeatures.trafficFlow : MapFeatureModes.trafficFlowWithFreeFlow])
         mapView.mapScene.enableFeatures([MapFeatures.trafficIncidents : MapFeatureModes.defaultMode])
         mapView.mapScene.enableFeatures([MapFeatures.safetyCameras : MapFeatureModes.defaultMode])
         mapView.mapScene.enableFeatures([MapFeatures.vehicleRestrictions : MapFeatureModes.defaultMode])
-        
-        defaultLocationIndicator = LocationIndicator()
-        customLocationIndicator = createCustomLocationIndicator()
 
-        // Show indicator on map. We start with the built-in default LocationIndicator.
+        // Optionally, enable textured 3D landmarks.
+        mapView.mapScene.enableFeatures([MapFeatures.landmarks : MapFeatureModes.landmarksTextured])
+        
+        defaultLocationIndicator = createDefaultLocationIndicator()
+        customLocationIndicator = createCustomLocationIndicator()
+        
+        // We start with the built-in default LocationIndicator.
         isDefaultLocationIndicator = true
         switchToPedestrianLocationIndicator()
-
-        showDialog(title: "Custom Navigation",
-                   message: "Start / stop simulated route guidance. Toggle between custom / default LocationIndicator.")
     }
-
+    
+    private func createDefaultLocationIndicator() -> LocationIndicator {
+        let locationIndicator = LocationIndicator()
+        locationIndicator.isAccuracyVisualized = true
+        locationIndicator.locationIndicatorStyle = LocationIndicator.IndicatorStyle.pedestrian
+        defaultHaloColor = locationIndicator.getHaloColor(locationIndicator.locationIndicatorStyle)
+        return locationIndicator
+    }
+    
     private func createCustomLocationIndicator() -> LocationIndicator {
         // Create an "assets" directory and add the folder with content via drag & drop.
         // Adjust file name and path as appropriate for your project.
@@ -124,6 +132,7 @@ class NavigationCustomExample: AnimationDelegate, LocationDelegate {
                                            type: LocationIndicator.MarkerType.navigation)
         
         locationIndicator.isAccuracyVisualized = true
+        locationIndicator.locationIndicatorStyle = LocationIndicator.IndicatorStyle.pedestrian
         
         return locationIndicator
     }
@@ -139,14 +148,14 @@ class NavigationCustomExample: AnimationDelegate, LocationDelegate {
     
     // Calculate a fixed route for testing and start guidance simulation along the route.
     func startButtonClicked() {
-        if visualNavigator!.isRendering {
+        if visualNavigator.isRendering {
             return;
         }
 
-        let startWaypoint = Waypoint(coordinates: routeStartGeoCoordinates)
+        let startWaypoint = Waypoint(coordinates: getLastKnownLocation().coordinates)
         let destinationWaypoint = Waypoint(coordinates: GeoCoordinates(latitude: 52.530905, longitude: 13.385007))
 
-        routingEngine!.calculateRoute(with: [startWaypoint, destinationWaypoint],
+        routingEngine.calculateRoute(with: [startWaypoint, destinationWaypoint],
                                      carOptions: CarOptions()) { (routingError, routes) in
             if let error = routingError {
                 print("Error while calculating a route: \(error)")
@@ -167,72 +176,81 @@ class NavigationCustomExample: AnimationDelegate, LocationDelegate {
     // Toggle between the default LocationIndicator and custom LocationIndicator.
     // The default LocationIndicator uses a 3D asset that is part of the HERE SDK.
     // The custom LocationIndicator uses different 3D assets, see asset folder.
-    func toggleButtonClicked() {
+    func toggleStyleButtonClicked() {
         // Toggle state.
         isDefaultLocationIndicator = !isDefaultLocationIndicator
 
         // Select pedestrian or navigation assets.
-        if visualNavigator!.isRendering {
+        if visualNavigator.isRendering {
             switchToNavigationLocationIndicator()
         } else {
             switchToPedestrianLocationIndicator()
         }
     }
     
-    // Toggle the halo color of the default LocationIndicator.
-    func colorButtonClicked() {
-        if isCurrentColorBlue {
-            defaultLocationIndicator?.setHaloColor(defaultLocationIndicator?.locationIndicatorStyle ?? .pedestrian,
-                                                   color: UIColor(red: 1.0, green: 1.0, blue: 0.0, alpha: 0.3))
-            customLocationIndicator?.setHaloColor(customLocationIndicator?.locationIndicatorStyle ?? .pedestrian,
-                                                  color: UIColor(red: 1.0, green: 1.0, blue: 0.0, alpha: 0.3))
-            isCurrentColorBlue = false
+    // Toggle the halo color of the default and custom LocationIndicator.
+    func togglehaloColorButtonClicked() {
+        // Toggle state.
+        isCustomHaloColor = !isCustomHaloColor
+        setSelectedHaloColor()
+    }
+    
+    private func setSelectedHaloColor() {
+        if isCustomHaloColor {
+            let customHaloColor = UIColor(red: 1.0, green: 1.0, blue: 0.0, alpha: 0.3)
+            defaultLocationIndicator.setHaloColor(defaultLocationIndicator.locationIndicatorStyle, color: customHaloColor)
+            customLocationIndicator.setHaloColor(customLocationIndicator.locationIndicatorStyle, color: customHaloColor)
         } else {
-            defaultLocationIndicator?.setHaloColor(defaultLocationIndicator?.locationIndicatorStyle ?? .pedestrian,
-                                                   color: UIColor(red: 0.0, green: 0.0, blue: 1.0, alpha: 0.3))
-            customLocationIndicator?.setHaloColor(customLocationIndicator?.locationIndicatorStyle ?? .pedestrian,
-                                                  color: UIColor(red: 0.0, green: 0.0, blue: 1.0, alpha: 0.3))
-            isCurrentColorBlue = true
+            defaultLocationIndicator.setHaloColor(defaultLocationIndicator.locationIndicatorStyle, color: defaultHaloColor)
+            customLocationIndicator.setHaloColor(customLocationIndicator.locationIndicatorStyle, color: defaultHaloColor)
         }
     }
     
     private func switchToPedestrianLocationIndicator() {
         if isDefaultLocationIndicator {
-            defaultLocationIndicator?.enable(for: mapView)
-            defaultLocationIndicator?.locationIndicatorStyle = LocationIndicator.IndicatorStyle.pedestrian
-            customLocationIndicator?.disable()
+            defaultLocationIndicator.enable(for: mapView)
+            defaultLocationIndicator.locationIndicatorStyle = LocationIndicator.IndicatorStyle.pedestrian
+            customLocationIndicator.disable()
         } else {
-            defaultLocationIndicator?.disable();
-            customLocationIndicator?.enable(for: mapView);
-            customLocationIndicator?.locationIndicatorStyle = LocationIndicator.IndicatorStyle.pedestrian
+            defaultLocationIndicator.disable();
+            customLocationIndicator.enable(for: mapView);
+            customLocationIndicator.locationIndicatorStyle = LocationIndicator.IndicatorStyle.pedestrian
         }
-
+        
         // Set last location from LocationSimulator.
-        defaultLocationIndicator?.updateLocation(getLastKnownLocation())
-        customLocationIndicator?.updateLocation(getLastKnownLocation())
+        defaultLocationIndicator.updateLocation(getLastKnownLocation())
+        customLocationIndicator.updateLocation(getLastKnownLocation())
+        
+        setSelectedHaloColor()
     }
 
     private func switchToNavigationLocationIndicator() {
         if isDefaultLocationIndicator {
             // By default, the VisualNavigator adds a LocationIndicator on its own.
-            defaultLocationIndicator?.disable()
-            customLocationIndicator?.disable()
-            visualNavigator?.customLocationIndicator = nil
+            // This can be kept by calling visualNavigator.customLocationIndicator = nil
+            // However, here we want to be able to customize the halo for the default location indicator.
+            // Therefore, we still need to set our own instance to the VisualNavigator.
+            customLocationIndicator.disable()
+            defaultLocationIndicator.enable(for: mapView)
+            defaultLocationIndicator.locationIndicatorStyle = LocationIndicator.IndicatorStyle.navigation
+            visualNavigator.customLocationIndicator = defaultLocationIndicator
         } else {
-            defaultLocationIndicator?.disable()
-            customLocationIndicator?.enable(for: mapView)
-            customLocationIndicator?.locationIndicatorStyle = LocationIndicator.IndicatorStyle.navigation
-            visualNavigator?.customLocationIndicator = customLocationIndicator
-
+            defaultLocationIndicator.disable()
+            customLocationIndicator.enable(for: mapView)
+            customLocationIndicator.locationIndicatorStyle = LocationIndicator.IndicatorStyle.navigation
+            visualNavigator.customLocationIndicator = customLocationIndicator
+            
             // Note that the type of the LocationIndicator is taken from the route's TransportMode.
             // It cannot be overriden during guidance.
             // During tracking mode (not shown in this app) you can specify the marker type via:
             // visualNavigator?.trackingTransportMode = .pedestrian
         }
-
-        // Location is set by VisualNavigator for smooth interpolation.
+        
+        // By default, during navigation the location of the indicator is controlled by the VisualNavigator.
+        
+        setSelectedHaloColor()
     }
-
+    
     private func getLastKnownLocation() -> Location {
         if lastKnownLocation == nil {
             // A LocationIndicator is intended to mark the user's current location,
@@ -241,9 +259,8 @@ class NavigationCustomExample: AnimationDelegate, LocationDelegate {
             // a GPS sensor instead. Check the Positioning example app for this.
             var location = Location(coordinates: routeStartGeoCoordinates)
             location.time = Date()
-            location.horizontalAccuracyInMeters = 30.0
+            location.horizontalAccuracyInMeters = defaultHaloAccurarcyInMeters
             return location
-            
         }
 
         // This location is taken from the LocationSimulator that provides locations along the route.
@@ -257,10 +274,10 @@ class NavigationCustomExample: AnimationDelegate, LocationDelegate {
         let geoCoordinatesUpdate = GeoCoordinatesUpdate(routeStart)
         
         let bearingInDegrees: Double? = nil
-        let tiltInDegrees: Double = 70
+        let tiltInDegrees: Double = cameraTiltInDegrees
         let orientationUpdate = GeoOrientationUpdate(bearing: bearingInDegrees, tilt: tiltInDegrees)
         
-        let distanceInMeters: Double = 50
+        let distanceInMeters: Double = cameraDistanceInMeters
         let mapMeasure = MapMeasure(kind: .distanceInMeters, value: distanceInMeters)
 
         let durationInSeconds: TimeInterval = 3
@@ -299,9 +316,9 @@ class NavigationCustomExample: AnimationDelegate, LocationDelegate {
                                                         duration: durationInSeconds)
         mapView.camera.startAnimation(animation)
     }
-
+    
     private func startGuidance(route: Route) {
-        if visualNavigator!.isRendering {
+        if visualNavigator.isRendering {
             return
         }
         
@@ -312,14 +329,15 @@ class NavigationCustomExample: AnimationDelegate, LocationDelegate {
         customizeGuidanceView()
 
         // This enables a navigation view and adds a LocationIndicator.
-        visualNavigator?.startRendering(mapView: mapView)
-
+        visualNavigator.startRendering(mapView: mapView)
+        
         // Note: By default, when VisualNavigator starts rendering, a default LocationIndicator is added
         // by the HERE SDK automatically.
+        visualNavigator.customLocationIndicator = customLocationIndicator
         switchToNavigationLocationIndicator()
 
         // Set a route to follow. This leaves tracking mode.
-        visualNavigator?.route = route
+        visualNavigator.route = route
 
         // This app does not use real location updates. Instead it provides location updates based
         // on the geographic coordinates of a route using HERE SDK's LocationSimulator.
@@ -327,7 +345,7 @@ class NavigationCustomExample: AnimationDelegate, LocationDelegate {
     }
 
     private func stopGuidance() {
-        visualNavigator?.stopRendering()
+        visualNavigator.stopRendering()
 
         locationSimulator?.stop()
 
@@ -357,22 +375,23 @@ class NavigationCustomExample: AnimationDelegate, LocationDelegate {
         // Sets route color for a single transport mode. Other modes are kept using defaults.
         visualNavigatorColors.setRouteProgressColors(sectionTransportMode: SectionTransportMode.car, routeProgressColors: routeProgressColors)
         // Sets the adjusted colors for route progress and maneuver arrows based on the day color scheme.
-        visualNavigator?.colors = visualNavigatorColors
+        visualNavigator.colors = visualNavigatorColors
     }
     
     private func customizeGuidanceView() {
         let cameraBehavior = FixedCameraBehavior()
         
         // Set custom zoom level and tilt.
-        cameraBehavior.cameraDistanceInMeters = 50 // Defaults to 150.
-        cameraBehavior.cameraTiltInDegrees = 70 // Defaults to 50.
+        cameraBehavior.cameraTiltInDegrees = cameraTiltInDegrees
+        cameraBehavior.cameraDistanceInMeters = cameraDistanceInMeters
         // Disable North-Up mode by setting nil. Enable North-up mode by setting 0.
         // By default, North-Up mode is disabled.
         cameraBehavior.cameraBearingInDegrees = nil
+        cameraBehavior.normalizedPrincipalPoint = Anchor2D(horizontal: 0.5, vertical: 0.5)
 
         // The CameraSettings can be updated during guidance at any time as often as desired.
         // Alternatively, set DynamicCameraBehavior to enable auto-zoom.
-        visualNavigator?.cameraBehavior = cameraBehavior
+        visualNavigator.cameraBehavior = cameraBehavior
     }
 
     private func startRouteSimulation(route: Route) {
@@ -393,9 +412,20 @@ class NavigationCustomExample: AnimationDelegate, LocationDelegate {
 
     // Conforming to LocationDelegate.
     func onLocationUpdated(_ location: Location) {
+        // By default, accuracy is nil during simulation, but we want to customize the halo,
+        // so we hijack the location object and add an accuracy value.
+        let location = addHorizontalAccuracy(location)
         // Feed location data into the VisualNavigator.
-        visualNavigator?.onLocationUpdated(location)
+        visualNavigator.onLocationUpdated(location)
         lastKnownLocation = location
+    }
+    
+    private func addHorizontalAccuracy(_ simulatedLocation: Location) -> Location {
+        var location = Location(coordinates: simulatedLocation.coordinates)
+        location.time = simulatedLocation.time
+        location.bearingInDegrees = simulatedLocation.bearingInDegrees
+        location.horizontalAccuracyInMeters = defaultHaloAccurarcyInMeters
+        return location
     }
 
     private func showDialog(title: String, message: String) {
