@@ -34,6 +34,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.here.navigationcustom.PermissionsRequestor.ResultListener;
 import com.here.sdk.animation.AnimationListener;
 import com.here.sdk.animation.AnimationState;
+import com.here.sdk.core.Anchor2D;
 import com.here.sdk.core.Color;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.GeoCoordinatesUpdate;
@@ -89,7 +90,11 @@ public class MainActivity extends AppCompatActivity {
     private Location lastKnownLocation = null;
     private GeoCoordinates routeStartGeoCoordinates;
     private boolean isDefaultLocationIndicator = true;
-    private boolean isCurrentColorBlue;
+    private boolean isCustomHaloColor;
+    private Color defaultHaloColor;
+    private final double defaultHaloAccurarcyInMeters = 30.0;
+    private final double cameraTiltInDegrees = 40.0;
+    private final double cameraDistanceInMeters = 200.0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,6 +110,19 @@ public class MainActivity extends AppCompatActivity {
         mapView.onCreate(savedInstanceState);
 
         handleAndroidPermissions();
+
+        try {
+            routingEngine = new RoutingEngine();
+        } catch (InstantiationErrorException e) {
+            throw new RuntimeException("Initialization of RoutingEngine failed: " + e.error.name());
+        }
+
+        try {
+            // Without a route set, this starts tracking mode.
+            visualNavigator = new VisualNavigator();
+        } catch (InstantiationErrorException e) {
+            throw new RuntimeException("Initialization of VisualNavigator failed: " + e.error.name());
+        }
 
         showDialog("Custom Navigation",
                 "Start / stop simulated route guidance. Toggle between custom / default LocationIndicator.");
@@ -149,20 +167,33 @@ public class MainActivity extends AppCompatActivity {
     private void loadMapScene() {
         routeStartGeoCoordinates = new GeoCoordinates(52.520798, 13.409408);
 
+        // Configure the map.
+        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, DISTANCE_IN_METERS);
+        mapView.getCamera().lookAt(
+                routeStartGeoCoordinates, mapMeasureZoom);
+
         // Load a scene from the HERE SDK to render the map with a map scheme.
         mapView.getMapScene().loadScene(MapScheme.NORMAL_DAY, new MapScene.LoadSceneCallback() {
             @Override
             public void onLoadScene(@Nullable MapError mapError) {
                 if (mapError == null) {
-                    // Optionally, enable textured 3D landmarks.
+                    // Enable a few map layers that might be useful to see for drivers.
                     Map<String, String> mapFeatures = new HashMap<>();
+                    mapFeatures.put(MapFeatures.TRAFFIC_FLOW, MapFeatureModes.TRAFFIC_FLOW_WITH_FREE_FLOW);
+                    mapFeatures.put(MapFeatures.TRAFFIC_INCIDENTS, MapFeatureModes.DEFAULT);
+                    mapFeatures.put(MapFeatures.SAFETY_CAMERAS, MapFeatureModes.DEFAULT);
+                    mapFeatures.put(MapFeatures.VEHICLE_RESTRICTIONS, MapFeatureModes.DEFAULT);
+
+                    // Optionally, enable textured 3D landmarks.
                     mapFeatures.put(MapFeatures.LANDMARKS, MapFeatureModes.LANDMARKS_TEXTURED);
                     mapView.getMapScene().enableFeatures(mapFeatures);
 
-                    MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, DISTANCE_IN_METERS);
-                    mapView.getCamera().lookAt(
-                            routeStartGeoCoordinates, mapMeasureZoom);
-                    startAppLogic();
+                    defaultLocationIndicator = createDefaultLocationIndicator();
+                    customLocationIndicator = createCustomLocationIndicator();
+
+                    // We start with the built-in default LocationIndicator.
+                    isDefaultLocationIndicator = true;
+                    switchToPedestrianLocationIndicator();
                 } else {
                     Log.d(TAG, "Loading map failed: mapError: " + mapError.name());
                 }
@@ -170,34 +201,12 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void startAppLogic() {
-        try {
-            routingEngine = new RoutingEngine();
-        } catch (InstantiationErrorException e) {
-            throw new RuntimeException("Initialization of RoutingEngine failed: " + e.error.name());
-        }
-
-        try {
-            visualNavigator = new VisualNavigator();
-        } catch (InstantiationErrorException e) {
-            throw new RuntimeException("Initialization of VisualNavigator failed: " + e.error.name());
-        }
-
-        // Enable a few map layers that might be useful to see for drivers.
-        Map<String, String> mapFeatures = new HashMap<>();
-        mapFeatures.put(MapFeatures.TRAFFIC_FLOW, MapFeatureModes.TRAFFIC_FLOW_WITH_FREE_FLOW);
-        mapFeatures.put(MapFeatures.TRAFFIC_INCIDENTS, MapFeatureModes.DEFAULT);
-        mapFeatures.put(MapFeatures.SAFETY_CAMERAS, MapFeatureModes.DEFAULT);
-        mapFeatures.put(MapFeatures.VEHICLE_RESTRICTIONS, MapFeatureModes.DEFAULT);
-        mapView.getMapScene().enableFeatures(mapFeatures);
-
-        defaultLocationIndicator = new LocationIndicator();
-
-        customLocationIndicator = createCustomLocationIndicator();
-
-        // Show indicator on map. We start with the built-in default LocationIndicator.
-        isDefaultLocationIndicator = true;
-        switchToPedestrianLocationIndicator();
+    private LocationIndicator createDefaultLocationIndicator() {
+        LocationIndicator locationIndicator = new LocationIndicator();
+        locationIndicator.setAccuracyVisualized(true);
+        locationIndicator.setLocationIndicatorStyle(IndicatorStyle.PEDESTRIAN);
+        defaultHaloColor = locationIndicator.getHaloColor(locationIndicator.getLocationIndicatorStyle());
+        return locationIndicator;
     }
 
     private LocationIndicator createCustomLocationIndicator() {
@@ -221,6 +230,7 @@ public class MainActivity extends AppCompatActivity {
         locationIndicator.setMarker3dModel(navigationMapMarker3DModel, scaleFactor, LocationIndicator.MarkerType.NAVIGATION);
 
         locationIndicator.setAccuracyVisualized(true);
+        locationIndicator.setLocationIndicatorStyle(IndicatorStyle.PEDESTRIAN);
         
         return locationIndicator;
     }
@@ -231,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        Waypoint startWaypoint = new Waypoint(routeStartGeoCoordinates);
+        Waypoint startWaypoint = new Waypoint(getLastKnownLocation().coordinates);
         Waypoint destinationWaypoint = new Waypoint(new GeoCoordinates(52.530905, 13.385007));
         routingEngine.calculateRoute(
                 new ArrayList<>(Arrays.asList(startWaypoint, destinationWaypoint)),
@@ -246,19 +256,6 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    // Toggle the halo color of the default LocationIndicator.
-    public void colorButtonClicked(View view) {
-        if (isCurrentColorBlue) {
-            defaultLocationIndicator.setHaloColor(defaultLocationIndicator.getLocationIndicatorStyle(), new Color(255F, 255F, 0F, 0.30F));
-            customLocationIndicator.setHaloColor(customLocationIndicator.getLocationIndicatorStyle(), new Color(255F, 255F, 0F, 0.30F));
-            isCurrentColorBlue = false;
-        } else {
-            defaultLocationIndicator.setHaloColor(defaultLocationIndicator.getLocationIndicatorStyle(), new Color(0F, 0F, 255F, 0.30F));
-            customLocationIndicator.setHaloColor(customLocationIndicator.getLocationIndicatorStyle(), new Color(0F, 0F, 255F, 0.30F));
-            isCurrentColorBlue = true;
-        }
-    }
-
     // Stop guidance simulation and switch pedestrian LocationIndicator on.
     public void stopButtonClicked(View view) {
         stopGuidance();
@@ -267,7 +264,7 @@ public class MainActivity extends AppCompatActivity {
     // Toggle between the default LocationIndicator and custom LocationIndicator.
     // The default LocationIndicator uses a 3D asset that is part of the HERE SDK.
     // The custom LocationIndicator uses different 3D assets, see asset folder.
-    public void toggleButtonClicked(View view) {
+    public void toggleStyleButtonClicked(View view) {
         // Toggle state.
         isDefaultLocationIndicator = !isDefaultLocationIndicator;
 
@@ -276,6 +273,24 @@ public class MainActivity extends AppCompatActivity {
             switchToNavigationLocationIndicator();
         } else {
             switchToPedestrianLocationIndicator();
+        }
+    }
+
+    // Toggle the halo color of the default LocationIndicator.
+    public void togglehaloColorButtonClicked(View view) {
+        // Toggle state.
+        isCustomHaloColor = !isCustomHaloColor;
+        setSelectedHaloColor();
+    }
+
+    private void setSelectedHaloColor() {
+        if (isCustomHaloColor) {
+            Color customHaloColor = new Color(255F, 255F, 0F, 0.30F);
+            defaultLocationIndicator.setHaloColor(defaultLocationIndicator.getLocationIndicatorStyle(), customHaloColor);
+            customLocationIndicator.setHaloColor(customLocationIndicator.getLocationIndicatorStyle(), customHaloColor);
+        } else {
+            defaultLocationIndicator.setHaloColor(defaultLocationIndicator.getLocationIndicatorStyle(), defaultHaloColor);
+            customLocationIndicator.setHaloColor(customLocationIndicator.getLocationIndicatorStyle(), defaultHaloColor);
         }
     }
 
@@ -293,14 +308,20 @@ public class MainActivity extends AppCompatActivity {
         // Set last location from LocationSimulator.
         defaultLocationIndicator.updateLocation(getLastKnownLocation());
         customLocationIndicator.updateLocation(getLastKnownLocation());
+
+        setSelectedHaloColor();
     }
 
     private void switchToNavigationLocationIndicator() {
         if (isDefaultLocationIndicator) {
             // By default, the VisualNavigator adds a LocationIndicator on its own.
-            defaultLocationIndicator.disable();
+            // This can be kept by calling visualNavigator.customLocationIndicator = nil
+            // However, here we want to be able to customize the halo for the default location indicator.
+            // Therefore, we still need to set our own instance to the VisualNavigator.
             customLocationIndicator.disable();
-            visualNavigator.setCustomLocationIndicator(null);
+            defaultLocationIndicator.enable(mapView);
+            defaultLocationIndicator.setLocationIndicatorStyle(IndicatorStyle.NAVIGATION);
+            visualNavigator.setCustomLocationIndicator(defaultLocationIndicator);
         } else {
             defaultLocationIndicator.disable();
             customLocationIndicator.enable(mapView);
@@ -313,7 +334,7 @@ public class MainActivity extends AppCompatActivity {
             // visualNavigator.setTrackingTransportMode(TransportMode.PEDESTRIAN);
         }
 
-        // Location is set by VisualNavigator for smooth interpolation.
+        setSelectedHaloColor();
     }
 
     private Location getLastKnownLocation() {
@@ -324,8 +345,7 @@ public class MainActivity extends AppCompatActivity {
             // a GPS sensor instead. Check the Positioning example app for this.
             Location location = new Location(routeStartGeoCoordinates);
             location.time = new Date();
-            location.bearingInDegrees = 0.0;
-            location.horizontalAccuracyInMeters = 30.0;
+            location.horizontalAccuracyInMeters = defaultHaloAccurarcyInMeters;
             return location;
         }
         // This location is taken from the LocationSimulator that provides locations along the route.
@@ -339,10 +359,10 @@ public class MainActivity extends AppCompatActivity {
         GeoCoordinatesUpdate geoCoordinatesUpdate = new GeoCoordinatesUpdate(startOfRoute);
 
         Double bearingInDegrees = null;
-        double tiltInDegrees = 70;
+        double tiltInDegrees = cameraTiltInDegrees;
         GeoOrientationUpdate orientationUpdate = new GeoOrientationUpdate(bearingInDegrees, tiltInDegrees);
 
-        double distanceInMeters = 50;
+        double distanceInMeters = cameraDistanceInMeters;
         MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, distanceInMeters);
 
         double bowFactor = 1;
@@ -391,6 +411,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Note: By default, when VisualNavigator starts rendering, a default LocationIndicator is added
         // by the HERE SDK automatically.
+        visualNavigator.setCustomLocationIndicator(customLocationIndicator);
         switchToNavigationLocationIndicator();
 
         // Set a route to follow. This leaves tracking mode.
@@ -439,11 +460,12 @@ public class MainActivity extends AppCompatActivity {
     private void customizeGuidanceView() {
         FixedCameraBehavior cameraBehavior = new FixedCameraBehavior();
         // Set custom zoom level and tilt.
-        cameraBehavior.setCameraDistanceInMeters(50); // Defaults to 150.
-        cameraBehavior.setCameraTiltInDegrees(70); // Defaults to 50.
+        cameraBehavior.setCameraDistanceInMeters(cameraDistanceInMeters);
+        cameraBehavior.setCameraTiltInDegrees(cameraTiltInDegrees);
         // Disable North-Up mode by setting null. Enable North-up mode by setting Double.valueOf(0).
         // By default, North-Up mode is disabled.
         cameraBehavior.setCameraBearingInDegrees(null);
+        cameraBehavior.setNormalizedPrincipalPoint(new Anchor2D(0.5, 0.5));
 
         // The CameraBehavior can be updated during guidance at any time as often as desired.
         // Alternatively, use DynamicCameraBehavior for auto-zoom.
@@ -453,11 +475,22 @@ public class MainActivity extends AppCompatActivity {
     private final LocationListener myLocationListener = new LocationListener() {
         @Override
         public void onLocationUpdated(@NonNull Location location) {
+            // By default, accuracy is null during simulation, but we want to customize the halo,
+            // so we hijack the location object and add an accuracy value.
+            Location updatedLocation = addHorizontalAccuracy(location);
             // Feed location data into the VisualNavigator.
-            visualNavigator.onLocationUpdated(location);
-            lastKnownLocation = location;
+            visualNavigator.onLocationUpdated(updatedLocation);
+            lastKnownLocation = updatedLocation;
         }
     };
+
+    private Location addHorizontalAccuracy(Location simulatedLocation) {
+        Location location = new Location(simulatedLocation.coordinates);
+        location.time = simulatedLocation.time;
+        location.bearingInDegrees = simulatedLocation.bearingInDegrees;
+        location.horizontalAccuracyInMeters = defaultHaloAccurarcyInMeters;
+        return location;
+    }
 
     private void startRouteSimulation(Route route) {
         if (locationSimulator != null) {

@@ -31,6 +31,7 @@ import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.GeoPolyline;
 import com.here.sdk.core.Point2D;
 import com.here.sdk.core.errors.InstantiationErrorException;
+import com.here.sdk.core.threading.TaskHandle;
 import com.here.sdk.mapview.LineCap;
 import com.here.sdk.mapview.MapCamera;
 import com.here.sdk.mapview.MapImage;
@@ -87,6 +88,7 @@ public class RoutingExample {
     private Route currentRoute;
     private static final double OFFROAD_DISTANCE_THRESHOLD_METERS = 500.0;
     List<Waypoint> waypoints = new ArrayList<>();
+    private TaskHandle currentRouteCalculationTask;
 
     public RoutingExample(Context context, MapView mapView) {
         this.context = context;
@@ -104,6 +106,11 @@ public class RoutingExample {
     }
 
     public void addRoute() {
+        if (currentRouteCalculationTask != null && !currentRouteCalculationTask.isFinished()) {
+            Log.d(TAG, "Previous route calculation still in progress.");
+            return;
+        }
+
         // Optionally, clear any previous route.
         clearMap();
 
