@@ -64,7 +64,6 @@ import com.here.sdk.navigation.RoadAttributes
 import com.here.sdk.navigation.RoadAttributesListener
 import com.here.sdk.navigation.RoadSignVehicleType
 import com.here.sdk.navigation.RoadSignWarning
-import com.here.sdk.navigation.RoadSignType
 import com.here.sdk.navigation.RoadSignWarningListener
 import com.here.sdk.navigation.RoadSignWarningOptions
 import com.here.sdk.navigation.RoadTextsListener
@@ -112,10 +111,11 @@ class NavigationEventHandler(
     private var previousManeuverIndex = -1
     private var lastMapMatchedLocation: MapMatchedLocation? = null
 
+    // A helper class for TTS.
+    private val voiceAssistant = VoiceAssistant(context)
     private val timeUtils = TimeUtils()
-    private val routingEngine: RoutingEngine
+    private var routingEngine: RoutingEngine? = null
     private var lastTrafficUpdateInMilliseconds = 0L
-    private lateinit var voiceAssistant: VoiceAssistant
 
     init {
         try {
@@ -130,13 +130,7 @@ class NavigationEventHandler(
         dynamicRoutingEngine: DynamicRoutingEngine
     ) {
         setupSpeedWarnings(visualNavigator)
-
-        // A helper class for TTS.
-        voiceAssistant = VoiceAssistant(context, object : VoiceAssistant.VoiceAssistantListener {
-            override fun onInitialized() {
-                setupVoiceGuidance(visualNavigator)
-            }
-        })
+        setupVoiceGuidance(visualNavigator)
 
         // Notifies on the progress along the route including maneuver instructions.
         visualNavigator.routeProgressListener =
@@ -532,14 +526,8 @@ class NavigationEventHandler(
         // Notifies on road shields as they appear along the road.
         visualNavigator.roadSignWarningListener =
             RoadSignWarningListener { roadSignWarning: RoadSignWarning ->
-                val roadSignType: RoadSignType = roadSignWarning.type
-                if (roadSignWarning.distanceType == DistanceType.AHEAD) {
-                    Log.d(TAG, "A RoadSignWarning of road sign type: ${roadSignType.name}" +
-                            " ahead in (m): ${roadSignWarning.distanceToRoadSignInMeters}"
-                    )
-                } else if (roadSignWarning.distanceType == DistanceType.PASSED) {
-                    Log.d(TAG, "A RoadSignWarning of road sign type: ${roadSignType.name} just passed.")
-                }
+                Log.d(TAG, "Road sign distance (m): " + roadSignWarning.distanceToRoadSignInMeters)
+                Log.d(TAG, "Road sign type: " + roadSignWarning.type.name)
 
                 if (roadSignWarning.signValue != null) {
                     // Optional text as it is printed on the local road sign.
@@ -1114,7 +1102,7 @@ class NavigationEventHandler(
             currentRoute.lengthInMeters - lastSectionProgress.remainingDistanceInMeters
         val lastTraveledSectionIndex = routeProgress.sectionIndex
 
-        routingEngine.calculateTrafficOnRoute(
+        routingEngine!!.calculateTrafficOnRoute(
             currentRoute,
             lastTraveledSectionIndex,
             traveledDistanceOnLastSectionInMeters,

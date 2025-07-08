@@ -88,7 +88,7 @@ struct CustomButton: View {
 
 // A reusable toggle button to keep the layout clean.
 struct CustomToggleButton: View {
-    @State private var isOn: Bool = true
+    @State private var isOn: Bool = false
     var onLabel: String
     var offLabel: String
     var action: () -> Void

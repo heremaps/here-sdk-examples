@@ -29,7 +29,6 @@ struct ContentView: View {
     @State private var mapFeaturesExample: MapFeaturesExample?
     @State private var mapSchemesExample: MapSchemesExample?
     @State private var isWebMercatorProjection: Bool = false
-    @State private var currentEnabledFeatures: [String: String] = [:]
     
     var body: some View {
         NavigationView {
@@ -125,14 +124,14 @@ struct ContentView: View {
     }
 
     private func buildWebMercatorProjectionMenu() -> MenuSection {
-        return MenuSection(title: "Map Projection", items: [
+        return MenuSection(title: "Web Mercator", items: [
             MenuItem(title: isWebMercatorProjection ? "Switch to Globe" : "Switch to Web Mercator", onSelect: onWebMercatorClicked),
         ])
     }
 
     private func onWebMercatorClicked() {
         isWebMercatorProjection.toggle()
-        currentEnabledFeatures = mapFeaturesExample?.getEnabledFeatures() ?? [:]
+        let currentEnabledFeatures = mapFeaturesExample?.getEnabledFeatures()
         mapFeaturesExample = MapFeaturesExample(mapView: isWebMercatorProjection ? mapViewWebMercator: mapViewGlobe, mapFeatures: currentEnabledFeatures)
         mapFeaturesExample?.applyEnabledFeaturesForMapScene(mapFeatures: currentEnabledFeatures)
         let currentMapScheme = mapSchemesExample?.getCurrentMapScheme()
@@ -143,87 +142,70 @@ struct ContentView: View {
     // Map Schemes
     func loadSceneLiteNightScheme() {
         mapSchemesExample?.loadSceneForMapScheme(.liteNight)
-        mapFeaturesExample?.applyEnabledFeaturesForMapScene(mapFeatures: currentEnabledFeatures)
     }
 
     func loadSceneHybridDayScheme() {
         mapSchemesExample?.loadSceneForMapScheme(.hybridDay)
-        mapFeaturesExample?.applyEnabledFeaturesForMapScene(mapFeatures: currentEnabledFeatures)
     }
 
     func loadSceneHybridNightScheme() {
         mapSchemesExample?.loadSceneForMapScheme(.hybridNight)
-        mapFeaturesExample?.applyEnabledFeaturesForMapScene(mapFeatures: currentEnabledFeatures)
     }
 
     func loadSceneLiteDayScheme() {
         mapSchemesExample?.loadSceneForMapScheme(.liteDay)
-        mapFeaturesExample?.applyEnabledFeaturesForMapScene(mapFeatures: currentEnabledFeatures)
     }
 
     func loadSceneLiteHybridDayScheme() {
         mapSchemesExample?.loadSceneForMapScheme(.liteHybridDay)
-        mapFeaturesExample?.applyEnabledFeaturesForMapScene(mapFeatures: currentEnabledFeatures)
     }
 
     func loadSceneLiteHybridNightScheme() {
         mapSchemesExample?.loadSceneForMapScheme(.liteHybridNight)
-        mapFeaturesExample?.applyEnabledFeaturesForMapScene(mapFeatures: currentEnabledFeatures)
     }
 
     func loadSceneLogisticsDayScheme() {
         mapSchemesExample?.loadSceneForMapScheme(.logisticsDay)
-        mapFeaturesExample?.applyEnabledFeaturesForMapScene(mapFeatures: currentEnabledFeatures)
     }
 
     func loadSceneLogisticsHybridDayScheme() {
         mapSchemesExample?.loadSceneForMapScheme(.logisticsHybridDay)
-        mapFeaturesExample?.applyEnabledFeaturesForMapScene(mapFeatures: currentEnabledFeatures)
     }
 
     func loadSceneLogisticsNightScheme() {
         mapSchemesExample?.loadSceneForMapScheme(.logisticsNight)
-        mapFeaturesExample?.applyEnabledFeaturesForMapScene(mapFeatures: currentEnabledFeatures)
     }
 
     func loadSceneLogisticsHybridNightScheme() {
         mapSchemesExample?.loadSceneForMapScheme(.liteHybridNight)
-        mapFeaturesExample?.applyEnabledFeaturesForMapScene(mapFeatures: currentEnabledFeatures)
     }
 
     func loadSceneNormalDayScheme() {
         mapSchemesExample?.loadSceneForMapScheme(.normalDay)
-        mapFeaturesExample?.applyEnabledFeaturesForMapScene(mapFeatures: currentEnabledFeatures)
     }
 
     func loadSceneNormalNightScheme() {
         mapSchemesExample?.loadSceneForMapScheme(.normalNight)
-        mapFeaturesExample?.applyEnabledFeaturesForMapScene(mapFeatures: currentEnabledFeatures)
     }
 
     func loadSceneRoadNetworkDayScheme() {
         mapSchemesExample?.loadSceneForMapScheme(.roadNetworkDay)
-        mapFeaturesExample?.applyEnabledFeaturesForMapScene(mapFeatures: currentEnabledFeatures)
     }
 
     func loadSceneRoadNetworkNightScheme() {
         mapSchemesExample?.loadSceneForMapScheme(.roadNetworkNight)
-        mapFeaturesExample?.applyEnabledFeaturesForMapScene(mapFeatures: currentEnabledFeatures)
     }
 
     func loadSceneSatelliteScheme() {
         mapSchemesExample?.loadSceneForMapScheme(.satellite)
-        mapFeaturesExample?.applyEnabledFeaturesForMapScene(mapFeatures: currentEnabledFeatures)
     }
 
     func loadSceneTopoDayScheme() {
         mapSchemesExample?.loadSceneForMapScheme(.topoDay)
-        mapFeaturesExample?.applyEnabledFeaturesForMapScene(mapFeatures: currentEnabledFeatures)
     }
 
     func loadSceneTopoNightScheme() {
         mapSchemesExample?.loadSceneForMapScheme(.topoNight)
-        mapFeaturesExample?.applyEnabledFeaturesForMapScene(mapFeatures: currentEnabledFeatures)
     }
 
     // Map Features

@@ -43,7 +43,7 @@ import com.here.sdk.gestures.TapListener;
 import com.here.sdk.mapdata.OCMSegmentId;
 import com.here.sdk.mapdata.SegmentData;
 import com.here.sdk.mapdata.SegmentDataLoader;
-import com.here.sdk.mapdata.MapDataLoaderException;
+import com.here.sdk.mapdata.SegmentDataLoaderException;
 import com.here.sdk.mapdata.SegmentDataLoaderOptions;
 import com.here.sdk.mapdata.SegmentSpanData;
 import com.here.sdk.mapview.LineCap;
@@ -275,7 +275,7 @@ public class RoutingWithAvoidanceOptionExample {
                     Log.d(TAG, "Average expected speed: " + span.getPositiveDirectionBaseSpeedInMetersPerSecond());
                 }
             }
-        } catch (MapDataLoaderException e) {
+        } catch (SegmentDataLoaderException e) {
             throw new RuntimeException(e);
         }
     }

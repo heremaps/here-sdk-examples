@@ -513,13 +513,8 @@ class NavigationEventHandler {
 
     // Notifies on road shields as they appear along the road.
     _visualNavigator.roadSignWarningListener = RoadSignWarningListener((RoadSignWarning roadSignWarning) {
-      RoadSignType roadSignType = roadSignWarning.type;
-      if (roadSignWarning.distanceType == DistanceType.ahead) {
-        print("A RoadSignWarning of road sign type: " + roadSignType.name
-            + " ahead in (m): " + roadSignWarning.distanceToRoadSignInMeters.toString());
-      } else if (roadSignWarning.distanceType == DistanceType.passed) {
-        print("A RoadSignWarning of road sign type: " + roadSignType.name + " just passed.");
-      }
+      print("Road sign distance (m): ${roadSignWarning.distanceToRoadSignInMeters}");
+      print("Road sign type: ${roadSignWarning.type.name}");
 
       if (roadSignWarning.signValue != null) {
         // Optional text as it is printed on the local road sign.

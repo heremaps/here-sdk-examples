@@ -33,22 +33,18 @@ struct ContentView: View {
              WrappedMapView(mapView: $mapView)
                  .edgesIgnoringSafeArea(.all)
              
-             VStack {
-                 HStack {
-                     CustomButton(title: "Start simulation") {
-                         navigationCustomExample?.startButtonClicked()
-                     }
-                     CustomButton(title: "Stop simulation") {
-                         navigationCustomExample?.stopButtonClicked()
-                     }
+             HStack {
+                 CustomButton(title: "Start") {
+                     navigationCustomExample?.startButtonClicked()
                  }
-                 HStack {
-                     CustomButton(title: "Toggle indicator style") {
-                         navigationCustomExample?.toggleStyleButtonClicked()
-                     }
-                     CustomButton(title: "Toggle halo color") {
-                         navigationCustomExample?.togglehaloColorButtonClicked()
-                     }
+                 CustomButton(title: "Stop") {
+                     navigationCustomExample?.stopButtonClicked()
+                 }
+                 CustomButton(title: "Toggle") {
+                     navigationCustomExample?.toggleButtonClicked()
+                 }
+                 CustomButton(title: "Color") {
+                     navigationCustomExample?.colorButtonClicked()
                  }
              }
          }

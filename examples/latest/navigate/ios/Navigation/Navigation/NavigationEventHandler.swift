@@ -668,12 +668,8 @@ class NavigationEventHandler : NavigableLocationDelegate,
     // Conform to the RoadShieldsWarningDelegate.
     // Notifies on road shields as they appear along the road.
     func onRoadSignWarningUpdated(_ roadSignWarning: RoadSignWarning) {
-        let roadSignType: RoadSignType = roadSignWarning.type
-        if (roadSignWarning.distanceType == DistanceType.ahead) {
-            print("A RoadSignWarning of road sign type: \(roadSignType) ahead in (m): \(roadSignWarning.distanceToRoadSignInMeters)")
-        } else if (roadSignWarning.distanceType == DistanceType.passed) {
-            print("A RoadSignWarning of road sign type: \(roadSignType) just passed.")
-        }
+        print("Road sign distance (m): \(roadSignWarning.distanceToRoadSignInMeters)")
+        print("Road sign type: \(roadSignWarning.type.rawValue)")
 
         if let signValue = roadSignWarning.signValue {
             // Optional text as it is printed on the local road sign.

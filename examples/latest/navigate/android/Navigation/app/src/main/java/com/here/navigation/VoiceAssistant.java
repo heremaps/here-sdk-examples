@@ -37,26 +37,20 @@ public class VoiceAssistant {
     private String utteranceId;
     private int messageId;
 
-    public interface VoiceAssistantListener {
-        void onInitialized();
-    }
-
-    public VoiceAssistant(Context context, VoiceAssistantListener voiceAssistantListener) {
+    public VoiceAssistant(Context context) {
         textToSpeech = new TextToSpeech(context.getApplicationContext(), status -> {
-            if (status != TextToSpeech.SUCCESS) {
+            if (status == TextToSpeech.ERROR) {
                 Log.d(TAG, ("ERROR: Initialization of Android's TextToSpeech failed."));
-                return;
             }
-            voiceAssistantListener.onInitialized();
         });
     }
 
     public boolean isLanguageAvailable(Locale locale) {
-        return textToSpeech.isLanguageAvailable(locale) >= LANG_AVAILABLE;
+        return textToSpeech.isLanguageAvailable(locale) == LANG_AVAILABLE;
     }
 
     public boolean setLanguage(Locale locale) {
-        boolean isLanguageSet = textToSpeech.setLanguage(locale) >= LANG_AVAILABLE;
+        boolean isLanguageSet = textToSpeech.setLanguage(locale) == LANG_AVAILABLE;
         return isLanguageSet;
     }
 
