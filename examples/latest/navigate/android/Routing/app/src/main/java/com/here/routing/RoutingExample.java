@@ -386,6 +386,14 @@ public class RoutingExample {
         // This is needed when e.g. requesting TrafficOnRoute data.
         carOptions.routeOptions.enableRouteHandle = true;
 
+        // Enable usage of HOV and HOT lanes.
+        // Note: These lanes will only be used if they are available in the selected country.
+        carOptions.allowOptions.allowHov = true;
+        carOptions.allowOptions.allowHot = true;
+
+        // When occupantsNumber is greater than 1, it enables the vehicle to use HOV/HOT lanes.
+        carOptions.occupantsNumber = 4;
+
         // Disabled - Traffic optimization is completely disabled, including long-term road closures. It helps in producing stable routes.
         // Time dependent - Traffic optimization is enabled, the shape of the route will be adjusted according to the traffic situation which depends on departure time and arrival time.
         carOptions.routeOptions.trafficOptimizationMode = trafficDisabled ?

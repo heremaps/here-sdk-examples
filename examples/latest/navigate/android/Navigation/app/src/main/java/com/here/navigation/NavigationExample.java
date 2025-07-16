@@ -63,7 +63,7 @@ public class NavigationExample {
         this.messageView = messageView;
 
         // A class to receive real location events.
-        herePositioningProvider = new HEREPositioningProvider();
+        herePositioningProvider = new HEREPositioningProvider(context);
         // A class to receive simulated location events.
         herePositioningSimulator = new HEREPositioningSimulator();
         // The RoutePrefetcher downloads map data in advance into the map cache.

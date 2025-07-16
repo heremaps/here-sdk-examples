@@ -19,9 +19,11 @@
 
 package com.here.examples.positioning;
 
+import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.Location;
@@ -43,6 +45,8 @@ import java.util.List;
 
 public class PositioningExample {
 
+    private final Context context;
+
     private static final String TAG = PositioningExample.class.getSimpleName();
 
     private static final int CAMERA_DISTANCE_IN_METERS = 200;
@@ -57,12 +61,32 @@ public class PositioningExample {
         updateMyLocationOnMap(location);
     };
 
+    public PositioningExample(Context context) {
+        this.context = context;
+    }
+
     private final LocationStatusListener locationStatusListener = new LocationStatusListener() {
         @Override
         public void onStatusChanged(@NonNull LocationEngineStatus locationEngineStatus) {
-            if(locationEngineStatus == LocationEngineStatus.ENGINE_STOPPED) {
-                locationEngine.removeLocationListener(locationListener);
-                locationEngine.removeLocationStatusListener(locationStatusListener);
+            switch (locationEngineStatus) {
+                case ENGINE_STARTED:
+                    locationEngine.addLocationListener(locationListener);
+                    locationEngine.addLocationStatusListener(locationStatusListener);
+                    break;
+                case ENGINE_STOPPED:
+                    locationEngine.removeLocationListener(locationListener);
+                    locationEngine.removeLocationStatusListener(locationStatusListener);
+                    break;
+                case LOCATION_SERVICES_DISABLED:
+                    new AlertDialog.Builder(context)
+                            .setTitle("Enable Location Services")
+                            .setMessage("The app may not function properly because Location Services are disabled. Please enable Location Services.")
+                            .setPositiveButton("OK", null)
+                            .setCancelable(false)
+                            .show();
+                    break;
+                default:
+                    Log.d(TAG, "startLocating: start() failed: " + locationEngineStatus.name());
             }
         }
 

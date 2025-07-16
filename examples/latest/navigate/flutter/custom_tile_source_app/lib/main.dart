@@ -65,7 +65,7 @@ class _MyAppState extends State<MyApp> {
   CustomLineTileSourceExample? _customLineTileSourceExample;
   CustomRasterTileSourceExample? _customRasterTileSourceExample;
   CustomPolygonTileSourceExample? _customPolygonTileSourceExample;
-  late final AppLifecycleListener _listener;
+  late final AppLifecycleListener _appLifecycleListener;
   bool _isPointTileChecked = true;
   bool _isLineTileChecked = false;
   bool _isRasterTileChecked = false;
@@ -167,7 +167,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    _listener = AppLifecycleListener(
+    _appLifecycleListener = AppLifecycleListener(
       onDetach: () =>
           // Sometimes Flutter may not reliably call dispose(),
           // therefore it is recommended to dispose the HERE SDK
@@ -190,7 +190,7 @@ class _MyAppState extends State<MyApp> {
     _customPolygonTileSourceExample?.onDestroy();
     await SDKNativeEngine.sharedInstance?.dispose();
     SdkContext.release();
-    _listener.dispose();
+    _appLifecycleListener.dispose();
   }
 
   Widget _customSwitch(String title, bool isChecked) {

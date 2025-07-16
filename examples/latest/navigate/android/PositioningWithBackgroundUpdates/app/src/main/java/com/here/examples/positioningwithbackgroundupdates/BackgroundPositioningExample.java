@@ -110,6 +110,20 @@ public class BackgroundPositioningExample {
                 public void onLocationUpdated(Location location) {
                     updateMyLocationOnMap(location);
                 }
+
+                @Override
+                public void onLocationServicesDisabled() {
+                    createErrorDialog(R.string.post_notification_location_services_missing, android.R.string.ok, (dialog, which) -> {
+                        dialog.dismiss();
+                    }).show();
+                }
+
+                @Override
+                public void onEngineStartFailed() {
+                    createErrorDialog(R.string.engine_start_failed, android.R.string.ok, (dialog, which) -> {
+                        dialog.dismiss();
+                    }).show();
+                }
             });
         }
         public void onServiceDisconnected(ComponentName className) {

@@ -69,7 +69,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   static const String _trackingOff = "Tracking: OFF";
   String _trackingState = "Pending ...";
   bool _isTracking = true;
-  late final AppLifecycleListener _listener;
+  late final AppLifecycleListener _appLifecycleListener;
   String _messageState = "";
 
   Future<bool> _handleBackPress() async {
@@ -215,7 +215,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    _listener = AppLifecycleListener(
+    _appLifecycleListener = AppLifecycleListener(
       onDetach: () =>
       // Sometimes Flutter may not reliably call dispose(),
       // therefore it is recommended to dispose the HERE SDK
@@ -237,7 +237,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     // Free HERE SDK resources before the application shuts down.
     await SDKNativeEngine.sharedInstance?.dispose();
     SdkContext.release();
-    _listener.dispose();
+    _appLifecycleListener.dispose();
   }
 
   @override

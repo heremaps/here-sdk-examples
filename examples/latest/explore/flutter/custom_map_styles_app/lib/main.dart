@@ -55,7 +55,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   CustomMapStyleExample? _customMapStyleExample;
-  late final AppLifecycleListener _listener;
+  late final AppLifecycleListener _appLifecycleListener;
 
   @override
   Widget build(BuildContext context) {
@@ -101,7 +101,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    _listener = AppLifecycleListener(
+    _appLifecycleListener = AppLifecycleListener(
       onDetach: () =>
       // Sometimes Flutter may not reliably call dispose(),
       // therefore it is recommended to dispose the HERE SDK
@@ -121,7 +121,7 @@ class _MyAppState extends State<MyApp> {
     // Free HERE SDK resources before the application shuts down.
     await SDKNativeEngine.sharedInstance?.dispose();
     SdkContext.release();
-    _listener.dispose();
+    _appLifecycleListener.dispose();
   }
 
   // A helper method to add a button on top of the HERE map.

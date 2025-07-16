@@ -297,7 +297,7 @@ public class VenueTapHandler {
 
         let rowCount = attributedTexts.count
         let bottomConstant: CGFloat
-        let baseHeight: CGFloat = 200
+        let baseHeight: CGFloat = 215
         let extraHeightPerRow: CGFloat = 40
         let height: CGFloat
 

@@ -175,17 +175,13 @@ class StructureSwitcherAlertController: UIViewController {
         contentView.topAnchor.constraint(equalTo: scrollView.topAnchor).isActive = true
         contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor).isActive = true
 
-        var maxWidth: CGFloat = 0
-        for name in structureNames {
-            let size = (name as NSString).size(withAttributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 17.0)])
-            maxWidth = max(maxWidth, size.width)
-        }
+        let maxWidth: CGFloat = 180
         if structureNames.count > 5 {
             scrollView.heightAnchor.constraint(equalToConstant: 300).isActive = true
             scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -250).isActive = true
         } else {
             scrollView.heightAnchor.constraint(equalToConstant: 100).isActive = true
-            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: (CGFloat)((structureNames.count * 75 * -1)-125)).isActive = true
+            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: (CGFloat)((structureNames.count * 75 * -1)-150)).isActive = true
         }
         scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -80).isActive = true
         scrollView.widthAnchor.constraint(equalToConstant: maxWidth + 40).isActive = true
@@ -196,8 +192,9 @@ class StructureSwitcherAlertController: UIViewController {
             let button = UIButton(type: .system)
             button.contentEdgeInsets = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 20)
             button.setTitle(name, for: .normal)
+            button.titleLabel?.numberOfLines = 0
+            button.titleLabel?.lineBreakMode = .byWordWrapping
             button.contentHorizontalAlignment = .left
-            button.titleLabel?.adjustsFontSizeToFitWidth = true
             button.titleLabel?.minimumScaleFactor = 0.5
             button.tag = index
             button.addTarget(self, action: #selector(optionSelected(_:)), for: .touchUpInside)

@@ -32,7 +32,8 @@
 
         <service
             android:name="com.here.examples.positioningwithbackgroundupdates.HEREBackgroundPositioningService"
-            android:exported="false"
+            android:enabled="true"
+            android:exported="true"
             android:foregroundServiceType="location"/>
 
     </application>

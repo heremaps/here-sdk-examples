@@ -22,4 +22,6 @@
     <string name="background_access_dialog_title">Enable background location</string>
     <string name="background_access_dialog_text">Please enable \'(%1$s)\' location access.</string>
     <string name="background_access_button_settings">Settings</string>
+    <string name="post_notification_location_services_missing">Location services are disabled on the device.</string>
+    <string name="engine_start_failed">Failed to start location engine. Location services might be disabled on the device.</string>
 </resources>

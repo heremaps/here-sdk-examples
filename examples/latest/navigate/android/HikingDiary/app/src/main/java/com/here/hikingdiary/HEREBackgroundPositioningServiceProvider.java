@@ -62,6 +62,20 @@ public class HEREBackgroundPositioningServiceProvider {
                 public void onLocationUpdated(Location location) {
                     locationListener.onLocationUpdated(location);
                 }
+
+                @Override
+                public void onLocationServicesDisabled() {
+                    createErrorDialog(R.string.post_notification_location_services_missing, android.R.string.ok, (dialog, which) -> {
+                        dialog.dismiss();
+                    }).show();
+                }
+
+                @Override
+                public void onEngineStartFailed() {
+                    createErrorDialog(R.string.engine_start_failed, android.R.string.ok, (dialog, which) -> {
+                        dialog.dismiss();
+                    }).show();
+                }
             });
         }
 
@@ -100,7 +114,7 @@ public class HEREBackgroundPositioningServiceProvider {
     }
 
     private Dialog createErrorDialog(int messageId, int buttonId, DialogInterface.OnClickListener clickListener) {
-        final AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         return builder.setMessage(messageId).setPositiveButton(buttonId, clickListener).create();
     }
 }
