@@ -72,14 +72,14 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   bool _mapLayerSwitch = false;
   HikingApp? hikingApp;
-  late final AppLifecycleListener _listener;
+  late final AppLifecycleListener _appLifecycleListener;
   bool _isLocationPermissionGranted = false;
   HereMapController? _hereMapController;
 
   @override
   void initState() {
     super.initState();
-    _listener = AppLifecycleListener(
+    _appLifecycleListener = AppLifecycleListener(
       onDetach: () =>
       // Sometimes Flutter may not reliably call dispose(),
       // therefore it is recommended to dispose the HERE SDK
@@ -108,7 +108,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     // Free HERE SDK resources before the application shuts down.
     await SDKNativeEngine.sharedInstance?.dispose();
     SdkContext.release();
-    _listener.dispose();
+    _appLifecycleListener.dispose();
   }
 
   // Triggers a rebuild of the widget.

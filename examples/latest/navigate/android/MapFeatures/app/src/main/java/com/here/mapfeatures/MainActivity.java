@@ -31,6 +31,7 @@ import android.widget.Button;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.engine.AuthenticationMode;
@@ -39,9 +40,11 @@ import com.here.sdk.core.engine.SDKOptions;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.mapview.MapError;
 import com.here.sdk.mapview.MapMeasure;
+import com.here.sdk.mapview.MapProjection;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
+import com.here.sdk.mapview.MapViewOptions;
 
 import java.util.Map;
 
@@ -55,6 +58,8 @@ public class MainActivity extends AppCompatActivity {
     private MapSchemesExample mapSchemesExample;
     private MapScene mapScene;
     private Button webMercatorButton;
+    private MapViewOptions mapViewOptions;
+    private ConstraintLayout constraintLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,14 +70,29 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        // Get a MapView instance from layout
-        mapViewGlobe = findViewById(R.id.map_view_globe);
-        mapViewGlobe.setVisibility(MapView.VISIBLE);
-        mapViewWebMercator = findViewById(R.id.map_view_web_mercator);
-        webMercatorButton = findViewById(R.id.web_mercator_button);
+        // Grab the root ConstraintLayout defined in activity_main.xml.
+        // We will dynamically add two MapView instances into it.
+        constraintLayout = findViewById(R.id.main);
+
+        mapViewOptions = new MapViewOptions();
+
+        // Create MapView with Globe MapProjection and add it to the root ConstraintLayout
+        mapViewOptions.projection = MapProjection.GLOBE;
+        mapViewGlobe = new MapView(this, mapViewOptions);
+        constraintLayout.addView(mapViewGlobe, 0);
+
+        // Initialize MapView using the Web Mercator projection and add it to the root layout.
+        // Keep it hidden initially; only the globe is shown on start-up.
+        // Visibility can be toggled when the user taps the "Web Mercator" button.
+        mapViewOptions.projection = MapProjection.WEB_MERCATOR;
+        mapViewWebMercator = new MapView(this, mapViewOptions);
         mapViewWebMercator.setVisibility(MapView.GONE);
+        constraintLayout.addView(mapViewWebMercator, 1);
+
         mapViewWebMercator.onCreate(savedInstanceState);
         mapViewGlobe.onCreate(savedInstanceState);
+
+        webMercatorButton = findViewById(R.id.web_mercator_button);
 
         webMercatorButton.setOnClickListener(v -> {
             changeMapProjection();

@@ -53,6 +53,7 @@ import com.here.sdk.traffic.TrafficIncidentLookupCallback;
 import com.here.sdk.traffic.TrafficIncidentLookupOptions;
 import com.here.sdk.traffic.TrafficIncidentsQueryCallback;
 import com.here.sdk.traffic.TrafficIncidentsQueryOptions;
+import com.here.sdk.traffic.TrafficLocation;
 import com.here.sdk.traffic.TrafficQueryError;
 import com.here.time.Duration;
 
@@ -204,7 +205,14 @@ public class TrafficExample {
                 if (trafficQueryError == null) {
                     Log.d(TAG, "Fetched TrafficIncident from lookup request." +
                             " Description: " + trafficIncident.getDescription().text);
-                    addTrafficIncidentsMapPolyline(trafficIncident.getLocation().polyline);
+
+                    TrafficLocation incidentLocation = trafficIncident.getLocation();
+                    addTrafficIncidentsMapPolyline(incidentLocation.polyline);
+
+                    // If the polyline contains any gaps, they are available as additionalPolylines in TrafficLocation.
+                    for (GeoPolyline additionalPolyLine : incidentLocation.additionalPolylines) {
+                        addTrafficIncidentsMapPolyline(additionalPolyLine);
+                    }
                 } else {
                     showDialog("TrafficLookupError:", trafficQueryError.toString());
                 }
@@ -273,13 +281,22 @@ public class TrafficExample {
         double nearestDistance = Double.MAX_VALUE;
         TrafficIncident nearestTrafficIncident = null;
         for (TrafficIncident trafficIncident : trafficIncidentsList) {
-            // In case lengthInMeters == 0 then the polyline consistes of two equal coordinates.
+            List<GeoPolyline> trafficIncidentPolyLines = new ArrayList<>();
+
+            // In case lengthInMeters == 0 then the polyline consists of two equal coordinates.
             // It is guaranteed that each incident has a valid polyline.
-            for (GeoCoordinates geoCoords : trafficIncident.getLocation().polyline.vertices) {
-                double currentDistance = currentGeoCoords.distanceTo(geoCoords);
-                if (currentDistance < nearestDistance) {
-                    nearestDistance = currentDistance;
-                    nearestTrafficIncident = trafficIncident;
+            trafficIncidentPolyLines.add(trafficIncident.getLocation().polyline);
+
+            // If the polyline contains any gaps, they are available as additionalPolylines in TrafficLocation.
+            trafficIncidentPolyLines.addAll(trafficIncident.getLocation().additionalPolylines);
+
+            for (GeoPolyline trafficIncidentPolyline : trafficIncidentPolyLines) {
+                for (GeoCoordinates geoCoords : trafficIncidentPolyline.vertices) {
+                    double currentDistance = currentGeoCoords.distanceTo(geoCoords);
+                    if (currentDistance < nearestDistance) {
+                        nearestDistance = currentDistance;
+                        nearestTrafficIncident = trafficIncident;
+                    }
                 }
             }
         }

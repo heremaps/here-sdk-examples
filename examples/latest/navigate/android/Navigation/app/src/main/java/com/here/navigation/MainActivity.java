@@ -22,7 +22,6 @@ package com.here.navigation;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
@@ -72,10 +71,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Keeping the screen alive is essential for a car navigation app.
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
-        if (!isLocationEnabled()) {
-            showDialog("Error", "Cannot start app. Location service and permissions are needed for this app.");
-        }
 
         Toolbar myToolbar = findViewById(R.id.toolbar);
         setSupportActionBar(myToolbar);
@@ -136,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void permissionsDenied() {
                 Log.e(TAG, "Permissions denied by user.");
-                showDialog("Error", "Cannot start app. Location service and permissions are needed for this app.");
+                showDialog("Error", "Cannot start the app. Location permissions are needed for this app.");
             }
         });
     }
@@ -231,19 +226,8 @@ public class MainActivity extends AppCompatActivity {
         new AlertDialog.Builder(this)
                 .setTitle(title)
                 .setMessage(message)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        finishAffinity();
-                    }
-                })
+                .setPositiveButton("OK", null)
                 .setCancelable(false)
                 .show();
-    }
-
-    private boolean isLocationEnabled() {
-        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
-               locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
     }
 }

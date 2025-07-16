@@ -26,6 +26,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -183,6 +184,10 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             case R.id.polyline_menu_item:
                 mapObjectsExample.showMapPolyline();
+                return true;
+            case R.id.polyline_enable_visibility:
+                Toast.makeText(this, "Enabled visibility ranges for MapPolyLine", Toast.LENGTH_SHORT).show();
+                mapObjectsExample.enableVisibilityRangesForPolyline();
                 return true;
             case R.id.clear_map_objects_menu_item:
                 mapObjectsExample.clearMapButtonClicked();

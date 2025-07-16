@@ -21,4 +21,6 @@
     <string name="dialog_msg_cannot_start_app_text">Cannot start app: Location service and permissions are needed for this app.</string>
 
     <string name="post_notifications_access_missing_text">Notifications permission is missing. Please enable it from app settings.</string>
+    <string name="post_notification_location_services_missing">Location services are disabled on the device.</string>
+    <string name="engine_start_failed">Failed to start location engine. Location services might be disabled on the device.</string>
 </resources>

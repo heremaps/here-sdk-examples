@@ -24,5 +24,7 @@ import com.here.sdk.core.Location;
 public interface BackgroundServiceListener {
     void onStateUpdate(HEREBackgroundPositioningService.State state);
     void onLocationUpdated(Location location);
+    void onLocationServicesDisabled();
+    void onEngineStartFailed();
 }
 

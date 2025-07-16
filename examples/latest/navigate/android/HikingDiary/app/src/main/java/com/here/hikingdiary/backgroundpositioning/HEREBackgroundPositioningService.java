@@ -57,6 +57,7 @@ public class HEREBackgroundPositioningService extends Service {
     private BackgroundServiceListener serviceListener;
     private State serviceState = State.STOPPED;
     private Location location;
+    private boolean didLocationEngineStarted = false;
 
     final private LocationListener locationListener = new LocationListener() {
         @Override
@@ -76,8 +77,14 @@ public class HEREBackgroundPositioningService extends Service {
                 case OK:
                 case ENGINE_STARTED:
                 case ALREADY_STARTED:
+                    didLocationEngineStarted = true;
                     break;
 
+                case LOCATION_SERVICES_DISABLED:
+                    if (serviceListener != null) {
+                        serviceListener.onLocationServicesDisabled();
+                    }
+                    break;
                 default:
                     setStateStopped();
                     break;
@@ -105,6 +112,11 @@ public class HEREBackgroundPositioningService extends Service {
 
     public void registerListener(BackgroundServiceListener listener) {
         serviceListener = listener;
+        locationEngine.addLocationStatusListener(statusListener);
+
+        if (!didLocationEngineStarted) {
+            serviceListener.onEngineStartFailed();
+        }
     }
 
     // Start foreground service.
@@ -179,7 +191,6 @@ public class HEREBackgroundPositioningService extends Service {
         try {
             locationEngine = new LocationEngine();
             locationEngine.addLocationListener(locationListener);
-            locationEngine.addLocationStatusListener(statusListener);
             // By calling confirmHEREPrivacyNoticeInclusion() you confirm that this app informs on
             // data collection, which is done for this app via PositioningTermsAndPrivacyHelper,
             // which shows a possible example for this.
@@ -189,6 +200,10 @@ public class HEREBackgroundPositioningService extends Service {
                 case ENGINE_STARTED:
                 case ALREADY_STARTED:
                 case OK:
+                    didLocationEngineStarted = true;
+                    return true;
+                case START_FAILED:
+                    didLocationEngineStarted = false;
                     return true;
                 default:
                     Log.e(TAG, "startLocating: start() failed: " + status.name());

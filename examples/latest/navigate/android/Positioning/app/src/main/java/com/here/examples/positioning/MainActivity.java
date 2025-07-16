@@ -115,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
         // Load a scene from the HERE SDK to render the map with a map scheme.
         mapView.getMapScene().loadScene(MapScheme.NORMAL_DAY, mapError -> {
             if (mapError == null) {
-                positioningExample = new PositioningExample();
+                positioningExample = new PositioningExample(this);
                 positioningExample.onMapSceneLoaded(mapView);
             } else {
                 Log.d(TAG, "Loading map failed: mapError: " + mapError.name());

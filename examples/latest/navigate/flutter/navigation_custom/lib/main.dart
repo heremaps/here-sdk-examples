@@ -65,7 +65,7 @@ class _MyAppState extends State<MyApp>
   final GeoCoordinates _routeStartGeoCoordinates =
       GeoCoordinates(52.520798, 13.409408);
   final double _distanceInMeters = 1000;
-  late final AppLifecycleListener _listener;
+  late final AppLifecycleListener _appLifecycleListener;
 
   HereMapController? _hereMapController;
 
@@ -96,7 +96,7 @@ class _MyAppState extends State<MyApp>
   @override
   void initState() {
     super.initState();
-    _listener = AppLifecycleListener(
+    _appLifecycleListener = AppLifecycleListener(
       onDetach: () =>
           // Sometimes Flutter may not reliably call dispose(),
           // therefore it is recommended to dispose the HERE SDK
@@ -116,7 +116,7 @@ class _MyAppState extends State<MyApp>
     // Free HERE SDK resources before the application shuts down.
     await SDKNativeEngine.sharedInstance?.dispose();
     SdkContext.release();
-    _listener.dispose();
+    _appLifecycleListener.dispose();
   }
 
   @override

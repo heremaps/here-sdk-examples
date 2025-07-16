@@ -80,12 +80,12 @@ class CameraKeyframeTracksApp extends StatefulWidget {
 class _CameraKeyframeTracksAppState extends State<CameraKeyframeTracksApp> {
   late CameraKeyframeTracksExample _cameraKeyframeTracksExample;
   late RouteAnimationExample _routeAnimationExample;
-  late final AppLifecycleListener _listener;
+  late final AppLifecycleListener _appLifecycleListener;
 
   @override
   void initState() {
     super.initState();
-    _listener = AppLifecycleListener(
+    _appLifecycleListener = AppLifecycleListener(
       onDetach: () =>
       // Sometimes Flutter may not reliably call dispose(),
       // therefore it is recommended to dispose the HERE SDK
@@ -105,7 +105,7 @@ class _CameraKeyframeTracksAppState extends State<CameraKeyframeTracksApp> {
     // Free HERE SDK resources before the application shuts down.
     await SDKNativeEngine.sharedInstance?.dispose();
     SdkContext.release();
-    _listener.dispose();
+    _appLifecycleListener.dispose();
   }
 
   @override

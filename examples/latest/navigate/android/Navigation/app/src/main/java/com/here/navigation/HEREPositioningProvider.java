@@ -19,10 +19,12 @@
 
 package com.here.navigation;
 
+import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 
 import com.here.sdk.core.Location;
 import com.here.sdk.core.LocationListener;
@@ -39,6 +41,8 @@ import java.util.List;
 // from various location sources available from a device and HERE services.
 public class HEREPositioningProvider {
 
+    private final Context context;
+
     private static final String LOG_TAG = HEREPositioningProvider.class.getName();
 
     private final LocationEngine locationEngine;
@@ -47,6 +51,14 @@ public class HEREPositioningProvider {
     private final LocationStatusListener locationStatusListener = new LocationStatusListener() {
         @Override
         public void onStatusChanged(@NonNull LocationEngineStatus locationEngineStatus) {
+            if (locationEngineStatus == LocationEngineStatus.LOCATION_SERVICES_DISABLED) {
+                new AlertDialog.Builder(context)
+                        .setTitle("Enable Location Services")
+                        .setMessage("The app may not function properly because Location Services are disabled. Please enable Location Services.")
+                        .setPositiveButton("OK", null)
+                        .setCancelable(false)
+                        .show();
+            }
             Log.d(LOG_TAG, "Location engine status: " + locationEngineStatus.name());
         }
 
@@ -58,7 +70,8 @@ public class HEREPositioningProvider {
         }
     };
 
-    public HEREPositioningProvider() {
+    public HEREPositioningProvider(Context context) {
+        this.context = context;
         try {
             locationEngine = new LocationEngine();
         } catch (InstantiationErrorException e) {

@@ -20,6 +20,7 @@
 package com.here.mapitems;
 
 import android.util.Log;
+import android.widget.Toast;
 
 import com.here.sdk.core.Color;
 import com.here.sdk.core.GeoCircle;
@@ -35,6 +36,7 @@ import com.here.sdk.mapview.MapCameraAnimation;
 import com.here.sdk.mapview.MapCameraAnimationFactory;
 import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapMeasureDependentRenderSize;
+import com.here.sdk.mapview.MapMeasureRange;
 import com.here.sdk.mapview.MapPolygon;
 import com.here.sdk.mapview.MapPolyline;
 import com.here.sdk.mapview.MapScene;
@@ -67,6 +69,21 @@ public class MapObjectsExample {
 
         mapPolyline = createPolyline();
         mapScene.addMapPolyline(mapPolyline);
+    }
+
+    public void enableVisibilityRangesForPolyline(){
+        ArrayList<MapMeasureRange> visibilityRanges = new ArrayList<>();
+
+        // At present, only MapMeasure.Kind.ZOOM_LEVEL is supported for visibility ranges.
+        // Other kinds will be ignored.
+        visibilityRanges.add(new MapMeasureRange(MapMeasure.Kind.ZOOM_LEVEL,1,10));
+        visibilityRanges.add(new MapMeasureRange(MapMeasure.Kind.ZOOM_LEVEL,11,22));
+
+        // Sets the visibility ranges for this map polyline based on zoom levels.
+        // Each range is half-open: [minimumZoomLevel, maximumZoomLevel],
+        // meaning the polyline is visible at minimumZoomLevel but not at maximumZoomLevel.
+        // The polyline is rendered only when the map zoom level falls within any of the defined ranges.
+        mapPolyline.setVisibilityRanges(visibilityRanges);
     }
 
     public void showMapArrow() {

@@ -14,6 +14,8 @@
               android:title="Polygon"/>
           <item android:id="@+id/circle_menu_item"
               android:title="Circle"/>
+          <item android:id="@+id/polyline_enable_visibility"
+              android:title="Enable visibility ranges"/>
           <item android:id="@+id/clear_map_objects_menu_item"
               android:title="Clear Items"/>
       </menu>

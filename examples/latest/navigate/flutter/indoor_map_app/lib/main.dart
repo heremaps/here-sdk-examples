@@ -83,7 +83,7 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   final VenueEngineState _venueEngineState = VenueEngineState();
   final GeometryInfoState _geometryInfoState = GeometryInfoState();
-  late final AppLifecycleListener _listener;
+  late final AppLifecycleListener _appLifecycleListener;
   late String _venueIdAsString = "";
   late String _selectedVenue = "Venue Id";
   List _venueList = ["Venue Id"];
@@ -117,7 +117,7 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
-    _listener = AppLifecycleListener(
+    _appLifecycleListener = AppLifecycleListener(
       onDetach: () =>
       // Sometimes Flutter may not reliably call dispose(),
       // therefore it is recommended to dispose the HERE SDK
@@ -137,7 +137,7 @@ class _MainPageState extends State<MainPage> {
     // Free HERE SDK resources before the application shuts down.
     await SDKNativeEngine.sharedInstance?.dispose();
     SdkContext.release();
-    _listener.dispose();
+    _appLifecycleListener.dispose();
   }
 
   @override
