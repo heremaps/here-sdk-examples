@@ -143,6 +143,15 @@ class RoutingExample {
     carOptions.allowOptions.allowHov = true;
     carOptions.allowOptions.allowHot = true;
 
+    // In some cities (e.g., Bogotá, Mexico City, Jakarta), the last digit of the
+    // license plate is used intentionally to control traffic in low-emission zones.
+    // When you calculate a route, the HERE SDK may avoid roads or areas where entry
+    // would be restricted based on your individual license plate's last character,
+    // for example, on certain week days.
+    // Make sure to update this value to the actual last character of your license
+    // attached to your vehicle!
+    carOptions.lastCharacterOfLicensePlate = "7";
+
     // When occupantsNumber is greater than 1, it enables the vehicle to use HOV/HOT lanes.
     carOptions.occupantsNumber = 4;
 
@@ -154,7 +163,7 @@ class RoutingExample {
 
     _routingEngine.calculateCarRoute(waypoints, carOptions,
         (RoutingError? routingError, List<here.Route>? routeList) async {
-      if (routingError == null && _currentRoute != null) {
+      if (routingError == null) {
         // When error is null, then the list guaranteed to be not null.
         _currentRoute = routeList!.first;
         _showRouteDetails(_currentRoute!);
@@ -236,6 +245,7 @@ class RoutingExample {
   }
 
   void _clearRoute() {
+    _currentRoute = null;
     for (var mapPolyline in _mapPolylines) {
       _hereMapController.mapScene.removeMapPolyline(mapPolyline);
     }

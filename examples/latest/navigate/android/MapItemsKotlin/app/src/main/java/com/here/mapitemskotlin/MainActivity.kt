@@ -20,6 +20,7 @@ package com.here.mapitemskotlin
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -151,6 +152,14 @@ class MainActivity : ComponentActivity() {
                     "Arrow" -> mapObjectsExample?.showMapArrow()
                     "Polygon" -> mapObjectsExample?.showMapPolygon()
                     "Circle" -> mapObjectsExample?.showMapCircle()
+                    "Enable visibility ranges" -> {
+                        Toast.makeText(
+                            this,
+                            "Enabled visibility ranges for MapPolyLine",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        mapObjectsExample?.enableVisibilityRangesForPolyline()
+                    }
                     "Clear Items" -> mapObjectsExample?.clearMapButtonClicked()
                 }
             },

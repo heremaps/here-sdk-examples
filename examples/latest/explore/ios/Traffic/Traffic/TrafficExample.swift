@@ -165,7 +165,13 @@ class TrafficExample : TapDelegate {
         if trafficQueryError == nil {
             print("Fetched TrafficIncident from lookup request." +
                     " Description: " + trafficIncident!.description.text)
-            addTrafficIncidentsMapPolyline(geoPolyline: trafficIncident!.location.polyline)
+            let incidentLocation = trafficIncident!.location
+            addTrafficIncidentsMapPolyline(geoPolyline: incidentLocation.polyline)
+
+            // If the polyline contains any gaps, they are available as additionalPolylines.
+            for additionalPolyline in incidentLocation.additionalPolylines {
+                addTrafficIncidentsMapPolyline(geoPolyline: additionalPolyline)
+            }
         } else {
             showDialog(title: "TrafficLookupError:", message: trafficQueryError.debugDescription)
         }
@@ -228,18 +234,27 @@ class TrafficExample : TapDelegate {
         if trafficIncidentsList.count == 0 {
             return nil
         }
-
+        
         // By default, traffic incidents results are not sorted by distance.
         var nearestDistance: Double = Double.infinity
         var nearestTrafficIncident: TrafficIncident!
         for trafficIncident in trafficIncidentsList {
-            // In case lengthInMeters == 0 then the polyline consistes of two equal coordinates.
+            var trafficIncidentPolylines: [GeoPolyline] = []
+
+            // In case lengthInMeters == 0 then the polyline consists of two equal coordinates.
             // It is guaranteed that each incident has a valid polyline.
-            for geoCoords in trafficIncident.location.polyline.vertices {
-                let currentDistance = currentGeoCoords.distance(to: geoCoords)
-                if currentDistance < nearestDistance {
-                    nearestDistance = currentDistance
-                    nearestTrafficIncident = trafficIncident
+            trafficIncidentPolylines.append(trafficIncident.location.polyline)
+
+            // If the polyline contains any gaps, they are available as additionalPolylines in TrafficLocation.
+            trafficIncidentPolylines.append(contentsOf: trafficIncident.location.additionalPolylines)
+
+            for polyline in trafficIncidentPolylines {
+                for geoCoords in polyline.vertices {
+                    let currentDistance = currentGeoCoords.distance(to: geoCoords)
+                    if currentDistance < nearestDistance {
+                        nearestDistance = currentDistance
+                        nearestTrafficIncident = trafficIncident
+                    }
                 }
             }
         }

@@ -202,8 +202,8 @@ class RoutingWithAvoidanceOptionsExample : LongPressDelegate, TapDelegate {
                     print("Average expected speed: \(String(describing: span.positiveDirectionBaseSpeedInMetersPerSecond))")
                 }
             }
-        } catch let SegmentDataLoaderError {
-            print("Error loading segment data: \(SegmentDataLoaderError)")
+        } catch let MapDataLoaderError {
+            print("Error loading segment data: \(MapDataLoaderError)")
         }
     }
     

@@ -137,6 +137,11 @@ class _MyAppState extends State<MyApp> {
     _mapObjectsExample?.showMapPolyline();
   }
 
+  void _enableVisibilityRangesForMapPolyLine(){
+    _showDialog("Visibility Range","Enabled visibility ranges for MapPolyline.");
+    _mapObjectsExample?.enableVisibilityRangesForPolyline();
+  }
+
   void _mapObjectPolygonButtonClicked() {
     _mapObjectsExample?.showMapPolygon();
   }
@@ -241,6 +246,7 @@ class _MyAppState extends State<MyApp> {
       MenuSectionItem("Polygon", _mapObjectPolygonButtonClicked),
       MenuSectionItem("Arrow", _mapObjectArrowButtonClicked),
       MenuSectionItem("Circle", _mapObjectCircleButtonClicked),
+      MenuSectionItem("Enable visibility ranges", _enableVisibilityRangesForMapPolyLine),
     ];
 
     return MenuSectionExpansionTile("MapObject", menuItems);
