@@ -1,5 +1,7 @@
 # HERE SDK 4.x (Lite, Explore & Navigate Edition) - Examples for Android, iOS and Flutter
 
+Testing
+
 ![License](https://img.shields.io/badge/license-Apache%202-blue)
 ![Platform](https://img.shields.io/badge/platform-Android-green.svg)
 ![Language](https://img.shields.io/badge/language-Java%208-orange.svg)
