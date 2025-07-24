@@ -50,6 +50,21 @@ class MapObjectsExample {
         mapPolyline = createMapPolyline()
         mapScene.addMapPolyline(mapPolyline!)
     }
+    
+    func onEnableVisibilityRangesForPolyline() {
+        var visibilityRanges: [MapMeasureRange] = []
+
+        // At present, only MapMeasure.Kind.zoomLevel is supported for visibility ranges.
+        // Other kinds will be ignored.
+        visibilityRanges.append(MapMeasureRange(kind: .zoomLevel, minimumValue: 1, maximumValue: 10))
+        visibilityRanges.append(MapMeasureRange(kind: .zoomLevel, minimumValue: 11, maximumValue: 22))
+
+        // Sets the visibility ranges for this map polyline based on zoom levels.
+        // Each range is half-open: [minimumZoomLevel, maximumZoomLevel),
+        // meaning the polyline is visible at minimumZoomLevel but not at maximumZoomLevel.
+        // The polyline is rendered only when the map zoom level falls within any of the defined ranges.
+        mapPolyline?.visibilityRanges = visibilityRanges
+    }
 
     func onMapPolygonClicked() {
         clearMap()

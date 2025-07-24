@@ -230,6 +230,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _shadowsButtonClicked() {
+    _showDialog("Building Shadows","Enabled building shadows for non-satellite-based schemes.");
     _mapFeaturesExample?.enableShadows();
   }
 

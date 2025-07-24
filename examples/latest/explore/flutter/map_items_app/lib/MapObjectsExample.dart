@@ -50,6 +50,19 @@ class MapObjectsExample {
     _mapScene.addMapPolyline(_mapPolyline!);
   }
 
+  void enableVisibilityRangesForPolyline() {
+    final visibilityRanges = <MapMeasureRange>[
+      MapMeasureRange(MapMeasureKind.zoomLevel, 1, 10),
+      MapMeasureRange(MapMeasureKind.zoomLevel, 11, 22),
+    ];
+
+    // Sets the visibility ranges for this map polyline based on zoom levels.
+    // Each range is half-open: [minimumZoomLevel, maximumZoomLevel),
+    // meaning the polyline is visible at minimumZoomLevel but not at maximumZoomLevel.
+    // The polyline is rendered only when the map zoom level falls within any of the defined ranges.
+    _mapPolyline?.visibilityRanges = visibilityRanges;
+  }
+
   void showMapArrow() {
     clearMap();
     // Move map to expected location.

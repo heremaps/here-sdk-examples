@@ -106,7 +106,13 @@ class MapFeaturesExample {
     }
 
     func enableShadows() {
+        // MapFeatures.shadows is only available for non-satellite-based map schemes.
         mapFeatures[MapFeatures.shadows] = MapFeatureModes.shadowsAll
+        
+        // Sets the desired shadow quality for all instances of MapView.
+        // If no quality is configured, the feature has no effect and shadows are not rendered.
+        // Enabling shadows impacts performance and should be used only on sufficiently capable devices.
+        MapView.shadowQuality = ShadowQuality.veryHigh
         mapScene.enableFeatures(mapFeatures)
     }
 

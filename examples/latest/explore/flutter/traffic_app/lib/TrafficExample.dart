@@ -158,7 +158,14 @@ class TrafficExample {
     _trafficEngine.lookupIncident(originalId, trafficIncidentsLookupOptions, (trafficQueryError, trafficIncident) {
       if (trafficQueryError == null) {
         print("Fetched TrafficIncident from lookup request." + " Description: " + trafficIncident!.description.text);
-        _addTrafficIncidentsMapPolyline(trafficIncident.location.polyline);
+
+        TrafficLocation incidentLocation = trafficIncident.location;
+        _addTrafficIncidentsMapPolyline(incidentLocation.polyline);
+
+        // If the polyline contains any gaps, they are available as additionalPolylines in TrafficLocation.
+        for (GeoPolyline additionalPolyLine in incidentLocation.additionalPolylines) {
+          _addTrafficIncidentsMapPolyline(additionalPolyLine);
+        }
       } else {
         _showDialog("TrafficLookupError:", trafficQueryError.toString());
       }
@@ -222,17 +229,27 @@ class TrafficExample {
       return null;
     }
 
-    // By default, traffic incidents results are not sorted by distance.
+    // By default, traffic incident results are not sorted by distance.
     double nearestDistance = double.maxFinite;
     TrafficIncident? nearestTrafficIncident;
-    for (TrafficIncident trafficIncident in trafficIncidentsList) {
+
+    for (final trafficIncident in trafficIncidentsList) {
+      final trafficIncidentPolylines = <GeoPolyline>[];
+
       // In case lengthInMeters == 0 then the polyline consists of two equal coordinates.
       // It is guaranteed that each incident has a valid polyline.
-      for (GeoCoordinates geoCoordinates in trafficIncident.location.polyline.vertices) {
-        double currentDistance = currentGeoCoordinates.distanceTo(geoCoordinates);
-        if (currentDistance < nearestDistance) {
-          nearestDistance = currentDistance;
-          nearestTrafficIncident = trafficIncident;
+      trafficIncidentPolylines.add(trafficIncident.location.polyline);
+
+      // If the polyline contains any gaps, they are available as additionalPolylines in TrafficLocation.
+      trafficIncidentPolylines.addAll(trafficIncident.location.additionalPolylines);
+
+      for (final polyline in trafficIncidentPolylines) {
+        for (final geoCoords in polyline.vertices) {
+          final currentDistance = currentGeoCoordinates.distanceTo(geoCoords);
+          if (currentDistance < nearestDistance) {
+            nearestDistance = currentDistance;
+            nearestTrafficIncident = trafficIncident;
+          }
         }
       }
     }

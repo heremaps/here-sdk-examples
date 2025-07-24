@@ -27,6 +27,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -336,6 +337,8 @@ public class MainActivity extends AppCompatActivity {
                 mapFeaturesExample.enableSafetyCameras();
                 return true;
             case R.id.shadows_menu_item:
+                Toast.makeText(this, "Enabled building shadows for non-satellite-based schemes.",
+                        Toast.LENGTH_SHORT).show();
                 mapFeaturesExample.enableShadows();
                 return true;
             case R.id.terrain_hillshade_menu_item:

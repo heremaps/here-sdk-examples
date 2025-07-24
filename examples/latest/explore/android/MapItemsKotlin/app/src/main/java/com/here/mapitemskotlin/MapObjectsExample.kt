@@ -18,29 +18,27 @@
  */
 package com.here.mapitemskotlin
 
-import android.util.Log;
-
-import com.here.sdk.core.Color;
-import com.here.sdk.core.GeoCircle;
-import com.here.sdk.core.GeoCoordinates;
-import com.here.sdk.core.GeoCoordinatesUpdate;
-import com.here.sdk.core.GeoPolygon;
-import com.here.sdk.core.GeoPolyline;
-import com.here.sdk.core.errors.InstantiationErrorException;
-import com.here.sdk.mapview.LineCap;
-import com.here.sdk.mapview.MapArrow;
-import com.here.sdk.mapview.MapCamera;
-import com.here.sdk.mapview.MapCameraAnimationFactory;
-import com.here.sdk.mapview.MapMeasure;
-import com.here.sdk.mapview.MapMeasureDependentRenderSize;
-import com.here.sdk.mapview.MapPolygon;
-import com.here.sdk.mapview.MapPolyline;
-import com.here.sdk.mapview.MapScene;
-import com.here.sdk.mapview.MapView;
-import com.here.sdk.mapview.RenderSize;
-import com.here.time.Duration;
-
-import java.util.ArrayList;
+import android.util.Log
+import com.here.sdk.core.Color
+import com.here.sdk.core.GeoCircle
+import com.here.sdk.core.GeoCoordinates
+import com.here.sdk.core.GeoCoordinatesUpdate
+import com.here.sdk.core.GeoPolygon
+import com.here.sdk.core.GeoPolyline
+import com.here.sdk.core.errors.InstantiationErrorException
+import com.here.sdk.mapview.LineCap
+import com.here.sdk.mapview.MapArrow
+import com.here.sdk.mapview.MapCamera
+import com.here.sdk.mapview.MapCameraAnimationFactory
+import com.here.sdk.mapview.MapMeasure
+import com.here.sdk.mapview.MapMeasureDependentRenderSize
+import com.here.sdk.mapview.MapMeasureRange
+import com.here.sdk.mapview.MapPolygon
+import com.here.sdk.mapview.MapPolyline
+import com.here.sdk.mapview.MapScene
+import com.here.sdk.mapview.MapView
+import com.here.sdk.mapview.RenderSize
+import com.here.time.Duration
 
 class MapObjectsExample(private val mapView: MapView) {
 
@@ -64,6 +62,21 @@ class MapObjectsExample(private val mapView: MapView) {
 
         mapPolyline = createPolyline()
         mapScene!!.addMapPolyline(mapPolyline!!)
+    }
+
+    fun enableVisibilityRangesForPolyline() {
+        val visibilityRanges = ArrayList<MapMeasureRange>()
+
+        // At present, only MapMeasure.Kind.ZOOM_LEVEL is supported for visibility ranges.
+        // Other kinds will be ignored.
+        visibilityRanges.add(MapMeasureRange(MapMeasure.Kind.ZOOM_LEVEL, 1.0, 10.0))
+        visibilityRanges.add(MapMeasureRange(MapMeasure.Kind.ZOOM_LEVEL, 11.0, 22.0))
+
+        // Sets the visibility ranges for this map polyline based on zoom levels.
+        // Each range is half-open: [minimumZoomLevel, maximumZoomLevel],
+        // meaning the polyline is visible at minimumZoomLevel but not at maximumZoomLevel.
+        // The polyline is rendered only when the map zoom level falls within any of the defined ranges.
+        mapPolyline?.visibilityRanges = visibilityRanges
     }
 
     fun showMapArrow() {

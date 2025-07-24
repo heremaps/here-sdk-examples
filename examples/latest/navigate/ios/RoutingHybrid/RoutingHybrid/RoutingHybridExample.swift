@@ -83,9 +83,9 @@ class RoutingHybridExample {
         mapView.mapScene.enableFeatures([MapFeatures.trafficFlow : MapFeatureModes.defaultMode]);
         mapView.mapScene.enableFeatures([MapFeatures.trafficIncidents : MapFeatureModes.defaultMode]);
     }
+    
     // Load segment data and fetch information from the map around the starting point of the requested route.
     func loadAndProcessSegmentData() {
-        
         // The necessary SegmentDataLoaderOptions need to be turned on in order to find the requested information. It is recommended to turn on only the fields that you are interested in.
         var segmentDataLoaderOptions = SegmentDataLoaderOptions()
         segmentDataLoaderOptions.loadBaseSpeeds = true
@@ -108,29 +108,27 @@ class RoutingHybridExample {
             }
 
             for segmentId in segmentIds {
-                    let segmentData = try segmentDataLoader.loadData(segment: segmentId, options: segmentDataLoaderOptions)
+                let segmentData = try segmentDataLoader.loadData(segment: segmentId, options: segmentDataLoaderOptions)
                     
-                    if (segmentData.spans.isEmpty) {
-                        print("SegmentSpanDataList is empty")
-                        continue
-                    }
+                if (segmentData.spans.isEmpty) {
+                    print("SegmentSpanDataList is empty")
+                    continue
+                }
 
-                    let segmentSpanDataList = segmentData.spans
+                let segmentSpanDataList = segmentData.spans
                     
-                    for span in segmentSpanDataList {
-                        print("Physical attributes of \(span) span.")
-                        
-                        print("Private roads: \(String(describing: span.physicalAttributes?.isPrivate))")
-                        print("Dirt roads: \(String(describing: span.physicalAttributes?.isDirtRoad))")
-                        print("Bridge: \(String(describing: span.physicalAttributes?.isBridge))")
-                        print("Tollway: \(String(describing: span.roadUsages?.isTollway))")
-                        print("Average expected speed: \(String(describing: span.positiveDirectionBaseSpeedInMetersPerSecond))")
-                    }
+                for span in segmentSpanDataList {
+                    print("Physical attributes of \(span) span.")
+                    print("Private roads: \(String(describing: span.physicalAttributes?.isPrivate))")
+                    print("Dirt roads: \(String(describing: span.physicalAttributes?.isDirtRoad))")
+                    print("Bridge: \(String(describing: span.physicalAttributes?.isBridge))")
+                    print("Tollway: \(String(describing: span.roadUsages?.isTollway))")
+                    print("Average expected speed: \(String(describing: span.positiveDirectionBaseSpeedInMetersPerSecond))")
+                }
             }
-        } catch let SegmentDataLoaderError {
-            print("Error loading segment data: \(SegmentDataLoaderError)")
+        } catch let MapDataLoaderError {
+            print("Error loading segment data: \(MapDataLoaderError)")
         }
-        
     }
     
     // Calculates a route with two waypoints (start / destination).

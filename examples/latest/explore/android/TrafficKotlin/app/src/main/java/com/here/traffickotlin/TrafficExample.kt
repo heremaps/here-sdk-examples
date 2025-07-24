@@ -187,7 +187,14 @@ class TrafficExample(private val context: Context, private val mapView: MapView)
                     TAG, "Fetched TrafficIncident from lookup request." +
                             " Description: " + trafficIncident!!.description.text
                 )
-                addTrafficIncidentsMapPolyline(trafficIncident!!.location.polyline)
+
+                val incidentLocation = trafficIncident.location
+                addTrafficIncidentsMapPolyline(incidentLocation.polyline)
+
+                // If the polyline contains any gaps, they are available as additionalPolylines in TrafficLocation.
+                for (additionalPolyLine in incidentLocation.additionalPolylines) {
+                    addTrafficIncidentsMapPolyline(additionalPolyLine!!)
+                }
             } else {
                 showDialog("TrafficLookupError:", trafficQueryError.toString())
             }
@@ -257,13 +264,22 @@ class TrafficExample(private val context: Context, private val mapView: MapView)
         var nearestDistance = Double.MAX_VALUE
         var nearestTrafficIncident: TrafficIncident? = null
         for (trafficIncident in trafficIncidentsList) {
-            // In case lengthInMeters == 0 then the polyline consistes of two equal coordinates.
+            val trafficIncidentPolyLines: MutableList<GeoPolyline> = java.util.ArrayList()
+
+            // In case lengthInMeters == 0 then the polyline consists of two equal coordinates.
             // It is guaranteed that each incident has a valid polyline.
-            for (geoCoords in trafficIncident.location.polyline.vertices) {
-                val currentDistance = currentGeoCoords.distanceTo(geoCoords)
-                if (currentDistance < nearestDistance) {
-                    nearestDistance = currentDistance
-                    nearestTrafficIncident = trafficIncident
+            trafficIncidentPolyLines.add(trafficIncident.location.polyline)
+
+            // If the polyline contains any gaps, they are available as additionalPolylines in TrafficLocation.
+            trafficIncidentPolyLines.addAll(trafficIncident.location.additionalPolylines)
+
+            for (trafficIncidentPolyline in trafficIncidentPolyLines) {
+                for (geoCoords in trafficIncidentPolyline.vertices) {
+                    val currentDistance = currentGeoCoords.distanceTo(geoCoords)
+                    if (currentDistance < nearestDistance) {
+                        nearestDistance = currentDistance
+                        nearestTrafficIncident = trafficIncident
+                    }
                 }
             }
         }

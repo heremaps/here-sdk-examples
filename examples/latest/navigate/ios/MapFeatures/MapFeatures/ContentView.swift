@@ -260,6 +260,7 @@ struct ContentView: View {
     }
 
     func shadowsButtonClicked() {
+        print("Enabled building shadows for non-satellite-based schemes.")
         mapFeaturesExample?.enableShadows()
     }
 

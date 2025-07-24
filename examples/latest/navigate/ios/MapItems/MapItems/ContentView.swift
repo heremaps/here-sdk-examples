@@ -96,7 +96,8 @@ struct ContentView: View {
             MenuItem(title: "Polyline", onSelect: onMapItemPolylineClicked),
             MenuItem(title: "Polygon", onSelect: onMapItemPolygonClicked),
             MenuItem(title: "Circle", onSelect: onMapItemCircleClicked),
-            MenuItem(title: "Arrow", onSelect: onMapItemArrowClicked)
+            MenuItem(title: "Arrow", onSelect: onMapItemArrowClicked),
+            MenuItem(title: "Enable visibility ranges", onSelect: onEnabledVisibilityRangeClicked)
         ])
     }
 
@@ -155,6 +156,10 @@ struct ContentView: View {
 
     private func onMapItemPolylineClicked() {
         mapObjectsExample?.onMapPolylineClicked()
+    }
+    
+    private func onEnabledVisibilityRangeClicked() {
+        mapObjectsExample?.onEnableVisibilityRangesForPolyline()
     }
 
     private func onMapItemPolygonClicked() {
