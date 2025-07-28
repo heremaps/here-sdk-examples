@@ -61,6 +61,6 @@ Above you can find the example app links for the _latest_ HERE SDK version. If y
 Thank you for using the HERE SDK.
 
 ## License
-Copyright (C) 2019-2024 HERE Europe B.V.
+Copyright (C) 2019-2025 HERE Europe B.V.
 
 See the [LICENSE](LICENSE) file in the root of this repository for license details.
