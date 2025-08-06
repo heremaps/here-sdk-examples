@@ -32,7 +32,7 @@ class NavigationExample : DynamicRoutingDelegate, MessageDelegate {
     private let herePositioningProvider: HEREPositioningProvider
     private let herePositioningSimulator: HEREPositioningSimulator
     private let routePrefetcher: RoutePrefetcher
-    private let navigationEventHandler: NavigationEventHandler
+    private let navigationHandler: NavigationHandler
     private let routeCalculator: RouteCalculator
     var messageDelegate: MessageDelegate?
 
@@ -65,9 +65,9 @@ class NavigationExample : DynamicRoutingDelegate, MessageDelegate {
 
         // A class to handle various kinds of guidance events.
 
-        navigationEventHandler = NavigationEventHandler(
+        navigationHandler = NavigationHandler(
             visualNavigator, dynamicRoutingEngine, routeCalculator)
-        navigationEventHandler.messageDelegate = self
+        navigationHandler.messageDelegate = self
     }
 
     func startLocationProvider() {

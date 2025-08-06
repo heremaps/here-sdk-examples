@@ -50,6 +50,44 @@ class MapObjectsExample {
     _mapScene.addMapPolyline(_mapPolyline!);
   }
 
+  void showGradientPolyline() {
+    clearMap();
+    // Move map to expected location.
+    _flyTo(_berlinGeoCoordinates);
+
+    MapPolyline mapPolyline = _createPolyline()!;
+
+    // Configure the progress color. Currently, cyan color is being used.
+    Color progressColor = Color.fromARGB(128, 0, 255, 255);
+    mapPolyline.progressColor = progressColor;
+
+    // Set the progress value, ranging from 0 to 1. For example, 0.40 represents 40% progress.
+    mapPolyline.progress = 0.40;
+
+    // Defines the gradient length using MapMeasureDependentRenderSize.
+    // Note:
+    // - Only RenderSize.Unit.PIXELS is supported for gradientLength.
+    // - Only MapMeasure.Kind.ZOOM_LEVEL is supported.
+    // Any unsupported parameters will be ignored.
+    MapMeasureDependentRenderSize gradientLength;
+    try {
+      double widthInPixels = 20.0;
+      gradientLength = MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels);
+    } on MapMeasureDependentRenderSizeInstantiationException catch (e) {
+      print("MapMeasureDependentRenderSize Exception:" + e.error.name);
+      return;
+    }
+
+    // Set the maximum gradient length between 'lineColor' and 'progressColor' in zoom-level-dependent pixels.
+    // To maintain a constant gradient length, use MapMeasureDependentRenderSize with a single value.
+    // To vary the gradient length based on zoom level, use multiple values.
+    // The default is a constant gradient length of zero pixels.
+    // Note: The gradient will always fit within the polyline.
+    mapPolyline.progressGradientLength = gradientLength;
+    _mapScene.addMapPolyline(mapPolyline);
+    _mapPolyline = mapPolyline;
+  }
+
   void enableVisibilityRangesForPolyline() {
     final visibilityRanges = <MapMeasureRange>[
       MapMeasureRange(MapMeasureKind.zoomLevel, 1, 10),

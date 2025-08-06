@@ -94,6 +94,7 @@ struct ContentView: View {
     private func buildMapObjectMenuSection() -> MenuSection {
         return MenuSection(title: "Map Object", items: [
             MenuItem(title: "Polyline", onSelect: onMapItemPolylineClicked),
+            MenuItem(title: "Gradient Polyline", onSelect: onGradientMapPolylineClicked),
             MenuItem(title: "Polygon", onSelect: onMapItemPolygonClicked),
             MenuItem(title: "Circle", onSelect: onMapItemCircleClicked),
             MenuItem(title: "Arrow", onSelect: onMapItemArrowClicked),
@@ -156,6 +157,10 @@ struct ContentView: View {
 
     private func onMapItemPolylineClicked() {
         mapObjectsExample?.onMapPolylineClicked()
+    }
+    
+    private func onGradientMapPolylineClicked() {
+        mapObjectsExample?.onShowGradientMapPolyLineClicked()
     }
     
     private func onEnabledVisibilityRangeClicked() {

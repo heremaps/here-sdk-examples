@@ -33,7 +33,7 @@ import 'package:navigation_app/RouteCalculator.dart';
 
 import 'HEREPositioningProvider.dart';
 import 'HEREPositioningSimulator.dart';
-import 'NavigationEventHandler.dart';
+import 'NavigationHandler.dart';
 
 // Shows how to start and stop turn-by-turn navigation along a route.
 class NavigationExample {
@@ -43,7 +43,7 @@ class NavigationExample {
   HEREPositioningProvider _herePositioningProvider;
   late DynamicRoutingEngine _dynamicRoutingEngine;
   final ValueChanged<String> _updateMessageState;
-  late NavigationEventHandler _navigationEventHandler;
+  late NavigationHandler _navigationHandler;
   late RouteCalculator _routeCalculator;
   RoutePrefetcher _routePrefetcher;
 
@@ -81,8 +81,8 @@ class NavigationExample {
     _routeCalculator = routeCalculator;
 
     // A class to handle various kinds of guidance events.
-    _navigationEventHandler = NavigationEventHandler(_visualNavigator, _dynamicRoutingEngine, _updateMessageState, _routeCalculator);
-    _navigationEventHandler.setupListeners();
+    _navigationHandler = NavigationHandler(_visualNavigator, _dynamicRoutingEngine, _updateMessageState, _routeCalculator);
+    _navigationHandler.setupListeners();
   }
 
   void prefetchMapData(GeoCoordinates currentGeoCoordinates) {
