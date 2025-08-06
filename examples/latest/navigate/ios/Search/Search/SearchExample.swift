@@ -48,6 +48,8 @@ class SearchExample: TapDelegate,
         // Load the map scene using a map scheme to render the map with.
         mapView.mapScene.loadScene(mapScheme: MapScheme.normalDay, completion: onLoadScene)
         
+        enableWebImages()
+        
         showDialog(title: "Note", message: "Long press on map to get the address for that position using reverse geocoding.")
     }
 
@@ -55,6 +57,22 @@ class SearchExample: TapDelegate,
     private func onLoadScene(mapError: MapError?) {
         if let mapError = mapError {
             print("Error: Map scene not loaded, \(String(describing: mapError))")
+        }
+    }
+    
+    func enableWebImages() {
+        // Enable search results with web images.
+        // Note: Requires enabled credentials to receive rich content from TripAdvisor.
+        // Talk to your HERE representative to get access.
+        // If the license is missing, the images list will be empty.
+        searchEngine.setCustomOption(name: "discover.show", value: "tripadvisor");
+    }
+    
+    // Call enableWebImages() to receive web images for places.
+    func handleWebImages(searchResult: Place) {
+        let webImages = searchResult.details.images
+        for webImage in webImages {
+            print("WebImage found for place: \(searchResult.title.trimmingCharacters(in: .whitespaces)). Link: \(webImage.source.href)")
         }
     }
     
@@ -105,6 +123,7 @@ class SearchExample: TapDelegate,
             metadata.setCustomValue(key: "key_search_result", value: SearchResultMetadata(searchResult))
             // Note that geoCoordinates are always set, but can be nil for suggestions only.
             addPoiMapMarker(geoCoordinates: searchResult.geoCoordinates!, metadata: metadata)
+            handleWebImages(searchResult: searchResult)
         }
     }
 

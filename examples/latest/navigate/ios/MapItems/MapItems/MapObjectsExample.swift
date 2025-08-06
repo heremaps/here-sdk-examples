@@ -51,6 +51,47 @@ class MapObjectsExample {
         mapScene.addMapPolyline(mapPolyline!)
     }
     
+    func onShowGradientMapPolyLineClicked() {
+        clearMap()
+        
+        // Move map to expected location.
+        flyTo(geoCoordinates: berlinGeoCoordinates)
+
+        let mapPolyline = createMapPolyline()
+
+        // Configure the progress color. Currently, cyan color is being used.
+        let progressColor = UIColor(red: 0, green: 1, blue: 1, alpha: 0.5)
+        mapPolyline.progressColor = progressColor
+
+        // Set the progress value, ranging from 0 to 1. For example, 0.40 represents 40% progress.
+        mapPolyline.progress = 0.40;
+
+        // Defines the gradient length using MapMeasureDependentRenderSize.
+        // Note:
+        // - Only RenderSize.Unit.pixels is supported for gradientLength.
+        // - Only MapMeasure.Kind.zoomLevel is supported.
+        // Any unsupported parameters will be ignored.
+        var gradientLength: MapMeasureDependentRenderSize
+        do {
+            let widthInPixels: Double = 20.0
+            gradientLength = try MapMeasureDependentRenderSize(
+                sizeUnit: RenderSize.Unit.pixels,
+                size: widthInPixels
+            )
+        } catch let error {
+            fatalError("Error while creating gradient length. Cause \(error)")
+        }
+
+        // Set the maximum gradient length between 'lineColor' and 'progressColor' in zoom-level-dependent pixels.
+        // To maintain a constant gradient length, use MapMeasureDependentRenderSize with a single value.
+        // To vary the gradient length based on zoom level, use multiple values.
+        // The default is a constant gradient length of zero pixels.
+        // Note: The gradient will always fit within the polyline.
+        mapPolyline.progressGradientLength = gradientLength
+        mapScene.addMapPolyline(mapPolyline)
+        self.mapPolyline = mapPolyline
+    }
+    
     func onEnableVisibilityRangesForPolyline() {
         var visibilityRanges: [MapMeasureRange] = []
 

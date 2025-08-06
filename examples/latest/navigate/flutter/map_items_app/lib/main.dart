@@ -137,6 +137,10 @@ class _MyAppState extends State<MyApp> {
     _mapObjectsExample?.showMapPolyline();
   }
 
+  void _showGradientMapPolyLineClicked() {
+    _mapObjectsExample?.showGradientPolyline();
+  }
+
   void _enableVisibilityRangesForMapPolyLine(){
     _showDialog("Visibility Range","Enabled visibility ranges for MapPolyline.");
     _mapObjectsExample?.enableVisibilityRangesForPolyline();
@@ -243,6 +247,7 @@ class _MyAppState extends State<MyApp> {
   Widget _buildMapObjectExpansionTile(BuildContext context) {
     final List<MenuSectionItem> menuItems = [
       MenuSectionItem("Polyline", _mapObjectPolylineButtonClicked),
+      MenuSectionItem("Gradient Polyline", _showGradientMapPolyLineClicked),
       MenuSectionItem("Polygon", _mapObjectPolygonButtonClicked),
       MenuSectionItem("Arrow", _mapObjectArrowButtonClicked),
       MenuSectionItem("Circle", _mapObjectCircleButtonClicked),

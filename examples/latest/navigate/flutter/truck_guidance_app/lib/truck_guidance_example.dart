@@ -866,6 +866,11 @@ class TruckGuidanceExample {
 
 // Called when the user clicks the "Clear Map" button.
   void onClearMapButtonClicked() {
+    if (_isGuidance) {
+      _showDialog(
+          "Note", "Turn-by-turn navigation must be stopped before clearing.");
+      return;
+    }
     clearRoute();
     clearMapMarker();
   }

@@ -900,6 +900,10 @@ class TruckGuidanceExample: TapDelegate,
     }
 
     public func onClearClicked() {
+        if (isGuidance) {
+            showDialog(title: "Note", message: "Turn-by-turn navigation must be stopped before clearing.")
+            return;
+        }
         clearRoute()
         clearMapMarker()
     }

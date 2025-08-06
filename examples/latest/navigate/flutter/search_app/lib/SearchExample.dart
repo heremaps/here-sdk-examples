@@ -56,6 +56,8 @@ class SearchExample {
     _setTapGestureHandler();
     _setLongPressGestureHandler();
 
+    enableWebImages();
+
     _showDialog("Note", "Long press on map to get the address for that position using reverse geocoding.");
   }
 
@@ -70,6 +72,23 @@ class SearchExample {
   Future<void> geocodeAnAddressButtonClicked() async {
     // Search for the location that belongs to an address and show it on the map.
     _geocodeAnAddress();
+  }
+
+  void enableWebImages() {
+    // Enable search results with web images.
+    // Note: Requires enabled credentials to receive rich content from TripAdvisor.
+    // Talk to your HERE representative to get access.
+    // If the license is missing, the images list will be empty.
+    _searchEngine.setCustomOption("discover.show", "tripadvisor");
+  }
+
+  // Call enableWebImages() to receive web images for places.
+  void _handleWebImages(Place searchResult) {
+    final webImages = searchResult.details.images;
+    for (final webImage in webImages) {
+      print('WebImage found for place: '
+          '${searchResult.title.trim()}. Link: ${webImage.source.href}');
+    }
   }
 
   void _searchExample() {
@@ -208,6 +227,7 @@ class SearchExample {
         metadata.setCustomValue("key_search_result", SearchResultMetadata(searchResult));
         // Note: getGeoCoordinates() may return null only for Suggestions.
         addPoiMapMarker(searchResult.geoCoordinates!, metadata);
+        _handleWebImages(searchResult);
       }
     });
   }

@@ -16,7 +16,7 @@
 		8639ECBC2CDA8F53005FD0A3 /* VoiceAssistant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8639ECBB2CDA8F52005FD0A3 /* VoiceAssistant.swift */; };
 		8639ECBE2CDA8F5C005FD0A3 /* TimeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8639ECBD2CDA8F5B005FD0A3 /* TimeUtils.swift */; };
 		8639ECC02CDA8F68005FD0A3 /* RouteCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8639ECBF2CDA8F66005FD0A3 /* RouteCalculator.swift */; };
-		8639ECC42CDA8F84005FD0A3 /* NavigationEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8639ECC32CDA8F83005FD0A3 /* NavigationEventHandler.swift */; };
+		8639ECC42CDA8F84005FD0A3 /* NavigationHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8639ECC32CDA8F83005FD0A3 /* NavigationHandler.swift */; };
 		8639ECC62CDA8F97005FD0A3 /* NavigationAppLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8639ECC52CDA8F93005FD0A3 /* NavigationAppLogic.swift */; };
 		8639ECC82CDA8FA0005FD0A3 /* NavigationApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8639ECC72CDA8F9F005FD0A3 /* NavigationApp.swift */; };
 		8639ECCA2CDA8FA8005FD0A3 /* LanguageCodeConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8639ECC92CDA8FA7005FD0A3 /* LanguageCodeConverter.swift */; };
@@ -49,7 +49,7 @@
 		8639ECBB2CDA8F52005FD0A3 /* VoiceAssistant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceAssistant.swift; sourceTree = "<group>"; };
 		8639ECBD2CDA8F5B005FD0A3 /* TimeUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeUtils.swift; sourceTree = "<group>"; };
 		8639ECBF2CDA8F66005FD0A3 /* RouteCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteCalculator.swift; sourceTree = "<group>"; };
-		8639ECC32CDA8F83005FD0A3 /* NavigationEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationEventHandler.swift; sourceTree = "<group>"; };
+		8639ECC32CDA8F83005FD0A3 /* NavigationHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationHandler.swift; sourceTree = "<group>"; };
 		8639ECC52CDA8F93005FD0A3 /* NavigationAppLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationAppLogic.swift; sourceTree = "<group>"; };
 		8639ECC72CDA8F9F005FD0A3 /* NavigationApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationApp.swift; sourceTree = "<group>"; };
 		8639ECC92CDA8FA7005FD0A3 /* LanguageCodeConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageCodeConverter.swift; sourceTree = "<group>"; };
@@ -96,7 +96,7 @@
 				8639ECB92CDA8F35005FD0A3 /* CustomViews.swift */,
 				8639ECC52CDA8F93005FD0A3 /* NavigationAppLogic.swift */,
 				8639ECCF2CDA94E5005FD0A3 /* NavigationExample.swift */,
-				8639ECC32CDA8F83005FD0A3 /* NavigationEventHandler.swift */,
+				8639ECC32CDA8F83005FD0A3 /* NavigationHandler.swift */,
 				8639ECCD2CDA8FBD005FD0A3 /* HEREPositioningProvider.swift */,
 				8639ECCB2CDA8FAE005FD0A3 /* HEREPositioningSimulator.swift */,
 				8639ECC92CDA8FA7005FD0A3 /* LanguageCodeConverter.swift */,
@@ -199,7 +199,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8639ECB82CDA8F2B005FD0A3 /* ContentView.swift in Sources */,
-				8639ECC42CDA8F84005FD0A3 /* NavigationEventHandler.swift in Sources */,
+				8639ECC42CDA8F84005FD0A3 /* NavigationHandler.swift in Sources */,
 				8639ECC62CDA8F97005FD0A3 /* NavigationAppLogic.swift in Sources */,
 				8639ECBC2CDA8F53005FD0A3 /* VoiceAssistant.swift in Sources */,
 				8639ECCE2CDA8FBE005FD0A3 /* HEREPositioningProvider.swift in Sources */,
