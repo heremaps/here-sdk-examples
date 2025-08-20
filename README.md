@@ -20,7 +20,7 @@ The HERE SDK consumes data from the [HERE Platform](https://www.here.com/product
 
 For an overview of the existing features, please check the _Developer Guide_ for the platform of your choice. Here you will also find numerous code snippets, detailed tutorials, the _API Reference_ and the latest _Release Notes_:
 
-- Documentation for the HERE SDK for Android ([Lite](https://www.here.com/docs/bundle/sdk-for-android-lite-developer-guide/page/README.html), [Explore](https://www.here.com/docs/bundle/sdk-for-android-explore-developer-guide/page/README.html), [Navigate](https://www.here.com/docs/bundle/sdk-for-android-navigate-developer-guide/page/README.html))
+- Documentation for the HERE SDK for Android ([Lite](https://www.here.com/docs/category/here-sdk-ios-lite), [Explore](https://www.here.com/docs/bundle/sdk-for-android-explore-developer-guide/page/README.html), [Navigate](https://www.here.com/docs/bundle/sdk-for-android-navigate-developer-guide/page/README.html))
 - Documentation for the HERE SDK for iOS ([Explore](https://www.here.com/docs/bundle/sdk-for-ios-explore-developer-guide/page/README.html), [Navigate](https://www.here.com/docs/bundle/sdk-for-ios-navigate-developer-guide/page/README.html))
 - Documentation for the HERE SDK for Flutter ([Explore](https://www.here.com/docs/bundle/sdk-for-flutter-explore-developer-guide/page/README.html), [Navigate](https://www.here.com/docs/bundle/sdk-for-flutter-navigate-developer-guide/page/README.html))
 
