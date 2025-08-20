@@ -1,5 +1,5 @@
 This folder contains the HERE SDK examples apps for version: 4.23.3.0
 
-- HERE SDK for Android ([Lite Edition](lite/android/), [Explore Edition](explore/android/), [Navigate Edition](navigate/android/))
-- HERE SDK for iOS ([Lite Edition](lite/ios/), [Explore Edition](explore/ios/), [Navigate Edition](navigate/ios/))
-- HERE SDK for Flutter ([Explore Edition](explore/flutter/), [Navigate Edition](navigate/flutter/))
+- HERE SDK for Android ([Lite](lite/android/), [Explore](explore/android/), [Navigate](navigate/android/))
+- HERE SDK for iOS ([Lite](lite/ios/), [Explore](explore/ios/), [Navigate](navigate/ios/))
+- HERE SDK for Flutter ([Explore](explore/flutter/), [Navigate](navigate/flutter/))
