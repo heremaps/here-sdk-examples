@@ -1,4 +1,4 @@
-# HERE SDK 4.x (Lite, Explore & Navigate Edition) - Examples for Android, iOS and Flutter
+# HERE SDK 4.x (Lite, Explore & Navigate) - Examples for Android, iOS and Flutter
 
 ![License](https://img.shields.io/badge/license-Apache%202-blue)
 ![Platform](https://img.shields.io/badge/platform-Android-green.svg)
@@ -20,11 +20,11 @@ The HERE SDK consumes data from the [HERE Platform](https://www.here.com/product
 
 For an overview of the existing features, please check the _Developer Guide_ for the platform of your choice. Here you will also find numerous code snippets, detailed tutorials, the _API Reference_ and the latest _Release Notes_:
 
-- Documentation for the HERE SDK for Android ([Lite Edition](https://www.here.com/docs/bundle/sdk-for-android-lite-developer-guide/page/README.html), [Explore Edition](https://www.here.com/docs/bundle/sdk-for-android-explore-developer-guide/page/README.html), [Navigate Edition](https://www.here.com/docs/bundle/sdk-for-android-navigate-developer-guide/page/README.html))
-- Documentation for the HERE SDK for iOS ([Explore Edition](https://www.here.com/docs/bundle/sdk-for-ios-explore-developer-guide/page/README.html), [Navigate Edition](https://www.here.com/docs/bundle/sdk-for-ios-navigate-developer-guide/page/README.html))
-- Documentation for the HERE SDK for Flutter ([Explore Edition](https://www.here.com/docs/bundle/sdk-for-flutter-explore-developer-guide/page/README.html), [Navigate Edition](https://www.here.com/docs/bundle/sdk-for-flutter-navigate-developer-guide/page/README.html))
+- Documentation for the HERE SDK for Android ([Lite](https://www.here.com/docs/bundle/sdk-for-android-lite-developer-guide/page/README.html), [Explore](https://www.here.com/docs/bundle/sdk-for-android-explore-developer-guide/page/README.html), [Navigate](https://www.here.com/docs/bundle/sdk-for-android-navigate-developer-guide/page/README.html))
+- Documentation for the HERE SDK for iOS ([Explore](https://www.here.com/docs/bundle/sdk-for-ios-explore-developer-guide/page/README.html), [Navigate](https://www.here.com/docs/bundle/sdk-for-ios-navigate-developer-guide/page/README.html))
+- Documentation for the HERE SDK for Flutter ([Explore](https://www.here.com/docs/bundle/sdk-for-flutter-explore-developer-guide/page/README.html), [Navigate](https://www.here.com/docs/bundle/sdk-for-flutter-navigate-developer-guide/page/README.html))
 
-> For now, the _Navigate Edition_ is only available upon request. Please contact your HERE representative to receive access including a set of evaluation credentials.
+> For now, HERE SDK (Navigate) is only available upon request. Please contact your HERE representative to receive access including a set of evaluation credentials.
 
 ## List of available example apps (Version 4.23.3.0)
 
@@ -32,19 +32,19 @@ For an overview of the existing features, please check the _Developer Guide_ for
 - [List of example apps for the HERE SDK for iOS](https://www.here.com/docs/bundle/sdk-for-ios-developer-guide/page/topics/examples.html).
 - [List of example apps for the HERE SDK for Flutter](https://www.here.com/docs/bundle/sdk-for-flutter-developer-guide/page/topics/examples.html).
 
-> Not all examples are available for all editions and platforms.
+> Not all examples are available for all licenses (formerly known as editions) and platforms. This repo hosts apps for the Lite, Explore and Navigate license.
 
-Find the [latest examples](examples/latest) for the edition and platform of your choice:
+Find the [latest examples](examples/latest) for the license and platform of your choice:
 
-- Examples for the HERE SDK for Android ([Lite Edition](examples/latest/lite/android/), [Explore Edition](examples/latest/explore/android/), [Navigate Edition](examples/latest/navigate/android/))
-- Examples for the HERE SDK for iOS ([Explore Edition](examples/latest/explore/ios/), [Navigate Edition](examples/latest/navigate/ios/))
-- Examples for the HERE SDK for Flutter ([Explore Edition](examples/latest/explore/flutter/), [Navigate Edition](examples/latest/navigate/flutter/))
+- Examples for the HERE SDK for Android ([Lite](examples/latest/lite/android/), [Explore](examples/latest/explore/android/), [Navigate](examples/latest/navigate/android/))
+- Examples for the HERE SDK for iOS ([Explore](examples/latest/explore/ios/), [Navigate](examples/latest/navigate/ios/))
+- Examples for the HERE SDK for Flutter ([Explore](examples/latest/explore/flutter/), [Navigate](examples/latest/navigate/flutter/))
 
 ## Example apps for older versions
 Above you can find the example app links for the _latest_ HERE SDK version. If you are looking for an older version, please check our [release page](https://github.com/heremaps/here-sdk-examples/releases) where you can download tagged older releases.
 
 ## What you need to execute the example apps
-1. Acquire a set of credentials: Follow the steps from the [Developer Guide](https://www.here.com/docs/category/here-sdk) for your HERE SDK edition.
+1. Acquire a set of credentials: Follow the steps from the [Developer Guide](https://www.here.com/docs/category/here-sdk) for your HERE SDK license.
 2. Download the latest HERE SDK package for your desired platform as shown in the _Developer Guide_.
 3. Please refer to the minimum requirements and supported devices as listed in our _Developer Guide_.
 4. Follow the README instructions you can find in the app folder for each example app.
@@ -52,7 +52,7 @@ Above you can find the example app links for the _latest_ HERE SDK version. If y
 ## More resources
 
 - If you are interested to see a demo of the features the HERE SDK has to offer - or if you simply want to see all features in action, check the [HERE WeGo](https://www.here.com/products/wego) application. This app uses the same technology stack that empowers the HERE SDK.
-- Alternatively, you can build and run the _Reference Application_ (available only for Flutter) which you can find as an [open-source project on GitHub](https://github.com/heremaps/here-sdk-ref-app-flutter). This app shows most features of the _Navigate Edition_ including the features from the _Explore Edition_ in an release-ready app with easy-to-understand UX flows and reusable UI assets.
+- Alternatively, you can build and run the _Reference Application_ (available only for Flutter) which you can find as an [open-source project on GitHub](https://github.com/heremaps/here-sdk-ref-app-flutter). This app shows most features of the Navigate license including the features from the Explore license in an release-ready app with easy-to-understand UX flows and reusable UI assets.
 
 ## Get in touch
 - Information on how to contribute to this project can be found [here](CONTRIBUTING.md).
