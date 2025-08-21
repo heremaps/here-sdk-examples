@@ -238,6 +238,10 @@ class NavigationHandler : NavigableLocationDelegate,
 
         print("LanguageCode for maneuver notifications: \(ttsLanguageCode).")
 
+        // Toggle the lane recommendation in the maneuver notifications.
+        // The lane recommendation, if enabled, will be given only for the ManeuverNotificationType.DISTANCE notification type.
+        maneuverNotificationOptions.enableLaneRecommendation = true
+        
         // Set language to our TextToSpeech engine.
         let locale = LanguageCodeConverter.getLocale(languageCode: ttsLanguageCode)
         if voiceAssistant.setLanguage(locale: locale) {

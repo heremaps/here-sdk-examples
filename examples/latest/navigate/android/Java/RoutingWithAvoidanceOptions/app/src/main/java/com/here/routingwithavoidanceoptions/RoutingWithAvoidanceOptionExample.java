@@ -33,10 +33,12 @@ import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.GeoOrientation;
 import com.here.sdk.core.GeoOrientationUpdate;
 import com.here.sdk.core.GeoPolyline;
+import com.here.sdk.core.Location;
 import com.here.sdk.core.Metadata;
 import com.here.sdk.core.Point2D;
 import com.here.sdk.core.Rectangle2D;
 import com.here.sdk.core.Size2D;
+import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.gestures.GestureState;
 import com.here.sdk.gestures.TapListener;
@@ -46,6 +48,7 @@ import com.here.sdk.mapdata.SegmentDataLoader;
 import com.here.sdk.mapdata.MapDataLoaderException;
 import com.here.sdk.mapdata.SegmentDataLoaderOptions;
 import com.here.sdk.mapdata.SegmentSpanData;
+import com.here.sdk.mapmatcher.MapMatcher;
 import com.here.sdk.mapview.LineCap;
 import com.here.sdk.mapview.MapCamera;
 import com.here.sdk.mapview.MapImage;
@@ -60,6 +63,7 @@ import com.here.sdk.mapview.MapView;
 import com.here.sdk.mapview.MapViewBase;
 import com.here.sdk.mapview.PickMapItemsResult;
 import com.here.sdk.mapview.RenderSize;
+import com.here.sdk.navigation.MapMatchedLocation;
 import com.here.sdk.routing.AvoidanceOptions;
 import com.here.sdk.routing.CalculateRouteCallback;
 import com.here.sdk.routing.CarOptions;
@@ -75,9 +79,9 @@ import com.here.sdk.routing.Waypoint;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 
 // This example shows how to use avoidance options to block roads.
 // Roads to avoid can be picked from the map.
@@ -106,6 +110,11 @@ public class RoutingWithAvoidanceOptionExample {
     private boolean setLongpressDestination;
     HashMap<String, SegmentReference> segmentAvoidanceList = new HashMap<>();
     private boolean segmentsAvoidanceViolated = false;
+    private MapMatcher mapMatcher;
+    // Set to false to use the MapMatcher with the EHORIZON LayerConfiguration instead when
+    // you do not need the RENDERING layer, for example, when you do not show a map view.
+    boolean useRenderingLayers = true;
+    private final SDKNativeEngine sdkNativeEngine;
 
     public RoutingWithAvoidanceOptionExample(Context context, MapView mapView) {
         this.context = context;
@@ -114,10 +123,17 @@ public class RoutingWithAvoidanceOptionExample {
         double distanceInMeters = 5000;
         MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, distanceInMeters);
         camera.lookAt(new GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
+
         try {
             routingEngine = new RoutingEngine();
         } catch (InstantiationErrorException e) {
             throw new RuntimeException("Initialization of RoutingEngine failed: " + e.error.name());
+        }
+
+        try {
+            sdkNativeEngine = SDKNativeEngine.getSharedInstance();
+        } catch (RuntimeException e) {
+            throw new RuntimeException("SDKNativeEngine not initialized.");
         }
 
         try {
@@ -126,6 +142,12 @@ public class RoutingWithAvoidanceOptionExample {
             segmentDataLoader = new SegmentDataLoader();
         } catch (InstantiationErrorException e) {
             throw new RuntimeException("SegmentDataLoader initialization failed." + e.getMessage());
+        }
+
+        try {
+            mapMatcher = new MapMatcher(sdkNativeEngine, useRenderingLayers);
+        } catch (InstantiationErrorException e) {
+            throw new RuntimeException("MapMatcher initialization failed." + e.getMessage());
         }
 
         // Fallback if no segments have been picked by the user.
@@ -162,6 +184,9 @@ public class RoutingWithAvoidanceOptionExample {
                     startGeoCoordinates = geoCoordinates;
                     startMapMarker.setCoordinates(geoCoordinates);
                 }
+
+                matchLocation(geoCoordinates);
+
                 // Toggle the marker that should be updated on next long press.
                 setLongpressDestination = !setLongpressDestination;
             }
@@ -172,12 +197,12 @@ public class RoutingWithAvoidanceOptionExample {
         mapView.getGestures().setTapListener(new TapListener() {
             @Override
             public void onTap(@NonNull Point2D touchPoint) {
-                pickMapPolyLine(touchPoint);
+                pickMapItems(touchPoint);
             }
         });
     }
 
-    private void pickMapPolyLine(final Point2D touchPoint) {
+    private void pickMapItems(final Point2D touchPoint) {
         Point2D originInPixels = new Point2D(touchPoint.x, touchPoint.y);
         Size2D sizeInPixels = new Size2D(50, 50);
         Rectangle2D rectangle = new Rectangle2D(originInPixels, sizeInPixels);
@@ -197,19 +222,38 @@ public class RoutingWithAvoidanceOptionExample {
                 }
                 PickMapItemsResult pickMapItemsResult = mapPickResult.getMapItems();
 
-                assert pickMapItemsResult != null;
+                List<MapMarker> markers = pickMapItemsResult.getMarkers();
+                if (!markers.isEmpty()) {
+                    MapMarker pickedMarker = markers.get(0);
+                    handlePickedMapMarker(pickedMarker);
+                    return;
+                }
+
                 List<MapPolyline> polylines = pickMapItemsResult.getPolylines();
                 int listSize = polylines.size();
 
                 // If no polyLines are selected, load the segments.
                 if (listSize == 0) {
-                    loadSegmentData(geoCoordinates);
+                    Toast.makeText(context, "Loading attributes of map segments around origin. For more details check the logs.", Toast.LENGTH_LONG).show();
+                    fetchOCMSegmentIDs(geoCoordinates);
                     return;
                 }
                 MapPolyline mapPolyline = polylines.get(0);
                 handlePickedMapPolyline(mapPolyline);
             }
         });
+    }
+
+    private void handlePickedMapMarker(MapMarker mapMarker) {
+        Metadata metadata = mapMarker.getMetadata();
+        if (metadata != null) {
+            String markerType = metadata.getString("marker_type");
+            if ("start".equals(markerType)) {
+                showDialog("Start Marker", "Map-matched starting point. More details in the logs.");
+            } else if ("destination".equals(markerType)) {
+                showDialog("Destination Marker", "Map-matched destination point. More details in the logs");
+            }
+        }
     }
 
     private void handlePickedMapPolyline(MapPolyline mapPolyline) {
@@ -226,10 +270,61 @@ public class RoutingWithAvoidanceOptionExample {
         }
     }
 
-    // Load segment data synchronously and fetch information from the map around the given GeoCoordinates.
-    public void loadSegmentData(GeoCoordinates geoCoordinates) {
+    // Fetch information from the map around the given GeoCoordinates and load segment data synchronously.
+    public void fetchOCMSegmentIDs(GeoCoordinates geoCoordinates) {
 
         List<OCMSegmentId> segmentIds;
+
+        try {
+            // The smaller the radius, the more precisely a user can select a road on the map.
+            // With a broader area around the origin multiple segments can be vizualized at once.
+            double radiusInMeters = 5;
+            segmentIds = segmentDataLoader.getSegmentsAroundCoordinates(geoCoordinates, radiusInMeters);
+
+            for (OCMSegmentId segmentId : segmentIds) {
+                loadSegmentData(segmentId);
+            }
+        } catch (MapDataLoaderException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // The MapMatcher aligns location signals to the road network, improving
+    // accuracy during navigation. Raw coordinates often differ from the actual
+    // position, so the MapMatcher uses past locations, plus speed and bearing,
+    // to refine results. If map data is missing, it returns null and requests
+    // the needed tiles online; later calls can use the cached data. A tile
+    // covers a larger area, so future matches often benefit. Both VisualNavigator
+    // and Navigator use the MapMatcher to match each signal to a road. Here we
+    // show matching for a single long-tap, though repeated taps may improve accuracy.
+    public void matchLocation(GeoCoordinates geoCoordinates) {
+        // The MapMatcher evaluates all parameters in the Location object to produce the most accurate result.
+        // The `time` parameter must be set for each Location object.
+        // While missing parameters are tolerated, providing additional parameters such as speed or bearing improves matching quality.
+        Location location = new Location(geoCoordinates);
+        location.time = new Date();
+        MapMatchedLocation mapMatchedLocation = mapMatcher.match(location);
+
+        // A null mapMatchedLocation indicates that the location could not be matched to the road network.
+        // This means the location is offroad or the data is not in the cache.
+        if (mapMatchedLocation != null) {
+            Toast.makeText(context,"Map-matched location is highlighted with red dot on the map. Check logs for more information on matched location.", Toast.LENGTH_LONG).show();
+
+            // Show the map-matched location on the map.
+            MapMarker mapMatchedMapMarker = addMapMarker(mapMatchedLocation.coordinates, R.drawable.map_matched_location_dot);
+
+            // Fetch IDs from mapMatchedLocation and convert them into OCMSegmentID required by loadSegmentData method.
+            OCMSegmentId mapMatchedSegmentId = new OCMSegmentId();
+            mapMatchedSegmentId.localId = Math.toIntExact(mapMatchedLocation.segmentReference.localId);
+            mapMatchedSegmentId.tilePartitionId = Math.toIntExact(mapMatchedLocation.segmentReference.tilePartitionId);
+
+            loadSegmentData(mapMatchedSegmentId);
+        } else {
+            Log.d(TAG,"Location could not be map-matched. Check if the picked location is within 50-meter radius of a road.");
+        }
+    }
+
+    private void loadSegmentData(OCMSegmentId ocmSegmentId)  {
         SegmentData segmentData;
 
         // The necessary SegmentDataLoaderOptions need to be turned on in order to find the
@@ -242,42 +337,37 @@ public class RoutingWithAvoidanceOptionExample {
         segmentDataLoaderOptions.loadRoadAttributes = true;
         segmentDataLoaderOptions.loadFunctionalRoadClass = true;
 
-        Toast.makeText(context, "Loading attributes of map segments around origin. For more details check the logs.", Toast.LENGTH_LONG).show();
-
         try {
-            // The smaller the radius, the more precisely a user can select a road on the map.
-            // With a broader area around the origin multiple segments can be vizualized at once.
-            double radiusInMeters = 5;
-            segmentIds = segmentDataLoader.getSegmentsAroundCoordinates(geoCoordinates, radiusInMeters);
-
-            for (OCMSegmentId segmentId : segmentIds) {
-                segmentData = segmentDataLoader.loadData(segmentId, segmentDataLoaderOptions);
-
-                List<SegmentSpanData> segmentSpanDataList = segmentData.getSpans();
-                SegmentReference segmentReference = segmentData.getSegmentReference();
-
-                Metadata metadata = new Metadata();
-                metadata.setString(METADATA_SEGMENT_ID_KEY, segmentReference.segmentId);
-                metadata.setDouble(METADATA_TILE_PARTITION_ID_KEY, segmentReference.tilePartitionId);
-
-                MapPolyline segmentPolyLine = createMapPolyline(Color.valueOf(1, 0, 0, 1), segmentData.getPolyline());
-                segmentPolyLine.setMetadata(metadata);
-                mapView.getMapScene().addMapPolyline(segmentPolyLine);
-                segmentPolyLines.add(segmentPolyLine);
-                segmentAvoidanceList.put(segmentReference.segmentId, segmentReference);
-
-                for (SegmentSpanData span : segmentSpanDataList) {
-                    Log.d(TAG, "Physical attributes of " + span.toString() + " span.");
-                    Log.d(TAG, "Private roads: " + Objects.requireNonNull(span.getPhysicalAttributes()).isPrivate);
-                    Log.d(TAG, "Dirt roads: " + span.getPhysicalAttributes().isDirtRoad);
-                    Log.d(TAG, "Bridge: " + span.getPhysicalAttributes().isBridge);
-                    Log.d(TAG, "Tollway: " + Objects.requireNonNull(span.getRoadUsages()).isTollway);
-                    Log.d(TAG, "Average expected speed: " + span.getPositiveDirectionBaseSpeedInMetersPerSecond());
-                }
-            }
+            segmentData = segmentDataLoader.loadData(ocmSegmentId, segmentDataLoaderOptions);
         } catch (MapDataLoaderException e) {
             throw new RuntimeException(e);
         }
+
+        List<SegmentSpanData> segmentSpanDataList = segmentData.getSpans();
+        SegmentReference segmentReference = segmentData.getSegmentReference();
+
+        Metadata metadata = new Metadata();
+        metadata.setString(METADATA_SEGMENT_ID_KEY, segmentReference.segmentId);
+        metadata.setDouble(METADATA_TILE_PARTITION_ID_KEY, segmentReference.tilePartitionId);
+
+        MapPolyline segmentPolyLine = createMapPolyline(Color.valueOf(1, 0, 0, 1), segmentData.getPolyline());
+        segmentPolyLine.setMetadata(metadata);
+        mapView.getMapScene().addMapPolyline(segmentPolyLine);
+        segmentPolyLines.add(segmentPolyLine);
+        segmentAvoidanceList.put(segmentReference.segmentId, segmentReference);
+
+        for (SegmentSpanData span : segmentSpanDataList) {
+            logSegmentDataDetails(span, segmentReference.segmentId);
+        }
+    }
+
+    private void logSegmentDataDetails(SegmentSpanData span, String segmentID) {
+        Log.d(TAG, "Segment data for span belonging to OCM segment with ID: " + segmentID);
+        Log.d(TAG, "Private roads: " + span.getPhysicalAttributes().isPrivate);
+        Log.d(TAG, "Dirt roads: " + span.getPhysicalAttributes().isDirtRoad);
+        Log.d(TAG, "Bridge: " + span.getPhysicalAttributes().isBridge);
+        Log.d(TAG, "Tollway: " + span.getRoadUsages().isTollway);
+        Log.d(TAG, "Average expected speed: " + span.getPositiveDirectionBaseSpeedInMetersPerSecond());
     }
 
     public void addRouteButtonClicked() {

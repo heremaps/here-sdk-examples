@@ -212,8 +212,8 @@ public class OfflineMapsExample {
                 }
 
                 String message = "Found " + downloadableRegions.size() +
-                        " continents with various countries. See log for details.";
-                snackbar.setText(message).show();
+                        " continents with various countries. Full list: " + downloadableRegions + ".";
+                showDialog("Downloadable Regions.", message);
             }
         });
     }

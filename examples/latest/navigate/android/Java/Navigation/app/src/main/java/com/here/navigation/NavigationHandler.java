@@ -200,6 +200,10 @@ public class NavigationHandler {
         visualNavigator.setManeuverNotificationOptions(maneuverNotificationOptions);
         Log.d(TAG, "LanguageCode for maneuver notifications: " + ttsLanguageCode);
 
+        // Toggle the lane recommendation in the maneuver notifications.
+        // The lane recommendation, if enabled, will be given only for the ManeuverNotificationType.DISTANCE notification type.
+        maneuverNotificationOptions.enableLaneRecommendation = true;
+
         // Set language to our TextToSpeech engine.
         Locale locale = LanguageCodeConverter.getLocale(ttsLanguageCode);
         if (voiceAssistant.setLanguage(locale)) {
