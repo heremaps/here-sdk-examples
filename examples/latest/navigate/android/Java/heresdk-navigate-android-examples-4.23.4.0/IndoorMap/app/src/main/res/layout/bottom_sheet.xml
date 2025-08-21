@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:gravity="top"
+    app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+    android:background="@drawable/bottom_sheet_background"
+    android:id="@+id/bottomSheet"
+    android:elevation="5dp"
+
+    >
+    <View
+        android:id="@+id/dragHandle"
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="6dp"
+        android:background="@drawable/round_side_rect"/>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/bottomSheetUI"
+        >
+
+        <EditText
+            android:id="@+id/SearchBar"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:hint="Search for Venues"
+            android:textSize="18dp"
+            android:elevation="5dp"
+            android:background="@drawable/searchbar_background"
+            android:drawableLeft="@drawable/search"
+            android:drawablePadding="10dp"
+            />
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/cancleText"
+            android:src="@drawable/cancle_button"
+            android:layout_alignParentEnd="true"
+            android:layout_marginRight="30dp"
+            android:layout_marginTop="25dp"
+            android:elevation="6dp"
+            android:visibility="gone"
+            />
+        <ProgressBar
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:id="@+id/progress_bar_bottom"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true"
+            android:elevation="20dp"
+            android:indeterminateDrawable="@drawable/progress_bar" />
+        <androidx.recyclerview.widget.RecyclerView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/VenueListView"
+            android:layout_marginTop="5dp"
+            android:layout_below="@id/SearchBar"
+            android:visibility="gone"
+            />
+    </RelativeLayout>
+
+
+</LinearLayout>
