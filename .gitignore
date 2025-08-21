@@ -1,1 +1,4 @@
+# Undesired macOS system files.
 .DS_Store
+__MACOSX/
+._*
