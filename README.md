@@ -26,7 +26,7 @@ For an overview of the existing features, please check the _Developer Guide_ for
 
 > For now, HERE SDK (Navigate) is only available upon request. Please contact your HERE representative to receive access including a set of evaluation credentials.
 
-## List of available example apps (Version 4.23.3.0)
+## List of available example apps (Version 4.23.4.0)
 
 - [List of example apps for the HERE SDK for Android](https://www.here.com/docs/bundle/sdk-for-android-developer-guide/page/topics/examples.html).
 - [List of example apps for the HERE SDK for iOS](https://www.here.com/docs/bundle/sdk-for-ios-developer-guide/page/topics/examples.html).
