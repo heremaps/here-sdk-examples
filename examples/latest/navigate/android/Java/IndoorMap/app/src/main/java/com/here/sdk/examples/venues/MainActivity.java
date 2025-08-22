@@ -28,6 +28,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
@@ -42,6 +43,7 @@ import android.widget.ToggleButton;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -73,10 +75,11 @@ import com.here.sdk.venue.service.VenueService;
 import com.here.sdk.venue.service.VenueServiceInitStatus;
 import com.here.sdk.venue.service.VenueServiceListener;
 import com.here.sdk.venue.style.VenueStyle;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -93,6 +96,8 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private LinearLayout bottomSheet;
     private BottomSheetBehavior sheetBehavior;
+
+    private View dragHandle;
     private EditText venue_search;
     private List<VenueInfo> venueInfo = new ArrayList<>();
     private List<VenueGeometry> geometryList;
@@ -111,6 +116,25 @@ public class MainActivity extends AppCompatActivity {
 
     //Label text preference as per user choice
     private final List<String> labelPref = Arrays.asList("OCCUPANT_NAMES", "SPACE_NAME", "INTERNAL_ADDRESS");
+
+    private Insets[] lastInset = {Insets.NONE};
+
+    private int initialPeekHeight;
+
+
+    private void initializeHERESDK() {
+        // Set your credentials for the HERE SDK.
+        String accessKeyID = "VENUE_ACCESS_KEY_ID";
+        String accessKeySecret = "VENUE_ACCESS_KEY_SECRET";
+        AuthenticationMode authenticationMode = AuthenticationMode.withKeySecret(accessKeyID, accessKeySecret);
+        SDKOptions options = new SDKOptions(authenticationMode);
+        try {
+            Context context = this;
+            SDKNativeEngine.makeSharedInstance(context, options);
+        } catch (InstantiationErrorException e) {
+            throw new RuntimeException("Initialization of HERE SDK failed: " + e.error.name());
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -139,9 +163,62 @@ public class MainActivity extends AppCompatActivity {
 
         recyclerView = findViewById(R.id.VenueListView);
         bottomSheet = findViewById(R.id.bottomSheet);
+        View bottomSheetContainer = findViewById(R.id.bottomSheetUI);
         sheetBehavior = BottomSheetBehavior.from(bottomSheet);
+        dragHandle = findViewById(R.id.dragHandle);
         venue_search = findViewById(R.id.SearchBar);
         cancle_text = findViewById(R.id.cancleText);
+
+        // apply insets to bottomSheet and after that this inset should not go
+        // to child UI. Also store the insets values, to be used when slide/state
+        // changes for bottom sheet. Also returning WindowInsetsCompat.CONSUMED,
+        // this means, now insets are applied, no need to apply to child UI.
+        ViewCompat.setOnApplyWindowInsetsListener(bottomSheet, (v, insets) -> {
+            Insets sys = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            lastInset[0] = sys;
+            v.setPadding(sys.left, 0, sys.right, sys.bottom);
+
+            return WindowInsetsCompat.CONSUMED;
+        });
+
+        //To calculate peek height of bottom sheet, once bottom sheet is
+        // attached to main view then only calculate otherwise we may not
+        // get the correct height. That's why we are doing it using new
+        // Runnable inside post.
+        bottomSheet.post(new Runnable() {
+            @Override
+            public void run() {
+                ViewGroup.MarginLayoutParams dragHandleLp =
+                        (ViewGroup.MarginLayoutParams) dragHandle.getLayoutParams();
+                ViewGroup.MarginLayoutParams venueSearchLp =
+                        (ViewGroup.MarginLayoutParams) venue_search.getLayoutParams();
+
+                // As we need to show the search bar + hook initially
+                // so to calculate the peekHeight, we need to include
+                // dragHandle height, search bar height, top margin of
+                // drag handle, top and bottom margin of search bar.
+                // As insets are already applied to bottomSheet, so
+                // adding the top and bottom padding. Any changes at
+                // UI side, need to change here accordingly.
+                initialPeekHeight = 0;
+                initialPeekHeight += dragHandle.getMeasuredHeight();
+                initialPeekHeight += venue_search.getMeasuredHeight();
+                initialPeekHeight += dragHandleLp.topMargin;
+                initialPeekHeight += venueSearchLp.topMargin;
+                initialPeekHeight += venueSearchLp.bottomMargin;
+                initialPeekHeight += bottomSheet.getPaddingTop();
+                initialPeekHeight += bottomSheet.getPaddingBottom();
+                sheetBehavior.setPeekHeight(initialPeekHeight, false);
+                sheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                recyclerView.setVisibility(View.GONE);
+
+                Log.d(TAG, "Initial PeekHeight of BottomSheet=" + initialPeekHeight);
+                // Save initial peek height, to be used after peekHeight is set to 0.
+                initialPeekHeight = sheetBehavior.getPeekHeight();
+            }
+        });
+
+
         cancle_text.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -202,6 +279,64 @@ public class MainActivity extends AppCompatActivity {
                     }
             }
         });
+
+        sheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                if(newState == BottomSheetBehavior.STATE_EXPANDED){
+                    // when sheet is expanded, no need of drag handle
+                    dragHandle.setVisibility(View.GONE);
+                    recyclerView.setAlpha(1f);
+                } else {
+                    // when sheet is collapsed, make drag handle visible
+                    dragHandle.setVisibility(View.VISIBLE);
+                    // fade recycler view when sheet is collapsed in case of Venue list
+                    if (recyclerView.getAdapter() instanceof VenueAdapter) {
+                        recyclerView.setAlpha(0f);
+                    } else {
+                        recyclerView.setAlpha(1f);
+                    }
+                }
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                // fade handle as you slide
+                dragHandle.setAlpha(1f - slideOffset);
+
+                int top = (int) (lastInset[0].top * Math.max(0, slideOffset));
+                // this make sure that when expanded, topInset is applied to
+                // bottom sheet, so it should not go behind top bar.
+                bottomSheetContainer.setPadding(
+                        bottomSheetContainer.getPaddingLeft(),
+                        top,
+                        bottomSheetContainer.getPaddingRight(),
+                        bottomSheetContainer.getPaddingBottom()
+                );
+
+                // fade recycler view as you slide in case of Venue list
+                if ((recyclerView.getAdapter() instanceof VenueAdapter) ||
+                        (recyclerView.getAdapter() == null)) {
+                    recyclerView.setAlpha(Math.max(0f, Math.min(1f, slideOffset)));
+                } else {
+                    recyclerView.setAlpha(1f);
+                }
+            }
+        });
+
+        // Expand sheet when search bar is clicked
+        venue_search.setOnClickListener(v -> {
+            if (sheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED) {
+                sheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+            }
+        });
+
+        // Expand sheet when search bar is focused
+        venue_search.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus && sheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED) {
+                sheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+            }
+        });
     }
 
     private void filterSpaces(String s) {
@@ -216,6 +351,8 @@ public class MainActivity extends AppCompatActivity {
         }
         if(!list.isEmpty()) {
             recyclerView.setAdapter(new SpaceAdapter(getApplicationContext(), list, this));
+            // set fade to 1 in case of space list
+            recyclerView.setAlpha(1f);
         }
     }
 
@@ -229,20 +366,8 @@ public class MainActivity extends AppCompatActivity {
         }
         if(!list.isEmpty()) {
             recyclerView.setAdapter(new VenueAdapter(getApplicationContext(), list, this));
-        }
-    }
-
-    private void initializeHERESDK() {
-        // Set your credentials for the HERE SDK.
-        String accessKeyID = "VENUE_ACCESS_KEY_ID";
-        String accessKeySecret = "VENUE_ACCESS_KEY_SECRET";
-        AuthenticationMode authenticationMode = AuthenticationMode.withKeySecret(accessKeyID, accessKeySecret);
-        SDKOptions options = new SDKOptions(authenticationMode);
-        try {
-            Context context = this;
-            SDKNativeEngine.makeSharedInstance(context, options);
-        } catch (InstantiationErrorException e) {
-            throw new RuntimeException("Initialization of HERE SDK failed: " + e.error.name());
+            // set fade to 1 in case of Venue is filtered
+            recyclerView.setAlpha(1f);
         }
     }
 
@@ -382,6 +507,10 @@ public class MainActivity extends AppCompatActivity {
             recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
             recyclerView.setAdapter(new VenueAdapter(MainActivity.this, venueInfo, MainActivity.this));
             recyclerView.setVisibility(View.VISIBLE);
+            if(sheetBehavior.getState() == BottomSheetBehavior.STATE_COLLAPSED) {
+                // set fade to 0 in case of venue list
+                recyclerView.setAlpha(0f);
+            }
             progressBarBottom.setVisibility(View.GONE);
         }
     };
@@ -400,10 +529,12 @@ public class MainActivity extends AppCompatActivity {
                 geometryList = venueModel.getGeometriesByName();
                 venueTapController.setGeometries(geometryList);
                 recyclerView.setAdapter(new SpaceAdapter(getApplicationContext(), geometryList, MainActivity.this));
+                // set fade to 1 when new venue is loaded
+                recyclerView.setAlpha(1f);
                 venue_search.setHint("Search for Spaces");
                 String venue_name = "";
                 for(VenueInfo venue : venueInfo) {
-                    if(venue.getVenueIdentifier() == venueIdentifier)
+                    if(venue.getVenueIdentifier().equals(venueIdentifier))
                         venue_name = venue.getVenueName();
                 }
                 venueName.setText(venue_name);
@@ -434,9 +565,11 @@ public class MainActivity extends AppCompatActivity {
                     venueTapController.setGeometries(geometryList);
                     recyclerView.setAdapter(new SpaceAdapter(getApplicationContext(), geometryList, MainActivity.this));
                     venue_search.setHint("Search for Spaces");
+                    // set fade to 1 when space list is filled
+                    recyclerView.setAlpha(1f);
                     String venue_name = "";
                     for(VenueInfo venue : venueInfo) {
-                        if(venue.getVenueIdentifier() == venueModel.getIdentifier())
+                        if(venue.getVenueIdentifier().equals(venueModel.getIdentifier()))
                             venue_name = venue.getVenueName();
                     }
                     venueName.setText(venue_name);
@@ -576,6 +709,8 @@ public class MainActivity extends AppCompatActivity {
         venueTapController.setGeometries(null);
         recyclerView.setAdapter(null);
         recyclerView.setAdapter(new VenueAdapter(getApplicationContext(), venueInfo, this));
+        // set fade to 0 in case of venue list
+        recyclerView.setAlpha(0f);
         mapLoadDone = false;
         venue_search.setHint("Search for Venues");
         loadBaseMap();
@@ -643,5 +778,9 @@ public class MainActivity extends AppCompatActivity {
         venueTapController.selectGeometry(venueGeometry, venueGeometry.getCenter(), true);
         if(sheetBehavior.getState() != BottomSheetBehavior.STATE_COLLAPSED)
             sheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+    }
+
+    public int getInitialPeekHeight() {
+        return initialPeekHeight;
     }
 }

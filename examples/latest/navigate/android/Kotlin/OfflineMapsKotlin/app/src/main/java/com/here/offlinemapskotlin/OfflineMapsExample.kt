@@ -186,8 +186,8 @@ class OfflineMapsExample(
                         }
                     }
 
-                    val message = "Found " + downloadableRegions.size +
-                            " continents with various countries. See log for details."
+                    val message = "Found ${downloadableRegions.size} continents with various " +
+                            "countries. Full list: $downloadableRegions."
                     snackbar.show(message)
                 }
 

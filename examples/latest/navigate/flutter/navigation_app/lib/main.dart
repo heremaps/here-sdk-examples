@@ -99,7 +99,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                   children: [
                     button("Start Simulation", _startNavigationSimulationButtonClicked),
                     button(_trackingState, toggleTrackingButtonClicked),
-                    button("Stop", _stopNavigationButtonClicked),
+                    Expanded(
+                      child: button("Stop", _stopNavigationButtonClicked),
+                    ),
                   ],
                 ),
                 Row(
@@ -248,17 +250,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   // A helper method to add a button on top of the HERE map.
-  Align button(String buttonLabel, VoidCallback? callbackFunction) {
-    return Align(
-      alignment: Alignment.topCenter,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.lightBlueAccent,
-          foregroundColor: Colors.white,
-        ),
-        onPressed: callbackFunction,
-        child: Text(buttonLabel, style: TextStyle(fontSize: 15)),
+  Widget button(String buttonLabel, VoidCallback callbackFunction) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.lightBlueAccent,
+        foregroundColor: Colors.white,
       ),
+      onPressed: callbackFunction,
+      child: Text(buttonLabel, style: TextStyle(fontSize: 20)),
     );
   }
 

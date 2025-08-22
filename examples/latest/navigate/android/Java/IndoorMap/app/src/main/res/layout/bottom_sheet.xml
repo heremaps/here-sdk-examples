@@ -4,18 +4,18 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:gravity="center"
+    android:gravity="top"
     app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
-    app:behavior_hideable="false"
-    app:behavior_peekHeight="100dp"
     android:background="@drawable/bottom_sheet_background"
     android:id="@+id/bottomSheet"
     android:elevation="5dp"
+
     >
     <View
+        android:id="@+id/dragHandle"
         android:layout_width="40dp"
         android:layout_height="4dp"
-        android:layout_centerHorizontal="true"
+        android:layout_gravity="center_horizontal"
         android:layout_marginTop="6dp"
         android:background="@drawable/round_side_rect"/>
     <RelativeLayout
@@ -30,8 +30,8 @@
             android:layout_height="48dp"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="20dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
             android:hint="Search for Venues"
             android:textSize="18dp"
             android:elevation="5dp"
@@ -46,7 +46,7 @@
             android:src="@drawable/cancle_button"
             android:layout_alignParentEnd="true"
             android:layout_marginRight="30dp"
-            android:layout_marginTop="33dp"
+            android:layout_marginTop="25dp"
             android:elevation="6dp"
             android:visibility="gone"
             />

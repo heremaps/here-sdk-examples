@@ -108,6 +108,11 @@ public class MapObjectsExample {
     }
 
     public void enableVisibilityRangesForPolyline(){
+        if (mapPolyline == null) {
+            Log.e("MapObjectsExample", "MapPolyline is not created yet. Call showMapPolyline() first.");
+            return;
+        }
+
         ArrayList<MapMeasureRange> visibilityRanges = new ArrayList<>();
 
         // At present, only MapMeasure.Kind.ZOOM_LEVEL is supported for visibility ranges.

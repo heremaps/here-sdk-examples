@@ -33,6 +33,7 @@ class RoutingExample {
     private let timeUtils: TimeUtils
     private var currentRoute: Route?
     private let offroadDistanceThresholdMeters: Double = 500.0
+    private var currentRouteCalculationTask: TaskHandle?
     
     init(_ mapView: MapView) {
         self.mapView = mapView
@@ -66,6 +67,11 @@ class RoutingExample {
     }
     
     func addRoute() {
+        if (isRouteCalculationRunning()) {
+            print("Previous route calculation still in progress.");
+            return;
+        }
+
         // Optionally, clear any previous route.
         clearMap()
 
@@ -78,6 +84,10 @@ class RoutingExample {
         addMapMarker(geoCoordinates: destinationGeoCoordinates!, imageName: "poi_destination.png")
 
         calculateRoute(waypoints: waypoints)
+    }
+    
+    private func isRouteCalculationRunning() -> Bool {
+        return currentRouteCalculationTask != nil && currentRouteCalculationTask?.isFinished == false
     }
     
     func onUpdateTrafficOnRouteButtonClick() {
@@ -125,7 +135,7 @@ class RoutingExample {
     }
 
     private func calculateRoute(waypoints: Array<Waypoint>) {
-        routingEngine.calculateRoute(with: waypoints,
+        currentRouteCalculationTask = routingEngine.calculateRoute(with: waypoints,
                                      carOptions: getCaroptions()) { (routingError, routes) in
             
             if let error = routingError {

@@ -34,6 +34,7 @@ class NavigationWarnersExample {
   void setupListeners() {
     _setupSpeedWarnings();
     _setupSafetyCameraWarningOptions();
+    _setupManeuverNotificationOptions();
 
     // Notifies on the progress along the route including maneuver instructions.
     // These maneuver instructions can be used to compose a visual representation of the next maneuver actions.
@@ -173,19 +174,19 @@ class NavigationWarnersExample {
         print(
             "BorderCrossing: A border is ahead in: ${borderCrossingWarning.distanceToBorderCrossingInMeters} meters.");
         print("BorderCrossing: Type (such as country or state): ${borderCrossingWarning.type.name}");
-        print("BorderCrossing: Country code: ${borderCrossingWarning.countryCode.name}");
+        print("BorderCrossing: Country code: ${borderCrossingWarning.administrativeRules.countryCode.name}");
 
         // The state code after the border crossing. It represents the state / province code.
         // It is a 1 to 3 upper-case characters string that follows the ISO 3166-2 standard,
         // but without the preceding country code (e.g., for Texas, the state code will be TX).
         // It will be null for countries without states or countries in which the states have very
         // similar regulations (e.g., for Germany, there will be no state borders).
-        if (borderCrossingWarning.stateCode != null) {
-          print("BorderCrossing: State code: ${borderCrossingWarning.stateCode}");
+        if (borderCrossingWarning.administrativeRules.stateCode != null) {
+          print("BorderCrossing: State code: ${borderCrossingWarning.administrativeRules.stateCode}");
         }
 
         // The general speed limits that apply in the country / state after border crossing.
-        var generalVehicleSpeedLimits = borderCrossingWarning.speedLimits;
+        var generalVehicleSpeedLimits = borderCrossingWarning.administrativeRules.speedLimits;
         print(
             "BorderCrossing: Speed limit in cities (m/s): ${generalVehicleSpeedLimits.maxSpeedUrbanInMetersPerSecond}");
         print(
@@ -621,6 +622,14 @@ class NavigationWarnersExample {
     speedLimitOffset.highSpeedBoundaryInMetersPerSecond = 25;
 
     _visualNavigator.speedWarningOptions = SpeedWarningOptions(speedLimitOffset);
+  }
+
+  void _setupManeuverNotificationOptions() {
+    ManeuverNotificationOptions maneuverNotificationOptions = ManeuverNotificationOptions.withDefaults();
+
+    // Indicates whether lane recommendation should be used when generating notifications.
+    maneuverNotificationOptions.enableLaneRecommendation = true;
+    _visualNavigator.maneuverNotificationOptions = maneuverNotificationOptions;
   }
 
   void logLaneRecommendations(List<Lane> lanes) {

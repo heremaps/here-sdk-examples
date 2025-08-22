@@ -78,6 +78,7 @@ class NavigationWarners : BorderCrossingWarningDelegate,
         setupRealisticViewWarnings()
         setupSchoolZoneWarnings()
         setupSafetyCameraWarningOptions()
+        setupManeuverNotificationOptions()
     }
 
     // Conform to RouteProgressDelegate.
@@ -681,19 +682,19 @@ class NavigationWarners : BorderCrossingWarningDelegate,
         if borderCrossingWarning.distanceType == .ahead {
             print("BorderCrossing: A border is ahead in: \(borderCrossingWarning.distanceToBorderCrossingInMeters) meters.")
             print("BorderCrossing: Type (such as country or state): \(borderCrossingWarning.type)")
-            print("BorderCrossing: Country code: \(borderCrossingWarning.countryCode)")
+            print("BorderCrossing: Country code: \(borderCrossingWarning.administrativeRules.countryCode)")
 
             // The state code after the border crossing. It represents the state / province code.
             // It is a 1 to 3 upper-case characters string that follows the ISO 3166-2 standard,
             // but without the preceding country code (e.g., for Texas, the state code will be TX).
             // It will be nil for countries without states or countries in which the states have very
             // similar regulations (e.g., for Germany, there will be no state borders).
-            if let stateCode = borderCrossingWarning.stateCode {
+            if let stateCode = borderCrossingWarning.administrativeRules.stateCode {
                 print("BorderCrossing: State code: \(stateCode)")
             }
 
             // The general speed limits that apply in the country / state after border crossing.
-            let generalVehicleSpeedLimits = borderCrossingWarning.speedLimits
+            let generalVehicleSpeedLimits = borderCrossingWarning.administrativeRules.speedLimits
             print("BorderCrossing: Speed limit in cities (m/s): \(String(describing: generalVehicleSpeedLimits.maxSpeedUrbanInMetersPerSecond))")
             print("BorderCrossing: Speed limit outside cities (m/s): \(String(describing: generalVehicleSpeedLimits.maxSpeedRuralInMetersPerSecond))")
             print("BorderCrossing: Speed limit on highways (m/s): \(String(describing: generalVehicleSpeedLimits.maxSpeedHighwaysInMetersPerSecond))")
@@ -803,5 +804,13 @@ class NavigationWarners : BorderCrossingWarningDelegate,
         schoolZoneWarningOptions.filterOutInactiveTimeDependentWarnings = true
         schoolZoneWarningOptions.warningDistanceInMeters = 150
         visualNavigator.schoolZoneWarningOptions = schoolZoneWarningOptions
+    }
+    
+    private func setupManeuverNotificationOptions() {
+        var maneuverNotificationOptions = ManeuverNotificationOptions()
+        
+        // Indicates whether lane recommendation should be used when generating notifications.
+        maneuverNotificationOptions.enableLaneRecommendation = true
+        visualNavigator.maneuverNotificationOptions = maneuverNotificationOptions
     }
 }

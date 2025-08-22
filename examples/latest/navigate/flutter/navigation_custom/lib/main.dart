@@ -136,16 +136,16 @@ class _MyAppState extends State<MyApp>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      button('Start simulation', _startButtonClicked),
-                      button('Stop simulation', _stopButtonClicked)
+                      Expanded(child: button('Start simulation', _startButtonClicked)),
+                      Expanded(child: button('Stop simulation', _stopButtonClicked)),
                     ],
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      button(
-                          'Toggle indicator style', _toggleStyleButtonClicked),
-                      button('Toggle halo', _togglehaloColorButtonClicked)
+                      Expanded(child: button(
+                          'Toggle indicator style', _toggleStyleButtonClicked)),
+                      Expanded(child: button('Toggle halo', _togglehaloColorButtonClicked)),
                     ],
                   ),
                 ],
@@ -558,17 +558,14 @@ class _MyAppState extends State<MyApp>
   }
 
   // A helper method to add a button on top of the HERE map.
-  Align button(String buttonLabel, Function callbackFunction) {
-    return Align(
-      alignment: Alignment.topCenter,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.lightBlueAccent,
-          foregroundColor: Colors.white,
-        ),
-        onPressed: () => callbackFunction(),
-        child: Text(buttonLabel, style: TextStyle(fontSize: 20)),
+  Widget button(String buttonLabel, VoidCallback callbackFunction) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.lightBlueAccent,
+        foregroundColor: Colors.white,
       ),
+      onPressed: callbackFunction,
+      child: Text(buttonLabel, style: TextStyle(fontSize: 20)),
     );
   }
 }

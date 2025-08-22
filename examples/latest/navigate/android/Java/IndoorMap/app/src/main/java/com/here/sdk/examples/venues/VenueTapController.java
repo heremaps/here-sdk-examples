@@ -266,7 +266,15 @@ public class VenueTapController {
 
         recyclerView.setAdapter(new SpaceSelectionAdapter(context, geometry));
 
-        sheetBehavior.setPeekHeight(500);
+        // Estimated height of SpaceContent layout(space_selection.xml):
+        // - ImageView: 40dp height + 10dp top margin = 50dp
+        // - Vertical LinearLayout: wrap_content with 2 TextViews (approx. 24dp + 20dp) + 10dp margin = ~54dp
+        // Final estimated height ≈ max(50dp, 54dp) ≈ 60dp, (using max as height is set to wrap_content)
+        // Converted to pixels using device density:
+        int dp = 60;
+        float density = context.getResources().getDisplayMetrics().density;
+        int spaceContentHeight = Math.round(dp * density);
+        sheetBehavior.setPeekHeight(((MainActivity)context).getInitialPeekHeight() + spaceContentHeight);
 
         // Set a selected style for the geometry.
         ArrayList<VenueGeometry> geometries =
@@ -329,7 +337,8 @@ public class VenueTapController {
     }
 
     private void deselectGeometry() {
-        sheetBehavior.setPeekHeight(300);
+        // restore initial peek height of bottom sheet
+        sheetBehavior.setPeekHeight(((MainActivity)context).getInitialPeekHeight());
 
         // If the map marker is already on the screen, remove it.
         if (marker != null) {
@@ -348,7 +357,9 @@ public class VenueTapController {
 
     public void deselectTopolgy() {
         topologyLayout.setVisibility(View.GONE);
-        sheetBehavior.setPeekHeight(300);
+        // restore initial peek height of bottom sheet
+        sheetBehavior.setPeekHeight(((MainActivity)context).getInitialPeekHeight());
+
         // If there is a selected geometry, reset its style.
         if (selectedVenue != null && selectedTopology != null) {
             ArrayList<VenueTopology> topologies =
