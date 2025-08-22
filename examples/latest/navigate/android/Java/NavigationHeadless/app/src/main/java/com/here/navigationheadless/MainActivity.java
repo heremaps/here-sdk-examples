@@ -22,6 +22,7 @@ package com.here.navigationheadless;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.widget.TextView;
 
@@ -91,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
         roadnameTextView = findViewById(R.id.roadnameTextView);
         timerTextView = findViewById(R.id.timerTextView);
 
-        timerHandler = new Handler();
+        timerHandler = new Handler(Looper.getMainLooper());
         startTimer();
     }
 

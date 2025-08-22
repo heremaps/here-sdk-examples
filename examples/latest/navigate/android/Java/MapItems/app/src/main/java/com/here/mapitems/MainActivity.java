@@ -188,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
                 mapObjectsExample.showGradientMapPolyLine();
                 return true;
             case R.id.polyline_enable_visibility:
-                Toast.makeText(this, "Enabled visibility ranges for MapPolyLine", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Enabled visibility ranges for an existing MapPolyline.", Toast.LENGTH_SHORT).show();
                 mapObjectsExample.enableVisibilityRangesForPolyline();
                 return true;
             case R.id.clear_map_objects_menu_item:

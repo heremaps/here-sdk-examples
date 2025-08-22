@@ -23,6 +23,7 @@ import 'package:flutter/material.dart';
 import 'package:here_sdk/animation.dart' as here;
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/core.errors.dart';
+import 'package:here_sdk/core.threading.dart';
 import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/routing.dart';
 import 'package:here_sdk/routing.dart' as here;
@@ -43,6 +44,7 @@ class RoutingExample {
   final _timeUtils = TimeUtils();
   here.Route? _currentRoute;
   final offroadDistanceThresholdMeters = 500.0;
+  TaskHandle? _currentRouteCalculationTask;
 
   RoutingExample(ShowDialogFunction showDialogCallback,
       HereMapController hereMapController)
@@ -62,6 +64,11 @@ class RoutingExample {
   }
 
   Future<void> addRoute() async {
+    if (isRouteCalculationRunning()) {
+      print("Previous route calculation still in progress.");
+      return;
+    }
+
     // Optionally, clear any previous route.
     clearMap();
 
@@ -76,6 +83,10 @@ class RoutingExample {
     _addMapMarker(destinationGeoCoordinates, "assets/poi_destination.png");
 
     _calculateRoute(waypoints);
+  }
+
+  bool isRouteCalculationRunning() {
+    return _currentRouteCalculationTask != null && !_currentRouteCalculationTask!.isFinished;
   }
 
   void onUpdateTrafficOnRouteButtonClick() {
@@ -161,7 +172,7 @@ class RoutingExample {
         ? TrafficOptimizationMode.timeDependent
         : TrafficOptimizationMode.disabled;
 
-    _routingEngine.calculateCarRoute(waypoints, carOptions,
+    _currentRouteCalculationTask = _routingEngine.calculateCarRoute(waypoints, carOptions,
         (RoutingError? routingError, List<here.Route>? routeList) async {
       // When error is null, then the list guaranteed to be not null.
       if (routingError == null && routeList != null) {

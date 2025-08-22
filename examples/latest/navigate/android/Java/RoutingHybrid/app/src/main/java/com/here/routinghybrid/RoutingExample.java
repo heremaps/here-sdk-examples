@@ -128,7 +128,7 @@ public class RoutingExample {
         List<OCMSegmentId> segmentIds;
         SegmentData segmentData;
 
-        // The necessary SegmentDataLoaderOptions need to be turned on in order to find the requested information. 
+        // The necessary SegmentDataLoaderOptions need to be turned on in order to find the requested information.
         // It is recommended to turn on only the data you are interested in by setting the corresponding fields to true.
         SegmentDataLoaderOptions segmentDataLoaderOptions = new SegmentDataLoaderOptions();
 

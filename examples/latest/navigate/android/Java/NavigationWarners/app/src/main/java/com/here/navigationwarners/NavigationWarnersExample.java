@@ -50,6 +50,7 @@ import com.here.sdk.navigation.LaneRecommendationState;
 import com.here.sdk.navigation.LaneType;
 import com.here.sdk.navigation.LowSpeedZoneWarning;
 import com.here.sdk.navigation.LowSpeedZoneWarningListener;
+import com.here.sdk.navigation.ManeuverNotificationOptions;
 import com.here.sdk.navigation.ManeuverProgress;
 import com.here.sdk.navigation.ManeuverViewLaneAssistance;
 import com.here.sdk.navigation.ManeuverViewLaneAssistanceListener;
@@ -569,19 +570,19 @@ public class NavigationWarnersExample {
                 if (borderCrossingWarning.distanceType == DistanceType.AHEAD) {
                     Log.d(TAG, "BorderCrossing: A border is ahead in: " + borderCrossingWarning.distanceToBorderCrossingInMeters + " meters.");
                     Log.d(TAG, "BorderCrossing: Type (such as country or state): " + borderCrossingWarning.type.name());
-                    Log.d(TAG, "BorderCrossing: Country code: " + borderCrossingWarning.countryCode.name());
+                    Log.d(TAG, "BorderCrossing: Country code: " + borderCrossingWarning.administrativeRules.countryCode.name());
 
                     // The state code after the border crossing. It represents the state / province code.
                     // It is a 1 to 3 upper-case characters string that follows the ISO 3166-2 standard,
                     // but without the preceding country code (e.g. for Texas, the state code will be TX).
                     // It will be null for countries without states or countries in which the states have very
                     // similar regulations (e.g. for Germany there will be no state borders).
-                    if (borderCrossingWarning.stateCode != null) {
-                        Log.d(TAG, "BorderCrossing: State code: " + borderCrossingWarning.stateCode);
+                    if (borderCrossingWarning.administrativeRules.stateCode != null) {
+                        Log.d(TAG, "BorderCrossing: State code: " + borderCrossingWarning.administrativeRules.stateCode);
                     }
 
                     // The general speed limits that apply in the country / state after border crossing.
-                    GeneralVehicleSpeedLimits generalVehicleSpeedLimits = borderCrossingWarning.speedLimits;
+                    GeneralVehicleSpeedLimits generalVehicleSpeedLimits = borderCrossingWarning.administrativeRules.speedLimits;
                     Log.d(TAG, "BorderCrossing: Speed limit in cities (m/s): " + generalVehicleSpeedLimits.maxSpeedUrbanInMetersPerSecond);
                     Log.d(TAG, "BorderCrossing: Speed limit outside cities (m/s): " + generalVehicleSpeedLimits.maxSpeedRuralInMetersPerSecond);
                     Log.d(TAG, "BorderCrossing: Speed limit on highways (m/s): " + generalVehicleSpeedLimits.maxSpeedHighwaysInMetersPerSecond);
@@ -745,6 +746,14 @@ public class NavigationWarnersExample {
         speedLimitOffset.highSpeedBoundaryInMetersPerSecond = 25;
 
         visualNavigator.setSpeedWarningOptions(new SpeedWarningOptions(speedLimitOffset));
+    }
+
+    private void setupManeuverNotificationOptions(VisualNavigator visualNavigator) {
+        ManeuverNotificationOptions maneuverNotificationOptions = new ManeuverNotificationOptions();
+
+        // Indicates whether lane recommendation should be used when generating notifications.
+        maneuverNotificationOptions.enableLaneRecommendation = true;
+        visualNavigator.setManeuverNotificationOptions(maneuverNotificationOptions);
     }
 
     private Double getCurrentSpeedLimit(SpeedLimit speedLimit) {
