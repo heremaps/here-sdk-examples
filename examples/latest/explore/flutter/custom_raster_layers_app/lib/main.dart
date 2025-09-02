@@ -28,11 +28,7 @@ void main() async {
   // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
   await _initializeHERESDK();
 
-  runApp(
-    MaterialApp(
-      home: MyApp(),
-    ),
-  );
+  runApp(MaterialApp(home: MyApp()));
 }
 
 Future<void> _initializeHERESDK() async {
@@ -64,18 +60,13 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(
-          title: Text('Custom Raster Layers'),
-        ),
+        appBar: AppBar(title: Text('Custom Raster Layers')),
         body: Stack(
           children: [
             HereMap(onMapCreated: _onMapCreated),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                button('Enable', _enableButtonClicked),
-                button('Disable', _disableButtonClicked),
-              ],
+              children: [button('Enable', _enableButtonClicked), button('Disable', _disableButtonClicked)],
             ),
           ],
         ),
@@ -88,7 +79,8 @@ class _MyAppState extends State<MyApp> {
       if (error == null) {
         _customRasterLayersExample = CustomRasterLayersExample(hereMapController);
 
-        String message = "For this example app, an outdoor layer from thunderforest.com is used. " +
+        String message =
+            "For this example app, an outdoor layer from thunderforest.com is used. " +
             "Without setting a valid API key, these raster tiles will show a watermark (terms of usage: https://www.thunderforest.com/terms/)." +
             "\n Attribution for the outdoor layer: \n Maps © www.thunderforest.com, \n Data © www.osm.org/copyright.";
 
@@ -112,11 +104,11 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     _appLifecycleListener = AppLifecycleListener(
       onDetach: () =>
-      // Sometimes Flutter may not reliably call dispose(),
-      // therefore it is recommended to dispose the HERE SDK
-      // also when the AppLifecycleListener is detached.
-      // See more details: https://github.com/flutter/flutter/issues/40940
-      { print('AppLifecycleListener detached.'), _disposeHERESDK() },
+          // Sometimes Flutter may not reliably call dispose(),
+          // therefore it is recommended to dispose the HERE SDK
+          // also when the AppLifecycleListener is detached.
+          // See more details: https://github.com/flutter/flutter/issues/40940
+          {print('AppLifecycleListener detached.'), _disposeHERESDK()},
     );
   }
 
@@ -139,10 +131,7 @@ class _MyAppState extends State<MyApp> {
     return Align(
       alignment: Alignment.topCenter,
       child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.white,
-          backgroundColor: Colors.lightBlueAccent,
-        ),
+        style: ElevatedButton.styleFrom(foregroundColor: Colors.white, backgroundColor: Colors.lightBlueAccent),
         onPressed: () => callbackFunction(),
         child: Text(buttonLabel, style: TextStyle(fontSize: 20)),
       ),
@@ -157,13 +146,7 @@ class _MyAppState extends State<MyApp> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(title),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(message),
-              ],
-            ),
-          ),
+          content: SingleChildScrollView(child: ListBody(children: <Widget>[Text(message)])),
           actions: <Widget>[
             TextButton(
               child: Text("OK"),

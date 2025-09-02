@@ -34,12 +34,19 @@ class RoutingWithAvoidanceOptionsExample : LongPressDelegate, TapDelegate {
     
     private var startMapMarker: MapMarker?
     private var destinationMapMarker: MapMarker?
+    private var mapMatcherMapMarker: MapMarker?
     
     private var currentlySelectedSegmentReference: SegmentReference?
     private let segmentDataLoader: SegmentDataLoader
     
     private let metadataSegmentIdKey = "segmentId"
     private let metadataTilePartitionIdKey = "tilePartitionId"
+   
+    // Set to false to use the MapMatcher with the EHORIZON LayerConfiguration instead when
+    // you do not need the RENDERING layer, for example, when you do not show a map view.
+    private var useRenderingLayers = true
+    private let sdkNativeEngine: SDKNativeEngine?
+    private let mapMatcher: MapMatcher?
     
     private var setLongpressDestination = false
     private var segmentAvoidanceList: [String: SegmentReference] = [:]
@@ -62,10 +69,22 @@ class RoutingWithAvoidanceOptionsExample : LongPressDelegate, TapDelegate {
             fatalError("Failed to initialize routing engine. Cause: \(engineInstantiationError)")
         }
         
+        guard let sdkNativeEngineInstance = SDKNativeEngine.sharedInstance else {
+            fatalError("SDKNativeEngine not initialized.")
+        }
+        
+        self.sdkNativeEngine = sdkNativeEngineInstance
+
         do {
             // With the segment data loader information can be retrieved from cached or installed offline map data, for example on road attributes.
             // This feature can be used independent from a route. It is recommended to not rely on the cache alone. For simplicity, this is left out for this example.
             try segmentDataLoader = SegmentDataLoader()
+        } catch let InstantiationError {
+            fatalError("Initialization failed. Cause: \(InstantiationError)")
+        }
+        
+        do {
+            try mapMatcher = MapMatcher(sdkEngine: sdkNativeEngineInstance, useRenderingLayers: useRenderingLayers)
         } catch let InstantiationError {
             fatalError("Initialization failed. Cause: \(InstantiationError)")
         }
@@ -127,7 +146,7 @@ class RoutingWithAvoidanceOptionsExample : LongPressDelegate, TapDelegate {
 
         // If no polyLines are selected, load the segments.
         if listSize == 0 {
-            loadSegmentData(startGeoCoordinates: tappedCoordinates!)
+            fetchOCMSegmentIDs(startGeoCoordinates: tappedCoordinates!)
             return
         }
 
@@ -158,53 +177,103 @@ class RoutingWithAvoidanceOptionsExample : LongPressDelegate, TapDelegate {
         }
     }
 
-    // Load segment data synchronously and fetch information from the map around the given GeoCoordinates.
-    func loadSegmentData(startGeoCoordinates : GeoCoordinates) {
-        
-        // The necessary SegmentDataLoaderOptions need to be turned on in order to find the requested information.
-        // It is recommended to turn on only the fields that you are interested in.
-        var segmentDataLoaderOptions = SegmentDataLoaderOptions()
-        segmentDataLoaderOptions.loadBaseSpeeds = true
-        segmentDataLoaderOptions.loadRoadAttributes = true
-        
+    // Fetch information from the map around the given GeoCoordinates and load segment data synchronously.
+    func fetchOCMSegmentIDs(startGeoCoordinates : GeoCoordinates) {
         let radiusInMeters = 5.0
         
         do {
             let segmentIds = try segmentDataLoader.getSegmentsAroundCoordinates(startGeoCoordinates, radiusInMeters: radiusInMeters)
             
             for segmentId in segmentIds {
-                let segmentData = try segmentDataLoader.loadData(segment: segmentId, options: segmentDataLoaderOptions)
-                
-                let segmentSpanDataList = segmentData.spans
-                let segmentReference = segmentData.segmentReference
-                
-                let metadata = Metadata()
-                metadata.setString(key: metadataSegmentIdKey, value: segmentReference.segmentId)
-                metadata.setInteger(key: metadataTilePartitionIdKey, value: Int32(segmentReference.tilePartitionId))
-                
-                if let segmentPolyline = createMapPolyline(
-                    color: UIColor(red: 1.0, green: 0.0, blue: 0.0, alpha: 1.0),
-                    geoPolyline: segmentData.polyline
-                ) {
-                    segmentPolyline.metadata = metadata
-                    mapView.mapScene.addMapPolyline(segmentPolyline)
-                    segmentPolylines.append(segmentPolyline)
-                    segmentAvoidanceList[segmentReference.segmentId] = segmentReference
-                }
-                
-                for span in segmentSpanDataList {
-                    print("Physical attributes of \(span) span.")
-                    
-                    print("Private roads: \(String(describing: span.physicalAttributes?.isPrivate))")
-                    print("Dirt roads: \(String(describing: span.physicalAttributes?.isDirtRoad))")
-                    print("Bridge: \(String(describing: span.physicalAttributes?.isBridge))")
-                    print("Tollway: \(String(describing: span.roadUsages?.isTollway))")
-                    print("Average expected speed: \(String(describing: span.positiveDirectionBaseSpeedInMetersPerSecond))")
-                }
+                loadSegmentData(ocmSegmentId: segmentId)
             }
         } catch let MapDataLoaderError {
             print("Error loading segment data: \(MapDataLoaderError)")
         }
+    }
+    
+    // The MapMatcher aligns location signals to the road network, improving
+    // accuracy during navigation. Raw coordinates often differ from the actual
+    // position, so the MapMatcher uses past locations, plus speed and bearing,
+    // to refine results. If map data is missing, it returns null and requests
+    // the needed tiles online; later calls can use the cached data. A tile
+    // covers a larger area, so future matches often benefit. Both VisualNavigator
+    // and Navigator use the MapMatcher to match each signal to a road. Here we
+    // show matching for a single long-tap, though repeated taps may improve accuracy.
+    private func matchLocation(geoCoordinates: GeoCoordinates) {
+        // The MapMatcher evaluates all parameters in the Location object to produce the most accurate result.
+        // The `time` parameter must be set for each Location object.
+        // While missing parameters are tolerated, providing additional parameters such as speed or bearing improves matching quality.
+        let location = Location(coordinates: geoCoordinates, time: Date())
+        
+        guard let mapMatcher = mapMatcher else {
+            print("MapMatcher is not available")
+            return
+        }
+        
+        let mapMatchedLocation = mapMatcher.match(location: location)
+        
+        // A null mapMatchedLocation indicates that the location could not be matched to the road network.
+        // This means the location is offroad or the data is not in the cache.
+        if let matchedLocation = mapMatchedLocation {
+            showDialog(title: "MapMatcher", message: "Map-matched location is highlighted with red dot on the map. Check logs for more information on matched location.")
+            
+            // Show the map-matched location on the map.
+            if let marker = addMapMarker(geoCoordinates: matchedLocation.coordinates, imageName: "map_matched_location_dot.png") {
+                mapMatcherMapMarker = marker
+            }
+            
+            // Fetch IDs from mapMatchedLocation and convert them into OCMSegmentID required by loadSegmentData method.
+            let mapMatchedSegmentId: OCMSegmentId = OCMSegmentId(tilePartitionId: Int32(matchedLocation.segmentReference.tilePartitionId), localId: Int32(matchedLocation.segmentReference.localId!))
+            
+            loadSegmentData(ocmSegmentId: mapMatchedSegmentId)
+        } else {
+            print("Location could not be map-matched. Check if the picked location is within 50-meter radius of a road.")
+        }
+    }
+    
+    private func loadSegmentData(ocmSegmentId: OCMSegmentId) {
+        // The necessary SegmentDataLoaderOptions need to be turned on in order to find the requested information.
+        // It is recommended to turn on only the fields that you are interested in.
+        var segmentDataLoaderOptions = SegmentDataLoaderOptions()
+        segmentDataLoaderOptions.loadBaseSpeeds = true
+        segmentDataLoaderOptions.loadRoadAttributes = true
+        
+        do {
+            let segmentData = try segmentDataLoader.loadData(segment: ocmSegmentId, options: segmentDataLoaderOptions)
+            
+            let segmentSpanDataList = segmentData.spans
+            let segmentReference = segmentData.segmentReference
+            
+            let metadata = Metadata()
+            metadata.setString(key: metadataSegmentIdKey, value: segmentReference.segmentId)
+            metadata.setInteger(key: metadataTilePartitionIdKey, value: Int32(segmentReference.tilePartitionId))
+            
+            if let segmentPolyline = createMapPolyline(
+                color: UIColor(red: 1.0, green: 0.0, blue: 0.0, alpha: 1.0),
+                geoPolyline: segmentData.polyline
+            ) {
+                segmentPolyline.metadata = metadata
+                mapView.mapScene.addMapPolyline(segmentPolyline)
+                segmentPolylines.append(segmentPolyline)
+                segmentAvoidanceList[segmentReference.segmentId] = segmentReference
+            }
+            
+            for span in segmentSpanDataList {
+                logSegmentDataDetails(span: span, segmentID: segmentReference.segmentId)
+            }
+        } catch let MapDataLoaderError {
+            print("Error loading segment data: \(MapDataLoaderError)")
+        }
+    }
+    
+    private func logSegmentDataDetails(span: SegmentSpanData, segmentID: String) {
+        print("Segment data for span belonging to OCM segment with ID: \(segmentID)")
+        print("Private roads: \(String(describing: span.physicalAttributes?.isPrivate))")
+        print("Dirt roads: \(String(describing: span.physicalAttributes?.isDirtRoad))")
+        print("Bridge: \(String(describing: span.physicalAttributes?.isBridge))")
+        print("Tollway: \(String(describing: span.roadUsages?.isTollway))")
+        print("Average expected speed: \(String(describing: span.positiveDirectionBaseSpeedInMetersPerSecond))")
     }
     
     // Conform to LongPressDelegate protocol.
@@ -222,6 +291,9 @@ class RoutingWithAvoidanceOptionsExample : LongPressDelegate, TapDelegate {
                 startGeoCoordinates = geoCoordinates;
                 startMapMarker?.coordinates = geoCoordinates
             }
+            
+            matchLocation(geoCoordinates: geoCoordinates)
+
             setLongpressDestination = !setLongpressDestination;
         }
     }

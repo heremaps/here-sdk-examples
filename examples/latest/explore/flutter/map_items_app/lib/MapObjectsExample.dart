@@ -33,12 +33,14 @@ class MapObjectsExample {
   MapPolygon? _mapCircle;
 
   MapObjectsExample(HereMapController hereMapController)
-      : _mapScene = hereMapController.mapScene,
-        _mapCamera = hereMapController.camera {
+    : _mapScene = hereMapController.mapScene,
+      _mapCamera = hereMapController.camera {
     double distanceToEarthInMeters = 5000;
     MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
-    hereMapController.camera
-        .lookAtPointWithMeasure(GeoCoordinates(52.51760485151816, 13.380312380535472), mapMeasureZoom);
+    hereMapController.camera.lookAtPointWithMeasure(
+      GeoCoordinates(52.51760485151816, 13.380312380535472),
+      mapMeasureZoom,
+    );
   }
 
   void showMapPolyline() {
@@ -166,11 +168,13 @@ class MapObjectsExample {
     MapPolyline? mapPolyline;
     try {
       mapPolyline = MapPolyline.withRepresentation(
-          geoPolyline,
-          MapPolylineSolidRepresentation(
-              MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
-              lineColor,
-              LineCap.round));
+        geoPolyline,
+        MapPolylineSolidRepresentation(
+          MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
+          lineColor,
+          LineCap.round,
+        ),
+      );
     } on MapPolylineRepresentationInstantiationException catch (e) {
       print("MapPolylineRepresentation Exception:" + e.error.name);
     } on MapMeasureDependentRenderSizeInstantiationException catch (e) {
@@ -240,8 +244,12 @@ class MapObjectsExample {
     double distanceToEarthInMeters = 1000 * 8;
     var mapMeasure = MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
     double bowFactor = 1;
-    MapCameraAnimation animation =
-        MapCameraAnimationFactory.flyToWithZoom(geoCoordinatesUpdate, mapMeasure, bowFactor, Duration(seconds: 3));
+    MapCameraAnimation animation = MapCameraAnimationFactory.flyToWithZoom(
+      geoCoordinatesUpdate,
+      mapMeasure,
+      bowFactor,
+      Duration(seconds: 3),
+    );
     _mapCamera.startAnimation(animation);
   }
 }

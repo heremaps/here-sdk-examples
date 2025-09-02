@@ -53,8 +53,10 @@ class PublicTransportRoutingExample {
 
     var options = TransitRouteOptions();
 
-    _transitRoutingEngine.calculateRoute(startWaypoint, destinationWaypoint, options,
-        (RoutingError? routingError, List<here.Route>? routeList) async {
+    _transitRoutingEngine.calculateRoute(startWaypoint, destinationWaypoint, options, (
+      RoutingError? routingError,
+      List<here.Route>? routeList,
+    ) async {
       if (routingError == null) {
         // When error is null, the list is guaranteed to be non empty.
         here.Route route = routeList!.first;
@@ -91,7 +93,8 @@ class PublicTransportRoutingExample {
     for (Maneuver maneuverInstruction in maneuverInstructions) {
       ManeuverAction maneuverAction = maneuverInstruction.action;
       GeoCoordinates maneuverLocation = maneuverInstruction.coordinates;
-      String maneuverInfo = maneuverInstruction.text +
+      String maneuverInfo =
+          maneuverInstruction.text +
           ", Action: " +
           maneuverAction.toString() +
           ", Location: " +
@@ -139,11 +142,13 @@ class PublicTransportRoutingExample {
     MapPolyline routeMapPolyline;
     try {
       routeMapPolyline = MapPolyline.withRepresentation(
-          routeGeoPolyline,
-          MapPolylineSolidRepresentation(
-              MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
-              polylineColor,
-              LineCap.round));
+        routeGeoPolyline,
+        MapPolylineSolidRepresentation(
+          MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
+          polylineColor,
+          LineCap.round,
+        ),
+      );
       _hereMapController.mapScene.addMapPolyline(routeMapPolyline);
       _mapPolylines.add(routeMapPolyline);
     } on MapPolylineRepresentationInstantiationException catch (e) {
@@ -187,15 +192,23 @@ class PublicTransportRoutingExample {
     double tilt = 0;
     // We want to show the route fitting in the map view with an additional padding of 50 pixels.
     Point2D origin = Point2D(50, 50);
-    Size2D sizeInPixels =
-        Size2D(_hereMapController.viewportSize.width - 100, _hereMapController.viewportSize.height - 100);
+    Size2D sizeInPixels = Size2D(
+      _hereMapController.viewportSize.width - 100,
+      _hereMapController.viewportSize.height - 100,
+    );
     Rectangle2D mapViewport = Rectangle2D(origin, sizeInPixels);
 
     // Animate to the route within a duration of 3 seconds.
     MapCameraUpdate update = MapCameraUpdateFactory.lookAtAreaWithGeoOrientationAndViewRectangle(
-        route.boundingBox, GeoOrientationUpdate(bearing, tilt), mapViewport);
+      route.boundingBox,
+      GeoOrientationUpdate(bearing, tilt),
+      mapViewport,
+    );
     MapCameraAnimation animation = MapCameraAnimationFactory.createAnimationFromUpdateWithEasing(
-        update, const Duration(milliseconds: 3000), here.Easing(here.EasingFunction.inCubic));
+      update,
+      const Duration(milliseconds: 3000),
+      here.Easing(here.EasingFunction.inCubic),
+    );
     _hereMapController.camera.startAnimation(animation);
   }
 }

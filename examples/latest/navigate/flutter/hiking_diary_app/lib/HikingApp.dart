@@ -131,7 +131,8 @@ class HikingApp implements LocationListener, LocationStatusListener {
     }
 
     setMessage(
-        "Diary Entry from: " + gpxTrack.description + "\n" + "Hike Distance: " + distanceTravelled.toString() + " m");
+      "Diary Entry from: " + gpxTrack.description + "\n" + "Hike Distance: " + distanceTravelled.toString() + " m",
+    );
   }
 
   void deleteDiaryEntry(int index) {
@@ -216,11 +217,13 @@ class HikingApp implements LocationListener, LocationStatusListener {
     Color polylineColor = const Color.fromARGB(160, 0, 144, 138);
     try {
       myPathMapPolyline = MapPolyline.withRepresentation(
-          geoPolyline,
-          MapPolylineSolidRepresentation(
-              MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
-              polylineColor,
-              LineCap.round));
+        geoPolyline,
+        MapPolylineSolidRepresentation(
+          MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
+          polylineColor,
+          LineCap.round,
+        ),
+      );
       mapView.mapScene.addMapPolyline(myPathMapPolyline!);
     } on MapPolylineRepresentationInstantiationException catch (e) {
       print("MapPolylineRepresentation exception:" + e.error.name);
@@ -235,11 +238,13 @@ class HikingApp implements LocationListener, LocationStatusListener {
     List<GeoCoordinates> geoCoordinatesList = gpxManager.getGeoCoordinatesList(gpxTrackWriter.track);
     if (geoCoordinatesList.length < 2) {
       return MapPolyline.withRepresentation(
-          GeoPolyline([]),
-          MapPolylineSolidRepresentation(
-              MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, 0),
-              Colors.transparent,
-              LineCap.round));
+        GeoPolyline([]),
+        MapPolylineSolidRepresentation(
+          MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, 0),
+          Colors.transparent,
+          LineCap.round,
+        ),
+      );
     }
     GeoPolyline geoPolyline;
     try {
@@ -270,13 +275,20 @@ class HikingApp implements LocationListener, LocationStatusListener {
     // For very short polylines we want to have at least a distance of 100 meters.
     MapMeasure minDistanceInMeters = new MapMeasure(MapMeasureKind.distanceInMeters, 100);
 
-    MapCameraUpdate mapCameraUpdate =
-        MapCameraUpdateFactory.lookAtPoints(geoCoordinateList, mapViewport, geoOrientationUpdate, minDistanceInMeters);
+    MapCameraUpdate mapCameraUpdate = MapCameraUpdateFactory.lookAtPoints(
+      geoCoordinateList,
+      mapViewport,
+      geoOrientationUpdate,
+      minDistanceInMeters,
+    );
 
     // Create animation.
     Duration durationInSeconds = Duration(seconds: 3);
-    MapCameraAnimation mapCameraAnimation =
-        MapCameraAnimationFactory.createAnimationFromUpdateWithEasing(mapCameraUpdate, durationInSeconds, here.Easing(here.EasingFunction.inCubic));
+    MapCameraAnimation mapCameraAnimation = MapCameraAnimationFactory.createAnimationFromUpdateWithEasing(
+      mapCameraUpdate,
+      durationInSeconds,
+      here.Easing(here.EasingFunction.inCubic),
+    );
 
     mapView.camera.startAnimation(mapCameraAnimation);
   }
@@ -285,8 +297,12 @@ class HikingApp implements LocationListener, LocationStatusListener {
     GeoCoordinatesUpdate geoCoordinatesUpdate = GeoCoordinatesUpdate.fromGeoCoordinates(currentLocation.coordinates);
     Duration durationInSeconds = Duration(seconds: 3);
     MapMeasure distanceInMeters = new MapMeasure(MapMeasureKind.distanceInMeters, 500);
-    MapCameraAnimation animation =
-        MapCameraAnimationFactory.flyToWithZoom(geoCoordinatesUpdate, distanceInMeters, 1, durationInSeconds);
+    MapCameraAnimation animation = MapCameraAnimationFactory.flyToWithZoom(
+      geoCoordinatesUpdate,
+      distanceInMeters,
+      1,
+      durationInSeconds,
+    );
     mapView.camera.startAnimation(animation);
   }
 

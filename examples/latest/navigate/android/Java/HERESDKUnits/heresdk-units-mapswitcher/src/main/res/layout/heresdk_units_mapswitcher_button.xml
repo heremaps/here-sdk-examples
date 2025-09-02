@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- With merge the button will become part of the parent layout directly and
+     we can avoid to wrap this button in a container layout here. -->
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageButton
+        android:id="@+id/mapswitcher_button_id"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_margin="1dp"
+        android:background="@android:color/transparent"
+        android:src="@drawable/mapswitcher_icon"
+        android:contentDescription="mapswitcher_button"
+        android:scaleType="centerInside" />
+</merge>

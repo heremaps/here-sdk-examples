@@ -22,9 +22,6 @@ package com.here.mapfeatures;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -46,7 +43,10 @@ import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
 import com.here.sdk.mapview.MapViewOptions;
+import com.here.sdk.units.popupmenu.PopupMenuUnit;
+import com.here.sdk.units.popupmenu.PopupMenuView;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
@@ -57,8 +57,6 @@ public class MainActivity extends AppCompatActivity {
     private MapView mapViewGlobe, mapViewWebMercator;
     private MapFeaturesExample mapFeaturesExample;
     private MapSchemesExample mapSchemesExample;
-    private MapScene mapScene;
-    private Button webMercatorButton;
     private MapViewOptions mapViewOptions;
     private ConstraintLayout constraintLayout;
 
@@ -93,13 +91,16 @@ public class MainActivity extends AppCompatActivity {
         mapViewWebMercator.onCreate(savedInstanceState);
         mapViewGlobe.onCreate(savedInstanceState);
 
-        webMercatorButton = findViewById(R.id.web_mercator_button);
-
-        webMercatorButton.setOnClickListener(v -> {
-            changeMapProjection();
-        });
+        // Use the HERE SDK Units library for a simple popup menu, see libs folder.
+        // HERE SDK Units are compiled with the HERESDKUnits app you can find in this repo.
+        setMapFeaturesMenu();
+        setMapSchemesMenu();
 
         handleAndroidPermissions();
+    }
+
+    public void onWebMercatorButtonClicked(View view) {
+        changeMapProjection((Button) view);
     }
 
     private void initializeHERESDK() {
@@ -120,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
         return mapViewGlobe.getVisibility() == View.VISIBLE ? mapViewGlobe : mapViewWebMercator;
     }
 
-    private void changeMapProjection() {
+    private void changeMapProjection(Button webMercatorButton) {
         Map<String, String> enabledFeatures = mapFeaturesExample.getEnabledFeatures();
         boolean isGlobeVisible = mapViewGlobe.getVisibility() == View.VISIBLE;
 
@@ -230,159 +231,72 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater=getMenuInflater();
-        inflater.inflate(R.menu.map_option_menu, menu);
-        return true;
+    private void setMapSchemesMenu() {
+        // Define menu items with the code that should be executed when clicking on the item.
+        Map<String, MapScheme> schemeMap = new LinkedHashMap<>();
+        schemeMap.put("Lite Night", MapScheme.LITE_NIGHT);
+        schemeMap.put("Hybrid Day", MapScheme.HYBRID_DAY);
+        schemeMap.put("Hybrid Night", MapScheme.HYBRID_NIGHT);
+        schemeMap.put("Lite Day", MapScheme.LITE_DAY);
+        schemeMap.put("Lite Hybrid Day", MapScheme.LITE_HYBRID_DAY);
+        schemeMap.put("Lite Hybrid Night", MapScheme.LITE_HYBRID_NIGHT);
+        schemeMap.put("Logistics Day", MapScheme.LOGISTICS_DAY);
+        schemeMap.put("Logistics Hybrid Day", MapScheme.LOGISTICS_HYBRID_DAY);
+        schemeMap.put("Logistics Night", MapScheme.LOGISTICS_NIGHT);
+        schemeMap.put("Logistics Hybrid Night", MapScheme.LOGISTICS_HYBRID_NIGHT);
+        schemeMap.put("Normal Day", MapScheme.NORMAL_DAY);
+        schemeMap.put("Normal Night", MapScheme.NORMAL_NIGHT);
+        schemeMap.put("Road Network Day", MapScheme.ROAD_NETWORK_DAY);
+        schemeMap.put("Road Network Night", MapScheme.ROAD_NETWORK_NIGHT);
+        schemeMap.put("Satellite", MapScheme.SATELLITE);
+        schemeMap.put("Topo Day", MapScheme.TOPO_DAY);
+        schemeMap.put("Topo Night", MapScheme.TOPO_NIGHT);
+
+        Map<String, Runnable> menuItems = new LinkedHashMap<>();
+        for (Map.Entry<String, MapScheme> entry : schemeMap.entrySet()) {
+            menuItems.put(entry.getKey(), () -> {
+                mapSchemesExample.loadSchemeForCurrentView(getCurrentVisibleMapView(), entry.getValue());
+                mapFeaturesExample.applyEnabledFeaturesForMapScene(getCurrentVisibleMapView().getMapScene());
+            });
+        }
+
+        PopupMenuView popupMenuView = findViewById(R.id.menu_button_map_schemes);
+        PopupMenuUnit popupMenuUnit = popupMenuView.popupMenuUnit;
+        popupMenuUnit.setMenuContent("Map Schemes", menuItems);
     }
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        MapView currentMapView = getCurrentVisibleMapView();
-        switch (item.getItemId()){
-            // Map Schemes:
-            case R.id.hybrid_day_menu_item:
-                mapSchemesExample.loadSchemeForCurrentView(currentMapView, MapScheme.HYBRID_DAY);
-                mapFeaturesExample.applyEnabledFeaturesForMapScene(currentMapView.getMapScene());
-                return true;
-            case R.id.hybrid_night_menu_item:
-                mapSchemesExample.loadSchemeForCurrentView(currentMapView, MapScheme.HYBRID_NIGHT);
-                mapFeaturesExample.applyEnabledFeaturesForMapScene(currentMapView.getMapScene());
-                return true;
-            case R.id.lite_day_menu_item:
-                mapSchemesExample.loadSchemeForCurrentView(currentMapView, MapScheme.LITE_DAY);
-                mapFeaturesExample.applyEnabledFeaturesForMapScene(currentMapView.getMapScene());
-                return true;
-            case R.id.lite_night_menu_item:
-                mapSchemesExample.loadSchemeForCurrentView(currentMapView, MapScheme.LITE_NIGHT);
-                mapFeaturesExample.applyEnabledFeaturesForMapScene(currentMapView.getMapScene());
-                return true;
-            case R.id.lite_hybrid_night_menu_item:
-                mapSchemesExample.loadSchemeForCurrentView(currentMapView, MapScheme.LITE_HYBRID_NIGHT);
-                mapFeaturesExample.applyEnabledFeaturesForMapScene(currentMapView.getMapScene());
-                return true;
-            case R.id.lite_hybrid_day_menu_item:
-                mapSchemesExample.loadSchemeForCurrentView(currentMapView, MapScheme.LITE_HYBRID_DAY);
-                mapFeaturesExample.applyEnabledFeaturesForMapScene(currentMapView.getMapScene());
-                return true;
-            case R.id.logistics_day_menu_item:
-                mapSchemesExample.loadSchemeForCurrentView(currentMapView, MapScheme.LOGISTICS_DAY);
-                mapFeaturesExample.applyEnabledFeaturesForMapScene(currentMapView.getMapScene());
-                return true;
-            case R.id.logistics_night_menu_item:
-                mapSchemesExample.loadSchemeForCurrentView(currentMapView, MapScheme.LOGISTICS_NIGHT);
-                mapFeaturesExample.applyEnabledFeaturesForMapScene(currentMapView.getMapScene());
-                return true;
-            case R.id.logistics_hybrid_day_menu_item:
-                mapSchemesExample.loadSchemeForCurrentView(currentMapView, MapScheme.LOGISTICS_HYBRID_DAY);
-                mapFeaturesExample.applyEnabledFeaturesForMapScene(currentMapView.getMapScene());
-                return true;
-            case R.id.logistics_hybrid_night_menu_item:
-                mapSchemesExample.loadSchemeForCurrentView(currentMapView, MapScheme.LOGISTICS_HYBRID_NIGHT);
-                mapFeaturesExample.applyEnabledFeaturesForMapScene(currentMapView.getMapScene());
-                return true;
-            case R.id.normal_day_menu_item:
-                mapSchemesExample.loadSchemeForCurrentView(currentMapView, MapScheme.NORMAL_DAY);
-                mapFeaturesExample.applyEnabledFeaturesForMapScene(currentMapView.getMapScene());
-                return true;
-            case R.id.normal_night_menu_item:
-                mapSchemesExample.loadSchemeForCurrentView(currentMapView, MapScheme.NORMAL_NIGHT);
-                mapFeaturesExample.applyEnabledFeaturesForMapScene(currentMapView.getMapScene());
-                return true;
-            case R.id.road_network_day_menu_item:
-                mapSchemesExample.loadSchemeForCurrentView(currentMapView, MapScheme.ROAD_NETWORK_DAY);
-                mapFeaturesExample.applyEnabledFeaturesForMapScene(currentMapView.getMapScene());
-                return true;
-            case R.id.road_network_night_menu_item:
-                mapSchemesExample.loadSchemeForCurrentView(currentMapView, MapScheme.ROAD_NETWORK_NIGHT);
-                mapFeaturesExample.applyEnabledFeaturesForMapScene(currentMapView.getMapScene());
-                return true;
-            case R.id.satellite_menu_item:
-                mapSchemesExample.loadSchemeForCurrentView(currentMapView, MapScheme.SATELLITE);
-                mapFeaturesExample.applyEnabledFeaturesForMapScene(currentMapView.getMapScene());
-                return true;
-            case R.id.topo_day_menu_item:
-                mapSchemesExample.loadSchemeForCurrentView(currentMapView, MapScheme.TOPO_DAY);
-                mapFeaturesExample.applyEnabledFeaturesForMapScene(currentMapView.getMapScene());
-                return true;
-            case R.id.topo_night_menu_item:
-                mapSchemesExample.loadSchemeForCurrentView(currentMapView, MapScheme.TOPO_NIGHT);
-                mapFeaturesExample.applyEnabledFeaturesForMapScene(currentMapView.getMapScene());
-                return true;    
+    private void setMapFeaturesMenu() {
+        // Define menu items with the code that should be executed when clicking on the item.
+        Map<String, Runnable> mapFeaturesMenuItems = new LinkedHashMap<>();
+        mapFeaturesMenuItems.put("Clear Map Features", () -> mapFeaturesExample.disableFeatures());
+        mapFeaturesMenuItems.put("Building Footprints", () -> mapFeaturesExample.enableBuildingFootprints());
+        mapFeaturesMenuItems.put("Congestion Zone", () -> mapFeaturesExample.enableCongestionZones());
+        mapFeaturesMenuItems.put("Environmental Zones", () -> mapFeaturesExample.enableEnvironmentalZones());
+        mapFeaturesMenuItems.put("Extruded Buildings", () -> mapFeaturesExample.enableExtrudedBuildings());
+        mapFeaturesMenuItems.put("Landmarks Textured", () -> mapFeaturesExample.enableLandmarksTextured());
+        mapFeaturesMenuItems.put("Landmarks Textureless", () -> mapFeaturesExample.enableLandmarksTextureless());
+        mapFeaturesMenuItems.put("Safety Cameras", () -> mapFeaturesExample.enableSafetyCameras());
+        mapFeaturesMenuItems.put("Shadows", () -> {
+            Toast.makeText(this, "Enabled building shadows for non-satellite-based schemes.", Toast.LENGTH_SHORT).show();
+            mapFeaturesExample.enableShadows();
+        });
+        mapFeaturesMenuItems.put("Terrain Hillshade", () -> mapFeaturesExample.enableTerrainHillShade());
+        mapFeaturesMenuItems.put("Terrain 3D", () -> mapFeaturesExample.enableTerrain3D());
+        mapFeaturesMenuItems.put("Ambient Occlusion", () -> mapFeaturesExample.enableAmbientOcclusion());
+        mapFeaturesMenuItems.put("Contours", () -> mapFeaturesExample.enableContours());
+        mapFeaturesMenuItems.put("Low Speed Zones", () -> mapFeaturesExample.enableLowSpeedZones());
+        mapFeaturesMenuItems.put("Traffic Flow with Free Flow", () -> mapFeaturesExample.enableTrafficFlowWithFreeFlow());
+        mapFeaturesMenuItems.put("Traffic Flow without Free Flow", () -> mapFeaturesExample.enableTrafficFlowWithoutFreeFlow());
+        mapFeaturesMenuItems.put("Traffic Incidents", () -> mapFeaturesExample.enableTrafficIncidents());
+        mapFeaturesMenuItems.put("Vehicle Restrictions Active", () -> mapFeaturesExample.enableVehicleRestrictionsActive());
+        mapFeaturesMenuItems.put("Vehicle Restrictions Active/Inactive", () -> mapFeaturesExample.enableVehicleRestrictionsActiveAndInactive());
+        mapFeaturesMenuItems.put("Vehicle Restrictions Active/Inactive Diff", () -> mapFeaturesExample.enableVehicleRestrictionsActiveAndInactiveDiff());
+        mapFeaturesMenuItems.put("Road Exit Labels", () -> mapFeaturesExample.enableRoadExitLabels());
+        mapFeaturesMenuItems.put("Road Exit Labels Numbers Only", () -> mapFeaturesExample.enableRoadExitLabelsNumbersOnly());
 
-            // Map Features:
-            case R.id.clear_menu_item:
-                mapFeaturesExample.disableFeatures();
-                return true;
-            case R.id.building_footprints_menu_item:
-                mapFeaturesExample.enableBuildingFootprints();
-                return true;
-            case R.id.congestion_zone_menu_item:
-                mapFeaturesExample.enableCongestionZones();
-                return true;
-            case R.id.environmental_zones_menu_item:
-                mapFeaturesExample.enableEnvironmentalZones();
-                return true;
-            case R.id.extruded_buildings_menu_item:
-                mapFeaturesExample.enableExtrudedBuildings();
-                return true;
-            case R.id.landmarks_textured_menu_item:
-                mapFeaturesExample.enableLandmarksTextured();
-                return true;
-            case R.id.landmarks_textureless_menu_item:
-                mapFeaturesExample.enableLandmarksTextureless();
-                return true;
-            case R.id.safety_cameras_menu_item:
-                mapFeaturesExample.enableSafetyCameras();
-                return true;
-            case R.id.shadows_menu_item:
-                Toast.makeText(this, "Enabled building shadows for non-satellite-based schemes.",
-                        Toast.LENGTH_SHORT).show();
-                mapFeaturesExample.enableShadows();
-                return true;
-            case R.id.terrain_hillshade_menu_item:
-                mapFeaturesExample.enableTerrainHillShade();
-                return true;
-            case R.id.terrain_3D_menu_item:
-                mapFeaturesExample.enableTerrain3D();
-                return true;
-            case R.id.traffic_flow_with_freeflow_menu_item:
-                mapFeaturesExample.enableTrafficFlowWithFreeFlow();
-                return true;
-            case R.id.traffic_flow_without_freeflow_menu_item:
-                mapFeaturesExample.enableTrafficFlowWithoutFreeFlow();
-                return true;
-            case R.id.traffic_incidents_menu_item:
-                mapFeaturesExample.enableTrafficIncidents();
-                return true;
-            case R.id.vehicle_restrictions_active_menu_item:
-                mapFeaturesExample.enableVehicleRestrictionsActive();
-                return true;
-            case R.id.vehicle_restrictions_active_inactive_menu_item:
-                mapFeaturesExample.enableVehicleRestrictionsActiveAndInactive();
-                return true;
-            case R.id.vehicle_restrictions_active_inactive_diff_menu_item:
-                mapFeaturesExample.enableVehicleRestrictionsActiveAndInactiveDiff();
-                return true;
-            case R.id.road_exit_labels_menu_item:
-                mapFeaturesExample.enableRoadExitLabels();
-                return true;
-            case R.id.road_exit_labels_numbers_menu_item:
-                mapFeaturesExample.enableRoadExitLabelsNumbersOnly();
-                return true;
-            case R.id.ambient_occlusion_menu_item:
-                mapFeaturesExample.enableAmbientOcclusion();
-                return true;
-            case R.id.contours_menu_item:
-                mapFeaturesExample.enableContours();
-                return true;
-            case R.id.low_speed_zones_menu_item:
-                mapFeaturesExample.enableLowSpeedZones();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
+        PopupMenuView popupMenuView = findViewById(R.id.menu_button_map_features);
+        PopupMenuUnit popupMenuUnit = popupMenuView.popupMenuUnit;
+        popupMenuUnit.setMenuContent("Map Features", mapFeaturesMenuItems);
     }
 }
 

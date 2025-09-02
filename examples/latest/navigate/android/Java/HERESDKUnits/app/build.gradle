@@ -1,0 +1,37 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdk 35
+    defaultConfig {
+        applicationId "com.here.sdk.heresdkunits"
+        minSdkVersion 24
+        targetSdkVersion 35
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            signingConfig signingConfigs.debug
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
+    }
+    namespace 'com.here.sdk.heresdkunits'
+}
+
+dependencies {
+    // Add available HERE SDK Units for use in this host project for easy development of units. Note that when integrating compiled units as AAR into your own apps, this is not needed.
+    implementation project(path: ':heresdk-units-core')
+    implementation project(path: ':heresdk-units-popupmenu')
+    implementation project(path: ':heresdk-units-mapswitcher')
+
+    // Picks any AAR matching the pattern found in HERESDKUnits/app/libs/ folder.
+    // Note that the HERE SDK Units itself are directly included as dependent modules, see above.
+    implementation fileTree(dir: 'libs', include: ['*.aar', '*.jar'], exclude : ['*mock*.jar'])
+    implementation 'androidx.appcompat:appcompat:1.3.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.1'
+}

@@ -66,9 +66,11 @@ class CustomRasterLayersExample {
 
     // The storage levels available for this data source. Supported range [0, 31].
     List<int> storageLevels = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
-    RasterDataSourceProviderConfiguration rasterProviderConfig =
-        RasterDataSourceProviderConfiguration.withDefaults(
-            TileUrlProviderFactory.fromXyzUrlTemplate(templateUrl)!, TilingScheme.quadTreeMercator, storageLevels);
+    RasterDataSourceProviderConfiguration rasterProviderConfig = RasterDataSourceProviderConfiguration.withDefaults(
+      TileUrlProviderFactory.fromXyzUrlTemplate(templateUrl)!,
+      TilingScheme.quadTreeMercator,
+      storageLevels,
+    );
 
     // If you want to add transparent layers then set this to true.
     rasterProviderConfig.hasAlphaChannel = false;
@@ -79,8 +81,10 @@ class CustomRasterLayersExample {
     RasterDataSourceCacheConfiguration cacheConfig = RasterDataSourceCacheConfiguration(path, maxDiskSizeInBytes);
 
     // Note that this will make the raster source already known to the passed map view.
-    return RasterDataSource(_hereMapController.mapContext,
-        RasterDataSourceConfiguration.withDefaults(dataSourceName, rasterProviderConfig, cacheConfig));
+    return RasterDataSource(
+      _hereMapController.mapContext,
+      RasterDataSourceConfiguration.withDefaults(dataSourceName, rasterProviderConfig, cacheConfig),
+    );
   }
 
   MapLayer _createMapLayer(String dataSourceName) {

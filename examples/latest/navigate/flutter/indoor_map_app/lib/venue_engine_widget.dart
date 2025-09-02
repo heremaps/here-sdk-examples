@@ -53,9 +53,7 @@ class CustomAlertDialog extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 580),
           child: AlertDialog(
             backgroundColor: Colors.red,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             insetPadding: EdgeInsets.symmetric(vertical: 30),
             content: Container(
               width: double.infinity,
@@ -64,19 +62,13 @@ class CustomAlertDialog extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(
-                    child: Text(
-                      errorMsg,
-                      style: TextStyle(color: Colors.white),
-                    ),
+                    child: Text(errorMsg, style: TextStyle(color: Colors.white)),
                   ),
                   SizedBox(width: 40),
                   Container(
                     width: 25,
                     height: 25,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white,
-                    ),
+                    decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white),
                     child: Center(
                       child: IconButton(
                         padding: EdgeInsets.zero,
@@ -145,14 +137,16 @@ class VenueEngineState extends State<VenueEngineWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(children: [
-      // Add a drawing switcher.
-      DrawingSwitcher(state: _drawingSwitcherState),
-      // Add a level switcher.
-      LevelSwitcher(state: _levelSwitcherState),
-      // Add a venue search controller.
-      VenueSearchController(state: _venueSearchState),
-    ]);
+    return Stack(
+      children: [
+        // Add a drawing switcher.
+        DrawingSwitcher(state: _drawingSwitcherState),
+        // Add a level switcher.
+        LevelSwitcher(state: _levelSwitcherState),
+        // Add a venue search controller.
+        VenueSearchController(state: _venueSearchState),
+      ],
+    );
   }
 
   @override
@@ -178,9 +172,7 @@ class VenueEngineState extends State<VenueEngineWidget> {
     return _drawingSwitcherState;
   }
 
-
-  set(HereMapController hereMapController, VenueEngine venueEngine,
-      GeometryInfoState geometryInfoState) {
+  set(HereMapController hereMapController, VenueEngine venueEngine, GeometryInfoState geometryInfoState) {
     _hereMapController = hereMapController;
     _venueEngine = venueEngine;
     _geometryInfoState = geometryInfoState;
@@ -191,7 +183,7 @@ class VenueEngineState extends State<VenueEngineWidget> {
       // Select venue by ID.
       _venueEngine!.venueMap.selectVenueAsyncWithErrorsStr(venueIdentifier, (VenueErrorCode? venueLoadError) {
         String errorMsg;
-        switch(venueLoadError) {
+        switch (venueLoadError) {
           case VenueErrorCode.noNetwork:
             errorMsg = "The device has no internet connectivity";
             break;
@@ -224,7 +216,6 @@ class VenueEngineState extends State<VenueEngineWidget> {
         }
 
         showCustomDialog(context, errorMsg);
-
       });
     }
   }
@@ -248,7 +239,10 @@ class VenueEngineState extends State<VenueEngineWidget> {
     _venueEngine!.venueService.addVenueMapListener(_venueMapListener);
     // Create a venue tap controller.
     venueTapController = VenueTapController(
-        hereMapController: _hereMapController, venueMap: venueMap, geometryInfoState: _geometryInfoState);
+      hereMapController: _hereMapController,
+      venueMap: venueMap,
+      geometryInfoState: _geometryInfoState,
+    );
     _tapListener = VenueTapListenerImpl(venueTapController);
 
     // Set a tap listener.
@@ -310,7 +304,6 @@ class VenueEngineState extends State<VenueEngineWidget> {
 }
 
 class VenueInfoListListenerImpl implements VenueInfoListListener {
-
   late List<String> list = <String>["Venue Id"];
   late List<String> nameList = <String>["Venue Name"];
 
@@ -323,7 +316,7 @@ class VenueInfoListListenerImpl implements VenueInfoListListener {
       var updatedVenueIdList = venueInfoList[i].venueIdentifier;
       var updatedVenueNameList = venueInfoList[i].venueName;
       list.insert(i + 1, updatedVenueIdList);
-      nameList.insert(i+1, updatedVenueNameList);
+      nameList.insert(i + 1, updatedVenueNameList);
       print("list = " + list[i + 1]);
       print("Venue Identifier: " + venueIdentifier + " Venue Name: " + venueInfoList[i].venueName);
     }
@@ -331,7 +324,6 @@ class VenueInfoListListenerImpl implements VenueInfoListListener {
     nameListEventHandler.updatedNameList.value = nameList;
     print("listEventHandler value = ${listEventHandler.updatedList.value}");
   }
-  
 }
 
 // Listener for the VenueService event.
@@ -349,7 +341,7 @@ class VenueServiceListenerImpl implements VenueServiceListener {
     if (result == VenueServiceInitStatus.onlineSuccess) {
       _venueEngineState!._venueEngine!.venueMap.getVenueInfoListAsyncWithErrors((VenueErrorCode? venueLoadError) {
         String errorMsg;
-        switch(venueLoadError) {
+        switch (venueLoadError) {
           case VenueErrorCode.noNetwork:
             errorMsg = "The device has no internet connectivity";
             break;
@@ -411,7 +403,7 @@ class VenueMapListenerImpl implements VenueMapListener {
 
   @override
   onGetVenueCompleted(String venueIdentifier, VenueModel? venueModel, bool online, VenueStyle? venueStyle) {
-    if(venueModel == null) {
+    if (venueModel == null) {
       print("Failed to load venue ID: " + venueIdentifier.toString());
     }
     _hereMapController!.camera.zoomTo(18);

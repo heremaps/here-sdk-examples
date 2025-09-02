@@ -43,12 +43,15 @@ class NavigationHandler {
   RouteCalculator _routeCalculator;
   final _timeUtils = TimeUtils();
 
-  NavigationHandler(VisualNavigator visualNavigator, DynamicRoutingEngine dynamicRoutingEngine,
-      ValueChanged<String> updateMessageState, RouteCalculator routeCalculator)
-      : _visualNavigator = visualNavigator,
-        _dynamicRoutingEngine = dynamicRoutingEngine,
-        _updateMessageState = updateMessageState,
-        _routeCalculator = routeCalculator {}
+  NavigationHandler(
+    VisualNavigator visualNavigator,
+    DynamicRoutingEngine dynamicRoutingEngine,
+    ValueChanged<String> updateMessageState,
+    RouteCalculator routeCalculator,
+  ) : _visualNavigator = visualNavigator,
+      _dynamicRoutingEngine = dynamicRoutingEngine,
+      _updateMessageState = updateMessageState,
+      _routeCalculator = routeCalculator {}
 
   void setupListeners() {
     _setupVoiceTextMessages();
@@ -81,7 +84,8 @@ class NavigationHandler {
 
       ManeuverAction action = nextManeuver.action;
       String roadName = _getRoadName(nextManeuver);
-      String logMessage = action.name +
+      String logMessage =
+          action.name +
           ' on ' +
           roadName +
           ' in ' +
@@ -111,8 +115,9 @@ class NavigationHandler {
 
     // Notifies on the current map-matched location and other useful information while driving or walking.
     // The map-matched location is used to update the map view.
-    _visualNavigator.navigableLocationListener =
-        NavigableLocationListener((NavigableLocation currentNavigableLocation) {
+    _visualNavigator.navigableLocationListener = NavigableLocationListener((
+      NavigableLocation currentNavigableLocation,
+    ) {
       // Handle results from onNavigableLocationUpdated():
       MapMatchedLocation? mapMatchedLocation = currentNavigableLocation.mapMatchedLocation;
       if (mapMatchedLocation == null) {
@@ -209,10 +214,11 @@ class NavigationHandler {
 
     return currentETAString;
   }
-  
+
   void _setupVoiceTextMessages() {
-    LanguageCode ttsLanguageCode =
-        getLanguageCodeForDevice(VisualNavigator.getAvailableLanguagesForManeuverNotifications());
+    LanguageCode ttsLanguageCode = getLanguageCodeForDevice(
+      VisualNavigator.getAvailableLanguagesForManeuverNotifications(),
+    );
     ManeuverNotificationOptions maneuverNotificationOptions = ManeuverNotificationOptions.withDefaults();
     // Set the language in which the notifications will be generated.
     maneuverNotificationOptions.language = ttsLanguageCode;

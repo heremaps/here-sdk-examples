@@ -25,12 +25,7 @@ class SpeedView extends StatelessWidget {
   final String speed;
   final Color circleColor;
 
-  const SpeedView({
-    Key? key,
-    required this.label,
-    required this.speed,
-    required this.circleColor,
-  }) : super(key: key);
+  const SpeedView({Key? key, required this.label, required this.speed, required this.circleColor}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -48,11 +43,7 @@ class SpeedViewPainter extends CustomPainter {
   final String speed;
   final Color circleColor;
 
-  SpeedViewPainter({
-    required this.label,
-    required this.speed,
-    required this.circleColor,
-  });
+  SpeedViewPainter({required this.label, required this.speed, required this.circleColor});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -78,18 +69,10 @@ class SpeedViewPainter extends CustomPainter {
     // Draw speed text centered in circle.
     if (speed.isNotEmpty) {
       TextSpan speedSpan = TextSpan(
-        style: TextStyle(
-          color: Colors.black,
-          fontSize: textSizeInDP,
-          fontWeight: FontWeight.bold,
-        ),
+        style: TextStyle(color: Colors.black, fontSize: textSizeInDP, fontWeight: FontWeight.bold),
         text: speed,
       );
-      TextPainter speedTP = TextPainter(
-        text: speedSpan,
-        textAlign: TextAlign.center,
-        textDirection: TextDirection.ltr,
-      );
+      TextPainter speedTP = TextPainter(text: speedSpan, textAlign: TextAlign.center, textDirection: TextDirection.ltr);
       speedTP.layout();
       Offset speedOffset = Offset(center.dx - speedTP.width / 2, center.dy - speedTP.height / 2);
       speedTP.paint(canvas, speedOffset);
@@ -98,18 +81,10 @@ class SpeedViewPainter extends CustomPainter {
     // Draw label centered above the circle.
     if (label.isNotEmpty) {
       TextSpan labelSpan = TextSpan(
-        style: TextStyle(
-          color: Colors.black,
-          fontSize: textSizeInDP,
-          fontWeight: FontWeight.bold,
-        ),
+        style: TextStyle(color: Colors.black, fontSize: textSizeInDP, fontWeight: FontWeight.bold),
         text: label,
       );
-      TextPainter labelTP = TextPainter(
-        text: labelSpan,
-        textAlign: TextAlign.center,
-        textDirection: TextDirection.ltr,
-      );
+      TextPainter labelTP = TextPainter(text: labelSpan, textAlign: TextAlign.center, textDirection: TextDirection.ltr);
       labelTP.layout();
       double labelY = center.dy - radius - yMarginInDP * 2 - labelTP.height / 2;
       Offset labelOffset = Offset(center.dx - labelTP.width / 2, labelY);

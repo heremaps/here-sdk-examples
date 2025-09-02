@@ -27,8 +27,7 @@ class RouteAnimationExample {
   late RouteCalculator _routeCalculator;
   routes.Route? route;
 
-  RouteAnimationExample(HereMapController hereMapController)
-      : _hereMapController = hereMapController {
+  RouteAnimationExample(HereMapController hereMapController) : _hereMapController = hereMapController {
     _routeCalculator = RouteCalculator(_hereMapController);
     _routeCalculator.createRoute();
   }
@@ -52,15 +51,23 @@ class RouteAnimationExample {
     double tilt = 0;
     // We want to show the route fitting in the map view with an additional padding of 50 pixels.
     Point2D origin = Point2D(50, 50);
-    Size2D sizeInPixels = Size2D(_hereMapController.viewportSize.width - 100, _hereMapController.viewportSize.height - 100);
+    Size2D sizeInPixels = Size2D(
+      _hereMapController.viewportSize.width - 100,
+      _hereMapController.viewportSize.height - 100,
+    );
     Rectangle2D mapViewport = Rectangle2D(origin, sizeInPixels);
 
     // Animate to the route within a duration of 3 seconds.
-    MapCameraUpdate update = MapCameraUpdateFactory.lookAtAreaWithGeoOrientationAndViewRectangle(route!.boundingBox,
-        GeoOrientationUpdate(bearing, tilt),
-        mapViewport);
+    MapCameraUpdate update = MapCameraUpdateFactory.lookAtAreaWithGeoOrientationAndViewRectangle(
+      route!.boundingBox,
+      GeoOrientationUpdate(bearing, tilt),
+      mapViewport,
+    );
     MapCameraAnimation animation = MapCameraAnimationFactory.createAnimationFromUpdateWithEasing(
-        update, const Duration(milliseconds: 3000), Easing(EasingFunction.inCubic));
+      update,
+      const Duration(milliseconds: 3000),
+      Easing(EasingFunction.inCubic),
+    );
     _hereMapController.camera.startAnimation(animation);
   }
 }

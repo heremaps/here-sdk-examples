@@ -52,10 +52,8 @@ class CustomPolygonTileSourceExample {
     }
 
     double distanceToEarthInMeters = 60 * 1000;
-    MapMeasure mapMeasureZoom =
-    MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
-    _hereMapController.camera.lookAtPointWithMeasure(
-        GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
+    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
+    _hereMapController.camera.lookAtPointWithMeasure(GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
   }
 
   void enableLayer() {
@@ -67,8 +65,7 @@ class CustomPolygonTileSourceExample {
   }
 
   PolygonTileDataSource _createPolygonTileDataSource(String dataSourceName) {
-    return PolygonTileDataSource.create(
-        _hereMapController.mapContext, dataSourceName, LocalPolygonTileSource());
+    return PolygonTileDataSource.create(_hereMapController.mapContext, dataSourceName, LocalPolygonTileSource());
   }
 
   MapLayer? _createMapLayer(String dataSourceName) {

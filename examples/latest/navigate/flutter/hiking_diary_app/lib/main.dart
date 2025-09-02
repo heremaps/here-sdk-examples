@@ -36,11 +36,7 @@ void main() async {
   // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
   await _initializeHERESDK();
 
-  runApp(
-    MaterialApp(
-      home: MyApp(messageNotifier: MessageNotifier()),
-    ),
-  );
+  runApp(MaterialApp(home: MyApp(messageNotifier: MessageNotifier())));
 }
 
 Future<void> _initializeHERESDK() async {
@@ -81,11 +77,11 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     super.initState();
     _appLifecycleListener = AppLifecycleListener(
       onDetach: () =>
-      // Sometimes Flutter may not reliably call dispose(),
-      // therefore it is recommended to dispose the HERE SDK
-      // also when the AppLifecycleListener is detached.
-      // See more details: https://github.com/flutter/flutter/issues/40940
-      { print('AppLifecycleListener detached.'), _disposeHERESDK() },
+          // Sometimes Flutter may not reliably call dispose(),
+          // therefore it is recommended to dispose the HERE SDK
+          // also when the AppLifecycleListener is detached.
+          // See more details: https://github.com/flutter/flutter/issues/40940
+          {print('AppLifecycleListener detached.'), _disposeHERESDK()},
     );
 
     WidgetsBinding.instance.addObserver(this);
@@ -131,8 +127,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             IconButton(
               icon: Icon(Icons.menu),
               onPressed: () {
-                if (hikingApp != null &&
-                    hikingApp!.gpxManager.getGPXTracks().isNotEmpty) {
+                if (hikingApp != null && hikingApp!.gpxManager.getGPXTracks().isNotEmpty) {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -182,9 +177,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       ),
       body: Stack(
         children: [
-          Center(
-            child: HereMap(onMapCreated: _onMapCreated),
-          ),
+          Center(child: HereMap(onMapCreated: _onMapCreated)),
           _isLocationPermissionGranted
               ? Positioned(
                   top: 8.0,
@@ -196,16 +189,12 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                       ElevatedButton(
                         onPressed: _onStartHikeButtonPressed,
                         child: Text('Start'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color.fromRGBO(0, 155, 155, 1),
-                        ),
+                        style: ElevatedButton.styleFrom(backgroundColor: Color.fromRGBO(0, 155, 155, 1)),
                       ),
                       ElevatedButton(
                         onPressed: _onStopHikeButtonPressed,
                         child: Text('Stop'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color.fromRGBO(0, 155, 155, 1),
-                        ),
+                        style: ElevatedButton.styleFrom(backgroundColor: Color.fromRGBO(0, 155, 155, 1)),
                       ),
                     ],
                   ),
@@ -214,22 +203,12 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
-              margin: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).size.height * 0.05),
+              margin: EdgeInsets.only(bottom: MediaQuery.of(context).size.height * 0.05),
               width: MediaQuery.of(context).size.width * 0.6,
               height: MediaQuery.of(context).size.height * 0.085,
-              decoration: BoxDecoration(
-                color: Color.fromRGBO(0, 145, 145, 1),
-                borderRadius: BorderRadius.circular(12),
-              ),
+              decoration: BoxDecoration(color: Color.fromRGBO(0, 145, 145, 1), borderRadius: BorderRadius.circular(12)),
               child: Center(
-                child: Text(
-                  widget.messageNotifier.message,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                  ),
-                ),
+                child: Text(widget.messageNotifier.message, style: TextStyle(color: Colors.white, fontSize: 14)),
               ),
             ),
           ),
@@ -242,8 +221,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     _hereMapController = hereMapController;
 
     // Load the map scene using a map scheme to render the map with.
-    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.topoDay,
-        (MapError? error) async {
+    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.topoDay, (MapError? error) async {
       _updateMessageState("Loading MapView ...");
       if (error == null) {
         // 1. We request the user's agreement to use HERE Positioning.
@@ -258,8 +236,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
         // 2. Ensure that the required permissions are handled.
         if (!await _requestPermissions()) {
-          await _showDialog("Error",
-              "Cannot start app: Location service and permissions are needed for this app.");
+          await _showDialog("Error", "Cannot start app: Location service and permissions are needed for this app.");
           // Let the user set the permissions from the system settings as fallback.
           openAppSettings();
           SystemNavigator.pop();
@@ -271,13 +248,12 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
         String message =
             "For this example app, an outdoor layer from thunderforest.com is used. " +
-                "Without setting a valid API key, these raster tiles will show a watermark (terms of usage: https://www.thunderforest.com/terms/)." +
-                "\n Attribution for the outdoor layer: \n Maps © www.thunderforest.com, \n Data © www.osm.org/copyright.";
+            "Without setting a valid API key, these raster tiles will show a watermark (terms of usage: https://www.thunderforest.com/terms/)." +
+            "\n Attribution for the outdoor layer: \n Maps © www.thunderforest.com, \n Data © www.osm.org/copyright.";
 
         _showDialog("Note", message);
 
-        hikingApp =
-            HikingApp(hereMapController, widget.messageNotifier);
+        hikingApp = HikingApp(hereMapController, widget.messageNotifier);
         _enableMapFeatures();
 
         setState(() {
@@ -291,26 +267,26 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   // Enhance the scene with map features suitable for hiking trips.
   void _enableMapFeatures() {
-    _hereMapController?.mapScene
-        .enableFeatures({MapFeatures.terrain: MapFeatureModes.terrain3d});
-    _hereMapController?.mapScene
-        .enableFeatures({MapFeatures.contours: MapFeatureModes.contoursAll});
+    _hereMapController?.mapScene.enableFeatures({MapFeatures.terrain: MapFeatureModes.terrain3d});
+    _hereMapController?.mapScene.enableFeatures({MapFeatures.contours: MapFeatureModes.contoursAll});
     _hereMapController?.mapScene.enableFeatures({
-      MapFeatures.buildingFootprints: MapFeatureModes.buildingFootprintsAll
+      MapFeatures.buildingFootprints: MapFeatureModes.buildingFootprintsAll,
     });
-    _hereMapController?.mapScene.enableFeatures(
-        {MapFeatures.extrudedBuildings: MapFeatureModes.extrudedBuildingsAll});
-    _hereMapController?.mapScene.enableFeatures(
-        {MapFeatures.landmarks: MapFeatureModes.landmarksTextured});
-    _hereMapController?.mapScene.enableFeatures(
-        {MapFeatures.ambientOcclusion: MapFeatureModes.ambientOcclusionAll});
+    _hereMapController?.mapScene.enableFeatures({MapFeatures.extrudedBuildings: MapFeatureModes.extrudedBuildingsAll});
+    _hereMapController?.mapScene.enableFeatures({MapFeatures.landmarks: MapFeatureModes.landmarksTextured});
+    _hereMapController?.mapScene.enableFeatures({MapFeatures.ambientOcclusion: MapFeatureModes.ambientOcclusionAll});
   }
 
   // When a custom raster outdoor layer is shown, we do not need to load hidden map features to save bandwidth.
   void _disableMapFeatures() {
     _hereMapController?.mapScene.disableFeatures([
-      MapFeatures.terrain, MapFeatures.contours, MapFeatures.buildingFootprints,
-      MapFeatures.extrudedBuildings, MapFeatures.landmarks, MapFeatures.ambientOcclusion]);
+      MapFeatures.terrain,
+      MapFeatures.contours,
+      MapFeatures.buildingFootprints,
+      MapFeatures.extrudedBuildings,
+      MapFeatures.landmarks,
+      MapFeatures.ambientOcclusion,
+    ]);
   }
 
   // Request permissions with the permission_handler plugin. Set the required permissions here:
@@ -351,19 +327,12 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     return Align(
       alignment: Alignment.topCenter,
       child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.white,
-          backgroundColor: Colors.lightBlueAccent,
-        ),
+        style: ElevatedButton.styleFrom(foregroundColor: Colors.white, backgroundColor: Colors.lightBlueAccent),
         onPressed: callbackFunction,
         child: Container(
           width: MediaQuery.of(context).size.width * 0.8,
           padding: EdgeInsets.all(2.0),
-          child: Text(
-            buttonLabel,
-            style: TextStyle(fontSize: 15),
-            textAlign: TextAlign.center,
-          ),
+          child: Text(buttonLabel, style: TextStyle(fontSize: 15), textAlign: TextAlign.center),
         ),
       ),
     );
@@ -384,13 +353,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(title),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(message),
-              ],
-            ),
-          ),
+          content: SingleChildScrollView(child: ListBody(children: <Widget>[Text(message)])),
           actions: <Widget>[
             TextButton(
               child: Text("OK"),

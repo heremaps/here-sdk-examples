@@ -33,6 +33,7 @@ import 'events.dart';
 import 'events.dart';
 
 enum TopologyDirectionality { toStart, fromStart, bidirectional, undefined }
+
 enum VenueTransportMode { auto, taxi, motorcycle, emergencyVehicle, pedestrian }
 
 class VenueTapController {
@@ -51,17 +52,28 @@ class VenueTapController {
   VenueTopology? _selectedTopology;
 
   // Create geometry and label styles for the selected geometry.
-  final VenueGeometryStyle _geometryStyle =
-      VenueGeometryStyle(Color.fromARGB(255, 72, 187, 245), Color.fromARGB(255, 30, 170, 235), 1);
-  final VenueLabelStyle _labelStyle =
-      VenueLabelStyle(Color.fromARGB(255, 255, 255, 255), Color.fromARGB(255, 0, 130, 195), 1, 28);
-  final VenueGeometryStyle _topologyStyle =
-      VenueGeometryStyle(Color.fromARGB(255, 72, 187, 245), Color.fromARGB(255, 90, 196, 193), 4);
+  final VenueGeometryStyle _geometryStyle = VenueGeometryStyle(
+    Color.fromARGB(255, 72, 187, 245),
+    Color.fromARGB(255, 30, 170, 235),
+    1,
+  );
+  final VenueLabelStyle _labelStyle = VenueLabelStyle(
+    Color.fromARGB(255, 255, 255, 255),
+    Color.fromARGB(255, 0, 130, 195),
+    1,
+    28,
+  );
+  final VenueGeometryStyle _topologyStyle = VenueGeometryStyle(
+    Color.fromARGB(255, 72, 187, 245),
+    Color.fromARGB(255, 90, 196, 193),
+    4,
+  );
 
   VenueTapController({required this.hereMapController, required this.venueMap, required this.geometryInfoState}) {
     // Get an image for MapMarker.
-    ImageHelper.loadFileAsUint8List('poi.png')
-        .then((imagePixelData) => _markerImage = MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png));
+    ImageHelper.loadFileAsUint8List(
+      'poi.png',
+    ).then((imagePixelData) => _markerImage = MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png));
   }
 
   onTap(Point2D origin) {
@@ -112,7 +124,7 @@ class VenueTapController {
     _selectedVenue = venueMap.selectedVenue;
     topologyDetails = getTopologyInfo(topology);
     _selectedTopology = topology;
-    if(_selectedTopology != null) {
+    if (_selectedTopology != null) {
       topologyLineTapped.isTopologyLineTapped.value = true;
       _selectedVenue!.setCustomStyleToTopology([topology], _topologyStyle);
     }

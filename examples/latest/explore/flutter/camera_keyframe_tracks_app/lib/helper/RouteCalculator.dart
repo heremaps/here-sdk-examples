@@ -60,10 +60,14 @@ class RouteCalculator {
     Color polylineColor = const Color.fromARGB(160, 0, 144, 138);
     MapPolyline? routeMapPolyline;
     try {
-      routeMapPolyline = MapPolyline.withRepresentation(routeGeoPolyline, MapPolylineSolidRepresentation(
+      routeMapPolyline = MapPolyline.withRepresentation(
+        routeGeoPolyline,
+        MapPolylineSolidRepresentation(
           MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
           polylineColor,
-          LineCap.round));
+          LineCap.round,
+        ),
+      );
       _hereMapController.mapScene.addMapPolyline(routeMapPolyline);
     } on MapPolylineRepresentationInstantiationException catch (e) {
       print("MapPolylineRepresentation Exception:" + e.error.name);

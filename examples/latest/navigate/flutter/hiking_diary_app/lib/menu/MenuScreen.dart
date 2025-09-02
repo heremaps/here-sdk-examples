@@ -28,12 +28,7 @@ class MenuScreen extends StatefulWidget {
   final ValueChanged<int> onSelected;
   final ValueChanged<int> onDeleted;
 
-  MenuScreen({
-    required this.entryKeys,
-    required this.entryTexts,
-    required this.onSelected,
-    required this.onDeleted,
-  });
+  MenuScreen({required this.entryKeys, required this.entryTexts, required this.onSelected, required this.onDeleted});
 
   @override
   _MenuScreenState createState() => _MenuScreenState();
@@ -49,10 +44,7 @@ class _MenuScreenState extends State<MenuScreen> {
         itemBuilder: (context, index) {
           return Dismissible(
             key: Key(widget.entryKeys[index]),
-            background: ColoredBox(
-              child: Container(),
-              color: Colors.pink,
-            ),
+            background: ColoredBox(child: Container(), color: Colors.pink),
             direction: DismissDirection.endToStart,
             onDismissed: (direction) {
               widget.onDeleted(index);
@@ -61,12 +53,9 @@ class _MenuScreenState extends State<MenuScreen> {
                 widget.entryTexts.removeAt(index);
               });
 
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Hike deleted'),
-                  backgroundColor: Colors.pink,
-                ),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text('Hike deleted'), backgroundColor: Colors.pink));
             },
             child: CustomListTile(
               text: widget.entryTexts[index],

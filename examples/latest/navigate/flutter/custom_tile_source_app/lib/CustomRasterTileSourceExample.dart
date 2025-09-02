@@ -31,10 +31,8 @@ class CustomRasterTileSourceExample {
 
   CustomRasterTileSourceExample(this._hereMapController) {
     double distanceToEarthInMeters = 60 * 1000;
-    MapMeasure mapMeasureZoom =
-    MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
-    _hereMapController.camera.lookAtPointWithMeasure(
-        GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
+    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
+    _hereMapController.camera.lookAtPointWithMeasure(GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
   }
 
   void setup() async {
@@ -54,21 +52,18 @@ class CustomRasterTileSourceExample {
     _rasterMapLayerStyle?.setEnabled(false);
   }
 
-  Future<RasterDataSource> _createRasterDataSource(
-      String dataSourceName) async {
+  Future<RasterDataSource> _createRasterDataSource(String dataSourceName) async {
     var localRasterTileSource = LocalRasterTileSource();
     await localRasterTileSource.setupSource();
 
     // Note that this will make the raster source already known to the passed map view.
-    return RasterDataSource.withTileSource(
-        _hereMapController.mapContext, dataSourceName, localRasterTileSource);
+    return RasterDataSource.withTileSource(_hereMapController.mapContext, dataSourceName, localRasterTileSource);
   }
 
   MapLayer _createMapLayer(String dataSourceName) {
     // The layer should be rendered on top of other layers except the "labels" layer
     // so that we don't overlap the raster layer over POI markers.
-    MapLayerPriority priority =
-    MapLayerPriorityBuilder().renderedBeforeLayer("labels").build();
+    MapLayerPriority priority = MapLayerPriorityBuilder().renderedBeforeLayer("labels").build();
 
     // And it should be visible for all zoom levels. The minimum tilt level is 0 and maximum zoom level is 23.
     MapLayerVisibilityRange range = MapLayerVisibilityRange(MapCameraLimits.minTilt, MapCameraLimits.maxZoomLevel);
@@ -76,8 +71,7 @@ class CustomRasterTileSourceExample {
     try {
       // Build and add the layer to the map.
       MapLayer mapLayer = MapLayerBuilder()
-          .forMap(
-          _hereMapController.hereMapControllerCore) // mandatory parameter
+          .forMap(_hereMapController.hereMapControllerCore) // mandatory parameter
           .withName(dataSourceName + "Layer") // mandatory parameter
           .withDataSource(dataSourceName, MapContentType.rasterImage)
           .withPriority(priority)

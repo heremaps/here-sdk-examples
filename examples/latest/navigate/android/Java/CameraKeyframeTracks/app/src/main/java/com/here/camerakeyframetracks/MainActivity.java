@@ -105,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onLoadScene(@Nullable MapError mapError) {
                 if (mapError == null) {
-                    // Users of the Navigate Edition can enable textured landmarks:
+                    // Textured landmarks are only available with the Navigate License:
                     // Map<String, String> mapFeatures = new HashMap<>();
                     // mapFeatures.put(MapFeatures.LANDMARKS, MapFeatureModes.LANDMARKS_TEXTURED);
                     // mapView.getMapScene().enableFeatures(mapFeatures);

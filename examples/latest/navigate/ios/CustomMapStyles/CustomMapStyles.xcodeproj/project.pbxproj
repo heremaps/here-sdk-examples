@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		83C066BF2CC80307007A890F /* custom-dark-style-neon-rds.json in Resources */ = {isa = PBXBuildFile; fileRef = 83C066BE2CC80307007A890F /* custom-dark-style-neon-rds.json */; };
 		83C837BC2C207F340004F54E /* CustomMapStylesApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C837BB2C207F340004F54E /* CustomMapStylesApp.swift */; };
 		83C837BE2C207F340004F54E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C837BD2C207F340004F54E /* ContentView.swift */; };
 		83C837C02C207F360004F54E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 83C837BF2C207F360004F54E /* Assets.xcassets */; };
@@ -15,6 +14,7 @@
 		83C837CB2C20AAE50004F54E /* heresdk.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 83C837CA2C20AAE50004F54E /* heresdk.xcframework */; };
 		83C837CC2C20AAE50004F54E /* heresdk.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 83C837CA2C20AAE50004F54E /* heresdk.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		83C837D12C20EFA70004F54E /* CustomMapStylesExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C837D02C20EFA70004F54E /* CustomMapStylesExample.swift */; };
+		DC63BAB12E559CBD006B7FDA /* custom-dark-style-neon-rds.zip in Resources */ = {isa = PBXBuildFile; fileRef = DC63BAB02E559CBD006B7FDA /* custom-dark-style-neon-rds.zip */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -32,7 +32,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		83C066BE2CC80307007A890F /* custom-dark-style-neon-rds.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "custom-dark-style-neon-rds.json"; sourceTree = "<group>"; };
 		83C837B82C207F340004F54E /* CustomMapStyles.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CustomMapStyles.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		83C837BB2C207F340004F54E /* CustomMapStylesApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomMapStylesApp.swift; sourceTree = "<group>"; };
 		83C837BD2C207F340004F54E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -40,6 +39,7 @@
 		83C837C22C207F360004F54E /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		83C837CA2C20AAE50004F54E /* heresdk.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = heresdk.xcframework; sourceTree = "<group>"; };
 		83C837D02C20EFA70004F54E /* CustomMapStylesExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomMapStylesExample.swift; sourceTree = "<group>"; };
+		DC63BAB02E559CBD006B7FDA /* custom-dark-style-neon-rds.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = "custom-dark-style-neon-rds.zip"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,7 +57,7 @@
 		83C066BD2CC80307007A890F /* assets */ = {
 			isa = PBXGroup;
 			children = (
-				83C066BE2CC80307007A890F /* custom-dark-style-neon-rds.json */,
+				DC63BAB02E559CBD006B7FDA /* custom-dark-style-neon-rds.zip */,
 			);
 			path = assets;
 			sourceTree = "<group>";
@@ -167,8 +167,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				83C066BF2CC80307007A890F /* custom-dark-style-neon-rds.json in Resources */,
 				83C837C32C207F360004F54E /* Preview Assets.xcassets in Resources */,
+				DC63BAB12E559CBD006B7FDA /* custom-dark-style-neon-rds.zip in Resources */,
 				83C837C02C207F360004F54E /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

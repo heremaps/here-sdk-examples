@@ -30,34 +30,29 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-      ),
-      body: Column(children: [
-        Container(
+      appBar: AppBar(title: const Text('Settings')),
+      body: Column(
+        children: [
+          Container(
             padding: EdgeInsets.only(left: 8, right: 8),
             child: TextField(
               controller: accessIdController,
               decoration: InputDecoration(border: InputBorder.none, hintText: 'Enter an access ID'),
-            )),
-        Container(
+            ),
+          ),
+          Container(
             padding: EdgeInsets.only(left: 8, right: 8),
             child: TextField(
               controller: accessSecretController,
               decoration: InputDecoration(border: InputBorder.none, hintText: 'Enter an access secret'),
-            )),
-        TextButton(
-            style: TextButton.styleFrom(
-                foregroundColor: Colors.blue,
-                padding: EdgeInsets.only(left: 8, right: 8),
             ),
+          ),
+          TextButton(
+            style: TextButton.styleFrom(foregroundColor: Colors.blue, padding: EdgeInsets.only(left: 8, right: 8)),
             child: Text(
               'Restart the venue engine',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.normal,
-              ),
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.normal),
             ),
             onPressed: () async {
               if (accessIdController.text.isNotEmpty && accessSecretController.text.isNotEmpty) {
@@ -65,8 +60,10 @@ class SettingsPage extends StatelessWidget {
                 SDKNativeEngine.sharedInstance!.setAccessKeySecret(accessSecretController.text);
                 _engine.start(null);
               }
-            })
-      ]),
+            },
+          ),
+        ],
+      ),
     );
   }
 }

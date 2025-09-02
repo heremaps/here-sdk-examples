@@ -56,9 +56,10 @@
 
      private void loadMapStyle() {
          // Place the style into the "assets" directory.
-         // Full path example: app/src/main/assets/mymapstyle.json
-         // Adjust file name and path as appropriate for your project.
-         String fileName = "custom-dark-style-neon-rds.json";
+         // Full path example: app/src/main/assets/mymapstyle.zip .
+         // Note: The file can also be a JSON file when using HERE Style Editor < v1.13.0.
+         // Adjust file name, type and path as appropriate for your project.
+         String fileName = "custom-dark-style-neon-rds.zip";
          AssetManager assetManager = context.getAssets();
          try {
              assetManager.open(fileName);

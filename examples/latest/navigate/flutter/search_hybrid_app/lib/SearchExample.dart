@@ -42,9 +42,9 @@ class SearchExample {
   ShowDialogFunction _showDialog;
 
   SearchExample(ShowDialogFunction showDialogCallback, HereMapController hereMapController)
-      : _showDialog = showDialogCallback,
-        _hereMapController = hereMapController,
-        _camera = hereMapController.camera {
+    : _showDialog = showDialogCallback,
+      _hereMapController = hereMapController,
+      _camera = hereMapController.camera {
     double distanceToEarthInMeters = 5000;
     MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
     _camera.lookAtPointWithMeasure(GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
@@ -92,7 +92,9 @@ class SearchExample {
 
     // Note that this app does not show how to download offline maps. For this, check the offline_maps_app example.
     _showDialog(
-        'Switched to OfflineSearchEngine', 'Requests will be calculated offline on cached or downloaded map data.');
+      'Switched to OfflineSearchEngine',
+      'Requests will be calculated offline on cached or downloaded map data.',
+    );
   }
 
   void _searchExample() {
@@ -140,13 +142,17 @@ class SearchExample {
     reverseGeocodingOptions.maxItems = 1;
 
     if (useOnlineSearchEngine) {
-      _onlineSearchEngine.searchByCoordinates(geoCoordinates, reverseGeocodingOptions,
-          (SearchError? searchError, List<Place>? list) async {
+      _onlineSearchEngine.searchByCoordinates(geoCoordinates, reverseGeocodingOptions, (
+        SearchError? searchError,
+        List<Place>? list,
+      ) async {
         _handleReverseGeocodingResults(searchError, list);
       });
     } else {
-      _offlineSearchEngine.searchByCoordinates(geoCoordinates, reverseGeocodingOptions,
-          (SearchError? searchError, List<Place>? list) async {
+      _offlineSearchEngine.searchByCoordinates(geoCoordinates, reverseGeocodingOptions, (
+        SearchError? searchError,
+        List<Place>? list,
+      ) async {
         _handleReverseGeocodingResults(searchError, list);
       });
     }
@@ -273,53 +279,71 @@ class SearchExample {
     if (useOnlineSearchEngine) {
       // Simulate a user typing a search term.
       _onlineSearchEngine.suggestByText(
-          TextQuery.withArea(
-              "p", // User typed "p".
-              queryArea),
-          searchOptions, (SearchError? searchError, List<Suggestion>? list) async {
-        _handleSuggestionResults(searchError, list);
-      });
+        TextQuery.withArea(
+          "p", // User typed "p".
+          queryArea,
+        ),
+        searchOptions,
+        (SearchError? searchError, List<Suggestion>? list) async {
+          _handleSuggestionResults(searchError, list);
+        },
+      );
 
       _onlineSearchEngine.suggestByText(
-          TextQuery.withArea(
-              "pi", // User typed "pi".
-              queryArea),
-          searchOptions, (SearchError? searchError, List<Suggestion>? list) async {
-        _handleSuggestionResults(searchError, list);
-      });
+        TextQuery.withArea(
+          "pi", // User typed "pi".
+          queryArea,
+        ),
+        searchOptions,
+        (SearchError? searchError, List<Suggestion>? list) async {
+          _handleSuggestionResults(searchError, list);
+        },
+      );
 
       _onlineSearchEngine.suggestByText(
-          TextQuery.withArea(
-              "piz", // User typed "piz".
-              queryArea),
-          searchOptions, (SearchError? searchError, List<Suggestion>? list) async {
-        _handleSuggestionResults(searchError, list);
-      });
+        TextQuery.withArea(
+          "piz", // User typed "piz".
+          queryArea,
+        ),
+        searchOptions,
+        (SearchError? searchError, List<Suggestion>? list) async {
+          _handleSuggestionResults(searchError, list);
+        },
+      );
     } else {
       // Simulate a user typing a search term.
       _offlineSearchEngine.suggestByText(
-          TextQuery.withArea(
-              "p", // User typed "p".
-              queryArea),
-          searchOptions, (SearchError? searchError, List<Suggestion>? list) async {
-        _handleSuggestionResults(searchError, list);
-      });
+        TextQuery.withArea(
+          "p", // User typed "p".
+          queryArea,
+        ),
+        searchOptions,
+        (SearchError? searchError, List<Suggestion>? list) async {
+          _handleSuggestionResults(searchError, list);
+        },
+      );
 
       _offlineSearchEngine.suggestByText(
-          TextQuery.withArea(
-              "pi", // User typed "pi".
-              queryArea),
-          searchOptions, (SearchError? searchError, List<Suggestion>? list) async {
-        _handleSuggestionResults(searchError, list);
-      });
+        TextQuery.withArea(
+          "pi", // User typed "pi".
+          queryArea,
+        ),
+        searchOptions,
+        (SearchError? searchError, List<Suggestion>? list) async {
+          _handleSuggestionResults(searchError, list);
+        },
+      );
 
       _offlineSearchEngine.suggestByText(
-          TextQuery.withArea(
-              "piz", // User typed "piz".
-              queryArea),
-          searchOptions, (SearchError? searchError, List<Suggestion>? list) async {
-        _handleSuggestionResults(searchError, list);
-      });
+        TextQuery.withArea(
+          "piz", // User typed "piz".
+          queryArea,
+        ),
+        searchOptions,
+        (SearchError? searchError, List<Suggestion>? list) async {
+          _handleSuggestionResults(searchError, list);
+        },
+      );
     }
   }
 
@@ -358,8 +382,10 @@ class SearchExample {
         _handleGeocodingResults(searchError, list, queryString);
       });
     } else {
-      _offlineSearchEngine.searchByAddress(query, geocodingOptions,
-          (SearchError? searchError, List<Place>? list) async {
+      _offlineSearchEngine.searchByAddress(query, geocodingOptions, (
+        SearchError? searchError,
+        List<Place>? list,
+      ) async {
         _handleGeocodingResults(searchError, list, queryString);
       });
     }
@@ -379,7 +405,8 @@ class SearchExample {
       // Note: getGeoCoordinates() may return null only for Suggestions.
       GeoCoordinates geoCoordinates = geocodingResult.geoCoordinates!;
       Address address = geocodingResult.address;
-      locationDetails = address.addressText +
+      locationDetails =
+          address.addressText +
           ". GeoCoordinates: " +
           geoCoordinates.latitude.toString() +
           ", " +
@@ -426,11 +453,16 @@ class SearchExample {
     GeoBox? geoBox = _camera.boundingBox;
     if (geoBox == null) {
       print(
-          "GeoBox creation failed, corners are null. This can happen when the map is tilted. Falling back to a fixed box.");
+        "GeoBox creation failed, corners are null. This can happen when the map is tilted. Falling back to a fixed box.",
+      );
       GeoCoordinates southWestCorner = GeoCoordinates(
-          _camera.state.targetCoordinates.latitude - 0.05, _camera.state.targetCoordinates.longitude - 0.05);
+        _camera.state.targetCoordinates.latitude - 0.05,
+        _camera.state.targetCoordinates.longitude - 0.05,
+      );
       GeoCoordinates northEastCorner = GeoCoordinates(
-          _camera.state.targetCoordinates.latitude + 0.05, _camera.state.targetCoordinates.longitude + 0.05);
+        _camera.state.targetCoordinates.latitude + 0.05,
+        _camera.state.targetCoordinates.longitude + 0.05,
+      );
       geoBox = GeoBox(southWestCorner, northEastCorner);
     }
     return geoBox;

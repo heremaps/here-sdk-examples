@@ -41,14 +41,11 @@ class W3WSearchExample {
   late W3WSearchEngine _w3wSearchEngine;
   ShowDialogFunction _showDialog;
 
-  W3WSearchExample(ShowDialogFunction showDialogCallback,
-      HereMapController hereMapController)
-      : _showDialog = showDialogCallback {
+  W3WSearchExample(ShowDialogFunction showDialogCallback, HereMapController hereMapController)
+    : _showDialog = showDialogCallback {
     double distanceToEarthInMeters = 10000;
-    MapMeasure mapMeasureZoom =
-        MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
-    hereMapController.camera.lookAtPointWithMeasure(
-        GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
+    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
+    hereMapController.camera.lookAtPointWithMeasure(GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
 
     try {
       _w3wSearchEngine = W3WSearchEngine();
@@ -57,8 +54,7 @@ class W3WSearchExample {
     }
   }
 
-  Future<void> handleW3WSearchResult(
-      String title, dynamic error, W3WSquare? w3WSquare) async {
+  Future<void> handleW3WSearchResult(String title, dynamic error, W3WSquare? w3WSquare) async {
     if (error != null) {
       // If an error occurred, show the error dialog.
       _showDialog("$title Error", "Error: ${error.toString()}");
@@ -111,8 +107,7 @@ class W3WSearchExample {
        * This method uses the What3Words search engine to find a three-word address based
        * on the provided coordinates (latitude and longitude).
        */
-      _w3wSearchEngine.searchByCoordinates(geoCoordinates, w3wLanguage,
-          (error, W3WSquare) {
+      _w3wSearchEngine.searchByCoordinates(geoCoordinates, w3wLanguage, (error, W3WSquare) {
         handleW3WSearchResult("W3W Geocoding", error, W3WSquare);
       });
     } catch (e) {

@@ -59,11 +59,11 @@ class PositioningExample extends State<MyApp>
 
     _appLifecycleListener = AppLifecycleListener(
       onDetach: () =>
-      // Sometimes Flutter may not reliably call dispose(),
-      // therefore it is recommended to dispose the HERE SDK
-      // also when the AppLifecycleListener is detached.
-      // See more details: https://github.com/flutter/flutter/issues/40940
-      { print('AppLifecycleListener detached.'), _disposeHERESDK() },
+          // Sometimes Flutter may not reliably call dispose(),
+          // therefore it is recommended to dispose the HERE SDK
+          // also when the AppLifecycleListener is detached.
+          // See more details: https://github.com/flutter/flutter/issues/40940
+          {print('AppLifecycleListener detached.'), _disposeHERESDK()},
     );
   }
 
@@ -96,9 +96,7 @@ class PositioningExample extends State<MyApp>
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(
-          title: Text('HERE SDK - Positioning Example'),
-        ),
+        appBar: AppBar(title: Text('HERE SDK - Positioning Example')),
         body: Stack(
           children: [
             HereMap(onMapCreated: _onMapCreated),
@@ -113,51 +111,21 @@ class PositioningExample extends State<MyApp>
                         padding: const EdgeInsets.all(_spacing),
                         child: Column(
                           children: [
-                            _buildLabelValue(
-                              'Coordinates:',
-                              _getCoordinatesString(),
-                            ),
-                            _buildLabelValue(
-                              'Horz.Accuracy:',
-                              _getHorizontalAccuracyString(),
-                            ),
-                            _buildLabelValue(
-                              'Vert.Accuracy:',
-                              _getVerticalAccuracyString(),
-                            ),
-                            _buildLabelValue(
-                              'Bearing:',
-                              _getBearingString(),
-                            ),
-                            _buildLabelValue(
-                              'Bear.Accuracy:',
-                              _getBearingAccuracyString(),
-                            ),
-                            _buildLabelValue(
-                              'Speed:',
-                              _getSpeedString(),
-                            ),
-                            _buildLabelValue(
-                              'Speed.Accuracy:',
-                              _getSpeedAccuracyString(),
-                            ),
-                            _buildLabelValue(
-                              'Timestamp:',
-                              _location?.time.toString() ?? _notAvailable,
-                            ),
-                            _buildLabelValue(
-                              'SinceBoot:',
-                              _getTimestampSinceBootString(),
-                            ),
+                            _buildLabelValue('Coordinates:', _getCoordinatesString()),
+                            _buildLabelValue('Horz.Accuracy:', _getHorizontalAccuracyString()),
+                            _buildLabelValue('Vert.Accuracy:', _getVerticalAccuracyString()),
+                            _buildLabelValue('Bearing:', _getBearingString()),
+                            _buildLabelValue('Bear.Accuracy:', _getBearingAccuracyString()),
+                            _buildLabelValue('Speed:', _getSpeedString()),
+                            _buildLabelValue('Speed.Accuracy:', _getSpeedAccuracyString()),
+                            _buildLabelValue('Timestamp:', _location?.time.toString() ?? _notAvailable),
+                            _buildLabelValue('SinceBoot:', _getTimestampSinceBootString()),
                             _buildLabelValue(
                               'Issues:',
                               _issues.map((issue) => issue.toString().split('.').last).join(', '),
                             ),
                             const SizedBox(height: _padding),
-                            _buildLabelValue(
-                              'Status:',
-                              _status == null ? _notAvailable : describeEnum(_status!),
-                            ),
+                            _buildLabelValue('Status:', _status == null ? _notAvailable : describeEnum(_status!)),
                           ],
                         ),
                       ),
@@ -230,10 +198,12 @@ class PositioningExample extends State<MyApp>
     Location? location = _locationEngine!.lastKnownLocation;
 
     if (location != null) {
-      print("Last known location: " +
-          location.coordinates.latitude.toString() +
-          ", " +
-          location.coordinates.longitude.toString());
+      print(
+        "Last known location: " +
+            location.coordinates.latitude.toString() +
+            ", " +
+            location.coordinates.longitude.toString(),
+      );
     } else {
       location = Location.withCoordinates(_defaultGeoCoordinates);
       location.time = DateTime.now();
@@ -279,10 +249,7 @@ class PositioningExample extends State<MyApp>
 
     // Point camera at given location.
     MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, _cameraDistanceInMeters);
-    _hereMapController!.camera.lookAtPointWithMeasure(
-      myLocation.coordinates,
-      mapMeasureZoom,
-    );
+    _hereMapController!.camera.lookAtPointWithMeasure(myLocation.coordinates, mapMeasureZoom);
 
     // Update state's location.
     setState(() {
@@ -314,10 +281,9 @@ class PositioningExample extends State<MyApp>
 
   @override
   void onLocationUpdated(Location location) {
-    print("Location update: " +
-        location.coordinates.latitude.toString() +
-        ", " +
-        location.coordinates.longitude.toString());
+    print(
+      "Location update: " + location.coordinates.latitude.toString() + ", " + location.coordinates.longitude.toString(),
+    );
     _updateMyLocationOnMap(location);
   }
 
@@ -347,10 +313,7 @@ class PositioningExample extends State<MyApp>
     return SizedBox(
       width: _labelWidth,
       height: _labelHeight,
-      child: Text(
-        text,
-        style: TextStyle(fontWeight: FontWeight.bold),
-      ),
+      child: Text(text, style: TextStyle(fontWeight: FontWeight.bold)),
     );
   }
 
@@ -366,13 +329,7 @@ class PositioningExample extends State<MyApp>
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(title),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(message),
-              ],
-            ),
-          ),
+          content: SingleChildScrollView(child: ListBody(children: <Widget>[Text(message)])),
           actions: <Widget>[
             TextButton(
               child: Text('OK'),

@@ -67,10 +67,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'HERE SDK for Flutter - Indoor Map',
       initialRoute: '/',
-      routes: {
-        '/': (context) => MainPage(),
-        '/settings': (context) => SettingsPage(),
-      },
+      routes: {'/': (context) => MainPage(), '/settings': (context) => SettingsPage()},
     );
   }
 }
@@ -103,15 +100,12 @@ class _MainPageState extends State<MainPage> {
 
   void _resetCameraPosition() {
     const double distanceToEarthInMeters = 500;
-    MapMeasure mapMeasureZoom =
-        MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
-    _hereMapController.camera.lookAtPointWithMeasure(
-        GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
+    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
+    _hereMapController.camera.lookAtPointWithMeasure(GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
 
     // Hide the extruded building layer, so that it does not overlap
     // with the venues.
-    _hereMapController.mapScene
-        .disableFeatures([MapFeatures.extrudedBuildings]);
+    _hereMapController.mapScene.disableFeatures([MapFeatures.extrudedBuildings]);
   }
 
   @override
@@ -119,11 +113,11 @@ class _MainPageState extends State<MainPage> {
     super.initState();
     _appLifecycleListener = AppLifecycleListener(
       onDetach: () =>
-      // Sometimes Flutter may not reliably call dispose(),
-      // therefore it is recommended to dispose the HERE SDK
-      // also when the AppLifecycleListener is detached.
-      // See more details: https://github.com/flutter/flutter/issues/40940
-      { print('AppLifecycleListener detached.'), _disposeHERESDK() },
+          // Sometimes Flutter may not reliably call dispose(),
+          // therefore it is recommended to dispose the HERE SDK
+          // also when the AppLifecycleListener is detached.
+          // See more details: https://github.com/flutter/flutter/issues/40940
+          {print('AppLifecycleListener detached.'), _disposeHERESDK()},
     );
   }
 
@@ -154,98 +148,79 @@ class _MainPageState extends State<MainPage> {
             body: Column(
               children: [
                 Padding(
-                    padding: const EdgeInsets.only(
-                        top: 29), // Set the desired margin top here
-                    child: ValueListenableBuilder(
-                        valueListenable: mapLoading.isMapLoading,
-                        builder: (BuildContext context, bool isLoading,
-                            Widget? child) {
-                          return isLoading
-                              ? Container(
-                                  width: double.infinity,
-                                  height: 60,
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
+                  padding: const EdgeInsets.only(top: 29), // Set the desired margin top here
+                  child: ValueListenableBuilder(
+                    valueListenable: mapLoading.isMapLoading,
+                    builder: (BuildContext context, bool isLoading, Widget? child) {
+                      return isLoading
+                          ? Container(
+                              width: double.infinity,
+                              height: 60,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Row(
                                     children: [
-                                      Row(
-                                        children: [
-                                          Padding(
-                                            padding: EdgeInsets.only(left: 20),
-                                            child: GestureDetector(
-                                              onTap: () =>
-                                                  _handleBackButtonPress(
-                                                      context),
-                                              child: Image.asset(
-                                                'assets/back-button.png',
-                                                width: 24,
-                                                height: 24,
-                                              ),
-                                            ),
-                                          ),
-                                          SizedBox(width: 8),
-                                          Container(
-                                            width: MediaQuery.of(context)
-                                                    .size
-                                                    .width -
-                                                105,
-                                            child: Padding(
-                                              padding: EdgeInsets.symmetric(
-                                                  vertical: 8),
-                                              child: Text(
-                                                _clickedVenueName,
-                                                style: TextStyle(fontSize: 16),
-                                                textAlign: TextAlign.left,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
-                                          ),
-                                          GestureDetector(
-                                            onTap: () {
-                                              setState(() {
-                                                _topologyPressed =
-                                                    !_topologyPressed;
-                                              });
-                                              _venueEngineState
-                                                      .venueEngine!
-                                                      .venueMap
-                                                      .selectedVenue!
-                                                      .isTopologyVisible =
-                                                  _topologyPressed;
-                                            },
-                                            child: Image.asset(
-                                              _topologyPressed
-                                                  ? 'assets/topology-focused.png'
-                                                  : 'assets/topology-default.png',
-                                              width: 40,
-                                              height: 40,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
                                       Padding(
-                                        padding:
-                                            EdgeInsets.only(left: 5, right: 5),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: <Widget>[
-                                            ValueListenableBuilder<List>(
-                                              builder: (BuildContext context,
-                                                  List value, Widget? child) {
-                                                _venueList = value;
-                                                return SizedBox();
-                                              },
-                                              valueListenable:
-                                                  listEventHandler.updatedList,
-                                            ),
-                                          ],
+                                        padding: EdgeInsets.only(left: 20),
+                                        child: GestureDetector(
+                                          onTap: () => _handleBackButtonPress(context),
+                                          child: Image.asset('assets/back-button.png', width: 24, height: 24),
+                                        ),
+                                      ),
+                                      SizedBox(width: 8),
+                                      Container(
+                                        width: MediaQuery.of(context).size.width - 105,
+                                        child: Padding(
+                                          padding: EdgeInsets.symmetric(vertical: 8),
+                                          child: Text(
+                                            _clickedVenueName,
+                                            style: TextStyle(fontSize: 16),
+                                            textAlign: TextAlign.left,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ),
+                                      GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            _topologyPressed = !_topologyPressed;
+                                          });
+                                          _venueEngineState.venueEngine!.venueMap.selectedVenue!.isTopologyVisible =
+                                              _topologyPressed;
+                                        },
+                                        child: Image.asset(
+                                          _topologyPressed
+                                              ? 'assets/topology-focused.png'
+                                              : 'assets/topology-default.png',
+                                          width: 40,
+                                          height: 40,
                                         ),
                                       ),
                                     ],
                                   ),
-                                )
-                              : Container();
-                        })),
+                                  Padding(
+                                    padding: EdgeInsets.only(left: 5, right: 5),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        ValueListenableBuilder<List>(
+                                          builder: (BuildContext context, List value, Widget? child) {
+                                            _venueList = value;
+                                            return SizedBox();
+                                          },
+                                          valueListenable: listEventHandler.updatedList,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : Container();
+                    },
+                  ),
+                ),
                 Expanded(
                   child: Stack(
                     children: <Widget>[
@@ -253,8 +228,7 @@ class _MainPageState extends State<MainPage> {
                       VenueEngineWidget(state: _venueEngineState),
                       ValueListenableBuilder<bool>(
                         valueListenable: mapLoading.isMapLoading,
-                        builder: (BuildContext context, bool isLoading,
-                            Widget? child) {
+                        builder: (BuildContext context, bool isLoading, Widget? child) {
                           return Center(
                             child: Stack(
                               children: [
@@ -265,14 +239,11 @@ class _MainPageState extends State<MainPage> {
                                         child: Container(
                                           decoration: BoxDecoration(
                                             color: Colors.white,
-                                            borderRadius:
-                                                BorderRadius.circular(10),
+                                            borderRadius: BorderRadius.circular(10),
                                           ),
                                           padding: EdgeInsets.all(16),
                                           child: CircularProgressIndicator(
-                                            valueColor:
-                                                AlwaysStoppedAnimation<Color>(
-                                                    Colors.black),
+                                            valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
                                           ),
                                         ),
                                       ),
@@ -300,27 +271,15 @@ class _MainPageState extends State<MainPage> {
                     height: 250,
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(20),
-                        topRight: Radius.circular(20),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 10,
-                          spreadRadius: 2,
-                        ),
-                      ],
+                      borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+                      boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 10, spreadRadius: 2)],
                     ),
                     padding: EdgeInsets.all(16),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (_venueEngineState
-                                .venueTapController?.topologyDetails !=
-                            null)
-                          ..._buildRowsFromTopologyDetails(_venueEngineState
-                              .venueTapController!.topologyDetails),
+                        if (_venueEngineState.venueTapController?.topologyDetails != null)
+                          ..._buildRowsFromTopologyDetails(_venueEngineState.venueTapController!.topologyDetails),
                       ],
                     ),
                   ),
@@ -344,23 +303,12 @@ class _MainPageState extends State<MainPage> {
 
       for (String part in parts) {
         if (part.endsWith('.png')) {
-          rowItems.add(
-            Image.asset(
-              'assets/$part',
-              height: 30.0,
-              width: 30.0,
-            ),
-          );
+          rowItems.add(Image.asset('assets/$part', height: 30.0, width: 30.0));
         } else {
           rowItems.add(
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4.0),
-              child: Text(
-                part,
-                style: TextStyle(
-                  fontSize: 16,
-                ),
-              ),
+              child: Text(part, style: TextStyle(fontSize: 16)),
             ),
           );
         }
@@ -380,12 +328,14 @@ class _MainPageState extends State<MainPage> {
         rowItems.insert(pngCount, SizedBox(width: blankSpace));
       }
 
-      rows.add(Column(
-        children: [
-          Row(children: rowItems),
-          SizedBox(height: 15.0),
-        ],
-      ));
+      rows.add(
+        Column(
+          children: [
+            Row(children: rowItems),
+            SizedBox(height: 15.0),
+          ],
+        ),
+      );
     }
 
     return rows;
@@ -398,11 +348,7 @@ class _MainPageState extends State<MainPage> {
         GestureDetector(
           onPanUpdate: (details) {},
           onPanEnd: (details) {},
-          child: Container(
-            padding: EdgeInsets.all(8.0),
-            height: 25,
-            child: Image.asset('assets/indoor_handle.png'),
-          ),
+          child: Container(padding: EdgeInsets.all(8.0), height: 25, child: Image.asset('assets/indoor_handle.png')),
         ),
         Container(
           margin: EdgeInsets.all(8.0),
@@ -426,13 +372,10 @@ class _MainPageState extends State<MainPage> {
                   _panelController.animatePanelToPosition(1.0);
                 },
                 decoration: InputDecoration(
-                  hintText: isMapLoading ?
-		  	'Search for spaces'
-			: 'Search for venues',
+                  hintText: isMapLoading ? 'Search for spaces' : 'Search for venues',
                   prefixIcon: Icon(Icons.search),
                   border: InputBorder.none,
-                  labelStyle: TextStyle(
-                      color: isTextFieldTapped ? Colors.black : Colors.black),
+                  labelStyle: TextStyle(color: isTextFieldTapped ? Colors.black : Colors.black),
                   suffix: searchQuery.isNotEmpty
                       ? GestureDetector(
                           onTap: () {
@@ -446,15 +389,8 @@ class _MainPageState extends State<MainPage> {
                             width: 24,
                             height: 24,
                             alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.grey,
-                            ),
-                            child: Icon(
-                              Icons.clear,
-                              size: 16,
-                              color: Colors.white,
-                            ),
+                            decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
+                            child: Icon(Icons.clear, size: 16, color: Colors.white),
                           ),
                         )
                       : null,
@@ -470,12 +406,9 @@ class _MainPageState extends State<MainPage> {
               _venueList = value;
               if (_venueList.length == 1) {
                 return Container(
-                  height:
-                      650, // Set the height of the container to match the sliding panel height
+                  height: 650, // Set the height of the container to match the sliding panel height
                   alignment: Alignment.center, // Center its child vertically
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
-                  ),
+                  child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.blue)),
                 );
               } else {
                 // Return an empty SizedBox to occupy no space
@@ -487,9 +420,7 @@ class _MainPageState extends State<MainPage> {
         ),
         SizedBox(height: 0),
         // Scrollable elements
-        Expanded(
-          child: _buildDataTable(),
-        ),
+        Expanded(child: _buildDataTable()),
       ],
     );
   }
@@ -503,7 +434,7 @@ class _MainPageState extends State<MainPage> {
             valueListenable: spaceTapped.isSpaceTapped,
             builder: (context, isSpaceTapped, child) {
               if (isSpaceTapped) {
-                if(MediaQuery.of(context).viewInsets.bottom > 1)
+                if (MediaQuery.of(context).viewInsets.bottom > 1)
                   _panelController.animatePanelToPosition(0.5);
                 else
                   _panelController.animatePanelToPosition(0.12);
@@ -515,8 +446,7 @@ class _MainPageState extends State<MainPage> {
                       DataColumn(label: Text('')),
                       DataColumn(label: Text('')),
                     ],
-                    rows: _buildSingleTableRow(
-                        searchQuery, _venueEngineState.geometryList),
+                    rows: _buildSingleTableRow(searchQuery, _venueEngineState.geometryList),
                   ),
                 );
               } else {
@@ -528,8 +458,7 @@ class _MainPageState extends State<MainPage> {
                       DataColumn(label: Text('')),
                       DataColumn(label: Text('')),
                     ],
-                    rows: _buildTableRowsOfLoadedVenue(
-                        searchQuery, _venueEngineState.geometryList),
+                    rows: _buildTableRowsOfLoadedVenue(searchQuery, _venueEngineState.geometryList),
                   ),
                 );
               }
@@ -558,9 +487,7 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  List<DataRow> _buildSingleTableRow(
-      String searchQuery, List<String> venueList) {
-
+  List<DataRow> _buildSingleTableRow(String searchQuery, List<String> venueList) {
     List<DataRow> rows = [];
     rows.clear();
     rows.add(
@@ -571,11 +498,7 @@ class _MainPageState extends State<MainPage> {
               onTap: () {
                 //Do Nothing
               },
-              child: Container(
-                width: 20,
-                child: Image.asset('assets/indoor_rowleft.png',
-                    width: 20, height: 22),
-              ),
+              child: Container(width: 20, child: Image.asset('assets/indoor_rowleft.png', width: 20, height: 22)),
             ),
           ),
           DataCell(
@@ -599,11 +522,7 @@ class _MainPageState extends State<MainPage> {
               onTap: () {
                 //Do Nothing
               },
-              child: Container(
-                width: 16,
-                child: Image.asset('assets/indoor_rowright.png',
-                    width: 16, height: 18),
-              ),
+              child: Container(width: 16, child: Image.asset('assets/indoor_rowright.png', width: 16, height: 18)),
             ),
           ),
         ],
@@ -612,8 +531,7 @@ class _MainPageState extends State<MainPage> {
     return rows;
   }
 
-  List<DataRow> _buildTableRowsOfLoadedVenue(
-      String searchQuery, List<String> venueList) {
+  List<DataRow> _buildTableRowsOfLoadedVenue(String searchQuery, List<String> venueList) {
     if (_venueEngineState.venueTapController?.clickCount == 1) {
       FocusScope.of(context).unfocus();
       _panelController.animatePanelToPosition(0.0);
@@ -633,11 +551,7 @@ class _MainPageState extends State<MainPage> {
                   onTap: () {
                     onTapRowOfLoadedVenue(venue);
                   },
-                  child: Container(
-                    width: 20,
-                    child: Image.asset('assets/indoor_rowleft.png',
-                        width: 20, height: 22),
-                  ),
+                  child: Container(width: 20, child: Image.asset('assets/indoor_rowleft.png', width: 20, height: 22)),
                 ),
               ),
               DataCell(
@@ -648,11 +562,7 @@ class _MainPageState extends State<MainPage> {
                   child: Container(
                     //width: 225,
                     width: MediaQuery.of(context).size.width - 200,
-                    child: Text(
-                      venue,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    child: Text(venue, maxLines: 1, overflow: TextOverflow.ellipsis),
                   ),
                 ),
               ),
@@ -661,11 +571,7 @@ class _MainPageState extends State<MainPage> {
                   onTap: () {
                     onTapRowOfLoadedVenue(venue);
                   },
-                  child: Container(
-                    width: 16,
-                    child: Image.asset('assets/indoor_rowright.png',
-                        width: 16, height: 18),
-                  ),
+                  child: Container(width: 16, child: Image.asset('assets/indoor_rowright.png', width: 16, height: 18)),
                 ),
               ),
             ],
@@ -699,11 +605,7 @@ class _MainPageState extends State<MainPage> {
                   onTap: () {
                     onTapRow(venue);
                   },
-                  child: Container(
-                    width: 20,
-                    child: Image.asset('assets/indoor_row_icon.png',
-                        width: 20, height: 22),
-                  ),
+                  child: Container(width: 20, child: Image.asset('assets/indoor_row_icon.png', width: 20, height: 22)),
                 ),
               ),
               DataCell(
@@ -714,11 +616,7 @@ class _MainPageState extends State<MainPage> {
                   child: Container(
                     //width: 225,
                     width: MediaQuery.of(context).size.width - 200,
-                    child: Text(
-                      venue,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    child: Text(venue, maxLines: 1, overflow: TextOverflow.ellipsis),
                   ),
                 ),
               ),
@@ -729,8 +627,7 @@ class _MainPageState extends State<MainPage> {
                   },
                   child: Container(
                     width: 16,
-                    child: Image.asset('assets/indoor_rightaccessory.png',
-                        width: 16, height: 18),
+                    child: Image.asset('assets/indoor_rightaccessory.png', width: 16, height: 18),
                   ),
                 ),
               ),
@@ -752,12 +649,12 @@ class _MainPageState extends State<MainPage> {
     final index = _venueEngineState.geometryList.indexOf(venue) - 1;
     print('index value : $index');
 
-    if (_venueEngineState.venueTapController != null &&
-        _venueEngineState != null) {
+    if (_venueEngineState.venueTapController != null && _venueEngineState != null) {
       _venueEngineState.venueTapController?.selectGeometry(
-          _venueEngineState.getVenueSearchState().searchResult[index],
-          _venueEngineState.getVenueSearchState().searchResult[index].center,
-          true);
+        _venueEngineState.getVenueSearchState().searchResult[index],
+        _venueEngineState.getVenueSearchState().searchResult[index].center,
+        true,
+      );
     }
 
     FocusScope.of(context).unfocus();
@@ -801,31 +698,26 @@ class _MainPageState extends State<MainPage> {
   void _onMapCreated(HereMapController hereMapController) {
     _hereMapController = hereMapController;
     // Load a scene from the HERE SDK to render the map with a map scheme.
-    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay,
-        (MapError? error) {
+    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
       if (error != null) {
         print('Map scene not loaded. MapError: ${error.toString()}');
         return;
       }
 
       const double distanceToEarthInMeters = 500;
-      MapMeasure mapMeasureZoom =
-          MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
-      hereMapController.camera.lookAtPointWithMeasure(
-          GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
+      MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
+      hereMapController.camera.lookAtPointWithMeasure(GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
 
       // Hide the extruded building layer, so that it does not overlap
       // with the venues.
-      hereMapController.mapScene
-          .disableFeatures([MapFeatures.extrudedBuildings]);
+      hereMapController.mapScene.disableFeatures([MapFeatures.extrudedBuildings]);
 
       // Create a venue engine object. Once the initialization is done,
       // a callback will be called.
       var venueEngine;
       try {
         venueEngine = VenueEngine(_onVenueEngineCreated);
-        _venueEngineState.set(
-            hereMapController, venueEngine, _geometryInfoState);
+        _venueEngineState.set(hereMapController, venueEngine, _geometryInfoState);
       } on InstantiationException catch (e) {
         print('error caught: $e');
       }
@@ -854,11 +746,9 @@ class _MainPageState extends State<MainPage> {
     setState(() {
       _topologyPressed = false;
     });
-    _venueEngineState.venueEngine!.venueMap.selectedVenue!.isTopologyVisible =
-        _topologyPressed;
+    _venueEngineState.venueEngine!.venueMap.selectedVenue!.isTopologyVisible = _topologyPressed;
 
-    _venueEngineState.venueEngine?.venueMap
-        .removeVenue(_venueEngineState.venueEngine!.venueMap.selectedVenue!);
+    _venueEngineState.venueEngine?.venueMap.removeVenue(_venueEngineState.venueEngine!.venueMap.selectedVenue!);
     _venueEngineState.getLevelSwitcherState().onLevelsChanged(null);
     _venueEngineState.getDrawingSwitcherState().onDrawingsChanged(null);
     _venueEngineState.venueTapController?.deselectTopology();

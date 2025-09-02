@@ -7,14 +7,37 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <Button
+    <com.here.sdk.units.core.views.UnitButton
         android:id="@+id/web_mercator_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:onClick="onWebMercatorButtonClicked"
         android:text="  Switch to Web Mercator  "
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintVertical_bias="0.95" />
 
+    <LinearLayout
+        app:layout_constraintTop_toTopOf="parent"
+        android:id="@+id/buttonRow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <com.here.sdk.units.popupmenu.PopupMenuView
+            android:id="@+id/menu_button_map_schemes"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_margin="3dp" />
+
+        <com.here.sdk.units.popupmenu.PopupMenuView
+            android:id="@+id/menu_button_map_features"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_margin="3dp" />
+
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -48,8 +48,11 @@ class CameraExample {
   void _flyTo(GeoCoordinates geoCoordinates) {
     GeoCoordinatesUpdate geoCoordinatesUpdate = GeoCoordinatesUpdate.fromGeoCoordinates(geoCoordinates);
     double bowFactor = 1;
-    MapCameraAnimation animation =
-        MapCameraAnimationFactory.flyTo(geoCoordinatesUpdate, bowFactor, Duration(seconds: 3));
+    MapCameraAnimation animation = MapCameraAnimationFactory.flyTo(
+      geoCoordinatesUpdate,
+      bowFactor,
+      Duration(seconds: 3),
+    );
     _hereMapController.camera.startAnimation(animation);
   }
 

@@ -28,12 +28,7 @@ void main() async {
   // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
   await _initializeHERESDK();
 
-  runApp(
-    MaterialApp(
-      theme: ThemeData.dark().copyWith(),
-      home: MyApp(),
-    ),
-  );
+  runApp(MaterialApp(theme: ThemeData.dark().copyWith(), home: MyApp()));
 }
 
 Future<void> _initializeHERESDK() async {

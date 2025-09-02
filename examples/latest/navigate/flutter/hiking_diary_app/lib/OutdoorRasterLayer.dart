@@ -59,7 +59,10 @@ class OutdoorRasterLayer {
     final storageLevels = <int>[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
 
     var rasterProviderConfig = RasterDataSourceProviderConfiguration.withDefaults(
-        TileUrlProviderFactory.fromXyzUrlTemplate(templateUrl)!, TilingScheme.quadTreeMercator, storageLevels);
+      TileUrlProviderFactory.fromXyzUrlTemplate(templateUrl)!,
+      TilingScheme.quadTreeMercator,
+      storageLevels,
+    );
 
     // If you want to add transparent layers then set this to true.
     rasterProviderConfig.hasAlphaChannel = false;
@@ -71,7 +74,9 @@ class OutdoorRasterLayer {
 
     // Note that this will make the raster source already known to the passed map view.
     return RasterDataSource(
-        mapView.mapContext, RasterDataSourceConfiguration(dataSourceName, rasterProviderConfig, cacheConfig, true));
+      mapView.mapContext,
+      RasterDataSourceConfiguration(dataSourceName, rasterProviderConfig, cacheConfig, true),
+    );
   }
 
   _createMapLayer(String dataSourceName) {

@@ -67,7 +67,7 @@ class VenueSearchControllerState extends State<VenueSearchController> {
     setState(() {
       _venue = venue;
       _filterType = VenueGeometryFilterType.name;
-      if(itemsList.length > 1) {
+      if (itemsList.length > 1) {
         itemsList.removeRange(1, itemsList.length);
         _dropdownValue = "Select Item";
       }
@@ -75,19 +75,18 @@ class VenueSearchControllerState extends State<VenueSearchController> {
       _searchResult = _venue!.venueModel.geometriesByName;
       for (var i = 0; i < _searchResult.length; i++) {
         var geometryName = _searchResult[i].name;
-        if(geometryName.length > _rowStrLength) {
+        if (geometryName.length > _rowStrLength) {
           int startIndex = 0;
           int endIndex = _rowStrLength;
           geometryName = geometryName.substring(startIndex, endIndex);
         }
         var geometryLevel = _searchResult[i].level.name;
         var name = geometryName + "," + geometryLevel;
-        if(itemsList.contains(name)) {
+        if (itemsList.contains(name)) {
           duplicateCount += 1;
           name += " $duplicateCount";
           itemsList.insert(i + 1, name);
-        }
-        else {
+        } else {
           duplicateCount = 0;
           itemsList.insert(i + 1, name);
         }
@@ -113,133 +112,128 @@ class VenueSearchControllerState extends State<VenueSearchController> {
     return Container(
       padding: EdgeInsets.only(top: 5, left: 0),
       color: Colors.white,
-      child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: MediaQuery.of(context).size.width,
+                child: DropdownButton<VenueGeometryFilterType>(
+                  value: _filterType,
+                  onChanged: (VenueGeometryFilterType? filterType) {
+                    setState(() {
+                      _filterType = filterType;
+                      if (itemsList.length > 1) {
+                        itemsList.removeRange(1, itemsList.length);
+                      }
+                      if (_filterType!.name == "name") {
+                        int duplicateCount = 0;
+                        _searchResult = _venue!.venueModel.geometriesByName;
+                        for (var i = 0; i < _searchResult.length; i++) {
+                          var geometryName = _searchResult[i].name;
+                          if (geometryName.length > _rowStrLength) {
+                            int startIndex = 0;
+                            int endIndex = _rowStrLength;
+                            geometryName = geometryName.substring(startIndex, endIndex);
+                          }
+                          var geometryLevel = _searchResult[i].level.name;
+                          var name = geometryName + ", " + geometryLevel;
+                          if (itemsList.contains(name)) {
+                            duplicateCount += 1;
+                            name += " $duplicateCount";
+                            itemsList.insert(i + 1, name);
+                          } else {
+                            duplicateCount = 0;
+                            itemsList.insert(i + 1, name);
+                          }
+                        }
+                      } else if (_filterType!.name == "iconName") {
+                        int duplicateCount = 0;
+                        _searchResult.clear();
+                        _iconMap = _venue!.venueModel.geometriesByIconNames;
+                        _iconMap.forEach((key, value) {
+                          for (var i = 0; i < value.length; i++) {
+                            _searchResult.add(value[i]);
+                          }
+                        });
+                        for (var i = 0; i < _searchResult.length; i++) {
+                          var geometryName = _searchResult[i].name;
+                          var geometryLevel = _searchResult[i].level.name;
+                          var name = geometryName + ", " + geometryLevel;
+                          name += "\n(Icon: " + _searchResult[i].labelName + ")";
+                          if (itemsList.contains(name)) {
+                            duplicateCount += 1;
+                            name += " $duplicateCount";
+                            itemsList.insert(i + 1, name);
+                          } else {
+                            duplicateCount = 0;
+                            itemsList.insert(i + 1, name);
+                          }
+                        }
+                      } else {
+                        int duplicateCount = 0;
+                        _searchResult = _venue!.venueModel.geometriesByName;
+                        for (var i = 0; i < _searchResult.length; i++) {
+                          var geometryName = _searchResult[i].name;
+                          if (geometryName.length > _rowStrLength) {
+                            int startIndex = 0;
+                            int endIndex = _rowStrLength;
+                            geometryName = geometryName.substring(startIndex, endIndex);
+                          }
+                          var geometryLevel = _searchResult[i].level.name;
+                          var geometryAddress = _searchResult[i].internalAddress;
+                          var name = geometryName + ", " + geometryLevel;
+                          var address = "";
+                          if (geometryAddress != null) {
+                            address = geometryAddress!.address;
+                          }
+                          name += "\n(Address: " + address + ")";
+                          if (itemsList.contains(name)) {
+                            duplicateCount += 1;
+                            name += " $duplicateCount";
+                            itemsList.insert(i + 1, name);
+                          } else {
+                            duplicateCount = 0;
+                            itemsList.insert(i + 1, name);
+                          }
+                        }
+                      }
+                      _dropdownValue = itemsList[0];
+                    });
+                  },
+                  items: VenueGeometryFilterType.values.map((VenueGeometryFilterType type) {
+                    return DropdownMenuItem<VenueGeometryFilterType>(
+                      value: type,
+                      child: Text(_getFilterTypeName(type), style: TextStyle(color: Colors.black)),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
           Container(
             width: MediaQuery.of(context).size.width,
-            child: DropdownButton<VenueGeometryFilterType>(
-              value: _filterType,
-              onChanged: (VenueGeometryFilterType? filterType) {
+            child: DropdownButton(
+              // Initial Value
+              value: _dropdownValue,
+              items: itemsList.map((String items) {
+                return DropdownMenuItem(value: items, child: Text(items));
+              }).toList(),
+              onChanged: (value) {
                 setState(() {
-                  _filterType = filterType;
-                  if(itemsList.length > 1) {
-                    itemsList.removeRange(1, itemsList.length);
-                  }
-                  if(_filterType!.name == "name") {
-                    int duplicateCount = 0;
-                    _searchResult = _venue!.venueModel.geometriesByName;
-                    for (var i = 0; i < _searchResult.length; i++) {
-                      var geometryName = _searchResult[i].name;
-                      if(geometryName.length > _rowStrLength) {
-                        int startIndex = 0;
-                        int endIndex = _rowStrLength;
-                        geometryName = geometryName.substring(startIndex, endIndex);
-                      }
-                      var geometryLevel = _searchResult[i].level.name;
-                      var name = geometryName + ", " + geometryLevel;
-                      if(itemsList.contains(name)) {
-                        duplicateCount += 1;
-                        name += " $duplicateCount";
-                        itemsList.insert(i + 1, name);
-                      }
-                      else {
-                        duplicateCount = 0;
-                        itemsList.insert(i + 1, name);
-                      }
-                    }
-                  }
-                  else if(_filterType!.name == "iconName") {
-                    int duplicateCount = 0;
-                    _searchResult.clear();
-                    _iconMap = _venue!.venueModel.geometriesByIconNames;
-                    _iconMap.forEach((key, value) {
-                      for (var i = 0; i < value.length; i++) {
-                        _searchResult.add(value[i]);
-                      }
-                    });
-                    for (var i = 0; i < _searchResult.length; i++) {
-                      var geometryName = _searchResult[i].name;
-                      var geometryLevel = _searchResult[i].level.name;
-                      var name = geometryName + ", " + geometryLevel;
-                      name += "\n(Icon: " + _searchResult[i].labelName + ")";
-                      if(itemsList.contains(name)) {
-                        duplicateCount += 1;
-                        name += " $duplicateCount";
-                        itemsList.insert(i+1, name);
-                      }
-                      else {
-                        duplicateCount = 0;
-                        itemsList.insert(i+1, name);
-                      }
-                    }
-                  }
-                  else {
-                    int duplicateCount = 0;
-                    _searchResult = _venue!.venueModel.geometriesByName;
-                    for (var i = 0; i < _searchResult.length; i++) {
-                      var geometryName = _searchResult[i].name;
-                      if(geometryName.length > _rowStrLength) {
-                        int startIndex = 0;
-                        int endIndex = _rowStrLength;
-                        geometryName = geometryName.substring(startIndex, endIndex);
-                      }
-                      var geometryLevel = _searchResult[i].level.name;
-                      var geometryAddress = _searchResult[i].internalAddress;
-                      var name = geometryName + ", " + geometryLevel;
-                      var address = "";
-                      if(geometryAddress != null) {
-                        address = geometryAddress!.address;
-                      }
-                      name += "\n(Address: " + address + ")";
-                      if(itemsList.contains(name)) {
-                        duplicateCount += 1;
-                        name += " $duplicateCount";
-                        itemsList.insert(i + 1, name);
-                      }
-                      else {
-                        duplicateCount = 0;
-                        itemsList.insert(i + 1, name);
-                      }
-                    }
-                  }
-                  _dropdownValue = itemsList[0];
+                  _dropdownValue = value!;
+                  final index = itemsList.indexOf(_dropdownValue) - 1;
+                  _tapController!.selectGeometry(_searchResult[index], _searchResult[index].center, true);
+                  setOpen(false);
                 });
               },
-              items: VenueGeometryFilterType.values.map((VenueGeometryFilterType type) {
-                return DropdownMenuItem<VenueGeometryFilterType>(
-                  value: type,
-                  child: Text(
-                    _getFilterTypeName(type),
-                    style: TextStyle(color: Colors.black),
-                  ),
-                );
-              }).toList(),
             ),
           ),
-        ]),
-        Container(
-          width: MediaQuery.of(context).size.width,
-          child: DropdownButton(
-            // Initial Value
-            value: _dropdownValue,
-            items: itemsList.map((String items) {
-              return DropdownMenuItem(
-                value: items,
-                child: Text(items),
-              );
-            }).toList(),
-            onChanged: (value) {
-              setState(() {
-                _dropdownValue = value!;
-                final index = itemsList.indexOf(_dropdownValue)-1;
-                _tapController!.selectGeometry(_searchResult[index], _searchResult[index].center, true);
-                setOpen(false);
-              });
-            },
-          ),
-        ),
-        Container(height: kMinInteractiveDimension * height, child: listView)
-      ]),
+          Container(height: kMinInteractiveDimension * height, child: listView),
+        ],
+      ),
     );
   }
 
@@ -262,9 +256,7 @@ class VenueSearchControllerState extends State<VenueSearchController> {
     setState(() {
       _filterController.value = TextEditingValue(
         text: filter,
-        selection: TextSelection.fromPosition(
-          TextPosition(offset: filter.length),
-        ),
+        selection: TextSelection.fromPosition(TextPosition(offset: filter.length)),
       );
     });
   }
@@ -272,15 +264,10 @@ class VenueSearchControllerState extends State<VenueSearchController> {
   Widget _geometryItemBuilder(BuildContext context, VenueGeometry geometry) {
     String name = geometry.name + ", " + geometry.level.name;
     return TextButton(
-      style: TextButton.styleFrom(
-        foregroundColor: Colors.blue,
-      ),
+      style: TextButton.styleFrom(foregroundColor: Colors.blue),
       child: Text(
         name,
-        style: TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.normal,
-        ),
+        style: TextStyle(color: Colors.white, fontWeight: FontWeight.normal),
       ),
       onPressed: () {
         _tapController!.selectGeometry(geometry, geometry.center, true);
@@ -289,4 +276,3 @@ class VenueSearchControllerState extends State<VenueSearchController> {
     );
   }
 }
-

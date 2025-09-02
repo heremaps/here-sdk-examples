@@ -26,15 +26,18 @@ typedef ShowDialogFunction = void Function(String title, String message);
 class MapFeaturesExample {
   final HereMapController _hereMapController;
   final MapScene _mapScene;
-  Map<String,String> _mapFeatures;
+  Map<String, String> _mapFeatures;
 
-  MapFeaturesExample(HereMapController hereMapController, Map<String,String>? mapFeatures)
-      : _mapScene = hereMapController.mapScene,
-        _mapFeatures = mapFeatures ?? {},
-        _hereMapController = hereMapController {
+  MapFeaturesExample(HereMapController hereMapController, Map<String, String>? mapFeatures)
+    : _mapScene = hereMapController.mapScene,
+      _mapFeatures = mapFeatures ?? {},
+      _hereMapController = hereMapController {
     double distanceToEarthInMeters = 8000;
     MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
-    _hereMapController.camera.lookAtPointWithMeasure(GeoCoordinates(52.51760485151816, 13.380312380535472), mapMeasureZoom);
+    _hereMapController.camera.lookAtPointWithMeasure(
+      GeoCoordinates(52.51760485151816, 13.380312380535472),
+      mapMeasureZoom,
+    );
   }
 
   void disableFeatures() {
@@ -134,14 +137,12 @@ class MapFeaturesExample {
   }
 
   void enableVehicleRestrictionsActiveAndInactive() {
-    _mapFeatures[MapFeatures.vehicleRestrictions] =
-        MapFeatureModes.vehicleRestrictionsActiveAndInactive;
+    _mapFeatures[MapFeatures.vehicleRestrictions] = MapFeatureModes.vehicleRestrictionsActiveAndInactive;
     _mapScene.enableFeatures(_mapFeatures);
   }
 
   void enableVehicleRestrictionsActiveAndInactiveDiff() {
-    _mapFeatures[MapFeatures.vehicleRestrictions] =
-        MapFeatureModes.vehicleRestrictionsActiveAndInactiveDifferentiated;
+    _mapFeatures[MapFeatures.vehicleRestrictions] = MapFeatureModes.vehicleRestrictionsActiveAndInactiveDifferentiated;
     _mapScene.enableFeatures(_mapFeatures);
   }
 
@@ -160,7 +161,7 @@ class MapFeaturesExample {
   }
 
   void applyEnabledFeaturesForMapScene(Map<String, String>? mapFeatures) {
-    if(mapFeatures != null) {
+    if (mapFeatures != null) {
       _mapScene.enableFeatures(mapFeatures);
     }
   }

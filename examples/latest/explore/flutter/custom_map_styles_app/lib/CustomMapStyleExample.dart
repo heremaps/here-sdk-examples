@@ -32,7 +32,9 @@ class CustomMapStyleExample {
   }
 
   void loadCustomMapStyle() {
-    File file = File("assets/custom-dark-style-neon-rds.json");
+    // Note: The file can also be a JSON file when using HERE Style Editor < v1.13.0.
+    // Adjust file name, type and path as appropriate for your project.
+    File file = File("assets/custom-dark-style-neon-rds.zip");
     String filePath = file.path;
     _hereMapController.mapScene.loadSceneFromConfigurationFile(filePath, (MapError? error) {
       if (error == null) {

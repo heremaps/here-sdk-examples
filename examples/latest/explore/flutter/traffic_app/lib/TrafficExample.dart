@@ -38,9 +38,8 @@ class TrafficExample {
   List<MapPolyline> _mapPolylineList = [];
 
   TrafficExample(ShowDialogFunction showDialogCallback, HereMapController hereMapController)
-      : _showDialog = showDialogCallback,
-        _hereMapController = hereMapController {
-
+    : _showDialog = showDialogCallback,
+      _hereMapController = hereMapController {
     // Configure the map.
     double distanceToEarthInMeters = 10000;
     MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
@@ -179,11 +178,13 @@ class TrafficExample {
     MapPolyline routeMapPolyline;
     try {
       routeMapPolyline = MapPolyline.withRepresentation(
-          geoPolyline,
-          MapPolylineSolidRepresentation(
-              MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
-              polylineColor,
-              LineCap.round));
+        geoPolyline,
+        MapPolylineSolidRepresentation(
+          MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
+          polylineColor,
+          LineCap.round,
+        ),
+      );
       _hereMapController.mapScene.addMapPolyline(routeMapPolyline);
       _mapPolylineList.add(routeMapPolyline);
     } on MapPolylineRepresentationInstantiationException catch (e) {
@@ -202,8 +203,10 @@ class TrafficExample {
     // Optionally, specify a language:
     // the language of the country where the incident occurs is used.
     // trafficIncidentsQueryOptions.languageCode = LanguageCode.enUs;
-    _trafficEngine.queryForIncidentsInCircle(geoCircle, trafficIncidentsQueryOptions,
-        (TrafficQueryError? trafficQueryError, List<TrafficIncident>? trafficIncidentsList) {
+    _trafficEngine.queryForIncidentsInCircle(geoCircle, trafficIncidentsQueryOptions, (
+      TrafficQueryError? trafficQueryError,
+      List<TrafficIncident>? trafficIncidentsList,
+    ) {
       if (trafficQueryError != null) {
         print("TrafficQueryError: " + trafficQueryError.toString());
         return;
@@ -224,7 +227,9 @@ class TrafficExample {
   }
 
   TrafficIncident? _getNearestTrafficIncident(
-      GeoCoordinates currentGeoCoordinates, List<TrafficIncident> trafficIncidentsList) {
+    GeoCoordinates currentGeoCoordinates,
+    List<TrafficIncident> trafficIncidentsList,
+  ) {
     if (trafficIncidentsList.length == 0) {
       return null;
     }

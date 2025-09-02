@@ -40,9 +40,9 @@ class SearchExample {
   ShowDialogFunction _showDialog;
 
   SearchExample(ShowDialogFunction showDialogCallback, HereMapController hereMapController)
-      : _showDialog = showDialogCallback,
-        _hereMapController = hereMapController,
-        _camera = hereMapController.camera {
+    : _showDialog = showDialogCallback,
+      _hereMapController = hereMapController,
+      _camera = hereMapController.camera {
     double distanceToEarthInMeters = 10000;
     MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
     _camera.lookAtPointWithMeasure(GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
@@ -86,8 +86,10 @@ class SearchExample {
   void _handleWebImages(Place searchResult) {
     final webImages = searchResult.details.images;
     for (final webImage in webImages) {
-      print('WebImage found for place: '
-          '${searchResult.title.trim()}. Link: ${webImage.source.href}');
+      print(
+        'WebImage found for place: '
+        '${searchResult.title.trim()}. Link: ${webImage.source.href}',
+      );
     }
   }
 
@@ -135,8 +137,10 @@ class SearchExample {
     reverseGeocodingOptions.languageCode = LanguageCode.enGb;
     reverseGeocodingOptions.maxItems = 1;
 
-    _searchEngine.searchByCoordinates(geoCoordinates, reverseGeocodingOptions,
-        (SearchError? searchError, List<Place>? list) async {
+    _searchEngine.searchByCoordinates(geoCoordinates, reverseGeocodingOptions, (
+      SearchError? searchError,
+      List<Place>? list,
+    ) async {
       if (searchError != null) {
         _showDialog("Reverse geocoding", "Error: " + searchError.toString());
         return;
@@ -160,8 +164,7 @@ class SearchExample {
     // mapItems is used when picking map items such as MapMarker, MapPolyline, MapPolygon etc.
     // Currently we need map marker so adding the mapItems filter.
     contentTypesToPickFrom.add(MapSceneMapPickFilterContentType.mapItems);
-    MapSceneMapPickFilter filter =
-        MapSceneMapPickFilter(contentTypesToPickFrom);
+    MapSceneMapPickFilter filter = MapSceneMapPickFilter(contentTypesToPickFrom);
     _hereMapController.pick(filter, rectangle, (pickMapResult) {
       if (pickMapResult == null) {
         // Pick operation failed.
@@ -181,16 +184,12 @@ class SearchExample {
       MapMarker topmostMapMarker = mapMarkerList.first;
       Metadata? metadata = topmostMapMarker.metadata;
       if (metadata != null) {
-        CustomMetadataValue? customMetadataValue =
-            metadata.getCustomValue("key_search_result");
+        CustomMetadataValue? customMetadataValue = metadata.getCustomValue("key_search_result");
         if (customMetadataValue != null) {
-          SearchResultMetadata searchResultMetadata =
-              customMetadataValue as SearchResultMetadata;
+          SearchResultMetadata searchResultMetadata = customMetadataValue as SearchResultMetadata;
           String title = searchResultMetadata.searchResult.title;
-          String vicinity =
-              searchResultMetadata.searchResult.address.addressText;
-          _showDialog(
-              "Picked Search Result", title + ". Vicinity: " + vicinity);
+          String vicinity = searchResultMetadata.searchResult.address.addressText;
+          _showDialog("Picked Search Result", title + ". Vicinity: " + vicinity);
           return;
         }
       }
@@ -243,28 +242,37 @@ class SearchExample {
 
     // Simulate a user typing a search term.
     _searchEngine.suggestByText(
-        TextQuery.withArea(
-            "p", // User typed "p".
-            queryArea),
-        searchOptions, (SearchError? searchError, List<Suggestion>? list) async {
-      _handleSuggestionResults(searchError, list);
-    });
+      TextQuery.withArea(
+        "p", // User typed "p".
+        queryArea,
+      ),
+      searchOptions,
+      (SearchError? searchError, List<Suggestion>? list) async {
+        _handleSuggestionResults(searchError, list);
+      },
+    );
 
     _searchEngine.suggestByText(
-        TextQuery.withArea(
-            "pi", // User typed "pi".
-            queryArea),
-        searchOptions, (SearchError? searchError, List<Suggestion>? list) async {
-      _handleSuggestionResults(searchError, list);
-    });
+      TextQuery.withArea(
+        "pi", // User typed "pi".
+        queryArea,
+      ),
+      searchOptions,
+      (SearchError? searchError, List<Suggestion>? list) async {
+        _handleSuggestionResults(searchError, list);
+      },
+    );
 
     _searchEngine.suggestByText(
-        TextQuery.withArea(
-            "piz", // User typed "piz".
-            queryArea),
-        searchOptions, (SearchError? searchError, List<Suggestion>? list) async {
-      _handleSuggestionResults(searchError, list);
-    });
+      TextQuery.withArea(
+        "piz", // User typed "piz".
+        queryArea,
+      ),
+      searchOptions,
+      (SearchError? searchError, List<Suggestion>? list) async {
+        _handleSuggestionResults(searchError, list);
+      },
+    );
   }
 
   void _handleSuggestionResults(SearchError? searchError, List<Suggestion>? list) {
@@ -310,7 +318,8 @@ class SearchExample {
         // Note: getGeoCoordinates() may return null only for Suggestions.
         GeoCoordinates geoCoordinates = geocodingResult.geoCoordinates!;
         Address address = geocodingResult.address;
-        locationDetails = address.addressText +
+        locationDetails =
+            address.addressText +
             ". GeoCoordinates: " +
             geoCoordinates.latitude.toString() +
             ", " +
@@ -358,11 +367,16 @@ class SearchExample {
     GeoBox? geoBox = _camera.boundingBox;
     if (geoBox == null) {
       print(
-          "GeoBox creation failed, corners are null. This can happen when the map is tilted. Falling back to a fixed box.");
+        "GeoBox creation failed, corners are null. This can happen when the map is tilted. Falling back to a fixed box.",
+      );
       GeoCoordinates southWestCorner = GeoCoordinates(
-          _camera.state.targetCoordinates.latitude - 0.05, _camera.state.targetCoordinates.longitude - 0.05);
+        _camera.state.targetCoordinates.latitude - 0.05,
+        _camera.state.targetCoordinates.longitude - 0.05,
+      );
       GeoCoordinates northEastCorner = GeoCoordinates(
-          _camera.state.targetCoordinates.latitude + 0.05, _camera.state.targetCoordinates.longitude + 0.05);
+        _camera.state.targetCoordinates.latitude + 0.05,
+        _camera.state.targetCoordinates.longitude + 0.05,
+      );
       geoBox = GeoBox(southWestCorner, northEastCorner);
     }
     return geoBox;

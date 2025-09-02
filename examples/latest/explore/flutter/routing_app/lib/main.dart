@@ -40,8 +40,7 @@ Future<void> _initializeHERESDK() async {
   // Set your credentials for the HERE SDK.
   String accessKeyId = "YOUR_ACCESS_KEY_ID";
   String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
-  AuthenticationMode authenticationMode =
-      AuthenticationMode.withKeySecret(accessKeyId, accessKeySecret);
+  AuthenticationMode authenticationMode = AuthenticationMode.withKeySecret(accessKeyId, accessKeySecret);
   SDKOptions sdkOptions = SDKOptions.withAuthenticationMode(authenticationMode);
 
   try {
@@ -67,9 +66,7 @@ class MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('HERE SDK - Routing Example'),
-      ),
+      appBar: AppBar(title: const Text('HERE SDK - Routing Example')),
       body: Stack(
         children: [
           HereMap(onMapCreated: _onMapCreated),
@@ -87,32 +84,27 @@ class MyAppState extends State<MyApp> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ToggleButtons(
-                      onPressed: (int index) {
-                        _toggleTrafficOptimization();
-                        setState(() {
-                          _selectedTrafficOptimization[index] =
-                              !_selectedTrafficOptimization[index];
-                        });
-                      },
-                      isSelected: _selectedTrafficOptimization,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8.0),
-                          decoration: BoxDecoration(
-                            color: Colors.lightBlueAccent,
-                            borderRadius: BorderRadius.circular(16.0),
-                          ),
-                          child: Text(
-                            _selectedTrafficOptimization[0]
-                                ? 'Traffic Optimization-On'
-                                : 'Traffic Optimization-OFF',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 15.0,
-                            ),
-                          ),
+                    onPressed: (int index) {
+                      _toggleTrafficOptimization();
+                      setState(() {
+                        _selectedTrafficOptimization[index] = !_selectedTrafficOptimization[index];
+                      });
+                    },
+                    isSelected: _selectedTrafficOptimization,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          color: Colors.lightBlueAccent,
+                          borderRadius: BorderRadius.circular(16.0),
                         ),
-                      ]),
+                        child: Text(
+                          _selectedTrafficOptimization[0] ? 'Traffic Optimization-On' : 'Traffic Optimization-OFF',
+                          style: const TextStyle(color: Colors.white, fontSize: 15.0),
+                        ),
+                      ),
+                    ],
+                  ),
                   button('Update traffic \n on route', _updateTrafficOnRoute),
                 ],
               ),
@@ -127,11 +119,9 @@ class MyAppState extends State<MyApp> {
     _hereMapController = hereMapController;
 
     // Load the map scene using a map scheme to render the map with.
-    _hereMapController?.mapScene.loadSceneForMapScheme(MapScheme.normalDay,
-        (MapError? error) {
+    _hereMapController?.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
       if (error == null) {
-        _hereMapController?.mapScene.enableFeatures(
-            {MapFeatures.lowSpeedZones: MapFeatureModes.lowSpeedZonesAll});
+        _hereMapController?.mapScene.enableFeatures({MapFeatures.lowSpeedZones: MapFeatureModes.lowSpeedZonesAll});
         _routingExample = RoutingExample(_showDialog, hereMapController);
       } else {
         print("Map scene not loaded. MapError: $error");
@@ -190,10 +180,7 @@ class MyAppState extends State<MyApp> {
     return Align(
       alignment: Alignment.topCenter,
       child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.white,
-          backgroundColor: Colors.lightBlueAccent,
-        ),
+        style: ElevatedButton.styleFrom(foregroundColor: Colors.white, backgroundColor: Colors.lightBlueAccent),
         onPressed: () => callbackFunction(),
         child: Text(buttonLabel, style: const TextStyle(fontSize: 15)),
       ),
@@ -208,13 +195,7 @@ class MyAppState extends State<MyApp> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(title),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(message),
-              ],
-            ),
-          ),
+          content: SingleChildScrollView(child: ListBody(children: <Widget>[Text(message)])),
           actions: <Widget>[
             TextButton(
               child: const Text('OK'),

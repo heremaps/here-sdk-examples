@@ -54,10 +54,8 @@ class CustomPointTileSourceExample {
     _pointMapLayer = _createMapLayer(dataSourceName);
 
     double distanceToEarthInMeters = 60 * 1000;
-    MapMeasure mapMeasureZoom =
-        MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
-    _hereMapController.camera.lookAtPointWithMeasure(
-        GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
+    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
+    _hereMapController.camera.lookAtPointWithMeasure(GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
   }
 
   void enableLayer() {
@@ -73,8 +71,7 @@ class CustomPointTileSourceExample {
 
     // Create a PointTileDataSource using a local point tile source.
     // Note that this will make the point source already known to the passed map view.
-    return PointTileDataSource.create(
-        _hereMapController.mapContext, dataSourceName, localPointTileSource);
+    return PointTileDataSource.create(_hereMapController.mapContext, dataSourceName, localPointTileSource);
   }
 
   // Creates a MapLayer for displaying custom point tiles.
@@ -85,12 +82,12 @@ class CustomPointTileSourceExample {
     try {
       // Build and add the layer to the map.
       MapLayer mapLayer = MapLayerBuilder()
-          .forMap(
-              _hereMapController.hereMapControllerCore) // mandatory parameter
+          .forMap(_hereMapController.hereMapControllerCore) // mandatory parameter
           .withName(dataSourceName + "Layer") // mandatory parameter
           .withDataSource(dataSourceName, MapContentType.point)
-          .withStyle(JsonStyleFactory.createFromString(
-              _pointLayerStyle)) // Creates a custom style for the point layer from the predefined JSON style string.
+          .withStyle(
+            JsonStyleFactory.createFromString(_pointLayerStyle),
+          ) // Creates a custom style for the point layer from the predefined JSON style string.
           .withVisibilityRange(range)
           .build();
       return mapLayer;

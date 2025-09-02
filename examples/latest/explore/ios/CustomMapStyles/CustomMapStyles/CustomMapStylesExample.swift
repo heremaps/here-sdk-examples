@@ -54,10 +54,11 @@ class CustomMapStylesExample {
 
     // Drag & drop the assets folder including the JSON style onto Xcode's project navigator.
     private func loadCustomMapStyle() {
-        let jsonResourceString = getResourceStringFromBundle(filename: "custom-dark-style-neon-rds",
-                                                             type: "json")
+        // The file can also be a JSON file when using HERE Style Editor < v1.13.0.
+        let styleResourceString = getResourceStringFromBundle(filename: "custom-dark-style-neon-rds",
+                                                             type: "zip")
         // Load the map scene using the path to the JSON resource.
-        mapView.mapScene.loadScene(fromFile: jsonResourceString, completion: onLoadScene)
+        mapView.mapScene.loadScene(fromFile: styleResourceString, completion: onLoadScene)
     }
 
     private func getResourceStringFromBundle(filename: String, type: String) -> String {

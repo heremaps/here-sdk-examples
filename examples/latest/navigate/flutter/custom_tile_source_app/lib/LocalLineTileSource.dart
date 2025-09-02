@@ -37,8 +37,7 @@ class LocalLineTileSource implements LineTileSource {
   final TileGeoBoundsCalculator tileBoundsCalculator = TileGeoBoundsCalculator(TilingScheme.quadTreeMercator);
 
   @override
-  TileSourceLoadTileRequestHandle? loadTile(
-      TileKey tileKey, LineTileSourceLoadResultHandler completionHandler) {
+  TileSourceLoadTileRequestHandle? loadTile(TileKey tileKey, LineTileSourceLoadResultHandler completionHandler) {
     print("Loading tile for key: $tileKey");
 
     try {
@@ -57,8 +56,7 @@ class LocalLineTileSource implements LineTileSource {
           .build();
 
       print("Tile loaded successfully");
-      completionHandler.loaded(
-          tileKey, [tileData], TileSourceTileMetadata(dataVersion, DateTime(0)));
+      completionHandler.loaded(tileKey, [tileData], TileSourceTileMetadata(dataVersion, DateTime(0)));
     } catch (e) {
       print("Failed to create LineData: $e");
       completionHandler.failed(tileKey);
@@ -91,9 +89,6 @@ class LocalLineTileSource implements LineTileSource {
 
   List<GeoCoordinates> getTileLineCoordinates(TileKey tileKey) {
     GeoBox tileBoundingBox = tileBoundsCalculator.boundsOf(tileKey);
-    return [
-      tileBoundingBox.southWestCorner,
-      tileBoundingBox.northEastCorner
-    ];
+    return [tileBoundingBox.southWestCorner, tileBoundingBox.northEastCorner];
   }
 }

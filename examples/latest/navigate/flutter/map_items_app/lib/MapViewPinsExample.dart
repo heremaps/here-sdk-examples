@@ -31,8 +31,8 @@ class MapViewPinsExample {
   final MapCamera _mapCamera;
 
   MapViewPinsExample(HereMapController hereMapController)
-      : _hereMapController = hereMapController,
-        _mapCamera = hereMapController.camera {
+    : _hereMapController = hereMapController,
+      _mapCamera = hereMapController.camera {
     double distanceToEarthInMeters = 7000;
     MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
     _mapCamera.lookAtPointWithMeasure(mapCenterGeoCoordinates, mapMeasureZoom);
@@ -46,7 +46,9 @@ class MapViewPinsExample {
     _flyTo(mapCenterGeoCoordinates);
 
     _hereMapController.pinWidget(
-        _createWidget("Centered ViewPin", Color.fromARGB(150, 0, 194, 138)), mapCenterGeoCoordinates);
+      _createWidget("Centered ViewPin", Color.fromARGB(150, 0, 194, 138)),
+      mapCenterGeoCoordinates,
+    );
   }
 
   void showAnchoredMapViewPin() {
@@ -54,7 +56,9 @@ class MapViewPinsExample {
     _flyTo(mapCenterGeoCoordinates);
 
     var widgetPin = _hereMapController.pinWidget(
-        _createWidget("Anchored MapViewPin", Color.fromARGB(200, 0, 144, 138)), mapCenterGeoCoordinates);
+      _createWidget("Anchored MapViewPin", Color.fromARGB(200, 0, 144, 138)),
+      mapCenterGeoCoordinates,
+    );
     widgetPin?.anchor = Anchor2D.withHorizontalAndVertical(0.5, 1);
   }
 
@@ -73,12 +77,10 @@ class MapViewPinsExample {
         color: backgroundColor,
         border: Border.all(color: Colors.black),
       ),
-      child: GestureDetector(child: Text(
-        label,
-        style: TextStyle(fontSize: 20.0),
-      ),
+      child: GestureDetector(
+        child: Text(label, style: TextStyle(fontSize: 20.0)),
         onTap: () {
-        print("Tapped on " + label);
+          print("Tapped on " + label);
         },
       ),
     );
@@ -100,8 +102,11 @@ class MapViewPinsExample {
   void _flyTo(GeoCoordinates geoCoordinates) {
     GeoCoordinatesUpdate geoCoordinatesUpdate = GeoCoordinatesUpdate.fromGeoCoordinates(geoCoordinates);
     double bowFactor = 1;
-    MapCameraAnimation animation =
-    MapCameraAnimationFactory.flyTo(geoCoordinatesUpdate, bowFactor, Duration(seconds: 3));
+    MapCameraAnimation animation = MapCameraAnimationFactory.flyTo(
+      geoCoordinatesUpdate,
+      bowFactor,
+      Duration(seconds: 3),
+    );
     _mapCamera.startAnimation(animation);
   }
 }

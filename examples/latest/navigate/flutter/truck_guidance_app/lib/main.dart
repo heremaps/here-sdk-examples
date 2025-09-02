@@ -80,9 +80,7 @@ class MyAppState extends State<MyApp> implements UICallback {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('HERE SDK - Truck Guidance Example'),
-      ),
+      appBar: AppBar(title: const Text('HERE SDK - Truck Guidance Example')),
       body: Stack(
         children: [
           HereMap(onMapCreated: _onMapCreated),
@@ -166,9 +164,7 @@ class MyAppState extends State<MyApp> implements UICallback {
           Positioned(
             left: 5,
             bottom: 85, // Adjust based on SpeedView height (here 80dp) and margin.
-            child: TruckRestrictionView(
-              description: _truckRestrictionDescription,
-            ),
+            child: TruckRestrictionView(description: _truckRestrictionDescription),
           ),
           // UI overlays in the bottom-left corner.
           Positioned(
@@ -176,23 +172,11 @@ class MyAppState extends State<MyApp> implements UICallback {
             bottom: 5,
             child: Row(
               children: [
-                SpeedView(
-                  label: "Truck",
-                  speed: _truckSpeedLimit,
-                  circleColor: Colors.red,
-                ),
+                SpeedView(label: "Truck", speed: _truckSpeedLimit, circleColor: Colors.red),
                 const SizedBox(width: 5),
-                SpeedView(
-                  label: "Car",
-                  speed: _carSpeedLimit,
-                  circleColor: Colors.red,
-                ),
+                SpeedView(label: "Car", speed: _carSpeedLimit, circleColor: Colors.red),
                 const SizedBox(width: 5),
-                SpeedView(
-                  label: "",
-                  speed: _drivingSpeed,
-                  circleColor: Colors.white,
-                ),
+                SpeedView(label: "", speed: _drivingSpeed, circleColor: Colors.white),
               ],
             ),
           ),
@@ -283,10 +267,7 @@ class MyAppState extends State<MyApp> implements UICallback {
     return Align(
       alignment: Alignment.topCenter,
       child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.white,
-          backgroundColor: Colors.lightBlueAccent,
-        ),
+        style: ElevatedButton.styleFrom(foregroundColor: Colors.white, backgroundColor: Colors.lightBlueAccent),
         onPressed: () => callbackFunction(),
         child: Text(buttonLabel, style: const TextStyle(fontSize: 20)),
       ),
@@ -301,13 +282,7 @@ class MyAppState extends State<MyApp> implements UICallback {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(title),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(message),
-              ],
-            ),
-          ),
+          content: SingleChildScrollView(child: ListBody(children: <Widget>[Text(message)])),
           actions: <Widget>[
             TextButton(
               child: const Text('OK'),

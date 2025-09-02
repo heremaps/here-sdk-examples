@@ -66,14 +66,8 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Carto POI Picking'),
-      ),
-      body: Stack(
-        children: [
-          HereMap(onMapCreated: _onMapCreated),
-        ],
-      ),
+      appBar: AppBar(title: Text('Carto POI Picking')),
+      body: Stack(children: [HereMap(onMapCreated: _onMapCreated)]),
     );
   }
 
@@ -95,8 +89,10 @@ class _MyAppState extends State<MyApp> {
   }
 
   _startExample() {
-    _showDialog("Tap on Map Content",
-        "This app shows how to pick vehicle restrictions and embedded markers on the map, such as subway stations and ATMs.");
+    _showDialog(
+      "Tap on Map Content",
+      "This app shows how to pick vehicle restrictions and embedded markers on the map, such as subway stations and ATMs.",
+    );
 
     _enableVehicleRestrictionsOnMap();
 
@@ -112,8 +108,9 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _enableVehicleRestrictionsOnMap() {
-    _hereMapController!.mapScene.enableFeatures(
-        {MapFeatures.vehicleRestrictions: MapFeatureModes.vehicleRestrictionsActiveAndInactiveDifferentiated});
+    _hereMapController!.mapScene.enableFeatures({
+      MapFeatures.vehicleRestrictions: MapFeatureModes.vehicleRestrictionsActiveAndInactiveDifferentiated,
+    });
   }
 
   void _setTapGestureHandler() {
@@ -206,11 +203,14 @@ class _MyAppState extends State<MyApp> {
     _createVehicleRestrictionIcon(topmostVehicleRestriction);
   }
 
-  void _createVehicleRestrictionIcon(PickVehicleRestrictionsResult vehicleRestrictionResult){
-
+  void _createVehicleRestrictionIcon(PickVehicleRestrictionsResult vehicleRestrictionResult) {
     void iconProviderCallback(ImageInfo? imageInfo, String? description, IconProviderError? iconProviderError) {
       if (iconProviderError == null) {
-        _showDialogWithIcon("Vehicle Restriction", "Description: " + ((description==null || description.isEmpty)?"Not Available":description), imageInfo!);
+        _showDialogWithIcon(
+          "Vehicle Restriction",
+          "Description: " + ((description == null || description.isEmpty) ? "Not Available" : description),
+          imageInfo!,
+        );
         return;
       }
       _showDialog("IconProvider error", "An error occurred while creating the icon: " + iconProviderError.name);
@@ -223,7 +223,13 @@ class _MyAppState extends State<MyApp> {
     // - IconProviderAssetType: Specifies icon optimization for either UI or MAP.
     // - size: The size of the generated image in the callback.
     // - iconProviderCallback: The callback object for receiving the generated icon.
-    _iconProvider!.createVehicleRestrictionIcon(vehicleRestrictionResult, _currentMapScheme, IconProviderAssetType.ui, Size2D(40,40), iconProviderCallback);
+    _iconProvider!.createVehicleRestrictionIcon(
+      vehicleRestrictionResult,
+      _currentMapScheme,
+      IconProviderAssetType.ui,
+      Size2D(40, 40),
+      iconProviderCallback,
+    );
   }
 
   @override
@@ -231,11 +237,11 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     _appLifecycleListener = AppLifecycleListener(
       onDetach: () =>
-      // Sometimes Flutter may not reliably call dispose(),
-      // therefore it is recommended to dispose the HERE SDK
-      // also when the AppLifecycleListener is detached.
-      // See more details: https://github.com/flutter/flutter/issues/40940
-      { print('AppLifecycleListener detached.'), _disposeHERESDK() },
+          // Sometimes Flutter may not reliably call dispose(),
+          // therefore it is recommended to dispose the HERE SDK
+          // also when the AppLifecycleListener is detached.
+          // See more details: https://github.com/flutter/flutter/issues/40940
+          {print('AppLifecycleListener detached.'), _disposeHERESDK()},
     );
   }
 
@@ -260,13 +266,7 @@ class _MyAppState extends State<MyApp> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(title),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(message),
-              ],
-            ),
-          ),
+          content: SingleChildScrollView(child: ListBody(children: <Widget>[Text(message)])),
           actions: <Widget>[
             TextButton(
               child: Text('OK'),
@@ -314,5 +314,4 @@ class _MyAppState extends State<MyApp> {
       },
     );
   }
-
 }

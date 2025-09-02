@@ -69,23 +69,13 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('HERE SDK - Map Features Example'),
-      ),
-      drawer: Drawer(
-        child: ListView(children: _buildDrawerList(context)),
-      ),
+      appBar: AppBar(title: Text('HERE SDK - Map Features Example')),
+      drawer: Drawer(child: ListView(children: _buildDrawerList(context))),
       body: Stack(
         children: [
-          Visibility(
-            visible: isWebMercatorProjection,
-            child: mapViewWebMercator
-          ),
-          Visibility(
-            visible: !isWebMercatorProjection,
-            child: mapViewGlobe,
-          ),
-          button(isWebMercatorProjection? "Switch to Globe" : "Switch to Web Mercator", changeMapProjection),
+          Visibility(visible: isWebMercatorProjection, child: mapViewWebMercator),
+          Visibility(visible: !isWebMercatorProjection, child: mapViewGlobe),
+          button(isWebMercatorProjection ? "Switch to Globe" : "Switch to Web Mercator", changeMapProjection),
         ],
       ),
     );
@@ -98,7 +88,9 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _onMapCreated(HereMapController hereMapController) {
-    hereMapController.mapScene.loadSceneForMapScheme(_mapSchemesExample?.getCurrentMapScheme()??MapScheme.normalDay, (MapError? error) {
+    hereMapController.mapScene.loadSceneForMapScheme(_mapSchemesExample?.getCurrentMapScheme() ?? MapScheme.normalDay, (
+      MapError? error,
+    ) {
       if (error == null) {
         _mapFeaturesExample = MapFeaturesExample(hereMapController, _mapFeaturesExample?.getEnabledFeatures());
         _mapFeaturesExample?.applyEnabledFeaturesForMapScene(_mapFeaturesExample?.getEnabledFeatures());
@@ -230,7 +222,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _shadowsButtonClicked() {
-    _showDialog("Building Shadows","Enabled building shadows for non-satellite-based schemes.");
+    _showDialog("Building Shadows", "Enabled building shadows for non-satellite-based schemes.");
     _mapFeaturesExample?.enableShadows();
   }
 
@@ -292,19 +284,9 @@ class _MyAppState extends State<MyApp> {
 
     DrawerHeader header = DrawerHeader(
       child: Column(
-        children: [
-          Text(
-            'HERE SDK - Map Features Example',
-            style: TextStyle(
-              fontSize: 24,
-              color: Colors.white,
-            ),
-          ),
-        ],
+        children: [Text('HERE SDK - Map Features Example', style: TextStyle(fontSize: 24, color: Colors.white))],
       ),
-      decoration: BoxDecoration(
-        color: Colors.blue,
-      ),
+      decoration: BoxDecoration(color: Colors.blue),
     );
     children.add(header);
 
@@ -379,20 +361,17 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     _appLifecycleListener = AppLifecycleListener(
       onDetach: () =>
-      // Sometimes Flutter may not reliably call dispose(),
-      // therefore it is recommended to dispose the HERE SDK
-      // also when the AppLifecycleListener is detached.
-      // See more details: https://github.com/flutter/flutter/issues/40940
-      { print('AppLifecycleListener detached.'), _disposeHERESDK() },
+          // Sometimes Flutter may not reliably call dispose(),
+          // therefore it is recommended to dispose the HERE SDK
+          // also when the AppLifecycleListener is detached.
+          // See more details: https://github.com/flutter/flutter/issues/40940
+          {print('AppLifecycleListener detached.'), _disposeHERESDK()},
     );
 
     // Setting map projection to webMercator.
-    hereMapOptions.projection =  MapProjection.webMercator;
+    hereMapOptions.projection = MapProjection.webMercator;
 
-    mapViewWebMercator = HereMap(
-      onMapCreated: _onMapCreated,
-      options: hereMapOptions,
-    );
+    mapViewWebMercator = HereMap(onMapCreated: _onMapCreated, options: hereMapOptions);
     mapViewGlobe = HereMap(onMapCreated: _onMapCreated);
   }
 
@@ -415,10 +394,7 @@ class _MyAppState extends State<MyApp> {
       alignment: Alignment.bottomCenter,
       child: SafeArea(
         child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            foregroundColor: Colors.white,
-            backgroundColor: Colors.lightBlueAccent,
-          ),
+          style: ElevatedButton.styleFrom(foregroundColor: Colors.white, backgroundColor: Colors.lightBlueAccent),
           onPressed: () => callbackFunction(),
           child: Text(buttonLabel, style: TextStyle(fontSize: 20)),
         ),
@@ -434,13 +410,7 @@ class _MyAppState extends State<MyApp> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(title),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(message),
-              ],
-            ),
-          ),
+          content: SingleChildScrollView(child: ListBody(children: <Widget>[Text(message)])),
           actions: <Widget>[
             TextButton(
               child: Text('OK'),

@@ -58,8 +58,7 @@ class CustomPolygonLayersExample {
 
   CustomPolygonLayersExample(this._hereMapController) {
     MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.zoomLevel, 9);
-    _hereMapController.camera.lookAtPointWithMeasure(
-        GeoCoordinates(_latitude, _longitude), mapMeasureZoom);
+    _hereMapController.camera.lookAtPointWithMeasure(GeoCoordinates(_latitude, _longitude), mapMeasureZoom);
 
     String dataSourceName = "MyPolygonDataSource";
     _polygonDataSource = _createPolygonDataSource(dataSourceName);
@@ -77,9 +76,7 @@ class CustomPolygonLayersExample {
   }
 
   PolygonDataSource _createPolygonDataSource(String dataSourceName) {
-    return PolygonDataSourceBuilder(_hereMapController.mapContext)
-        .withName(dataSourceName)
-        .build();
+    return PolygonDataSourceBuilder(_hereMapController.mapContext).withName(dataSourceName).build();
   }
 
   MapLayer _createMapLayer(String dataSourceName) {
@@ -110,8 +107,7 @@ class CustomPolygonLayersExample {
   }
 
   GeoPolygon _generateRandomGeoPolygon(GeoCoordinates center) {
-    final geoCircle =
-        GeoCircle(center, _random.nextDouble() * _maxRadiusInMeters);
+    final geoCircle = GeoCircle(center, _random.nextDouble() * _maxRadiusInMeters);
     return GeoPolygon.withGeoCircle(geoCircle);
   }
 
@@ -123,8 +119,7 @@ class CustomPolygonLayersExample {
   }
 
   String _randomColorString() {
-    final randomColor =
-        Color((_random.nextDouble() * 0xFFFFFF).toInt());
+    final randomColor = Color((_random.nextDouble() * 0xFFFFFF).toInt());
     final str = '#${randomColor.value.toRadixString(16)}';
     return str;
   }
@@ -163,13 +158,13 @@ class CustomPolygonLayersExample {
       final objectId = attributesAccessor.getInt64(_idAttributeName) ?? 0;
       if (objectId % 2 == 0) {
         // modify color
-        attributesAccessor.addOrReplaceString(
-            _colorAttributeName, _randomColorString());
+        attributesAccessor.addOrReplaceString(_colorAttributeName, _randomColorString());
       } else {
         // read back polygon center
         final center = GeoCoordinates(
-            attributesAccessor.getDouble(_latitudeAttributeName) ?? 0.0,
-            attributesAccessor.getDouble(_longitudeAttributeName) ?? 0.0);
+          attributesAccessor.getDouble(_latitudeAttributeName) ?? 0.0,
+          attributesAccessor.getDouble(_longitudeAttributeName) ?? 0.0,
+        );
         // set new geometry centered at previous location
 
         polygonDataAccessor.setGeometry(_generateRandomGeoPolygon(center));

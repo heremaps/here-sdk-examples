@@ -28,8 +28,7 @@ class LocalPolygonTileSource implements PolygonTileSource {
   final TileGeoBoundsCalculator tileBoundsCalculator = TileGeoBoundsCalculator(TilingScheme.quadTreeMercator);
 
   @override
-  TileSourceLoadTileRequestHandle? loadTile(
-      TileKey tileKey, PolygonTileSourceLoadResultHandler completionHandler) {
+  TileSourceLoadTileRequestHandle? loadTile(TileKey tileKey, PolygonTileSourceLoadResultHandler completionHandler) {
     print("Loading Polygon tile for key: ${tileKey.hashCode}");
 
     try {
@@ -40,8 +39,7 @@ class LocalPolygonTileSource implements PolygonTileSource {
           .build();
 
       print("Tile loaded successfully");
-      completionHandler.loaded(
-          tileKey, [tileData], TileSourceTileMetadata(dataVersion, DateTime(0)));
+      completionHandler.loaded(tileKey, [tileData], TileSourceTileMetadata(dataVersion, DateTime(0)));
     } catch (e) {
       print("Failed to create LineData: $e");
       completionHandler.failed(tileKey);
@@ -78,7 +76,7 @@ class LocalPolygonTileSource implements PolygonTileSource {
       tileBoundingBox.southWestCorner,
       new GeoCoordinates(tileBoundingBox.northEastCorner.longitude, tileBoundingBox.northEastCorner.latitude),
       new GeoCoordinates(tileBoundingBox.northEastCorner.latitude, tileBoundingBox.northEastCorner.longitude),
-      tileBoundingBox.southWestCorner
+      tileBoundingBox.southWestCorner,
     ];
   }
 }

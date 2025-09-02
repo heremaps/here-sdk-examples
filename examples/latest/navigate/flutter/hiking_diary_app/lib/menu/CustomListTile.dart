@@ -54,10 +54,7 @@ class _CustomListTileState extends State<CustomListTile> {
               color: _isSelected ? Colors.blue : Colors.white,
             ),
             child: ListTile(
-              leading: Icon(
-                Icons.hiking,
-                color: Colors.cyan,
-              ),
+              leading: Icon(Icons.hiking, color: Colors.cyan),
               title: Text(widget.text),
               onTap: () {
                 widget.onTap();

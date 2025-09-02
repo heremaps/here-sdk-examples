@@ -72,8 +72,7 @@ class HEREPositioningTermsAndPrivacyHelper {
     // the terms and privacy notice. However, the link to the details needs to be
     // accessible for users. When clicking on applicationTermsPageButtonText the text of the
     // privacyPolicyPage (see below) is shown.
-    const String applicationTermsPage =
-        "You need to agree to the Service Terms and Privacy Policy to use this app.";
+    const String applicationTermsPage = "You need to agree to the Service Terms and Privacy Policy to use this app.";
     const String applicationTermsPageButtonText = "View Privacy Policy";
 
     // Do not forget to adapt this placeholderText for your app.
@@ -106,65 +105,60 @@ class HEREPositioningTermsAndPrivacyHelper {
         builder: (context, setState) {
           return PopScope(
             // Prevents back button dismissal.
-              canPop: false,
-              child: AlertDialog(
-                content: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // The first page that opens is applicationTermsPage, which contains a link to privacyPolicyPage.
-                      if (!showingPrivacyPolicePage) ...[
-                        Text(applicationTermsPage),
-                      ] else ...[
-                        const Text(
-                          privacyPolicyPageTitle,
-                          style: TextStyle(fontWeight: FontWeight.bold),
+            canPop: false,
+            child: AlertDialog(
+              content: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // The first page that opens is applicationTermsPage, which contains a link to privacyPolicyPage.
+                    if (!showingPrivacyPolicePage) ...[
+                      Text(applicationTermsPage),
+                    ] else ...[
+                      const Text(privacyPolicyPageTitle, style: TextStyle(fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      Text(placeholderText),
+                      const SizedBox(height: 12),
+                      const Text(privacyPolicyPage),
+                      const SizedBox(height: 8),
+                      InkWell(
+                        onTap: () async {
+                          final url = Uri.parse(privacyURL);
+                          if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+                            debugPrint('Could not launch \$url');
+                          }
+                        },
+                        child: const Text(
+                          privacyURLButtonText,
+                          style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
                         ),
-                        const SizedBox(height: 8),
-                        Text(placeholderText),
-                        const SizedBox(height: 12),
-                        const Text(privacyPolicyPage),
-                        const SizedBox(height: 8),
-                        InkWell(
-                          onTap: () async {
-                            final url = Uri.parse(privacyURL);
-                            if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-                              debugPrint('Could not launch \$url');
-                            }
-                          },
-                          child: const Text(
-                            privacyURLButtonText,
-                            style: TextStyle(
-                              color: Colors.blue,
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
-                        ),
-                      ]
+                      ),
                     ],
-                  ),
+                  ],
                 ),
-                actions: [
-                  if (!showingPrivacyPolicePage)
-                    TextButton(
-                      onPressed: () {
-                        // Here we define that clicking on the button should open privacyPolicyPage.
-                        setState(() => showingPrivacyPolicePage = true);
-                      },
-                      child: const Text(applicationTermsPageButtonText),
-                    ),
+              ),
+              actions: [
+                if (!showingPrivacyPolicePage)
                   TextButton(
-                    onPressed: () async {
-                      // We store that the user has agreed to the terms and privacy notice, so that it is
-                      // shown only once.
-                      await _setUserAgreedToTermsAndPrivacyNotice();
-                      Navigator.of(context).pop();
-                      completer.complete();
+                    onPressed: () {
+                      // Here we define that clicking on the button should open privacyPolicyPage.
+                      setState(() => showingPrivacyPolicePage = true);
                     },
-                    child: const Text('Agree'),
+                    child: const Text(applicationTermsPageButtonText),
                   ),
-                ],
-              ));
+                TextButton(
+                  onPressed: () async {
+                    // We store that the user has agreed to the terms and privacy notice, so that it is
+                    // shown only once.
+                    await _setUserAgreedToTermsAndPrivacyNotice();
+                    Navigator.of(context).pop();
+                    completer.complete();
+                  },
+                  child: const Text('Agree'),
+                ),
+              ],
+            ),
+          );
         },
       ),
     );

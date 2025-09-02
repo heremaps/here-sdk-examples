@@ -46,11 +46,11 @@ class AppLogic {
   bool _setLongPressDestination = false;
 
   AppLogic(HereMapController hereMapController, ValueChanged<String> updateMessageState, Function showDialogCallback)
-      : _hereMapController = hereMapController,
-        _updateMessageState = updateMessageState,
-        _showDialogCallback = showDialogCallback,
-        _routeCalculator = RouteCalculator() {
-    _navigationExample = NavigationExample(hereMapController, updateMessageState,_routeCalculator);
+    : _hereMapController = hereMapController,
+      _updateMessageState = updateMessageState,
+      _showDialogCallback = showDialogCallback,
+      _routeCalculator = RouteCalculator() {
+    _navigationExample = NavigationExample(hereMapController, updateMessageState, _routeCalculator);
     _setLongPressGestureHandler();
     _updateMessageState("Long press to set start/destination or use random ones.");
 
@@ -127,8 +127,10 @@ class AppLogic {
       return;
     }
 
-    _routeCalculator.calculateCarRoute(_startWaypoint!, _destinationWaypoint!,
-        (HERE.RoutingError? routingError, List<HERE.Route>? routeList) async {
+    _routeCalculator.calculateCarRoute(_startWaypoint!, _destinationWaypoint!, (
+      HERE.RoutingError? routingError,
+      List<HERE.Route>? routeList,
+    ) async {
       if (routingError == null) {
         // When error is null, it is guaranteed that the routeList is not empty.
         HERE.Route _calculatedRoute = routeList!.first;
@@ -146,7 +148,10 @@ class AppLogic {
     int lengthInMeters = route.lengthInMeters;
 
     String routeDetails =
-        "Travel Time: " + _timeUtils.formatTime(estimatedTravelTimeInSeconds) + ", Length: " + _timeUtils.formatLength(lengthInMeters);
+        "Travel Time: " +
+        _timeUtils.formatTime(estimatedTravelTimeInSeconds) +
+        ", Length: " +
+        _timeUtils.formatLength(lengthInMeters);
 
     _showDialogCallback("Route Details", routeDetails);
     _startNavigationOnRoute(isSimulated, route);
@@ -176,10 +181,14 @@ class AppLogic {
     Color polylineColor = const Color.fromARGB(160, 0, 144, 138);
     MapPolyline routeMapPolyline;
     try {
-      routeMapPolyline = MapPolyline.withRepresentation(routeGeoPolyline, MapPolylineSolidRepresentation(
+      routeMapPolyline = MapPolyline.withRepresentation(
+        routeGeoPolyline,
+        MapPolylineSolidRepresentation(
           MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
           polylineColor,
-          LineCap.round));
+          LineCap.round,
+        ),
+      );
       _calculatedRouteMapPolyline = routeMapPolyline;
       _hereMapController.mapScene.addMapPolyline(_calculatedRouteMapPolyline!);
     } on MapPolylineRepresentationInstantiationException catch (e) {
@@ -204,7 +213,7 @@ class AppLogic {
       // If a driver is moving, the bearing value can help to improve the route calculation.
       _startWaypoint!.headingInDegrees = location!.bearingInDegrees;
       _hereMapController.camera.lookAtPoint(location!.coordinates);
-    } 
+    }
 
     if (_startWaypoint == null) {
       _startWaypoint = HERE.Waypoint(_createRandomGeoCoordinatesAroundMapCenter());

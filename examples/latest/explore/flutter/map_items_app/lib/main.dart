@@ -67,17 +67,9 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('HERE SDK - Map Items Example'),
-      ),
-      drawer: Drawer(
-        child: ListView(children: _buildDrawerList(context)),
-      ),
-      body: Stack(
-        children: [
-          HereMap(onMapCreated: _onMapCreated),
-        ],
-      ),
+      appBar: AppBar(title: Text('HERE SDK - Map Items Example')),
+      drawer: Drawer(child: ListView(children: _buildDrawerList(context))),
+      body: Stack(children: [HereMap(onMapCreated: _onMapCreated)]),
     );
   }
 
@@ -141,8 +133,8 @@ class _MyAppState extends State<MyApp> {
     _mapObjectsExample?.showGradientPolyline();
   }
 
-  void _enableVisibilityRangesForMapPolyLine(){
-    _showDialog("Visibility Range","Enabled visibility ranges for MapPolyline.");
+  void _enableVisibilityRangesForMapPolyLine() {
+    _showDialog("Visibility Range", "Enabled visibility ranges for MapPolyline.");
     _mapObjectsExample?.enableVisibilityRangesForPolyline();
   }
 
@@ -178,19 +170,9 @@ class _MyAppState extends State<MyApp> {
 
     DrawerHeader header = DrawerHeader(
       child: Column(
-        children: [
-          Text(
-            'HERE SDK - Map Items Example',
-            style: TextStyle(
-              fontSize: 24,
-              color: Colors.white,
-            ),
-          ),
-        ],
+        children: [Text('HERE SDK - Map Items Example', style: TextStyle(fontSize: 24, color: Colors.white))],
       ),
-      decoration: BoxDecoration(
-        color: Colors.blue,
-      ),
+      decoration: BoxDecoration(color: Colors.blue),
     );
     children.add(header);
 
@@ -270,11 +252,12 @@ class _MyAppState extends State<MyApp> {
   // Build the menu entry for the clear section.
   Widget _buildClearTile(BuildContext context) {
     return ListTile(
-        title: Text('Clear'),
-        onTap: () {
-          Navigator.pop(context);
-          _clearButtonClicked();
-        });
+      title: Text('Clear'),
+      onTap: () {
+        Navigator.pop(context);
+        _clearButtonClicked();
+      },
+    );
   }
 
   @override
@@ -282,11 +265,11 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     _appLifecycleListener = AppLifecycleListener(
       onDetach: () =>
-      // Sometimes Flutter may not reliably call dispose(),
-      // therefore it is recommended to dispose the HERE SDK
-      // also when the AppLifecycleListener is detached.
-      // See more details: https://github.com/flutter/flutter/issues/40940
-      { print('AppLifecycleListener detached.'), _disposeHERESDK() },
+          // Sometimes Flutter may not reliably call dispose(),
+          // therefore it is recommended to dispose the HERE SDK
+          // also when the AppLifecycleListener is detached.
+          // See more details: https://github.com/flutter/flutter/issues/40940
+          {print('AppLifecycleListener detached.'), _disposeHERESDK()},
     );
   }
 
@@ -308,10 +291,7 @@ class _MyAppState extends State<MyApp> {
     return Align(
       alignment: Alignment.topCenter,
       child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.white,
-          backgroundColor: Colors.lightBlueAccent,
-        ),
+        style: ElevatedButton.styleFrom(foregroundColor: Colors.white, backgroundColor: Colors.lightBlueAccent),
         onPressed: () => callbackFunction(),
         child: Text(buttonLabel, style: TextStyle(fontSize: 20)),
       ),
@@ -326,13 +306,7 @@ class _MyAppState extends State<MyApp> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(title),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(message),
-              ],
-            ),
-          ),
+          content: SingleChildScrollView(child: ListBody(children: <Widget>[Text(message)])),
           actions: <Widget>[
             TextButton(
               child: Text('OK'),
