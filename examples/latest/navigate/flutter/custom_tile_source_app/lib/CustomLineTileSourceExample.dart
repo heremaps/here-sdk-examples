@@ -61,10 +61,8 @@ class CustomLineTileSourceExample {
     }
 
     double distanceToEarthInMeters = 60 * 1000;
-    MapMeasure mapMeasureZoom =
-    MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
-    _hereMapController.camera.lookAtPointWithMeasure(
-        GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
+    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
+    _hereMapController.camera.lookAtPointWithMeasure(GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
   }
 
   void enableLayer() {
@@ -78,8 +76,7 @@ class CustomLineTileSourceExample {
   LineTileDataSource _createLineTileDataSource(String dataSourceName) {
     var localLineTileSource = LocalLineTileSource();
 
-    return LineTileDataSource.create(
-        _hereMapController.mapContext, dataSourceName, localLineTileSource);
+    return LineTileDataSource.create(_hereMapController.mapContext, dataSourceName, localLineTileSource);
   }
 
   MapLayer? _createMapLayer(String dataSourceName) {

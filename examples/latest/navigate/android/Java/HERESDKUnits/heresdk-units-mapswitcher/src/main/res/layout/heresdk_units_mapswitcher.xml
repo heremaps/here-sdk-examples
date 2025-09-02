@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <!-- Row 1 -->
+    <LinearLayout
+        android:id="@+id/row1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Custom button 1 -->
+        <TextView
+            android:id="@+id/menu_item1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Satellite Scheme"
+            android:gravity="center"
+            android:drawablePadding="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"
+            app:drawableTopCompat="@drawable/satellite_map_scheme" />
+
+        <!-- Custom button 2 -->
+        <TextView
+            android:id="@+id/menu_item2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Normal Day Scheme"
+            android:gravity="center"
+            android:drawablePadding="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"
+            app:drawableTopCompat="@drawable/normal_map_scheme" />
+    </LinearLayout>
+
+    <!-- Row 2 -->
+    <LinearLayout
+        android:id="@+id/row2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@+id/row1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginTop="16dp">
+
+        <!-- Custom button 3 -->
+        <TextView
+            android:id="@+id/menu_item3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hybrid Day Scheme"
+            android:gravity="center"
+            android:drawablePadding="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"
+            app:drawableTopCompat="@drawable/hybrid_map_scheme" />
+
+        <!-- Custom button 4 -->
+        <TextView
+            android:id="@+id/menu_item4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Topo Day Scheme"
+            android:gravity="center"
+            android:drawablePadding="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"
+            app:drawableTopCompat="@drawable/topo_day_scheme" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

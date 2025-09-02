@@ -1,5 +1,7 @@
 The MapFeatures example app demonstrates how to load and switch between various map schemes, enable specialized map features allowing you to overlay extra content on the map, such as 3D landmarks, onto the map and toggle between Globe and Web Mercator map projections. You can find how this is done in [MapFeaturesExample.java](app/src/main/java/com/here/mapfeatures/MapFeaturesExample.java) and [MapSchemesExample.java](app/src/main/java/com/here/mapfeatures/MapSchemesExample.java).
 
+This example uses HERSDK Units for core functionalities. You can find more information about the units in the HERESDKUnits app.
+
 Build instructions:
 -------------------
 

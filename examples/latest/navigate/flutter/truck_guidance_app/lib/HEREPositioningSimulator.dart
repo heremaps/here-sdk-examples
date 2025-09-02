@@ -52,7 +52,10 @@ class HEREPositioningSimulator {
 
   // Provides fake GPS signals based on the route geometry.
   LocationSimulator _createLocationSimulator(
-      LocationListener locationListener1, LocationListener locationListener2, Route route) {
+    LocationListener locationListener1,
+    LocationListener locationListener2,
+    Route route,
+  ) {
     final locationSimulatorOptions = LocationSimulatorOptions();
     locationSimulatorOptions.speedFactor = _speedFactor;
     locationSimulatorOptions.notificationInterval = Duration(milliseconds: 500);

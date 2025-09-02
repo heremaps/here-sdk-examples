@@ -31,11 +31,7 @@ void main() async {
   // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
   await _initializeHERESDK();
 
-  runApp(
-    MaterialApp(
-      home: MyApp(),
-    ),
-  );
+  runApp(MaterialApp(home: MyApp()));
 }
 
 Future<void> _initializeHERESDK() async {
@@ -45,8 +41,7 @@ Future<void> _initializeHERESDK() async {
   // Set your credentials for the HERE SDK.
   String accessKeyId = "YOUR_ACCESS_KEY_ID";
   String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
-  AuthenticationMode authenticationMode =
-      AuthenticationMode.withKeySecret(accessKeyId, accessKeySecret);
+  AuthenticationMode authenticationMode = AuthenticationMode.withKeySecret(accessKeyId, accessKeySecret);
   SDKOptions sdkOptions = SDKOptions.withAuthenticationMode(authenticationMode);
 
   try {
@@ -75,9 +70,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(
-          title: Text('Custom Tile Source Example'),
-        ),
+        appBar: AppBar(title: Text('Custom Tile Source Example')),
         body: Stack(
           children: [
             HereMap(onMapCreated: _onMapCreated),
@@ -113,17 +106,12 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _onMapCreated(HereMapController hereMapController) {
-    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay,
-        (MapError? error) {
+    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
       if (error == null) {
-        _customPointTileSourceExample =
-            CustomPointTileSourceExample(hereMapController);
-        _customRasterTileSourceExample =
-            CustomRasterTileSourceExample(hereMapController);
-        _customLineTileSourceExample =
-            CustomLineTileSourceExample(hereMapController);
-        _customPolygonTileSourceExample =
-            CustomPolygonTileSourceExample(hereMapController);
+        _customPointTileSourceExample = CustomPointTileSourceExample(hereMapController);
+        _customRasterTileSourceExample = CustomRasterTileSourceExample(hereMapController);
+        _customLineTileSourceExample = CustomLineTileSourceExample(hereMapController);
+        _customPolygonTileSourceExample = CustomPolygonTileSourceExample(hereMapController);
 
         _customRasterTileSourceExample?.setup();
       } else {
@@ -200,12 +188,12 @@ class _MyAppState extends State<MyApp> {
         children: [
           Text(title, style: TextStyle(color: Colors.black)),
           Switch(
-            value: isChecked, 
+            value: isChecked,
             onChanged: (value) {
               setState(() {
                 isChecked ? _disableLayer(title) : _enableLayer(title);
               });
-            }
+            },
           ),
         ],
       ),

@@ -62,9 +62,7 @@ class _EVRoutingAppState extends State<EVRoutingApp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('HERE SDK - EVRouting Example'),
-      ),
+      appBar: AppBar(title: Text('HERE SDK - EVRouting Example')),
       body: Stack(
         children: [
           HereMap(onMapCreated: _onMapCreated),
@@ -108,11 +106,11 @@ class _EVRoutingAppState extends State<EVRoutingApp> {
     super.initState();
     _appLifecycleListener = AppLifecycleListener(
       onDetach: () =>
-      // Sometimes Flutter may not reliably call dispose(),
-      // therefore it is recommended to dispose the HERE SDK
-      // also when the AppLifecycleListener is detached.
-      // See more details: https://github.com/flutter/flutter/issues/40940
-      { print('AppLifecycleListener detached.'), _disposeHERESDK() },
+          // Sometimes Flutter may not reliably call dispose(),
+          // therefore it is recommended to dispose the HERE SDK
+          // also when the AppLifecycleListener is detached.
+          // See more details: https://github.com/flutter/flutter/issues/40940
+          {print('AppLifecycleListener detached.'), _disposeHERESDK()},
     );
   }
 
@@ -134,10 +132,7 @@ class _EVRoutingAppState extends State<EVRoutingApp> {
     return Align(
       alignment: Alignment.topCenter,
       child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.white,
-          backgroundColor: Colors.lightBlueAccent,
-        ),
+        style: ElevatedButton.styleFrom(foregroundColor: Colors.white, backgroundColor: Colors.lightBlueAccent),
         onPressed: () => callbackFunction(),
         child: Text(buttonLabel, style: TextStyle(fontSize: 20)),
       ),
@@ -152,13 +147,7 @@ class _EVRoutingAppState extends State<EVRoutingApp> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(title),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(message),
-              ],
-            ),
-          ),
+          content: SingleChildScrollView(child: ListBody(children: <Widget>[Text(message)])),
           actions: <Widget>[
             TextButton(
               child: Text('OK'),

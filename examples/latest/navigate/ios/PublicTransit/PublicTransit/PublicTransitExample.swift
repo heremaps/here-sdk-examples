@@ -57,9 +57,9 @@ class PublicTransitExample {
     }
     
     // Enable the PUBLIC_TRANSIT map feature to display public transit lines for subways, trams, trains, monorails, and ferries.
-    // Note that this API is only available for the Navigate Edition.
+    // Note that this API is only available with the Navigate License.
     private func enablePublicTransitFeatures() {
-        // Optionally, uncomment the following three lines when you are using the Navigate Edition:
+        // Optionally, uncomment the following three lines when you are using the Navigate License:
         // var mapFeatures = [String: String]()
         // mapFeatures[MapFeatures.publicTransit] = MapFeatureModes.publicTransitAll
         // mapView.mapScene.enableFeatures(mapFeatures)

@@ -30,16 +30,16 @@ class LocalPointTileSource implements PointTileSource {
   final TileGeoBoundsCalculator tileBoundsCalculator = TileGeoBoundsCalculator(TilingScheme.quadTreeMercator);
 
   @override
-  TileSourceLoadTileRequestHandle? loadTile(
-      TileKey tileKey, PointTileSourceLoadResultHandler completionHandler) {
+  TileSourceLoadTileRequestHandle? loadTile(TileKey tileKey, PointTileSourceLoadResultHandler completionHandler) {
     // For each tile, provide the tile geodetic center as a custom point, with a single
     // named attribute "pointText" containing the tile key representation as a string.
     DataAttributes pointAttributes = DataAttributesBuilder()
-            .withString("pointText", 'Tile: (${tileKey.x}, ${tileKey.y}, ${tileKey.level})')
-            .build();
-    PointData tileData = PointDataBuilder().withCoordinates(getTileCenter(tileKey))
-                                         .withAttributes(pointAttributes)
-                                         .build();
+        .withString("pointText", 'Tile: (${tileKey.x}, ${tileKey.y}, ${tileKey.level})')
+        .build();
+    PointData tileData = PointDataBuilder()
+        .withCoordinates(getTileCenter(tileKey))
+        .withAttributes(pointAttributes)
+        .build();
 
     completionHandler.loaded(tileKey, [tileData], TileSourceTileMetadata(dataVersion, DateTime(0)));
 
@@ -70,24 +70,7 @@ class LocalPointTileSource implements PointTileSource {
 
   // Tile source supported data levels.
   @override
-  final List<int> storageLevels = [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-    8,
-    9,
-    10,
-    11,
-    12,
-    13,
-    14,
-    15,
-    16
-  ];
+  final List<int> storageLevels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
 
   GeoCoordinates getTileCenter(TileKey tileKey) {
     var tileBoundingBox = tileBoundsCalculator.boundsOf(tileKey);
@@ -99,14 +82,12 @@ class LocalPointTileSource implements PointTileSource {
     final double west = sw.longitude;
     final double east = ne.longitude;
 
-    if (west <= east)
-    {
+    if (west <= east) {
       return GeoCoordinates(latitude, (west + east) * 0.5);
     }
 
     double longitude = (2 * pi + east + west) * 0.5;
-    if (longitude > pi )
-    {
+    if (longitude > pi) {
       longitude -= 2 * pi;
     }
 

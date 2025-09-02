@@ -29,8 +29,8 @@ class GesturesExample {
   final ShowDialogFunction _showDialog;
 
   GesturesExample(ShowDialogFunction showDialogCallback, HereMapController hereMapController)
-      : _showDialog = showDialogCallback,
-        _hereMapController = hereMapController {
+    : _showDialog = showDialogCallback,
+      _hereMapController = hereMapController {
     double distanceToEarthInMeters = 8000;
     MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
     _hereMapController.camera.lookAtPointWithMeasure(GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
@@ -40,8 +40,10 @@ class GesturesExample {
     _setTwoFingerTapGestureHandler();
     _setLongPressGestureHandler();
 
-    _showDialog("Gestures Example",
-        "Shows Tap, DoubleTap, TwoFingerTap and LongPress gesture handling. " + "See log for details.");
+    _showDialog(
+      "Gestures Example",
+      "Shows Tap, DoubleTap, TwoFingerTap and LongPress gesture handling. " + "See log for details.",
+    );
   }
 
   void _setTapGestureHandler() {
@@ -82,7 +84,7 @@ class GesturesExample {
       }
 
       if (gestureState == GestureState.cancel) {
-          print('Map view lost focus. Maybe a modal dialog is shown or the app is sent to background.');
+        print('Map view lost focus. Maybe a modal dialog is shown or the app is sent to background.');
       }
     });
   }

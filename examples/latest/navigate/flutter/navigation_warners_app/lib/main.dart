@@ -79,14 +79,8 @@ class _MyAppState extends State<MyApp> {
     return WillPopScope(
       onWillPop: _handleBackPress,
       child: Scaffold(
-        appBar: AppBar(
-          title: Text('Navigation Warners Example'),
-        ),
-        body: Stack(
-          children: [
-            HereMap(onMapCreated: _onMapCreated),
-          ],
-        ),
+        appBar: AppBar(title: Text('Navigation Warners Example')),
+        body: Stack(children: [HereMap(onMapCreated: _onMapCreated)]),
       ),
     );
   }
@@ -108,8 +102,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   _startGuidanceExample() {
-    _showDialog(
-        "Navigation Warners", "This app routes to the HERE office in Berlin and logs various TBT events.");
+    _showDialog("Navigation Warners", "This app routes to the HERE office in Berlin and logs various TBT events.");
 
     // We start by calculating a car route.
     _calculateRoute();
@@ -125,8 +118,10 @@ class _MyAppState extends State<MyApp> {
     HERE.Waypoint startWaypoint = HERE.Waypoint(HERE.GeoCoordinates(52.520798, 13.409408));
     HERE.Waypoint destinationWaypoint = HERE.Waypoint(HERE.GeoCoordinates(52.530905, 13.385007));
 
-    _routingEngine!.calculateCarRoute([startWaypoint, destinationWaypoint], HERE.CarOptions(),
-        (HERE.RoutingError? routingError, List<HERE.Route>? routeList) async {
+    _routingEngine!.calculateCarRoute([startWaypoint, destinationWaypoint], HERE.CarOptions(), (
+      HERE.RoutingError? routingError,
+      List<HERE.Route>? routeList,
+    ) async {
       if (routingError == null) {
         // When error is null, it is guaranteed that the routeList is not empty.
         HERE.Route _calculatedRoute = routeList!.first;
@@ -177,12 +172,13 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     _appLifecycleListener = AppLifecycleListener(
-      onDetach: () =>
-      // Sometimes Flutter may not reliably call dispose(),
-      // therefore it is recommended to dispose the HERE SDK
-      // also when the AppLifecycleListener is detached.
-      // See more details: https://github.com/flutter/flutter/issues/40940
-      { print('AppLifecycleListener detached.'), _disposeHERESDK() },
+      onDetach:
+          () =>
+          // Sometimes Flutter may not reliably call dispose(),
+          // therefore it is recommended to dispose the HERE SDK
+          // also when the AppLifecycleListener is detached.
+          // See more details: https://github.com/flutter/flutter/issues/40940
+          {print('AppLifecycleListener detached.'), _disposeHERESDK()},
     );
   }
 
@@ -207,13 +203,7 @@ class _MyAppState extends State<MyApp> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(title),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(message),
-              ],
-            ),
-          ),
+          content: SingleChildScrollView(child: ListBody(children: <Widget>[Text(message)])),
           actions: <Widget>[
             TextButton(
               child: Text('OK'),

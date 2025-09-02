@@ -49,19 +49,21 @@ class LocalRasterTileSource implements RasterTileSource {
       await createTileData(512, 512, Color(SEMI_TRANSPARENT_WHITE)),
       await createTileData(512, 512, Color(SEMI_TRANSPARENT_YELLOW)),
       await createTileData(512, 512, Color(SEMI_TRANSPARENT_CYAN)),
-      await createTileData(512, 512, Color(SEMI_TRANSPARENT_MAGENTA))
+      await createTileData(512, 512, Color(SEMI_TRANSPARENT_MAGENTA)),
     ];
 
     tileData = generatedTileData.whereType<Uint8List>().toList();
   }
 
   @override
-  TileSourceLoadTileRequestHandle? loadTile(
-      TileKey tileKey, RasterTileSourceLoadResultHandler completionHandler) {
+  TileSourceLoadTileRequestHandle? loadTile(TileKey tileKey, RasterTileSourceLoadResultHandler completionHandler) {
     // Pick one of the local tile images, based on the tile key x component.
 
-    completionHandler.loaded(tileKey, tileData[tileKey.x % tileData.length],
-        TileSourceTileMetadata(dataVersion, DateTime(0)));
+    completionHandler.loaded(
+      tileKey,
+      tileData[tileKey.x % tileData.length],
+      TileSourceTileMetadata(dataVersion, DateTime(0)),
+    );
 
     // No request handle is returned here since there is no asynchronous loading happening.
     return null;
@@ -90,24 +92,7 @@ class LocalRasterTileSource implements RasterTileSource {
 
   // Tile source supported data levels.
   @override
-  final List<int> storageLevels = [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-    8,
-    9,
-    10,
-    11,
-    12,
-    13,
-    14,
-    15,
-    16
-  ];
+  final List<int> storageLevels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
 
   Future<Uint8List?> createTileData(int width, int height, Color color) async {
     PictureRecorder recorder = new PictureRecorder();
@@ -116,9 +101,7 @@ class LocalRasterTileSource implements RasterTileSource {
     paint.color = color;
     canvas.drawPaint(paint);
     Picture picture = recorder.endRecording();
-    var pngBytes = await picture
-        .toImageSync(width, height)
-        .toByteData(format: ImageByteFormat.png);
+    var pngBytes = await picture.toImageSync(width, height).toByteData(format: ImageByteFormat.png);
     return pngBytes?.buffer.asUint8List();
   }
 }

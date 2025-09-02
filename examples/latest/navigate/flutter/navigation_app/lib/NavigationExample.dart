@@ -47,18 +47,21 @@ class NavigationExample {
   late RouteCalculator _routeCalculator;
   RoutePrefetcher _routePrefetcher;
 
-  NavigationExample(HereMapController hereMapController, ValueChanged<String> updateMessageState, RouteCalculator routeCalculator)
-      : _hereMapController = hereMapController,
-        _updateMessageState = updateMessageState,
-        // For easy testing, this location provider simulates location events along a route.
-        // You can use HERE positioning to feed real locations, see the "Positioning"-section in
-        // our Developer's Guide for an example
-        _locationSimulationProvider = HEREPositioningSimulator(),
-        // Access the device's GPS sensor and other data.
-        _herePositioningProvider = HEREPositioningProvider(),
-        // The RoutePrefetcher downloads map data in advance into the map cache.
-        // This is not mandatory, but can help to improve the guidance experience.
-        _routePrefetcher = RoutePrefetcher(SDKNativeEngine.sharedInstance!) {
+  NavigationExample(
+    HereMapController hereMapController,
+    ValueChanged<String> updateMessageState,
+    RouteCalculator routeCalculator,
+  ) : _hereMapController = hereMapController,
+      _updateMessageState = updateMessageState,
+      // For easy testing, this location provider simulates location events along a route.
+      // You can use HERE positioning to feed real locations, see the "Positioning"-section in
+      // our Developer's Guide for an example
+      _locationSimulationProvider = HEREPositioningSimulator(),
+      // Access the device's GPS sensor and other data.
+      _herePositioningProvider = HEREPositioningProvider(),
+      // The RoutePrefetcher downloads map data in advance into the map cache.
+      // This is not mandatory, but can help to improve the guidance experience.
+      _routePrefetcher = RoutePrefetcher(SDKNativeEngine.sharedInstance!) {
     try {
       _visualNavigator = VisualNavigator();
     } on InstantiationException {
@@ -81,7 +84,12 @@ class NavigationExample {
     _routeCalculator = routeCalculator;
 
     // A class to handle various kinds of guidance events.
-    _navigationHandler = NavigationHandler(_visualNavigator, _dynamicRoutingEngine, _updateMessageState, _routeCalculator);
+    _navigationHandler = NavigationHandler(
+      _visualNavigator,
+      _dynamicRoutingEngine,
+      _updateMessageState,
+      _routeCalculator,
+    );
     _navigationHandler.setupListeners();
   }
 
@@ -163,19 +171,23 @@ class NavigationExample {
       // Note that the engine will be internally stopped, if it was started before.
       // Therefore, it is not necessary to stop the engine before starting it again.
       _dynamicRoutingEngine.start(
-          route,
-          // Notifies on traffic-optimized routes that are considered better than the current route.
-          DynamicRoutingListener((Route newRoute, int etaDifferenceInSeconds, int distanceDifferenceInMeters) {
+        route,
+        // Notifies on traffic-optimized routes that are considered better than the current route.
+        DynamicRoutingListener(
+          (Route newRoute, int etaDifferenceInSeconds, int distanceDifferenceInMeters) {
             _updateMessageState("DynamicRoutingEngine: Calculated a new route");
             print("DynamicRoutingEngine: etaDifferenceInSeconds: $etaDifferenceInSeconds.");
             print("DynamicRoutingEngine: distanceDifferenceInMeters: $distanceDifferenceInMeters.");
 
             // An implementation needs to decide when to switch to the new route based
             // on above criteria.
-          }, (RoutingError routingError) {
+          },
+          (RoutingError routingError) {
             final error = routingError.toString();
             _updateMessageState("Error while dynamically searching for a better route: $error");
-          }));
+          },
+        ),
+      );
     } on DynamicRoutingEngineStartException {
       throw Exception("Start of DynamicRoutingEngine failed. Is the RouteHandle missing?");
     }

@@ -1,0 +1,51 @@
+plugins {
+    id 'com.android.library'
+}
+
+android {
+    namespace 'com.here.sdk.units.mapswitcher'
+    compileSdk 35
+
+    defaultConfig {
+        minSdk 24
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+
+        versionName = "1.0"
+    }
+
+    // Append the versionName when assembling the artifact.
+    libraryVariants.all { variant ->
+        variant.outputs.all { output ->
+            def baseName = "${project.name}-${variant.name}-v${defaultConfig.versionName}.aar"
+            output.outputFileName = baseName
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    // Pick the HERE SDK AAR matching the pattern found in HERESDKUnits/app/libs/.
+    // Note: compileOnly ensures that the AAR is not exported together with the resulting unit AAR.
+    compileOnly fileTree(dir: file("${project(':app').projectDir}/libs"), include: ['heresdk-navigate-*.aar'])
+
+    // Depend on the core unit to reuse common functionality.
+    api(project(path: ':heresdk-units-core'))
+
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.material:material:1.12.0'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+}

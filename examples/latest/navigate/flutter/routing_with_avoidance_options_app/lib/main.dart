@@ -40,8 +40,7 @@ Future<void> _initializeHERESDK() async {
   // Set your credentials for the HERE SDK.
   String accessKeyId = "YOUR_ACCESS_KEY_ID";
   String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
-  AuthenticationMode authenticationMode =
-      AuthenticationMode.withKeySecret(accessKeyId, accessKeySecret);
+  AuthenticationMode authenticationMode = AuthenticationMode.withKeySecret(accessKeyId, accessKeySecret);
   SDKOptions sdkOptions = SDKOptions.withAuthenticationMode(authenticationMode);
 
   try {
@@ -66,9 +65,7 @@ class MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Routing With Avoidance Options Example'),
-      ),
+      appBar: AppBar(title: const Text('Routing With Avoidance Options Example')),
       body: Stack(
         children: [
           HereMap(onMapCreated: _onMapCreated),
@@ -76,10 +73,7 @@ class MyAppState extends State<MyApp> {
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  button('Add Route', _addRouteButtonClicked),
-                  button('Clear Map', _clearMapButtonClicked),
-                ],
+                children: [button('Add Route', _addRouteButtonClicked), button('Clear Map', _clearMapButtonClicked)],
               ),
             ],
           ),
@@ -92,8 +86,7 @@ class MyAppState extends State<MyApp> {
     _hereMapController = hereMapController;
 
     // Load the map scene using a map scheme to render the map with.
-    _hereMapController?.mapScene.loadSceneForMapScheme(MapScheme.normalDay,
-        (MapError? error) {
+    _hereMapController?.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
       if (error == null) {
         _routingExample = RoutingWithAvoidanceOptionsExample(_showDialog, hereMapController);
       } else {
@@ -114,7 +107,8 @@ class MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     _appLifecycleListener = AppLifecycleListener(
-      onDetach: () =>
+      onDetach:
+          () =>
           // Sometimes Flutter may not reliably call dispose(),
           // therefore it is recommended to dispose the HERE SDK
           // also when the AppLifecycleListener is detached.
@@ -141,10 +135,7 @@ class MyAppState extends State<MyApp> {
     return Align(
       alignment: Alignment.topCenter,
       child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.white,
-          backgroundColor: Colors.lightBlueAccent,
-        ),
+        style: ElevatedButton.styleFrom(foregroundColor: Colors.white, backgroundColor: Colors.lightBlueAccent),
         onPressed: () => callbackFunction(),
         child: Text(buttonLabel, style: const TextStyle(fontSize: 15)),
       ),
@@ -159,13 +150,7 @@ class MyAppState extends State<MyApp> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(title),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(message),
-              ],
-            ),
-          ),
+          content: SingleChildScrollView(child: ListBody(children: <Widget>[Text(message)])),
           actions: <Widget>[
             TextButton(
               child: const Text('OK'),

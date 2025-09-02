@@ -54,9 +54,7 @@ class DrawingSwitcherState extends State<DrawingSwitcher> {
     Widget listView = Padding(
       padding: EdgeInsets.only(bottom: 82), // Adjust the top padding as needed
       child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-        ),
+        decoration: BoxDecoration(color: Colors.white),
         child: ListView(
           padding: EdgeInsets.zero,
           shrinkWrap: true,
@@ -91,11 +89,7 @@ class DrawingSwitcherState extends State<DrawingSwitcher> {
                 _isOpen = !_isOpen;
               });
             },
-            child: Image.asset(
-              'assets/structure-switcher.png',
-              width: 70,
-              height: 70,
-            ),
+            child: Image.asset('assets/structure-switcher.png', width: 70, height: 70),
           ),
         ),
         Positioned(

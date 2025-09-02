@@ -354,7 +354,7 @@ class LanguageCodeConverter {
     LanguageCode.woLatn: Locale("wo", "LATN"),
 
     /// Yoruba - Latin
-    LanguageCode.yoLatn: Locale("yo", "LATN")
+    LanguageCode.yoLatn: Locale("yo", "LATN"),
   };
 
   static Locale getLocale(LanguageCode languageCode) {

@@ -83,17 +83,12 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-        onWillPop: _handleBackPress,
-        child: Scaffold(
-          appBar: AppBar(
-            title: Text('Spatial Navigation Example'),
-          ),
-          body: Stack(
-            children: [
-              HereMap(onMapCreated: _onMapCreated),
-            ],
-          ),
-        ));
+      onWillPop: _handleBackPress,
+      child: Scaffold(
+        appBar: AppBar(title: Text('Spatial Navigation Example')),
+        body: Stack(children: [HereMap(onMapCreated: _onMapCreated)]),
+      ),
+    );
   }
 
   void _onMapCreated(HereMapController hereMapController) {
@@ -114,7 +109,9 @@ class _MyAppState extends State<MyApp> {
 
   _startGuidanceExample() {
     _showDialog(
-        "Spatial Audio Navigation", "This app routes to the HERE office in Berlin. See logs for guidance information.");
+      "Spatial Audio Navigation",
+      "This app routes to the HERE office in Berlin. See logs for guidance information.",
+    );
 
     // We start by calculating a car route.
     _calculateRoute();
@@ -130,8 +127,10 @@ class _MyAppState extends State<MyApp> {
     HERE.Waypoint startWaypoint = HERE.Waypoint(HERE.GeoCoordinates(52.520798, 13.409408));
     HERE.Waypoint destinationWaypoint = HERE.Waypoint(HERE.GeoCoordinates(52.530905, 13.385007));
 
-    _routingEngine!.calculateCarRoute([startWaypoint, destinationWaypoint], HERE.CarOptions(),
-        (HERE.RoutingError? routingError, List<HERE.Route>? routeList) async {
+    _routingEngine!.calculateCarRoute([startWaypoint, destinationWaypoint], HERE.CarOptions(), (
+      HERE.RoutingError? routingError,
+      List<HERE.Route>? routeList,
+    ) async {
       if (routingError == null) {
         // When error is null, it is guaranteed that the routeList is not empty.
         HERE.Route _calculatedRoute = routeList!.first;
@@ -193,11 +192,11 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     _appLifecycleListener = AppLifecycleListener(
       onDetach: () =>
-      // Sometimes Flutter may not reliably call dispose(),
-      // therefore it is recommended to dispose the HERE SDK
-      // also when the AppLifecycleListener is detached.
-      // See more details: https://github.com/flutter/flutter/issues/40940
-      { print('AppLifecycleListener detached.'), _disposeHERESDK() },
+          // Sometimes Flutter may not reliably call dispose(),
+          // therefore it is recommended to dispose the HERE SDK
+          // also when the AppLifecycleListener is detached.
+          // See more details: https://github.com/flutter/flutter/issues/40940
+          {print('AppLifecycleListener detached.'), _disposeHERESDK()},
     );
   }
 
@@ -222,13 +221,7 @@ class _MyAppState extends State<MyApp> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(title),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(message),
-              ],
-            ),
-          ),
+          content: SingleChildScrollView(child: ListBody(children: <Widget>[Text(message)])),
           actions: <Widget>[
             TextButton(
               child: Text('OK'),
@@ -243,19 +236,17 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future synthesizeSpatialAudioCueAndPlay(HERE.EventText eventText) async {
-    this.spatialAudioCuePanning =
-        eventText.spatialNotificationDetails!.audioCuePanning;
+    this.spatialAudioCuePanning = eventText.spatialNotificationDetails!.audioCuePanning;
     await methodChannel.invokeMethod('synthesizeAudioCueAndPlay', {
       'audioCue': eventText.text,
-      'initialAzimuth':
-          eventText.spatialNotificationDetails!.initialAzimuthInDegrees
+      'initialAzimuth': eventText.spatialNotificationDetails!.initialAzimuthInDegrees,
     });
   }
 
   Future notifyAzimuth(HERE.SpatialTrajectoryData spatialTrajectoryData) async {
     await methodChannel.invokeMethod('azimuthNotification', {
       'azimuth': spatialTrajectoryData.azimuthInDegrees,
-      'completedTrajectory': spatialTrajectoryData.completedSpatialTrajectory
+      'completedTrajectory': spatialTrajectoryData.completedSpatialTrajectory,
     });
   }
 
@@ -267,10 +258,8 @@ class _MyAppState extends State<MyApp> {
         // Use the length obtained platform based in order to improve the audio cue duration estimation.
         final lengthMs = call.arguments as int;
         Duration duration = new Duration(milliseconds: lengthMs);
-        HERE.CustomPanningData customPanningData =
-            new HERE.CustomPanningData(duration, null, null);
-        spatialAudioCuePanning.startAngularPanning(customPanningData,
-            (spatialTrajectoryData) {
+        HERE.CustomPanningData customPanningData = new HERE.CustomPanningData(duration, null, null);
+        spatialAudioCuePanning.startAngularPanning(customPanningData, (spatialTrajectoryData) {
           notifyAzimuth(spatialTrajectoryData);
         });
         // audioCuePanning.startPanning(customPanningData);

@@ -133,11 +133,11 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     _appLifecycleListener = AppLifecycleListener(
       onDetach: () =>
-      // Sometimes Flutter may not reliably call dispose(),
-      // therefore it is recommended to dispose the HERE SDK
-      // also when the AppLifecycleListener is detached.
-      // See more details: https://github.com/flutter/flutter/issues/40940
-      { print('AppLifecycleListener detached.'), _disposeHERESDK() },
+          // Sometimes Flutter may not reliably call dispose(),
+          // therefore it is recommended to dispose the HERE SDK
+          // also when the AppLifecycleListener is detached.
+          // See more details: https://github.com/flutter/flutter/issues/40940
+          {print('AppLifecycleListener detached.'), _disposeHERESDK()},
     );
   }
 

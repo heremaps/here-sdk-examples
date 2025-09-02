@@ -64,8 +64,8 @@ class TruckGuidanceExample {
   final ShowDialogFunction _showDialog;
 
   TruckGuidanceExample(ShowDialogFunction showDialogCallback, HereMapController hereMapController)
-      : _showDialog = showDialogCallback,
-        _hereMapController = hereMapController {
+    : _showDialog = showDialogCallback,
+      _hereMapController = hereMapController {
     MapCamera camera = _hereMapController.camera;
     // Center map in Berlin.
     double distanceToEarthInMeters = 1000 * 90;
@@ -236,25 +236,21 @@ class TruckGuidanceExample {
         print("Carto POI picked: ${pickedPlace.name}, Place category: ${pickedPlace.placeCategoryId}");
 
         // Optionally, you can now use the SearchEngine or the OfflineSearchEngine to retrieve more details.
-        _searchEngine?.searchByPickedPlace(
-          pickedPlace,
-          LanguageCode.enUs,
-          (searchError, place) {
-            if (searchError == null && place != null) {
-              final address = place.address.addressText;
-              String categories = "";
-              for (var category in place.details.categories) {
-                final name = category.name;
-                if (name != null) {
-                  categories += "$name ";
-                }
+        _searchEngine?.searchByPickedPlace(pickedPlace, LanguageCode.enUs, (searchError, place) {
+          if (searchError == null && place != null) {
+            final address = place.address.addressText;
+            String categories = "";
+            for (var category in place.details.categories) {
+              final name = category.name;
+              if (name != null) {
+                categories += "$name ";
               }
-              _showDialog("Carto POI", "$address. Categories: $categories");
-            } else {
-              print("searchPickedPlace() resulted in an error: ${searchError?.name}");
             }
-          },
-        );
+            _showDialog("Carto POI", "$address. Categories: $categories");
+          } else {
+            print("searchPickedPlace() resulted in an error: ${searchError?.name}");
+          }
+        });
       }
 
       // Handle traffic incidents.
@@ -278,8 +274,9 @@ class TruckGuidanceExample {
 
   void _setupListeners() {
     // Notifies on the current map-matched location and other useful information while driving.
-    _visualNavigator?.navigableLocationListener =
-        NavigableLocationListener((NavigableLocation currentNavigableLocation) {
+    _visualNavigator?.navigableLocationListener = NavigableLocationListener((
+      NavigableLocation currentNavigableLocation,
+    ) {
       final drivingSpeed = currentNavigableLocation.originalLocation.speedInMetersPerSecond;
       // Note that we ignore speedAccuracyInMetersPerSecond here for simplicity.
       if (drivingSpeed == null) {
@@ -334,8 +331,9 @@ class TruckGuidanceExample {
     // This event notifies on truck restrictions in general,
     // so it will also deliver events, when the transport type was set to a non-truck transport type.
     // The given restrictions are based on the HERE database of the road network ahead.
-    _visualNavigator?.truckRestrictionsWarningListener =
-        TruckRestrictionsWarningListener((List<TruckRestrictionWarning> list) {
+    _visualNavigator?.truckRestrictionsWarningListener = TruckRestrictionsWarningListener((
+      List<TruckRestrictionWarning> list,
+    ) {
       // The list is guaranteed to be non-empty.
       for (final truckRestrictionWarning in list) {
         if (truckRestrictionWarning.timeRule != null && !truckRestrictionWarning.timeRule!.appliesTo(DateTime.now())) {
@@ -381,8 +379,9 @@ class TruckGuidanceExample {
     });
 
     // Notifies on environmental zone warnings.
-    _visualNavigator?.environmentalZoneWarningListener =
-        EnvironmentalZoneWarningListener((List<EnvironmentalZoneWarning> list) {
+    _visualNavigator?.environmentalZoneWarningListener = EnvironmentalZoneWarningListener((
+      List<EnvironmentalZoneWarning> list,
+    ) {
       // The list is guaranteed to be non-empty.
       for (final environmentalZoneWarning in list) {
         final distanceType = environmentalZoneWarning.distanceType;
@@ -545,7 +544,8 @@ class TruckGuidanceExample {
 
     print("Start Waypoint: ${startWaypoint.coordinates.latitude}, ${startWaypoint.coordinates.longitude}");
     print(
-        "Destination Waypoint: ${destinationWaypoint.coordinates.latitude}, ${destinationWaypoint.coordinates.longitude}");
+      "Destination Waypoint: ${destinationWaypoint.coordinates.latitude}, ${destinationWaypoint.coordinates.longitude}",
+    );
 
     return waypoints;
   }
@@ -581,7 +581,9 @@ class TruckGuidanceExample {
     // Toggle simulation speed factor.
     _simulationSpeedFactor = (_simulationSpeedFactor == 1) ? 8 : 1;
     _showDialog(
-        "Note", "Changed simulation speed factor to $_simulationSpeedFactor. Start again to use the new value.");
+      "Note",
+      "Changed simulation speed factor to $_simulationSpeedFactor. Start again to use the new value.",
+    );
   }
 
   void _handleTruckRouteResults(RoutingError? routingError, List<Route> routes) {
@@ -687,7 +689,8 @@ class TruckGuidanceExample {
           SectionNotice spanSectionNotice = section.sectionNotices[index];
           String violationCode = spanSectionNotice.code.toString();
           print(
-              "Section $sectionNr: The violation $violationCode starts at ${toStringCoordinates(violationStartPoint)} and ends at ${toStringCoordinates(violationEndPoint)}.");
+            "Section $sectionNr: The violation $violationCode starts at ${toStringCoordinates(violationStartPoint)} and ends at ${toStringCoordinates(violationEndPoint)}.",
+          );
         }
       }
       for (SectionNotice sectionNotice in section.sectionNotices) {
@@ -698,52 +701,70 @@ class TruckGuidanceExample {
           print("ViolatedRestriction: timeDependent: $timeDependent");
           var details = violatedRestriction.details;
           if (details == null) continue;
-          if (details.maxWeight!= null) {
+          if (details.maxWeight != null) {
             print("ViolatedRestriction: Section $sectionNr: Exceeded maxWeightInKilograms: ${details.maxWeight}");
           }
           if (details.maxWeightPerAxleInKilograms != null) {
-            print("ViolatedRestriction: Section $sectionNr: Exceeded maxWeightPerAxleInKilograms: ${details.maxWeightPerAxleInKilograms}");
+            print(
+              "ViolatedRestriction: Section $sectionNr: Exceeded maxWeightPerAxleInKilograms: ${details.maxWeightPerAxleInKilograms}",
+            );
           }
           if (details.maxHeightInCentimeters != null) {
-            print("ViolatedRestriction: Section $sectionNr: Exceeded maxHeightInCentimeters: ${details.maxHeightInCentimeters}");
+            print(
+              "ViolatedRestriction: Section $sectionNr: Exceeded maxHeightInCentimeters: ${details.maxHeightInCentimeters}",
+            );
           }
           if (details.maxWidthInCentimeters != null) {
-            print("ViolatedRestriction: Section $sectionNr: Exceeded maxWidthInCentimeters: ${details.maxWidthInCentimeters}");
+            print(
+              "ViolatedRestriction: Section $sectionNr: Exceeded maxWidthInCentimeters: ${details.maxWidthInCentimeters}",
+            );
           }
           if (details.maxLengthInCentimeters != null) {
-            print("ViolatedRestriction: Section $sectionNr: Exceeded maxLengthInCentimeters: ${details.maxLengthInCentimeters}");
+            print(
+              "ViolatedRestriction: Section $sectionNr: Exceeded maxLengthInCentimeters: ${details.maxLengthInCentimeters}",
+            );
           }
           if (details.forbiddenAxleCount != null) {
             print(
-                "ViolatedRestriction: Section $sectionNr: Inside of forbiddenAxleCount range: ${details.forbiddenAxleCount?.min} - ${details.forbiddenAxleCount?.max}");
+              "ViolatedRestriction: Section $sectionNr: Inside of forbiddenAxleCount range: ${details.forbiddenAxleCount?.min} - ${details.forbiddenAxleCount?.max}",
+            );
           }
           if (details.forbiddenTrailerCount != null) {
             print(
-                "ViolatedRestriction: Section $sectionNr: Inside of forbiddenTrailerCount range: ${details.forbiddenTrailerCount?.min} - ${details.forbiddenTrailerCount?.max}");
+              "ViolatedRestriction: Section $sectionNr: Inside of forbiddenTrailerCount range: ${details.forbiddenTrailerCount?.min} - ${details.forbiddenTrailerCount?.max}",
+            );
           }
           if (details.maxTunnelCategory != null) {
-            print("ViolatedRestriction: Section $sectionNr: Exceeded maxTunnelCategory: ${details.maxTunnelCategory?.name}");
+            print(
+              "ViolatedRestriction: Section $sectionNr: Exceeded maxTunnelCategory: ${details.maxTunnelCategory?.name}",
+            );
           }
           if (details.forbiddenTruckType != null) {
-            print("ViolatedRestriction: Section $sectionNr: ForbiddenTruckType is required: ${details.forbiddenTruckType?.name}");
+            print(
+              "ViolatedRestriction: Section $sectionNr: ForbiddenTruckType is required: ${details.forbiddenTruckType?.name}",
+            );
           }
           if (details.timeRule != null) {
-            print("ViolatedRestriction: Section $sectionNr: Violated time restriction: ${details.timeRule?.timeRuleString}");
+            print(
+              "ViolatedRestriction: Section $sectionNr: Violated time restriction: ${details.timeRule?.timeRuleString}",
+            );
           }
           for (HazardousMaterial hazardousMaterial in details.forbiddenHazardousGoods) {
-            print("ViolatedRestriction: Section $sectionNr: Forbidden hazardousMaterial carried: ${hazardousMaterial.name}");
+            print(
+              "ViolatedRestriction: Section $sectionNr: Forbidden hazardousMaterial carried: ${hazardousMaterial.name}",
+            );
           }
         }
       }
     }
   }
 
-// Helper method to create a human-readable string for GeoCoordinates.
+  // Helper method to create a human-readable string for GeoCoordinates.
   String toStringCoordinates(GeoCoordinates geoCoordinates) {
     return "${geoCoordinates.latitude}, ${geoCoordinates.longitude}";
   }
 
-// Searches for truck amenities along the given route.
+  // Searches for truck amenities along the given route.
   void _searchAlongARoute(Route route) {
     // Not all place categories are predefined as part of the PlaceCategory class. Find more here:
     // https://developer.here.com/documentation/geocoding-search-api/dev_guide/topics-places/introduction.html
@@ -822,7 +843,7 @@ class TruckGuidanceExample {
     }
   }
 
-// Displays the given route on the map as a polyline.
+  // Displays the given route on the map as a polyline.
   void _showRouteOnMap(Route route, Color color, double widthInPixels) {
     GeoPolyline routeGeoPolyline = route.geometry;
     MapPolyline? routeMapPolyline;
@@ -846,11 +867,13 @@ class TruckGuidanceExample {
     _animateToRoute(route);
   }
 
-// Animates the map camera to show the route with a padding of 50 pixels.
+  // Animates the map camera to show the route with a padding of 50 pixels.
   void _animateToRoute(Route route) {
     Point2D origin = Point2D(50, 50);
-    Size2D sizeInPixels =
-        Size2D(_hereMapController.viewportSize.width - 100, _hereMapController.viewportSize.height - 100);
+    Size2D sizeInPixels = Size2D(
+      _hereMapController.viewportSize.width - 100,
+      _hereMapController.viewportSize.height - 100,
+    );
     Rectangle2D mapViewport = Rectangle2D(origin, sizeInPixels);
 
     MapCameraUpdate cameraUpdate = MapCameraUpdateFactory.lookAtAreaWithGeoOrientationAndViewRectangle(
@@ -859,23 +882,25 @@ class TruckGuidanceExample {
       mapViewport,
     );
     MapCameraAnimation animation = MapCameraAnimationFactory.createAnimationFromUpdateWithEasing(
-        cameraUpdate, Duration(milliseconds: 2000), Easing(EasingFunction.outInSine));
+      cameraUpdate,
+      Duration(milliseconds: 2000),
+      Easing(EasingFunction.outInSine),
+    );
 
     _hereMapController.camera.startAnimation(animation);
   }
 
-// Called when the user clicks the "Clear Map" button.
+  // Called when the user clicks the "Clear Map" button.
   void onClearMapButtonClicked() {
     if (_isGuidance) {
-      _showDialog(
-          "Note", "Turn-by-turn navigation must be stopped before clearing.");
+      _showDialog("Note", "Turn-by-turn navigation must be stopped before clearing.");
       return;
     }
     clearRoute();
     clearMapMarker();
   }
 
-// Removes all route polylines from the map.
+  // Removes all route polylines from the map.
   void clearRoute() {
     for (MapPolyline mapPolyline in mapPolylines) {
       _hereMapController.mapScene.removeMapPolyline(mapPolyline);
@@ -883,7 +908,7 @@ class TruckGuidanceExample {
     mapPolylines.clear();
   }
 
-// Removes all map markers from the map.
+  // Removes all map markers from the map.
   void clearMapMarker() {
     for (MapMarker mapMarker in mapMarkers) {
       _hereMapController.mapScene.removeMapMarker(mapMarker);

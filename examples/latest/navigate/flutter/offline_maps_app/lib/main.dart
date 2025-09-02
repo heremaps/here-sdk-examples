@@ -30,13 +30,13 @@ void main() async {
   String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
 
   // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
-  await _initializeHERESDK(accessKeyId,accessKeySecret);
+  await _initializeHERESDK(accessKeyId, accessKeySecret);
 
   // Ensure that all widgets, including MyApp, have a MaterialLocalizations object available.
-  runApp(MaterialApp(home: MyApp(accessKeyId: accessKeyId,accessKeySecret: accessKeySecret)));
+  runApp(MaterialApp(home: MyApp(accessKeyId: accessKeyId, accessKeySecret: accessKeySecret)));
 }
 
-Future<void> _initializeHERESDK(String accessKeyId,String accessKeySecret) async {
+Future<void> _initializeHERESDK(String accessKeyId, String accessKeySecret) async {
   // Needs to be called before accessing SDKOptions to load necessary libraries.
   SdkContext.init(IsolateOrigin.main);
 
@@ -47,7 +47,11 @@ Future<void> _initializeHERESDK(String accessKeyId,String accessKeySecret) async
 
   // With this layer configuration we enable only the listed layers.
   // All the other layers including the default layers will be disabled.
-  var enabledFeatures = [LayerConfigurationFeature.detailRendering,LayerConfigurationFeature.rendering,LayerConfigurationFeature.offlineSearch];
+  var enabledFeatures = [
+    LayerConfigurationFeature.detailRendering,
+    LayerConfigurationFeature.rendering,
+    LayerConfigurationFeature.offlineSearch
+  ];
   var layerConfiguration = LayerConfiguration(enabledFeatures);
   sdkOptions.layerConfiguration = layerConfiguration;
 
@@ -59,14 +63,13 @@ Future<void> _initializeHERESDK(String accessKeyId,String accessKeySecret) async
 }
 
 class MyApp extends StatefulWidget {
-  final String? accessKeyId ;
-  final String? accessKeySecret ;
+  final String? accessKeyId;
+  final String? accessKeySecret;
 
   @override
   _MyAppState createState() => _MyAppState();
 
-  MyApp({Key? key, this.accessKeyId, this.accessKeySecret }) : super(key: key);
-
+  MyApp({Key? key, this.accessKeyId, this.accessKeySecret}) : super(key: key);
 }
 
 class _MyAppState extends State<MyApp> {
@@ -129,26 +132,21 @@ class _MyAppState extends State<MyApp> {
                             borderRadius: BorderRadius.circular(16.0),
                           ),
                           child: Text(
-                            _selectedOfflineMode[0]
-                                ? 'Offline Mode-OFF'
-                                : 'Offline Mode-ON',
+                            _selectedOfflineMode[0] ? 'Offline Mode-OFF' : 'Offline Mode-ON',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 18.0,
                             ),
                           ),
-
                         ),
                       ],
                       onPressed: (int index) {
                         setState(() {
-                          _selectedOfflineMode[index] =
-                          !_selectedOfflineMode[index];
+                          _selectedOfflineMode[index] = !_selectedOfflineMode[index];
                         });
                         _toggleOnlineMode();
                       },
-                      isSelected: _selectedOfflineMode
-                  ),
+                      isSelected: _selectedOfflineMode),
                 ],
               ),
               Row(
@@ -163,9 +161,7 @@ class _MyAppState extends State<MyApp> {
                             borderRadius: BorderRadius.circular(16.0),
                           ),
                           child: Text(
-                            _toggleOfflineSearchLayer[0]
-                                ? 'offlineSearch layer: ON'
-                                : 'offlineSearch layer: OFF',
+                            _toggleOfflineSearchLayer[0] ? 'offlineSearch layer: ON' : 'offlineSearch layer: OFF',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 18.0,
@@ -175,14 +171,11 @@ class _MyAppState extends State<MyApp> {
                       ],
                       onPressed: (int index) {
                         setState(() {
-                          _toggleOfflineSearchLayer[index] =
-                          !_toggleOfflineSearchLayer[index];
-
+                          _toggleOfflineSearchLayer[index] = !_toggleOfflineSearchLayer[index];
                         });
                         _toggleConfiguration();
                       },
-                      isSelected: _toggleOfflineSearchLayer
-                  ),
+                      isSelected: _toggleOfflineSearchLayer),
                 ],
               )
             ],
@@ -230,9 +223,9 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _toggleOnlineMode() {
-    if(_selectedOfflineMode[0]){
+    if (_selectedOfflineMode[0]) {
       _offlineMapsExample?.onOnlineButtonClicked();
-    }else{
+    } else {
       _offlineMapsExample?.onOfflineButtonClicked();
     }
   }
@@ -254,11 +247,11 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     _appLifecycleListener = AppLifecycleListener(
       onDetach: () =>
-      // Sometimes Flutter may not reliably call dispose(),
-      // therefore it is recommended to dispose the HERE SDK
-      // also when the AppLifecycleListener is detached.
-      // See more details: https://github.com/flutter/flutter/issues/40940
-      { print('AppLifecycleListener detached.'), _disposeHERESDK() },
+          // Sometimes Flutter may not reliably call dispose(),
+          // therefore it is recommended to dispose the HERE SDK
+          // also when the AppLifecycleListener is detached.
+          // See more details: https://github.com/flutter/flutter/issues/40940
+          {print('AppLifecycleListener detached.'), _disposeHERESDK()},
     );
   }
 

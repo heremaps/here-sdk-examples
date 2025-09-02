@@ -68,11 +68,11 @@ class LevelSwitcherState extends State<LevelSwitcher> {
     final scrollController = new ScrollController();
     double _marginBottom = 594;
 
-    if( _selectedDrawing!.levels.length == 1) {
-      _marginBottom = _marginBottom-(2*visibleHeight);
+    if (_selectedDrawing!.levels.length == 1) {
+      _marginBottom = _marginBottom - (2 * visibleHeight);
     }
 
-    if( _selectedDrawing!.levels.length == 2) {
+    if (_selectedDrawing!.levels.length == 2) {
       _marginBottom = 545;
     }
 
@@ -92,8 +92,11 @@ class LevelSwitcherState extends State<LevelSwitcher> {
     // the list, if possible.
     if (_selectedDrawing!.levels.length > _maxNumberOfVisibleLevels) {
       Future.delayed(Duration(milliseconds: 100), () {
-        scrollController.animateTo(_centerLevelInVisibleArea(visibleHeight, scrollPosition as double),
-            duration: new Duration(milliseconds: 400), curve: Curves.linear);
+        scrollController.animateTo(
+          _centerLevelInVisibleArea(visibleHeight, scrollPosition as double),
+          duration: new Duration(milliseconds: 400),
+          curve: Curves.linear,
+        );
       });
     }
 
@@ -105,10 +108,7 @@ class LevelSwitcherState extends State<LevelSwitcher> {
           margin: EdgeInsets.only(bottom: _marginBottom, right: 12),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
-            ),
+            borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
           ),
           child: GestureDetector(
             onTap: () {
@@ -120,20 +120,14 @@ class LevelSwitcherState extends State<LevelSwitcher> {
                 });
               }
             },
-            child: Image.asset(
-              'assets/indoor_up-arrow-level-switcher.png',
-              width: 40,
-              height: 40,
-            ),
+            child: Image.asset('assets/indoor_up-arrow-level-switcher.png', width: 40, height: 40),
           ),
         ),
         Align(
           alignment: Alignment.bottomRight,
           child: Container(
-            margin: EdgeInsets.only(bottom:450, right: 12),
-            decoration: BoxDecoration(
-              color: Colors.black12,
-            ),
+            margin: EdgeInsets.only(bottom: 450, right: 12),
+            decoration: BoxDecoration(color: Colors.black12),
             child: SizedBox(
               width: kMinInteractiveDimension,
               height: _getVisibleHeight(_selectedDrawing!.levels.length),
@@ -146,10 +140,7 @@ class LevelSwitcherState extends State<LevelSwitcher> {
           margin: EdgeInsets.only(bottom: 410, right: 12),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(20),
-              bottomRight: Radius.circular(20),
-            ),
+            borderRadius: BorderRadius.only(bottomLeft: Radius.circular(20), bottomRight: Radius.circular(20)),
           ),
           child: GestureDetector(
             onTap: () {
@@ -162,11 +153,7 @@ class LevelSwitcherState extends State<LevelSwitcher> {
                 });
               }
             },
-            child: Image.asset(
-              'assets/indoor_down-arrow-level-switcher.png',
-              width: 40,
-              height: 40,
-            ),
+            child: Image.asset('assets/indoor_down-arrow-level-switcher.png', width: 40, height: 40),
           ),
         ),
       ],
@@ -187,9 +174,7 @@ class LevelSwitcherState extends State<LevelSwitcher> {
         child: Text(
           level.shortName,
           textAlign: TextAlign.center,
-          style: TextStyle(
-            fontWeight: isSelectedLevel ? FontWeight.bold : FontWeight.normal,
-          ),
+          style: TextStyle(fontWeight: isSelectedLevel ? FontWeight.bold : FontWeight.normal),
         ),
         onPressed: () {
           // Select a level, if the user clicks on the item.

@@ -60,9 +60,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'CameraKeyframeTracks Example App',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      theme: ThemeData(primarySwatch: Colors.blue),
       home: const CameraKeyframeTracksApp(title: 'HERE SDK - CameraKeyframeTracks Example'),
     );
   }
@@ -87,11 +85,11 @@ class _CameraKeyframeTracksAppState extends State<CameraKeyframeTracksApp> {
     super.initState();
     _appLifecycleListener = AppLifecycleListener(
       onDetach: () =>
-      // Sometimes Flutter may not reliably call dispose(),
-      // therefore it is recommended to dispose the HERE SDK
-      // also when the AppLifecycleListener is detached.
-      // See more details: https://github.com/flutter/flutter/issues/40940
-      { print('AppLifecycleListener detached.'), _disposeHERESDK() },
+          // Sometimes Flutter may not reliably call dispose(),
+          // therefore it is recommended to dispose the HERE SDK
+          // also when the AppLifecycleListener is detached.
+          // See more details: https://github.com/flutter/flutter/issues/40940
+          {print('AppLifecycleListener detached.'), _disposeHERESDK()},
     );
   }
 
@@ -111,27 +109,16 @@ class _CameraKeyframeTracksAppState extends State<CameraKeyframeTracksApp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.title,
-          style: const TextStyle(fontSize: 14.0),
-        ),
-      ),
-      drawer: Drawer(
-        child: ListView(children: _buildDrawerList(context)),
-      ),
-      body: Stack(
-        children: [
-          HereMap(onMapCreated: _onMapCreated),
-        ],
-      ),
+      appBar: AppBar(title: Text(widget.title, style: const TextStyle(fontSize: 14.0))),
+      drawer: Drawer(child: ListView(children: _buildDrawerList(context))),
+      body: Stack(children: [HereMap(onMapCreated: _onMapCreated)]),
     );
   }
 
   void _onMapCreated(HereMapController hereMapController) {
     hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
       if (error == null) {
-        // Users of the Navigate Edition can enable textured landmarks:
+        // Textured landmarks are only available with the Navigate License:
         // hereMapController.mapScene.enableFeatures({MapFeatures.landmarks: MapFeatureModes.landmarksTextured});
         hereMapController.camera.lookAtPoint(GeoCoordinates(40.7133, -74.0112));
         _cameraKeyframeTracksExample = CameraKeyframeTracksExample(hereMapController);
@@ -143,7 +130,7 @@ class _CameraKeyframeTracksAppState extends State<CameraKeyframeTracksApp> {
   }
 
   void _startAnimationToRouteButtonClicked() {
-      _routeAnimationExample.animateToRoute();
+    _routeAnimationExample.animateToRoute();
   }
 
   void _stopAnimationToRouteButtonClicked() {
@@ -165,18 +152,10 @@ class _CameraKeyframeTracksAppState extends State<CameraKeyframeTracksApp> {
     DrawerHeader header = DrawerHeader(
       child: Column(
         children: const [
-          Text(
-            'HERE SDK - CameraKeyframeTracks Animations',
-            style: TextStyle(
-              fontSize: 24,
-              color: Colors.white,
-            ),
-          ),
+          Text('HERE SDK - CameraKeyframeTracks Animations', style: TextStyle(fontSize: 24, color: Colors.white)),
         ],
       ),
-      decoration: const BoxDecoration(
-        color: Colors.blue,
-      ),
+      decoration: const BoxDecoration(color: Colors.blue),
     );
     children.add(header);
 

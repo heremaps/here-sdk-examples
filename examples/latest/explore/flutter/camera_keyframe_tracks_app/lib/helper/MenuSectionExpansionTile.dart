@@ -48,10 +48,6 @@ class MenuSectionExpansionTile extends StatelessWidget {
       children.add(tile);
     });
 
-    return ExpansionTile(
-      title: Text(title),
-      children: children,
-      initiallyExpanded: true,
-    );
+    return ExpansionTile(title: Text(title), children: children, initiallyExpanded: true);
   }
 }

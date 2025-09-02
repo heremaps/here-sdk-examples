@@ -78,18 +78,10 @@ class TruckRestrictionViewPainter extends CustomPainter {
 
     // Draw the description text centered.
     TextSpan span = TextSpan(
-      style: TextStyle(
-        color: Colors.black,
-        fontSize: textSizeInDP,
-        fontWeight: FontWeight.bold,
-      ),
+      style: TextStyle(color: Colors.black, fontSize: textSizeInDP, fontWeight: FontWeight.bold),
       text: description,
     );
-    TextPainter tp = TextPainter(
-      text: span,
-      textAlign: TextAlign.center,
-      textDirection: TextDirection.ltr,
-    );
+    TextPainter tp = TextPainter(text: span, textAlign: TextAlign.center, textDirection: TextDirection.ltr);
     tp.layout();
     Offset textOffset = Offset(innerRect.center.dx - tp.width / 2, innerRect.center.dy - tp.height / 2);
     tp.paint(canvas, textOffset);

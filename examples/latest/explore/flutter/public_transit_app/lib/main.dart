@@ -40,8 +40,7 @@ Future<void> _initializeHERESDK() async {
   // Set your credentials for the HERE SDK.
   String accessKeyId = "YOUR_ACCESS_KEY_ID";
   String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
-  AuthenticationMode authenticationMode =
-      AuthenticationMode.withKeySecret(accessKeyId, accessKeySecret);
+  AuthenticationMode authenticationMode = AuthenticationMode.withKeySecret(accessKeyId, accessKeySecret);
   SDKOptions sdkOptions = SDKOptions.withAuthenticationMode(authenticationMode);
 
   try {
@@ -63,9 +62,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('HERE SDK - Public Transit Example'),
-      ),
+      appBar: AppBar(title: Text('HERE SDK - Public Transit Example')),
       body: Stack(
         children: [
           HereMap(onMapCreated: _onMapCreated),
@@ -82,12 +79,10 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _onMapCreated(HereMapController hereMapController) {
-    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay,
-        (MapError? error) {
+    hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
       if (error == null) {
         _enablePublicTransitFeatures(hereMapController);
-        _routingExample =
-            PublicTransportRoutingExample(_showDialog, hereMapController);
+        _routingExample = PublicTransportRoutingExample(_showDialog, hereMapController);
       } else {
         print("Map scene not loaded. MapError: " + error.toString());
       }
@@ -95,9 +90,9 @@ class _MyAppState extends State<MyApp> {
   }
 
   // Enable the PUBLIC_TRANSIT map feature to display public transit lines for subways, trams, trains, monorails, and ferries.
-  // Note that this API is only available for the Navigate Edition.
+  // Note that this API is only available with the Navigate License.
   void _enablePublicTransitFeatures(HereMapController hereMapController) {
-    // Optionally, uncomment the following line when you are using the Navigate Edition:
+    // Optionally, uncomment the following line when you are using the Navigate License:
     // hereMapController.mapScene.enableFeatures({MapFeatures.publicTransit: MapFeatureModes.publicTransitAll});
   }
 
@@ -118,7 +113,7 @@ class _MyAppState extends State<MyApp> {
         // therefore it is recommended to dispose the HERE SDK
         // also when the AppLifecycleListener is detached.
         // See more details: https://github.com/flutter/flutter/issues/40940
-        print('AppLifecycleListener detached.'), _disposeHERESDK()
+        print('AppLifecycleListener detached.'), _disposeHERESDK(),
       },
     );
   }
@@ -141,10 +136,7 @@ class _MyAppState extends State<MyApp> {
     return Align(
       alignment: Alignment.topCenter,
       child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.white,
-          backgroundColor: Colors.lightBlueAccent,
-        ),
+        style: ElevatedButton.styleFrom(foregroundColor: Colors.white, backgroundColor: Colors.lightBlueAccent),
         onPressed: () => callbackFunction(),
         child: Text(buttonLabel, style: TextStyle(fontSize: 20)),
       ),
@@ -159,13 +151,7 @@ class _MyAppState extends State<MyApp> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(title),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(message),
-              ],
-            ),
-          ),
+          content: SingleChildScrollView(child: ListBody(children: <Widget>[Text(message)])),
           actions: <Widget>[
             TextButton(
               child: Text('OK'),

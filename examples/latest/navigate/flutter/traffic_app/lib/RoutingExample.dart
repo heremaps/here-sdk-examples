@@ -42,10 +42,9 @@ class RoutingExample {
   late TrafficEngine _trafficEngine;
   ShowDialogFunction _showDialog;
 
-  RoutingExample(ShowDialogFunction showDialogCallback,
-      HereMapController hereMapController)
-      : _showDialog = showDialogCallback,
-        _hereMapController = hereMapController {
+  RoutingExample(ShowDialogFunction showDialogCallback, HereMapController hereMapController)
+    : _showDialog = showDialogCallback,
+      _hereMapController = hereMapController {
     try {
       _routingEngine = RoutingEngine();
     } on InstantiationException {
@@ -62,21 +61,17 @@ class RoutingExample {
   }
 
   void addRoute() {
-    Waypoint startWaypoint =
-        Waypoint(_createRandomGeoCoordinatesAroundMapCenter());
-    Waypoint destinationWaypoint =
-        Waypoint(_createRandomGeoCoordinatesAroundMapCenter());
+    Waypoint startWaypoint = Waypoint(_createRandomGeoCoordinatesAroundMapCenter());
+    Waypoint destinationWaypoint = Waypoint(_createRandomGeoCoordinatesAroundMapCenter());
 
     var waypoints = [startWaypoint, destinationWaypoint];
 
-    _routingEngine.calculateCarRoute(waypoints, CarOptions(),
-        (routingError, routes) {
+    _routingEngine.calculateCarRoute(waypoints, CarOptions(), (routingError, routes) {
       if (routingError == null && routes != null && routes.isNotEmpty) {
         here.Route route = routes.first;
         _showRouteOnMap(route);
       } else {
-        _showDialog(
-            "Error while calculating a route:", routingError.toString());
+        _showDialog("Error while calculating a route:", routingError.toString());
       }
     });
   }
@@ -93,12 +88,13 @@ class RoutingExample {
     MapPolyline routeMapPolyline;
     try {
       routeMapPolyline = MapPolyline.withRepresentation(
-          routeGeoPolyline,
-          MapPolylineSolidRepresentation(
-              MapMeasureDependentRenderSize.withSingleSize(
-                  RenderSizeUnit.pixels, widthInPixels),
-              polylineColor,
-              LineCap.round));
+        routeGeoPolyline,
+        MapPolylineSolidRepresentation(
+          MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
+          polylineColor,
+          LineCap.round,
+        ),
+      );
       _hereMapController.mapScene.addMapPolyline(routeMapPolyline);
       _mapPolylines.add(routeMapPolyline);
     } on MapPolylineRepresentationInstantiationException catch (e) {
@@ -113,8 +109,7 @@ class RoutingExample {
     _mapPolylines.add(routeMapPolyline);
 
     if (route.lengthInMeters / 1000 > 5000) {
-      _showDialog(
-          "Note", "Skipped showing traffic-on-route for longer routes.");
+      _showDialog("Note", "Skipped showing traffic-on-route for longer routes.");
       return;
     }
 
@@ -143,12 +138,10 @@ class RoutingExample {
   void _requestRealtimeTrafficOnRoute(here.Route route) {
     // We are interested to see traffic also for side paths.
     int halfWidthInMeters = 500;
-    GeoCorridor geoCorridor =
-        GeoCorridor(route.geometry.vertices, halfWidthInMeters);
+    GeoCorridor geoCorridor = GeoCorridor(route.geometry.vertices, halfWidthInMeters);
     TrafficFlowQueryOptions trafficFlowQueryOptions = TrafficFlowQueryOptions();
 
-    _trafficEngine.queryForFlowInCorridor(geoCorridor, trafficFlowQueryOptions,
-        (trafficQueryError, trafficFlowList) {
+    _trafficEngine.queryForFlowInCorridor(geoCorridor, trafficFlowQueryOptions, (trafficQueryError, trafficFlowList) {
       if (trafficQueryError == null && trafficFlowList != null) {
         for (TrafficFlow trafficFlow in trafficFlowList) {
           double? confidence = trafficFlow.confidence;
@@ -163,8 +156,7 @@ class RoutingExample {
           _addTrafficPolylines(trafficFlow.jamFactor, trafficGeoPolyline);
         }
       } else {
-        _showDialog(
-            "Error while fetching traffic flow:", trafficQueryError.toString());
+        _showDialog("Error while fetching traffic flow:", trafficQueryError.toString());
       }
     });
   }
@@ -180,12 +172,13 @@ class RoutingExample {
     MapPolyline trafficSpanMapPolyline;
     try {
       trafficSpanMapPolyline = MapPolyline.withRepresentation(
-          geoPolyline,
-          MapPolylineSolidRepresentation(
-              MapMeasureDependentRenderSize.withSingleSize(
-                  RenderSizeUnit.pixels, widthInPixels),
-              lineColor,
-              LineCap.round));
+        geoPolyline,
+        MapPolylineSolidRepresentation(
+          MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
+          lineColor,
+          LineCap.round,
+        ),
+      );
       _hereMapController.mapScene.addMapPolyline(trafficSpanMapPolyline);
       _mapPolylines.add(trafficSpanMapPolyline);
     } on MapPolylineRepresentationInstantiationException catch (e) {
@@ -218,10 +211,8 @@ class RoutingExample {
   }
 
   GeoCoordinates _createRandomGeoCoordinatesAroundMapCenter() {
-    Point2D mapCenter = Point2D(_hereMapController.viewportSize.width / 2,
-        _hereMapController.viewportSize.height / 2);
-    GeoCoordinates? centerGeoCoordinates =
-        _hereMapController.viewToGeoCoordinates(mapCenter);
+    Point2D mapCenter = Point2D(_hereMapController.viewportSize.width / 2, _hereMapController.viewportSize.height / 2);
+    GeoCoordinates? centerGeoCoordinates = _hereMapController.viewToGeoCoordinates(mapCenter);
 
     if (centerGeoCoordinates == null) {
       // Should never happen for center coordinates.
@@ -230,8 +221,7 @@ class RoutingExample {
 
     double lat = centerGeoCoordinates.latitude;
     double lon = centerGeoCoordinates.longitude;
-    return GeoCoordinates(
-        _getRandom(lat - 0.02, lat + 0.02), _getRandom(lon - 0.02, lon + 0.02));
+    return GeoCoordinates(_getRandom(lat - 0.02, lat + 0.02), _getRandom(lon - 0.02, lon + 0.02));
   }
 
   double _getRandom(double min, double max) {

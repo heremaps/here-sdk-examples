@@ -51,10 +51,10 @@ class MapItemsExample: TapDelegate {
             return
         }
         
-        // Users of the Navigate Edition can enable textured landmarks:
+        // Textured landmarks are only available with the Navigate License:
         // mapView.mapScene.enableFeatures([MapFeatures.landmarks : MapFeatureModes.landmarksTextured])
     }
-    
+
     func onAnchoredButtonClicked() {
         unTiltMap()
 

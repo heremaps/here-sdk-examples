@@ -46,15 +46,12 @@ class RoutingExample {
   final offroadDistanceThresholdMeters = 500.0;
   TaskHandle? _currentRouteCalculationTask;
 
-  RoutingExample(ShowDialogFunction showDialogCallback,
-      HereMapController hereMapController)
-      : _showDialog = showDialogCallback,
-        _hereMapController = hereMapController {
+  RoutingExample(ShowDialogFunction showDialogCallback, HereMapController hereMapController)
+    : _showDialog = showDialogCallback,
+      _hereMapController = hereMapController {
     double distanceToEarthInMeters = 10000;
-    MapMeasure mapMeasureZoom =
-        MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
-    _hereMapController.camera.lookAtPointWithMeasure(
-        GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
+    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
+    _hereMapController.camera.lookAtPointWithMeasure(GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
 
     try {
       _routingEngine = RoutingEngine();
@@ -108,18 +105,16 @@ class RoutingExample {
     int lastTraveledSectionIndex = 0;
     int traveledDistanceOnLastSectionInMeters = 0;
 
-    _routingEngine.calculateTrafficOnRoute(
-      route,
-      lastTraveledSectionIndex,
-      traveledDistanceOnLastSectionInMeters,
-          (RoutingError? routingError, TrafficOnRoute? trafficOnRoute) {
-        if (routingError != null) {
-          print("CalculateTrafficOnRoute error: ${routingError.name}");
-        } else {
-          showUpdatedETA(trafficOnRoute!);
-        }
-      },
-    );
+    _routingEngine.calculateTrafficOnRoute(route, lastTraveledSectionIndex, traveledDistanceOnLastSectionInMeters, (
+      RoutingError? routingError,
+      TrafficOnRoute? trafficOnRoute,
+    ) {
+      if (routingError != null) {
+        print("CalculateTrafficOnRoute error: ${routingError.name}");
+      } else {
+        showUpdatedETA(trafficOnRoute!);
+      }
+    });
   }
 
   void showUpdatedETA(TrafficOnRoute trafficOnRoute) {
@@ -129,7 +124,8 @@ class RoutingExample {
       int updatedETAInSeconds = spans.fold(0, (sum, span) => sum + span.duration.inSeconds);
       int updatedTrafficDelayInSeconds = spans.fold(0, (sum, span) => sum + span.trafficDelay.inSeconds);
 
-      String updatedETAString = "Updated travel duration ${_timeUtils.formatTime(updatedETAInSeconds)}\n"
+      String updatedETAString =
+          "Updated travel duration ${_timeUtils.formatTime(updatedETAInSeconds)}\n"
           "Updated traffic delay ${_timeUtils.formatTime(updatedTrafficDelayInSeconds)}";
 
       _showDialog("Updated traffic", updatedETAString);
@@ -172,8 +168,10 @@ class RoutingExample {
         ? TrafficOptimizationMode.timeDependent
         : TrafficOptimizationMode.disabled;
 
-    _currentRouteCalculationTask = _routingEngine.calculateCarRoute(waypoints, carOptions,
-        (RoutingError? routingError, List<here.Route>? routeList) async {
+    _currentRouteCalculationTask = _routingEngine.calculateCarRoute(waypoints, carOptions, (
+      RoutingError? routingError,
+      List<here.Route>? routeList,
+    ) async {
       // When error is null, then the list guaranteed to be not null.
       if (routingError == null && routeList != null) {
         final route = routeList.first;
@@ -200,14 +198,15 @@ class RoutingExample {
         List<GeoCoordinates> spanGeometryVertices = span.geometry.vertices;
         // This route violation spreads across the whole span geometry.
         GeoCoordinates violationStartPoint = spanGeometryVertices[0];
-        GeoCoordinates violationEndPoint =
-            spanGeometryVertices[spanGeometryVertices.length - 1];
+        GeoCoordinates violationEndPoint = spanGeometryVertices[spanGeometryVertices.length - 1];
         for (var index in span.noticeIndexes) {
           SectionNotice spanSectionNotice = section.sectionNotices[index];
           // The violation code such as "violatedVehicleRestriction".
           var violationCode = spanSectionNotice.code.toString();
-          print("The violation $violationCode starts at "
-              "${_toString(violationStartPoint)} and ends at ${_toString(violationEndPoint)} .");
+          print(
+            "The violation $violationCode starts at "
+            "${_toString(violationStartPoint)} and ends at ${_toString(violationEndPoint)} .",
+          );
         }
       }
     }
@@ -271,10 +270,8 @@ class RoutingExample {
       Section section = route.sections.elementAt(i);
 
       print("Route Section : ${i + 1}");
-      print(
-          "Route Section Departure Time: ${dateFormat.format(section.departureLocationTime!.localTime)}");
-      print(
-          "Route Section Arrival Time: ${dateFormat.format(section.arrivalLocationTime!.localTime)}");
+      print("Route Section Departure Time: ${dateFormat.format(section.departureLocationTime!.localTime)}");
+      print("Route Section Arrival Time: ${dateFormat.format(section.arrivalLocationTime!.localTime)}");
       print("Route Section length: ${section.lengthInMeters} m");
       print("Route Section duration: ${section.duration.inSeconds} s");
     }
@@ -285,14 +282,15 @@ class RoutingExample {
       // Coordinates of the route offset.
       var routeOffsetCoordinates = routeRailwayCrossing.coordinates;
       // Index of the corresponding route section. The start of the section indicates the start of the offset.
-      var routeOffsetSectionIndex =
-          routeRailwayCrossing.routeOffset.sectionIndex;
+      var routeOffsetSectionIndex = routeRailwayCrossing.routeOffset.sectionIndex;
       // Offset from the start of the specified section to the specified location along the route.
       var routeOffsetInMeters = routeRailwayCrossing.routeOffset.offsetInMeters;
 
-      print('A railway crossing of type ${routeRailwayCrossing.type.name} '
-          'is situated $routeOffsetInMeters '
-          'meters away from start of section: $routeOffsetSectionIndex');
+      print(
+        'A railway crossing of type ${routeRailwayCrossing.type.name} '
+        'is situated $routeOffsetInMeters '
+        'meters away from start of section: $routeOffsetSectionIndex',
+      );
     }
   }
 
@@ -362,7 +360,6 @@ class RoutingExample {
     return distance > offroadDistanceThresholdMeters;
   }
 
-
   void _showRouteDetails(here.Route route) {
     // estimatedTravelTimeInSeconds includes traffic delay.
     int estimatedTravelTimeInSeconds = route.duration.inSeconds;
@@ -385,7 +382,8 @@ class RoutingExample {
 
     // Add off-road warning if applicable.
     if (_checkIfWaypointsAreOffRoad(route)) {
-      routeDetails += '\n\nNote: At least one waypoint is off-road by more than '
+      routeDetails +=
+          '\n\nNote: At least one waypoint is off-road by more than '
           '${offroadDistanceThresholdMeters} meters.';
     }
 
@@ -400,12 +398,13 @@ class RoutingExample {
     MapPolyline routeMapPolyline;
     try {
       routeMapPolyline = MapPolyline.withRepresentation(
-          routeGeoPolyline,
-          MapPolylineSolidRepresentation(
-              MapMeasureDependentRenderSize.withSingleSize(
-                  RenderSizeUnit.pixels, widthInPixels),
-              polylineColor,
-              LineCap.round));
+        routeGeoPolyline,
+        MapPolylineSolidRepresentation(
+          MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
+          polylineColor,
+          LineCap.round,
+        ),
+      );
       _hereMapController.mapScene.addMapPolyline(routeMapPolyline);
       _mapPolylines.add(routeMapPolyline);
     } on MapPolylineRepresentationInstantiationException catch (e) {
@@ -439,12 +438,13 @@ class RoutingExample {
         MapPolyline trafficSpanMapPolyline;
         try {
           trafficSpanMapPolyline = MapPolyline.withRepresentation(
-              span.geometry,
-              MapPolylineSolidRepresentation(
-                  MapMeasureDependentRenderSize.withSingleSize(
-                      RenderSizeUnit.pixels, widthInPixels),
-                  lineColor,
-                  LineCap.round));
+            span.geometry,
+            MapPolylineSolidRepresentation(
+              MapMeasureDependentRenderSize.withSingleSize(RenderSizeUnit.pixels, widthInPixels),
+              lineColor,
+              LineCap.round,
+            ),
+          );
           _hereMapController.mapScene.addMapPolyline(trafficSpanMapPolyline);
           _mapPolylines.add(trafficSpanMapPolyline);
         } on MapPolylineRepresentationInstantiationException catch (e) {
@@ -479,8 +479,7 @@ class RoutingExample {
     GeoBox? geoBox = _hereMapController.camera.boundingBox;
     if (geoBox == null) {
       // Happens only when map is not fully covering the viewport as the map is tilted.
-      print(
-          "The map view is tilted, falling back to fixed destination coordinate.");
+      print("The map view is tilted, falling back to fixed destination coordinate.");
       return GeoCoordinates(52.520798, 13.409408);
     }
 
@@ -508,21 +507,23 @@ class RoutingExample {
     double tilt = 0;
     // We want to show the route fitting in the map view with an additional padding of 50 pixels.
     Point2D origin = Point2D(50, 50);
-    Size2D sizeInPixels = Size2D(_hereMapController.viewportSize.width - 100,
-        _hereMapController.viewportSize.height - 100);
+    Size2D sizeInPixels = Size2D(
+      _hereMapController.viewportSize.width - 100,
+      _hereMapController.viewportSize.height - 100,
+    );
     Rectangle2D mapViewport = Rectangle2D(origin, sizeInPixels);
 
     // Animate to the route within a duration of 3 seconds.
-    MapCameraUpdate update =
-        MapCameraUpdateFactory.lookAtAreaWithGeoOrientationAndViewRectangle(
-            route.boundingBox,
-            GeoOrientationUpdate(bearing, tilt),
-            mapViewport);
-    MapCameraAnimation animation =
-        MapCameraAnimationFactory.createAnimationFromUpdateWithEasing(
-            update,
-            const Duration(milliseconds: 3000),
-            here.Easing(here.EasingFunction.inCubic));
+    MapCameraUpdate update = MapCameraUpdateFactory.lookAtAreaWithGeoOrientationAndViewRectangle(
+      route.boundingBox,
+      GeoOrientationUpdate(bearing, tilt),
+      mapViewport,
+    );
+    MapCameraAnimation animation = MapCameraAnimationFactory.createAnimationFromUpdateWithEasing(
+      update,
+      const Duration(milliseconds: 3000),
+      here.Easing(here.EasingFunction.inCubic),
+    );
     _hereMapController.camera.startAnimation(animation);
   }
 

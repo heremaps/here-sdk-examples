@@ -72,7 +72,7 @@ class HEREPositioningProvider implements LocationStatusListener {
     _locationEngine.startWithLocationAccuracy(accuracy);
   }
 
-// Does nothing when engine is already stopped.
+  // Does nothing when engine is already stopped.
   void stop() {
     if (!_locationEngine.isStarted) {
       return;

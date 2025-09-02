@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
         mapView.getMapScene().loadScene(MapScheme.NORMAL_DAY, new MapScene.LoadSceneCallback() {
             @Override
             public void onLoadScene(@Nullable MapError mapError) {
-                if (mapError == null) {                    
+                if (mapError == null) {
                     enablePublicTransitFeatures();
                     publicTransportRoutingExample = new PublicTransportRoutingExample(MainActivity.this, mapView);
                 } else {
@@ -113,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Enable the PUBLIC_TRANSIT map feature to display public transit lines for subways, trams, trains, monorails, and ferries.
-    // Note that this API is only available for the Navigate Edition.
+    // Note that this API is only available with the Navigate License.
     private void enablePublicTransitFeatures() {
         // Optionally, uncomment the following three lines when you are using the Navigate Edition:
         // Map<String,String> mapFeatures = new HashMap<>();

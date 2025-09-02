@@ -61,18 +61,11 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(
-          title: Text('HERE SDK - Camera Example'),
-        ),
+        appBar: AppBar(title: Text('HERE SDK - Camera Example')),
         body: Stack(
           children: [
             HereMap(onMapCreated: _onMapCreated),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                button('Move', _moveButtonClicked),
-              ],
-            ),
+            Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [button('Move', _moveButtonClicked)]),
           ],
         ),
       ),
@@ -98,11 +91,11 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
     super.initState();
     _appLifecycleListener = AppLifecycleListener(
       onDetach: () =>
-      // Sometimes Flutter may not reliably call dispose(),
-      // therefore it is recommended to dispose the HERE SDK
-      // also when the AppLifecycleListener is detached.
-      // See more details: https://github.com/flutter/flutter/issues/40940
-      { print('AppLifecycleListener detached.'), _disposeHERESDK() },
+          // Sometimes Flutter may not reliably call dispose(),
+          // therefore it is recommended to dispose the HERE SDK
+          // also when the AppLifecycleListener is detached.
+          // See more details: https://github.com/flutter/flutter/issues/40940
+          {print('AppLifecycleListener detached.'), _disposeHERESDK()},
     );
   }
 
@@ -124,10 +117,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
     return Align(
       alignment: Alignment.topCenter,
       child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.white,
-          backgroundColor: Colors.lightBlueAccent,
-        ),
+        style: ElevatedButton.styleFrom(foregroundColor: Colors.white, backgroundColor: Colors.lightBlueAccent),
         onPressed: () => callbackFunction(),
         child: Text(buttonLabel, style: TextStyle(fontSize: 20)),
       ),

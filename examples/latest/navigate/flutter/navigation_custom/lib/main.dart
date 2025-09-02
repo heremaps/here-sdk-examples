@@ -42,10 +42,8 @@ Future<void> _initializeHERESDK() async {
 
   // Set your credentials for the HERE SDK.
   String accessKeyId = "YOUR_ACCESS_KEY_ID";
-  String accessKeySecret =
-      "YOUR_ACCESS_KEY_SECRET";
-  AuthenticationMode authenticationMode =
-      AuthenticationMode.withKeySecret(accessKeyId, accessKeySecret);
+  String accessKeySecret = "YOUR_ACCESS_KEY_SECRET";
+  AuthenticationMode authenticationMode = AuthenticationMode.withKeySecret(accessKeyId, accessKeySecret);
   SDKOptions sdkOptions = SDKOptions.withAuthenticationMode(authenticationMode);
 
   try {
@@ -60,10 +58,8 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp>
-    implements HERE.LocationListener, AnimationListener {
-  final GeoCoordinates _routeStartGeoCoordinates =
-      GeoCoordinates(52.520798, 13.409408);
+class _MyAppState extends State<MyApp> implements HERE.LocationListener, AnimationListener {
+  final GeoCoordinates _routeStartGeoCoordinates = GeoCoordinates(52.520798, 13.409408);
   final double _distanceInMeters = 1000;
   late final AppLifecycleListener _appLifecycleListener;
 
@@ -97,7 +93,8 @@ class _MyAppState extends State<MyApp>
   void initState() {
     super.initState();
     _appLifecycleListener = AppLifecycleListener(
-      onDetach: () =>
+      onDetach:
+          () =>
           // Sometimes Flutter may not reliably call dispose(),
           // therefore it is recommended to dispose the HERE SDK
           // also when the AppLifecycleListener is detached.
@@ -122,50 +119,46 @@ class _MyAppState extends State<MyApp>
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-        onWillPop: _handleBackPress,
-        child: Scaffold(
-          appBar: AppBar(
-            title: Text('Custom Navigation'),
-          ),
-          body: Stack(
-            children: [
-              HereMap(onMapCreated: _onMapCreated),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Expanded(child: button('Start simulation', _startButtonClicked)),
-                      Expanded(child: button('Stop simulation', _stopButtonClicked)),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Expanded(child: button(
-                          'Toggle indicator style', _toggleStyleButtonClicked)),
-                      Expanded(child: button('Toggle halo', _togglehaloColorButtonClicked)),
-                    ],
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ));
+      onWillPop: _handleBackPress,
+      child: Scaffold(
+        appBar: AppBar(title: Text('Custom Navigation')),
+        body: Stack(
+          children: [
+            HereMap(onMapCreated: _onMapCreated),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Expanded(child: button('Start simulation', _startButtonClicked)),
+                    Expanded(child: button('Stop simulation', _stopButtonClicked)),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Expanded(child: button('Toggle indicator style', _toggleStyleButtonClicked)),
+                    Expanded(child: button('Toggle halo', _togglehaloColorButtonClicked)),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _onMapCreated(HereMapController hereMapController) {
     _hereMapController = hereMapController;
-    _hereMapController!.mapScene.loadSceneForMapScheme(MapScheme.normalDay,
-        (MapError? error) {
+    _hereMapController!.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
       if (error != null) {
         print('Map scene not loaded. MapError: ${error.toString()}');
         return;
       }
 
-      print(
-          "Start / stop simulated route guidance. Toggle between custom / default LocationIndicator.");
+      print("Start / stop simulated route guidance. Toggle between custom / default LocationIndicator.");
 
       try {
         _routingEngine = HERE.RoutingEngine();
@@ -181,24 +174,17 @@ class _MyAppState extends State<MyApp>
       }
 
       // Configure the map.
-      MapMeasure mapMeasureZoom =
-          MapMeasure(MapMeasureKind.distanceInMeters, _distanceInMeters);
-      hereMapController.camera
-          .lookAtPointWithMeasure(_routeStartGeoCoordinates, mapMeasureZoom);
+      MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, _distanceInMeters);
+      hereMapController.camera.lookAtPointWithMeasure(_routeStartGeoCoordinates, mapMeasureZoom);
 
       // Enable a few map layers that might be useful to see for drivers.
-      hereMapController.mapScene.enableFeatures(
-          {MapFeatures.trafficFlow: MapFeatureModes.trafficFlowWithFreeFlow});
-      hereMapController.mapScene.enableFeatures(
-          {MapFeatures.trafficIncidents: MapFeatureModes.defaultMode});
-      hereMapController.mapScene.enableFeatures(
-          {MapFeatures.safetyCameras: MapFeatureModes.defaultMode});
-      hereMapController.mapScene.enableFeatures(
-          {MapFeatures.vehicleRestrictions: MapFeatureModes.defaultMode});
+      hereMapController.mapScene.enableFeatures({MapFeatures.trafficFlow: MapFeatureModes.trafficFlowWithFreeFlow});
+      hereMapController.mapScene.enableFeatures({MapFeatures.trafficIncidents: MapFeatureModes.defaultMode});
+      hereMapController.mapScene.enableFeatures({MapFeatures.safetyCameras: MapFeatureModes.defaultMode});
+      hereMapController.mapScene.enableFeatures({MapFeatures.vehicleRestrictions: MapFeatureModes.defaultMode});
 
       // Optionally, enable textured 3D landmarks.
-      hereMapController.mapScene.enableFeatures(
-          {MapFeatures.landmarks: MapFeatureModes.landmarksTextured});
+      hereMapController.mapScene.enableFeatures({MapFeatures.landmarks: MapFeatureModes.landmarksTextured});
 
       _defaultLocationIndicator = _createDefaultLocationIndicator();
       _customLocationIndicator = _createCustomLocationIndicator();
@@ -212,10 +198,8 @@ class _MyAppState extends State<MyApp>
   LocationIndicator _createDefaultLocationIndicator() {
     LocationIndicator locationIndicator = LocationIndicator();
     locationIndicator.isAccuracyVisualized = true;
-    locationIndicator.locationIndicatorStyle =
-        LocationIndicatorIndicatorStyle.pedestrian;
-    _defaultHaloColor = locationIndicator
-        .getHaloColor(locationIndicator.locationIndicatorStyle);
+    locationIndicator.locationIndicatorStyle = LocationIndicatorIndicatorStyle.pedestrian;
+    _defaultHaloColor = locationIndicator.getHaloColor(locationIndicator.locationIndicatorStyle);
     return locationIndicator;
   }
 
@@ -224,13 +208,11 @@ class _MyAppState extends State<MyApp>
     // Adjust file name and path as appropriate for your project.
     String pedGeometryFile = "assets/custom_location_indicator_pedestrian.obj";
     String pedTextureFile = "assets/custom_location_indicator_pedestrian.png";
-    MapMarker3DModel pedestrianMapMarker3DModel =
-        MapMarker3DModel.withTextureFilePath(pedGeometryFile, pedTextureFile);
+    MapMarker3DModel pedestrianMapMarker3DModel = MapMarker3DModel.withTextureFilePath(pedGeometryFile, pedTextureFile);
 
     String navGeometryFile = "assets/custom_location_indicator_navigation.obj";
     String navTextureFile = "assets/custom_location_indicator_navigation.png";
-    MapMarker3DModel navigationMapMarker3DModel =
-        MapMarker3DModel.withTextureFilePath(navGeometryFile, navTextureFile);
+    MapMarker3DModel navigationMapMarker3DModel = MapMarker3DModel.withTextureFilePath(navGeometryFile, navTextureFile);
 
     LocationIndicator locationIndicator = LocationIndicator();
     double scaleFactor = 3;
@@ -240,14 +222,11 @@ class _MyAppState extends State<MyApp>
     // .pedestrianInactive and .navigationInactive.
     // If set with a gray texture model, the type can be switched by calling locationIndicator.isActive = false
     // when the GPS accuracy is weak or no location was found.
-    locationIndicator.setMarker3dModel(pedestrianMapMarker3DModel, scaleFactor,
-        LocationIndicatorMarkerType.pedestrian);
-    locationIndicator.setMarker3dModel(navigationMapMarker3DModel, scaleFactor,
-        LocationIndicatorMarkerType.navigation);
+    locationIndicator.setMarker3dModel(pedestrianMapMarker3DModel, scaleFactor, LocationIndicatorMarkerType.pedestrian);
+    locationIndicator.setMarker3dModel(navigationMapMarker3DModel, scaleFactor, LocationIndicatorMarkerType.navigation);
 
     locationIndicator.isAccuracyVisualized = true;
-    locationIndicator.locationIndicatorStyle =
-        LocationIndicatorIndicatorStyle.pedestrian;
+    locationIndicator.locationIndicatorStyle = LocationIndicatorIndicatorStyle.pedestrian;
 
     return locationIndicator;
   }
@@ -258,14 +237,13 @@ class _MyAppState extends State<MyApp>
       return;
     }
 
-    HERE.Waypoint startWaypoint =
-        HERE.Waypoint(getLastKnownLocation().coordinates);
-    HERE.Waypoint destinationWaypoint =
-        HERE.Waypoint(HERE.GeoCoordinates(52.530905, 13.385007));
+    HERE.Waypoint startWaypoint = HERE.Waypoint(getLastKnownLocation().coordinates);
+    HERE.Waypoint destinationWaypoint = HERE.Waypoint(HERE.GeoCoordinates(52.530905, 13.385007));
 
-    _routingEngine!.calculateCarRoute(
-        [startWaypoint, destinationWaypoint], HERE.CarOptions(),
-        (HERE.RoutingError? routingError, List<HERE.Route>? routeList) async {
+    _routingEngine!.calculateCarRoute([startWaypoint, destinationWaypoint], HERE.CarOptions(), (
+      HERE.RoutingError? routingError,
+      List<HERE.Route>? routeList,
+    ) async {
       if (routingError == null) {
         // When error is null, it is guaranteed that the routeList is not empty.
         myRoute = routeList!.first;
@@ -306,31 +284,24 @@ class _MyAppState extends State<MyApp>
 
   void setSelectedHaloColor() {
     if (_isCustomHaloColor) {
-      Color customHaloColor =
-          Color.fromRGBO(255, 255, 0, 0.30); // Yellow with 30% opacity
-      _defaultLocationIndicator!.setHaloColor(
-          _defaultLocationIndicator!.locationIndicatorStyle, customHaloColor);
-      _customLocationIndicator!.setHaloColor(
-          _customLocationIndicator!.locationIndicatorStyle, customHaloColor);
+      Color customHaloColor = Color.fromRGBO(255, 255, 0, 0.30); // Yellow with 30% opacity
+      _defaultLocationIndicator!.setHaloColor(_defaultLocationIndicator!.locationIndicatorStyle, customHaloColor);
+      _customLocationIndicator!.setHaloColor(_customLocationIndicator!.locationIndicatorStyle, customHaloColor);
     } else {
-      _defaultLocationIndicator!.setHaloColor(
-          _defaultLocationIndicator!.locationIndicatorStyle, _defaultHaloColor);
-      _customLocationIndicator!.setHaloColor(
-          _customLocationIndicator!.locationIndicatorStyle, _defaultHaloColor);
+      _defaultLocationIndicator!.setHaloColor(_defaultLocationIndicator!.locationIndicatorStyle, _defaultHaloColor);
+      _customLocationIndicator!.setHaloColor(_customLocationIndicator!.locationIndicatorStyle, _defaultHaloColor);
     }
   }
 
   void _switchToPedestrianLocationIndicator() {
     if (_isDefaultLocationIndicator) {
       _defaultLocationIndicator!.enable(_hereMapController!);
-      _defaultLocationIndicator!.locationIndicatorStyle =
-          LocationIndicatorIndicatorStyle.pedestrian;
+      _defaultLocationIndicator!.locationIndicatorStyle = LocationIndicatorIndicatorStyle.pedestrian;
       _customLocationIndicator!.disable();
     } else {
       _defaultLocationIndicator!.disable();
       _customLocationIndicator!.enable(_hereMapController!);
-      _customLocationIndicator!.locationIndicatorStyle =
-          LocationIndicatorIndicatorStyle.pedestrian;
+      _customLocationIndicator!.locationIndicatorStyle = LocationIndicatorIndicatorStyle.pedestrian;
     }
 
     // Set last location from LocationSimulator.
@@ -348,14 +319,12 @@ class _MyAppState extends State<MyApp>
       // Therefore, we still need to set our own instance to the VisualNavigator.
       _customLocationIndicator!.disable();
       _defaultLocationIndicator!.enable(_hereMapController!);
-      _defaultLocationIndicator!.locationIndicatorStyle =
-          LocationIndicatorIndicatorStyle.navigation;
+      _defaultLocationIndicator!.locationIndicatorStyle = LocationIndicatorIndicatorStyle.navigation;
       _visualNavigator!.customLocationIndicator = _defaultLocationIndicator!;
     } else {
       _defaultLocationIndicator!.disable();
       _customLocationIndicator!.enable(_hereMapController!);
-      _customLocationIndicator!.locationIndicatorStyle =
-          LocationIndicatorIndicatorStyle.navigation;
+      _customLocationIndicator!.locationIndicatorStyle = LocationIndicatorIndicatorStyle.navigation;
       _visualNavigator!.customLocationIndicator = _customLocationIndicator;
 
       // Note that the type of the LocationIndicator is taken from the route's TransportMode.
@@ -388,8 +357,7 @@ class _MyAppState extends State<MyApp>
   // Implement AnimationListener.
   @override
   void onAnimationStateChanged(AnimationState state) {
-    if (state == AnimationState.completed ||
-        state == AnimationState.cancelled) {
+    if (state == AnimationState.completed || state == AnimationState.cancelled) {
       _startGuidance(myRoute!);
     }
   }
@@ -398,48 +366,42 @@ class _MyAppState extends State<MyApp>
   void _animateToRouteStart(HERE.Route route) {
     // The first coordinate marks the start location of the route.
     var routeStart = route.geometry.vertices.first;
-    var geoCoordinatesUpdate =
-        GeoCoordinatesUpdate.fromGeoCoordinates(routeStart);
+    var geoCoordinatesUpdate = GeoCoordinatesUpdate.fromGeoCoordinates(routeStart);
 
     double? bearingInDegrees = null;
-    var orientationUpdate =
-        GeoOrientationUpdate(bearingInDegrees, _cameraTiltInDegrees);
-    var mapMeasure =
-        MapMeasure(MapMeasureKind.distanceInMeters, _cameraDistanceInMeters);
+    var orientationUpdate = GeoOrientationUpdate(bearingInDegrees, _cameraTiltInDegrees);
+    var mapMeasure = MapMeasure(MapMeasureKind.distanceInMeters, _cameraDistanceInMeters);
 
     double bowFactor = 1;
-    MapCameraAnimation animation =
-        MapCameraAnimationFactory.flyToWithOrientationAndZoom(
-            geoCoordinatesUpdate,
-            orientationUpdate,
-            mapMeasure,
-            bowFactor,
-            Duration(seconds: 3));
+    MapCameraAnimation animation = MapCameraAnimationFactory.flyToWithOrientationAndZoom(
+      geoCoordinatesUpdate,
+      orientationUpdate,
+      mapMeasure,
+      bowFactor,
+      Duration(seconds: 3),
+    );
     _hereMapController!.camera.startAnimationWithListener(animation, this);
   }
 
   void _animateToDefaultMapPerspective() {
     var targetCoordinates = _hereMapController!.camera.state.targetCoordinates;
-    var geoCoordinatesUpdate =
-        GeoCoordinatesUpdate.fromGeoCoordinates(targetCoordinates);
+    var geoCoordinatesUpdate = GeoCoordinatesUpdate.fromGeoCoordinates(targetCoordinates);
 
     // By setting null we keep the current bearing rotation of the map.
     double? bearingInDegrees;
     double tiltInDegrees = 0;
-    var orientationUpdate =
-        GeoOrientationUpdate(bearingInDegrees, tiltInDegrees);
+    var orientationUpdate = GeoOrientationUpdate(bearingInDegrees, tiltInDegrees);
 
-    var mapMeasure =
-        MapMeasure(MapMeasureKind.distanceInMeters, _distanceInMeters);
+    var mapMeasure = MapMeasure(MapMeasureKind.distanceInMeters, _distanceInMeters);
 
     double bowFactor = 1;
-    MapCameraAnimation animation =
-        MapCameraAnimationFactory.flyToWithOrientationAndZoom(
-            geoCoordinatesUpdate,
-            orientationUpdate,
-            mapMeasure,
-            bowFactor,
-            Duration(seconds: 3));
+    MapCameraAnimation animation = MapCameraAnimationFactory.flyToWithOrientationAndZoom(
+      geoCoordinatesUpdate,
+      orientationUpdate,
+      mapMeasure,
+      bowFactor,
+      Duration(seconds: 3),
+    );
     _hereMapController!.camera.startAnimation(animation);
   }
 
@@ -488,19 +450,18 @@ class _MyAppState extends State<MyApp>
     Color routeBehindOutlineColor = Colors.grey;
     Color maneuverArrowColor = Colors.green;
 
-    VisualNavigatorColors visualNavigatorColors =
-        VisualNavigatorColors.dayColors();
+    VisualNavigatorColors visualNavigatorColors = VisualNavigatorColors.dayColors();
     RouteProgressColors routeProgressColors = new RouteProgressColors(
-        routeAheadColor,
-        routeBehindColor,
-        routeAheadOutlineColor,
-        routeBehindOutlineColor);
+      routeAheadColor,
+      routeBehindColor,
+      routeAheadOutlineColor,
+      routeBehindOutlineColor,
+    );
 
     // Sets the color used to draw maneuver arrows.
     visualNavigatorColors.maneuverArrowColor = maneuverArrowColor;
     // Sets route color for a single transport mode. Other modes are kept using defaults.
-    visualNavigatorColors.setRouteProgressColors(
-        SectionTransportMode.car, routeProgressColors);
+    visualNavigatorColors.setRouteProgressColors(SectionTransportMode.car, routeProgressColors);
     // Sets the adjusted colors for route progress and maneuver arrows based on the day color scheme.
     _visualNavigator?.colors = visualNavigatorColors;
   }
@@ -508,15 +469,12 @@ class _MyAppState extends State<MyApp>
   void _customizeGuidanceView() {
     FixedCameraBehavior cameraBehavior = FixedCameraBehavior();
     // Set custom zoom level and tilt.
-    cameraBehavior.cameraDistanceInMeters =
-        _cameraDistanceInMeters; // Defaults to 150.
-    cameraBehavior.cameraTiltInDegrees =
-        _cameraTiltInDegrees; // Defaults to 50.
+    cameraBehavior.cameraDistanceInMeters = _cameraDistanceInMeters; // Defaults to 150.
+    cameraBehavior.cameraTiltInDegrees = _cameraTiltInDegrees; // Defaults to 50.
     // Disable North-Up mode by setting null. Enable North-up mode by setting 0.
     // By default, North-Up mode is disabled.
     cameraBehavior.cameraBearingInDegrees = null;
-    cameraBehavior.normalizedPrincipalPoint =
-        Anchor2D.withHorizontalAndVertical(0.5, 0.5);
+    cameraBehavior.normalizedPrincipalPoint = Anchor2D.withHorizontalAndVertical(0.5, 0.5);
 
     // The CameraBehavior can be updated during guidance at any time as often as desired.
     _visualNavigator?.cameraBehavior = cameraBehavior;
@@ -547,8 +505,7 @@ class _MyAppState extends State<MyApp>
 
     try {
       // Provides fake GPS signals based on the route geometry.
-      _locationSimulator =
-          LocationSimulator.withRoute(route, LocationSimulatorOptions());
+      _locationSimulator = LocationSimulator.withRoute(route, LocationSimulatorOptions());
     } on InstantiationException {
       throw Exception("Initialization of LocationSimulator failed.");
     }
@@ -560,10 +517,7 @@ class _MyAppState extends State<MyApp>
   // A helper method to add a button on top of the HERE map.
   Widget button(String buttonLabel, VoidCallback callbackFunction) {
     return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.lightBlueAccent,
-        foregroundColor: Colors.white,
-      ),
+      style: ElevatedButton.styleFrom(backgroundColor: Colors.lightBlueAccent, foregroundColor: Colors.white),
       onPressed: callbackFunction,
       child: Text(buttonLabel, style: TextStyle(fontSize: 20)),
     );

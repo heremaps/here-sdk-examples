@@ -42,15 +42,15 @@ class MapItemsExample {
   MapImage? _greenSquareMapImage;
   final ShowDialogFunction _showDialog;
 
-  MapItemsExample(ShowDialogFunction showDialogCallback,
-      HereMapController hereMapController)
-      : _showDialog = showDialogCallback,
-        _hereMapController = hereMapController {
+  MapItemsExample(ShowDialogFunction showDialogCallback, HereMapController hereMapController)
+    : _showDialog = showDialogCallback,
+      _hereMapController = hereMapController {
     double distanceToEarthInMeters = 8000;
-    MapMeasure mapMeasureZoom =
-        MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
+    MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
     _hereMapController.camera.lookAtPointWithMeasure(
-        GeoCoordinates(52.51760485151816, 13.380312380535472), mapMeasureZoom);
+      GeoCoordinates(52.51760485151816, 13.380312380535472),
+      mapMeasureZoom,
+    );
 
     // Setting a tap handler to pick markers from map.
     _setTapGestureHandler();
@@ -61,8 +61,7 @@ class MapItemsExample {
   void showAnchoredMapMarkers() {
     _unTiltMap();
 
-    GeoCoordinates geoCoordinates =
-        _createRandomGeoCoordinatesAroundMapCenter();
+    GeoCoordinates geoCoordinates = _createRandomGeoCoordinatesAroundMapCenter();
 
     // Centered on location. Shown below the POI image to indicate the location.
     // The draw order is determined from what is first added to the map,
@@ -78,18 +77,15 @@ class MapItemsExample {
     // Reuse existing MapImage for new map markers.
     if (_poiMapImage == null) {
       Uint8List imagePixelData = await _loadFileAsUint8List('assets/poi.png');
-      _poiMapImage =
-          MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
+      _poiMapImage = MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
     }
 
     // By default, the anchor point is set to 0.5, 0.5 (= centered).
     // Here the bottom, middle position should point to the location.
     Anchor2D anchor2D = Anchor2D.withHorizontalAndVertical(0.5, 1);
 
-    GeoCoordinates geoCoordinates =
-        _createRandomGeoCoordinatesAroundMapCenter();
-    MapMarker mapMarker =
-        MapMarker.withAnchor(geoCoordinates, _poiMapImage!, anchor2D);
+    GeoCoordinates geoCoordinates = _createRandomGeoCoordinatesAroundMapCenter();
+    MapMarker mapMarker = MapMarker.withAnchor(geoCoordinates, _poiMapImage!, anchor2D);
 
     MapMarkerTextStyle textStyleCurrent = mapMarker.textStyle;
     MapMarkerTextStyle textStyleNew = mapMarker.textStyle;
@@ -107,11 +103,12 @@ class MapItemsExample {
 
     try {
       textStyleNew = MapMarkerTextStyle.make(
-          textSizeInPixels,
-          textStyleCurrent.textColor,
-          textOutlineSizeInPixels,
-          textStyleCurrent.textOutlineColor,
-          placements);
+        textSizeInPixels,
+        textStyleCurrent.textColor,
+        textOutlineSizeInPixels,
+        textStyleCurrent.textOutlineColor,
+        placements,
+      );
     } on MapMarkerTextStyleInstantiationException catch (e) {
       // An error code will indicate what went wrong, for example, when negative values are set for text size.
       print("TextStyle: Error code: ${e.error.name}");
@@ -131,8 +128,7 @@ class MapItemsExample {
   void showCenteredMapMarkers() {
     _unTiltMap();
 
-    GeoCoordinates geoCoordinates =
-        _createRandomGeoCoordinatesAroundMapCenter();
+    GeoCoordinates geoCoordinates = _createRandomGeoCoordinatesAroundMapCenter();
 
     // Centered on location.
     _addPhotoMapMarker(geoCoordinates, 0);
@@ -144,10 +140,8 @@ class MapItemsExample {
   Future<void> showMapMarkerCluster() async {
     // Reuse existing MapImage for new map markers.
     if (_blueSquareMapImage == null) {
-      Uint8List imagePixelData =
-          await _loadFileAsUint8List('assets/green_square.png');
-      _blueSquareMapImage =
-          MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
+      Uint8List imagePixelData = await _loadFileAsUint8List('assets/green_square.png');
+      _blueSquareMapImage = MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
     }
 
     // Defines a text that indicates how many markers are included in the cluster.
@@ -158,28 +152,25 @@ class MapItemsExample {
     counterStyle.aboveMaxText = "+9";
 
     MapMarkerCluster mapMarkerCluster = MapMarkerCluster.WithCounter(
-        MapMarkerClusterImageStyle(_blueSquareMapImage!), counterStyle);
+      MapMarkerClusterImageStyle(_blueSquareMapImage!),
+      counterStyle,
+    );
     _hereMapController.mapScene.addMapMarkerCluster(mapMarkerCluster);
     _mapMarkerClusterList.add(mapMarkerCluster);
 
     for (int i = 0; i < 10; i++) {
-      mapMarkerCluster
-          .addMapMarker(await _createRandomMapMarkerInViewport(i.toString()));
+      mapMarkerCluster.addMapMarker(await _createRandomMapMarkerInViewport(i.toString()));
     }
   }
 
-  Future<MapMarker> _createRandomMapMarkerInViewport(
-      String metaDataText) async {
+  Future<MapMarker> _createRandomMapMarkerInViewport(String metaDataText) async {
     // Reuse existing MapImage for new map markers.
     if (_greenSquareMapImage == null) {
-      Uint8List imagePixelData =
-          await _loadFileAsUint8List('assets/green_square.png');
-      _greenSquareMapImage =
-          MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
+      Uint8List imagePixelData = await _loadFileAsUint8List('assets/green_square.png');
+      _greenSquareMapImage = MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
     }
 
-    MapMarker mapMarker = MapMarker(
-        _createRandomGeoCoordinatesAroundMapCenter(), _greenSquareMapImage!);
+    MapMarker mapMarker = MapMarker(_createRandomGeoCoordinatesAroundMapCenter(), _greenSquareMapImage!);
 
     Metadata metadata = new Metadata();
     metadata.setString("key_cluster", metaDataText);
@@ -191,31 +182,26 @@ class MapItemsExample {
   void showLocationIndicatorPedestrian() {
     _unTiltMap();
 
-    GeoCoordinates geoCoordinates =
-        _createRandomGeoCoordinatesAroundMapCenter();
+    GeoCoordinates geoCoordinates = _createRandomGeoCoordinatesAroundMapCenter();
 
     // Centered on location.
-    _addLocationIndicator(
-        geoCoordinates, LocationIndicatorIndicatorStyle.pedestrian);
+    _addLocationIndicator(geoCoordinates, LocationIndicatorIndicatorStyle.pedestrian);
   }
 
   void showLocationIndicatorNavigation() {
     _unTiltMap();
 
-    GeoCoordinates geoCoordinates =
-        _createRandomGeoCoordinatesAroundMapCenter();
+    GeoCoordinates geoCoordinates = _createRandomGeoCoordinatesAroundMapCenter();
 
     // Centered on location.
-    _addLocationIndicator(
-        geoCoordinates, LocationIndicatorIndicatorStyle.navigation);
+    _addLocationIndicator(geoCoordinates, LocationIndicatorIndicatorStyle.navigation);
   }
 
   void showFlatMapMarker() {
     // Tilt the map for a better 3D effect.
     _tiltMap();
 
-    GeoCoordinates geoCoordinates =
-        _createRandomGeoCoordinatesAroundMapCenter();
+    GeoCoordinates geoCoordinates = _createRandomGeoCoordinatesAroundMapCenter();
 
     // It's origin is centered on the location.
     _addFlatMarker(geoCoordinates);
@@ -229,8 +215,7 @@ class MapItemsExample {
     // Tilt the map for a better 3D effect.
     _tiltMap();
 
-    GeoCoordinates geoCoordinates =
-        _createRandomGeoCoordinatesAroundMapCenter();
+    GeoCoordinates geoCoordinates = _createRandomGeoCoordinatesAroundMapCenter();
 
     // Adds a flat POI marker that rotates and tilts together with the map.
     _add2DTexture(geoCoordinates);
@@ -244,8 +229,7 @@ class MapItemsExample {
     // Tilt the map for a better 3D effect.
     _tiltMap();
 
-    GeoCoordinates geoCoordinates =
-        _createRandomGeoCoordinatesAroundMapCenter();
+    GeoCoordinates geoCoordinates = _createRandomGeoCoordinatesAroundMapCenter();
 
     // Adds a textured 3D model.
     // It's origin is centered on the location.
@@ -273,21 +257,18 @@ class MapItemsExample {
     _locationIndicatorList.clear();
   }
 
-  Future<void> _addPOIMapMarker(
-      GeoCoordinates geoCoordinates, int drawOrder) async {
+  Future<void> _addPOIMapMarker(GeoCoordinates geoCoordinates, int drawOrder) async {
     // Reuse existing MapImage for new map markers.
     if (_poiMapImage == null) {
       Uint8List imagePixelData = await _loadFileAsUint8List('assets/poi.png');
-      _poiMapImage =
-          MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
+      _poiMapImage = MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
     }
 
     // By default, the anchor point is set to 0.5, 0.5 (= centered).
     // Here the bottom, middle position should point to the location.
     Anchor2D anchor2D = Anchor2D.withHorizontalAndVertical(0.5, 1);
 
-    MapMarker mapMarker =
-        MapMarker.withAnchor(geoCoordinates, _poiMapImage!, anchor2D);
+    MapMarker mapMarker = MapMarker.withAnchor(geoCoordinates, _poiMapImage!, anchor2D);
     mapMarker.drawOrder = drawOrder;
 
     Metadata metadata = Metadata();
@@ -298,14 +279,11 @@ class MapItemsExample {
     _mapMarkerList.add(mapMarker);
   }
 
-  Future<void> _addPhotoMapMarker(
-      GeoCoordinates geoCoordinates, int drawOrder) async {
+  Future<void> _addPhotoMapMarker(GeoCoordinates geoCoordinates, int drawOrder) async {
     // Reuse existing MapImage for new map markers.
     if (_photoMapImage == null) {
-      Uint8List imagePixelData =
-          await _loadFileAsUint8List('assets/here_car.png');
-      _photoMapImage =
-          MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
+      Uint8List imagePixelData = await _loadFileAsUint8List('assets/here_car.png');
+      _photoMapImage = MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
     }
 
     MapMarker mapMarker = MapMarker(geoCoordinates, _photoMapImage!);
@@ -315,14 +293,11 @@ class MapItemsExample {
     _mapMarkerList.add(mapMarker);
   }
 
-  Future<void> _addCircleMapMarker(
-      GeoCoordinates geoCoordinates, int drawOrder) async {
+  Future<void> _addCircleMapMarker(GeoCoordinates geoCoordinates, int drawOrder) async {
     // Reuse existing MapImage for new map markers.
     if (_circleMapImage == null) {
-      Uint8List imagePixelData =
-          await _loadFileAsUint8List('assets/circle.png');
-      _circleMapImage =
-          MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
+      Uint8List imagePixelData = await _loadFileAsUint8List('assets/circle.png');
+      _circleMapImage = MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
     }
 
     MapMarker mapMarker = MapMarker(geoCoordinates, _circleMapImage!);
@@ -335,8 +310,7 @@ class MapItemsExample {
     _mapMarkerList.add(mapMarker);
   }
 
-  void _addLocationIndicator(GeoCoordinates geoCoordinates,
-      LocationIndicatorIndicatorStyle indicatorStyle) {
+  void _addLocationIndicator(GeoCoordinates geoCoordinates, LocationIndicatorIndicatorStyle indicatorStyle) {
     LocationIndicator locationIndicator = LocationIndicator();
     locationIndicator.locationIndicatorStyle = indicatorStyle;
 
@@ -356,16 +330,19 @@ class MapItemsExample {
 
   void _addFlatMarker(GeoCoordinates geoCoordinates) async {
     Uint8List imagePixelData = await _loadFileAsUint8List('assets/poi.png');
-    MapImage mapImage =
-        MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
+    MapImage mapImage = MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
 
     // The default scale factor of the map marker is 1.0. For a scale of 2, the map marker becomes 2x larger.
     // For a scale of 0.5, the map marker shrinks to half of its original size.
     double scaleFactor = 0.5;
 
     // With DENSITY_INDEPENDENT_PIXELS the map marker will have a constant size on the screen regardless if the map is zoomed in or out.
-    MapMarker3D mapMarker3D = MapMarker3D.fromImage(geoCoordinates, mapImage,
-        scaleFactor, RenderSizeUnit.densityIndependentPixels);
+    MapMarker3D mapMarker3D = MapMarker3D.fromImage(
+      geoCoordinates,
+      mapImage,
+      scaleFactor,
+      RenderSizeUnit.densityIndependentPixels,
+    );
 
     _hereMapController.mapScene.addMapMarker3d(mapMarker3D);
     _mapMarker3DList.add(mapMarker3D);
@@ -381,8 +358,7 @@ class MapItemsExample {
     String textureFilePath = "assets/models/poi_texture.png";
 
     // Optionally, consider to store the model for reuse (like we showed for MapImages above).
-    MapMarker3DModel mapMarker3DModel =
-        MapMarker3DModel.withTextureFilePath(geometryFilePath, textureFilePath);
+    MapMarker3DModel mapMarker3DModel = MapMarker3DModel.withTextureFilePath(geometryFilePath, textureFilePath);
     MapMarker3D mapMarker3D = MapMarker3D(geoCoordinates, mapMarker3DModel);
     // Scale marker. Note that we used a normalized length of 2 units in 3D space.
     mapMarker3D.scale = 50;
@@ -415,13 +391,14 @@ class MapItemsExample {
     // By default, without setting a scale factor, 1 unit in 3D coordinate space equals 1 meter.
     var altitude = 18.0;
     GeoCoordinates geoCoordinatesWithAltitude = GeoCoordinates.withAltitude(
-        geoCoordinates.latitude, geoCoordinates.longitude, altitude);
+      geoCoordinates.latitude,
+      geoCoordinates.longitude,
+      altitude,
+    );
 
     // Optionally, consider to store the model for reuse (like we showed for MapImages above).
-    MapMarker3DModel mapMarker3DModel =
-        MapMarker3DModel.withTextureFilePath(geometryFilePath, textureFilePath);
-    MapMarker3D mapMarker3D =
-        MapMarker3D(geoCoordinatesWithAltitude, mapMarker3DModel);
+    MapMarker3DModel mapMarker3DModel = MapMarker3DModel.withTextureFilePath(geometryFilePath, textureFilePath);
+    MapMarker3D mapMarker3D = MapMarker3D(geoCoordinatesWithAltitude, mapMarker3DModel);
     mapMarker3D.scale = 6;
     mapMarker3D.isDepthCheckEnabled = true;
 
@@ -454,8 +431,7 @@ class MapItemsExample {
     // mapItems is used when picking map items such as MapMarker, MapPolyline, MapPolygon etc.
     // Currently we need map markers so adding the mapItems filter.
     contentTypesToPickFrom.add(MapSceneMapPickFilterContentType.mapItems);
-    MapSceneMapPickFilter filter =
-        MapSceneMapPickFilter(contentTypesToPickFrom);
+    MapSceneMapPickFilter filter = MapSceneMapPickFilter(contentTypesToPickFrom);
     _hereMapController.pick(filter, rectangle, (pickMapItemsResult) {
       if (pickMapItemsResult == null) {
         // Pick operation failed.
@@ -491,14 +467,16 @@ class MapItemsExample {
           _showDialog("Map Marker picked", message);
           return;
         }
-        _showDialog("Map Marker picked", "Location: ${topmostMapMarker.coordinates.latitude}, ${topmostMapMarker.coordinates.longitude}");
+        _showDialog(
+          "Map Marker picked",
+          "Location: ${topmostMapMarker.coordinates.latitude}, ${topmostMapMarker.coordinates.longitude}",
+        );
       }
     });
   }
 
   void _handlePickedMapMarkerClusters(PickMapItemsResult pickMapItemsResult) {
-    List<MapMarkerClusterGrouping> groupingList =
-        pickMapItemsResult.clusteredMarkers;
+    List<MapMarkerClusterGrouping> groupingList = pickMapItemsResult.clusteredMarkers;
     if (groupingList.length == 0) {
       return;
     }
@@ -511,9 +489,9 @@ class MapItemsExample {
     }
     if (clusterSize == 1) {
       _showDialog(
-          "Map marker picked",
-          "This MapMarker belongs to a cluster.  Metadata: " +
-              _getClusterMetadata(topmostGrouping.markers.first));
+        "Map marker picked",
+        "This MapMarker belongs to a cluster.  Metadata: " + _getClusterMetadata(topmostGrouping.markers.first),
+      );
     } else {
       String metadata = "";
       topmostGrouping.markers.forEach((element) {
@@ -522,12 +500,13 @@ class MapItemsExample {
       });
       int totalSize = topmostGrouping.parent.markers.length;
       _showDialog(
-          "Map marker cluster picked",
-          "Number of contained markers in this cluster: $clusterSize." +
-              "Contained Metadata: " +
-              metadata +
-              ". " +
-              "Total number of markers in this MapMarkerCluster: $totalSize.");
+        "Map marker cluster picked",
+        "Number of contained markers in this cluster: $clusterSize." +
+            "Contained Metadata: " +
+            metadata +
+            ". " +
+            "Total number of markers in this MapMarkerCluster: $totalSize.",
+      );
     }
   }
 
@@ -544,34 +523,28 @@ class MapItemsExample {
   }
 
   void _tiltMap() {
-    double bearing =
-        _hereMapController.camera.state.orientationAtTarget.bearing;
+    double bearing = _hereMapController.camera.state.orientationAtTarget.bearing;
     double tilt = 60;
-    _hereMapController.camera
-        .setOrientationAtTarget(GeoOrientationUpdate(bearing, tilt));
+    _hereMapController.camera.setOrientationAtTarget(GeoOrientationUpdate(bearing, tilt));
   }
 
   void _unTiltMap() {
-    double bearing =
-        _hereMapController.camera.state.orientationAtTarget.bearing;
+    double bearing = _hereMapController.camera.state.orientationAtTarget.bearing;
     double tilt = 0;
-    _hereMapController.camera
-        .setOrientationAtTarget(GeoOrientationUpdate(bearing, tilt));
+    _hereMapController.camera.setOrientationAtTarget(GeoOrientationUpdate(bearing, tilt));
   }
 
   GeoCoordinates _createRandomGeoCoordinatesAroundMapCenter() {
-    GeoCoordinates? centerGeoCoordinates =
-        _hereMapController.viewToGeoCoordinates(Point2D(
-            _hereMapController.viewportSize.width / 2,
-            _hereMapController.viewportSize.height / 2));
+    GeoCoordinates? centerGeoCoordinates = _hereMapController.viewToGeoCoordinates(
+      Point2D(_hereMapController.viewportSize.width / 2, _hereMapController.viewportSize.height / 2),
+    );
     if (centerGeoCoordinates == null) {
       // Should never happen for center coordinates.
       throw Exception("CenterGeoCoordinates are null");
     }
     double lat = centerGeoCoordinates.latitude;
     double lon = centerGeoCoordinates.longitude;
-    return GeoCoordinates(
-        _getRandom(lat - 0.02, lat + 0.02), _getRandom(lon - 0.02, lon + 0.02));
+    return GeoCoordinates(_getRandom(lat - 0.02, lat + 0.02), _getRandom(lon - 0.02, lon + 0.02));
   }
 
   double _getRandom(double min, double max) {

@@ -17,14 +17,13 @@
  * License-Filename: LICENSE
  */
 
-import 'package:flutter/services.dart';  // For platform channels.
+import 'package:flutter/services.dart'; // For platform channels.
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/navigation.dart';
 import 'package:hiking_diary_app/positioning/HEREPositioningSimulator.dart';
 
 // A class to manage a GPXDocument containing multiple GPX tracks.
 class GPXManager {
-
   // Define the method channel to interact with native code to get the path to writeable storage.
   // For this example, we use the documents directory on iOS and the app's internal storage on Android.
   // See also ios/Runner/AppDelegate.swift and android/app/src/main/java/.../MainActivity.java

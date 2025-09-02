@@ -34,6 +34,9 @@ class ImageHelper {
     anchor ??= new Anchor2D();
     final imagePixelData = await ImageHelper.loadFileAsUint8List(fileName);
     return MapMarker.withAnchor(
-        GeoCoordinates(0.0, 0.0), MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png), anchor);
+      GeoCoordinates(0.0, 0.0),
+      MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png),
+      anchor,
+    );
   }
 }

@@ -34,7 +34,10 @@ class RouteCalculator {
   }
 
   void calculateCarRoute(
-      Waypoint startWaypoint, Waypoint destinationWaypoint, CalculateRouteCallback calculateRouteCallback) {
+    Waypoint startWaypoint,
+    Waypoint destinationWaypoint,
+    CalculateRouteCallback calculateRouteCallback,
+  ) {
     List<Waypoint> waypoints = [startWaypoint, destinationWaypoint];
 
     // A route handle is required for the DynamicRoutingEngine to get updates on traffic-optimized routes.
@@ -45,10 +48,16 @@ class RouteCalculator {
   }
 
   void calculateTrafficOnRoute(
-      HERE.Route currentRoute,
-      int lastTraveledSectionIndex,
-      int traveledDistanceOnLastSectionInMeters,
-      HERE.CalculateTrafficOnRouteCallback callback) {
-    _routingEngine.calculateTrafficOnRoute(currentRoute, lastTraveledSectionIndex, traveledDistanceOnLastSectionInMeters, callback);
+    HERE.Route currentRoute,
+    int lastTraveledSectionIndex,
+    int traveledDistanceOnLastSectionInMeters,
+    HERE.CalculateTrafficOnRouteCallback callback,
+  ) {
+    _routingEngine.calculateTrafficOnRoute(
+      currentRoute,
+      lastTraveledSectionIndex,
+      traveledDistanceOnLastSectionInMeters,
+      callback,
+    );
   }
 }

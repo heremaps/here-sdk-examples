@@ -24,8 +24,8 @@ class MapSchemesExample {
   MapScheme? _mapScheme;
 
   MapSchemesExample(HereMapController hereMapController, MapScheme? mapscheme)
-      : _mapScene = hereMapController.mapScene,
-        _mapScheme = mapscheme;
+    : _mapScene = hereMapController.mapScene,
+      _mapScheme = mapscheme;
 
   void loadSceneForMapScheme(MapScheme mapscheme) {
     _mapScene.loadSceneForMapScheme(mapscheme, (MapError? error) {
@@ -37,13 +37,13 @@ class MapSchemesExample {
       }
     });
   }
-  
+
   MapScheme? getCurrentMapScheme() {
     return _mapScheme;
   }
 
   void loadCurrentMapScheme() {
-    if(_mapScheme != null) {
+    if (_mapScheme != null) {
       loadSceneForMapScheme(_mapScheme!);
     }
   }

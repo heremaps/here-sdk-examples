@@ -34,11 +34,7 @@ void main() async {
   // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
   await _initializeHERESDK();
 
-  runApp(
-    MaterialApp(
-      home: MyApp(),
-    ),
-  );
+  runApp(MaterialApp(home: MyApp()));
 }
 
 Future<void> _initializeHERESDK() async {
@@ -85,9 +81,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     return WillPopScope(
       onWillPop: _handleBackPress,
       child: Scaffold(
-        appBar: AppBar(
-          title: Text("HERE SDK - Navigation Example"),
-        ),
+        appBar: AppBar(title: Text("HERE SDK - Navigation Example")),
         body: Stack(
           children: [
             HereMap(onMapCreated: _onMapCreated),
@@ -97,18 +91,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    button("Start Simulation", _startNavigationSimulationButtonClicked),
-                    button(_trackingState, toggleTrackingButtonClicked),
-                    Expanded(
-                      child: button("Stop", _stopNavigationButtonClicked),
-                    ),
+                    Expanded(child: button("Start Simulation", _startNavigationSimulationButtonClicked)),
+                    Expanded(child: button(_trackingState, toggleTrackingButtonClicked)),
+                    Expanded(child: button("Stop", _stopNavigationButtonClicked)),
                   ],
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    button("Start with HERE Positioning", _startNavigationButtonClicked),
-                  ],
+                  children: [button("Start with HERE Positioning", _startNavigationButtonClicked)],
                 ),
                 messageStateWidget(_messageState),
               ],
@@ -218,12 +208,13 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     _appLifecycleListener = AppLifecycleListener(
-      onDetach: () =>
-      // Sometimes Flutter may not reliably call dispose(),
-      // therefore it is recommended to dispose the HERE SDK
-      // also when the AppLifecycleListener is detached.
-      // See more details: https://github.com/flutter/flutter/issues/40940
-      { print('AppLifecycleListener detached.'), _disposeHERESDK() },
+      onDetach:
+          () =>
+          // Sometimes Flutter may not reliably call dispose(),
+          // therefore it is recommended to dispose the HERE SDK
+          // also when the AppLifecycleListener is detached.
+          // See more details: https://github.com/flutter/flutter/issues/40940
+          {print('AppLifecycleListener detached.'), _disposeHERESDK()},
     );
   }
 
@@ -252,10 +243,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   // A helper method to add a button on top of the HERE map.
   Widget button(String buttonLabel, VoidCallback callbackFunction) {
     return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.lightBlueAccent,
-        foregroundColor: Colors.white,
-      ),
+      style: ElevatedButton.styleFrom(backgroundColor: Colors.lightBlueAccent, foregroundColor: Colors.white),
       onPressed: callbackFunction,
       child: Text(buttonLabel, style: TextStyle(fontSize: 20)),
     );
@@ -266,19 +254,12 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     return Align(
       alignment: Alignment.topCenter,
       child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.lightBlueAccent,
-          foregroundColor: Colors.white,
-        ),
+        style: ElevatedButton.styleFrom(backgroundColor: Colors.lightBlueAccent, foregroundColor: Colors.white),
         onPressed: callbackFunction,
         child: Container(
           width: MediaQuery.of(context).size.width * 0.8,
           padding: EdgeInsets.all(2.0),
-          child: Text(
-            buttonLabel,
-            style: TextStyle(fontSize: 15),
-            textAlign: TextAlign.center,
-          ),
+          child: Text(buttonLabel, style: TextStyle(fontSize: 15), textAlign: TextAlign.center),
         ),
       ),
     );
@@ -289,13 +270,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     return Card(
       child: Padding(
         padding: EdgeInsets.all(8.0),
-        child: Text(
-          messageState,
-          style: TextStyle(
-            fontSize: 15,
-            color: Colors.white,
-          ),
-        ),
+        child: Text(messageState, style: TextStyle(fontSize: 15, color: Colors.white)),
       ),
       color: Colors.blue,
       margin: EdgeInsets.only(left: 12.0, right: 12.0, top: 8.0),
@@ -310,13 +285,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(title),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(message),
-              ],
-            ),
-          ),
+          content: SingleChildScrollView(child: ListBody(children: <Widget>[Text(message)])),
           actions: <Widget>[
             TextButton(
               child: Text("OK"),
