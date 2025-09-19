@@ -32,13 +32,13 @@ import com.here.sdk.core.engine.AuthenticationMode;
 import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.core.engine.SDKOptions;
 import com.here.sdk.core.errors.InstantiationErrorException;
-import com.here.sdk.heresdkunits.PermissionsRequestor.ResultListener;
 import com.here.sdk.mapview.MapError;
 import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
-import com.here.sdk.search.SearchEngine;
+import com.here.sdk.units.core.utils.PermissionsRequestor;
+import com.here.sdk.units.core.utils.EnvironmentLogger;
 import com.here.sdk.units.mapswitcher.MapSwitcherUnit;
 import com.here.sdk.units.mapswitcher.MapSwitcherView;
 import com.here.sdk.units.popupmenu.PopupMenuUnit;
@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
     private PermissionsRequestor permissionsRequestor;
     private MapView mapView;
+    private EnvironmentLogger environmentLogger = new EnvironmentLogger();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +63,10 @@ public class MainActivity extends AppCompatActivity {
         // Since in this example we inflate the MapView from a layout, make sure to initialize
         // the HERE SDK before calling setContentView(...).
         initializeHERESDK();
+
+        // Log application and device details.
+        // It expects a string parameter that describes the application source language.
+        environmentLogger.logEnvironment("Java");
 
         setContentView(R.layout.activity_main);
 
@@ -124,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void handleAndroidPermissions() {
         permissionsRequestor = new PermissionsRequestor(this);
-        permissionsRequestor.request(new ResultListener(){
+        permissionsRequestor.request(new PermissionsRequestor.ResultListener(){
 
             @Override
             public void permissionsGranted() {

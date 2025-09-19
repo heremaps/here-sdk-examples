@@ -82,9 +82,12 @@ import com.here.sdk.routing.SectionTransportMode
 import com.here.sdk.routing.Waypoint
 import com.here.time.Duration
 import java.util.Date
+import com.here.sdk.units.core.utils.EnvironmentLogger
 
 class MainActivity : ComponentActivity() {
 
+
+    private val environmentLogger = EnvironmentLogger()
     private var permissionsRequestor: PermissionsRequestor? = null
     private var mapView: MapView? = null
     private var routingEngine: RoutingEngine? = null
@@ -105,6 +108,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         // Needs to be called before the activity is started.
+
+        // Log application and device details.
+        // It expects a string parameter that describes the application source language.
+        environmentLogger.logEnvironment("Kotlin")
         permissionsRequestor = PermissionsRequestor(this)
 
         // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.

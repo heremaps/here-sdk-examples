@@ -19,7 +19,9 @@
 
 package com.here.mapitems;
 
+import android.content.Context;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.here.sdk.core.Color;
 import com.here.sdk.core.GeoCircle;
@@ -49,6 +51,7 @@ public class MapObjectsExample {
 
     private static final  GeoCoordinates BERLIN_GEO_COORDINATES = new GeoCoordinates(52.51760485151816, 13.380312380535472);
 
+    private final Context context;
     private final MapScene mapScene;
     private final MapCamera mapCamera;
     private MapPolyline mapPolyline;
@@ -56,7 +59,8 @@ public class MapObjectsExample {
     private MapPolygon mapPolygon;
     private MapPolygon mapCircle;
 
-    public MapObjectsExample(MapView mapView) {
+    public MapObjectsExample(Context context, MapView mapView) {
+        this.context = context;
         mapScene = mapView.getMapScene();
         mapCamera = mapView.getCamera();
     }
@@ -125,6 +129,8 @@ public class MapObjectsExample {
         // meaning the polyline is visible at minimumZoomLevel but not at maximumZoomLevel.
         // The polyline is rendered only when the map zoom level falls within any of the defined ranges.
         mapPolyline.setVisibilityRanges(visibilityRanges);
+
+        Toast.makeText(context, "Enabled visibility ranges for an existing MapPolyline.", Toast.LENGTH_SHORT).show();
     }
 
     public void showMapArrow() {

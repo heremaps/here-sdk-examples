@@ -69,9 +69,12 @@ import com.here.sdk.mapview.MapFeatureModes
 import com.here.sdk.mapview.MapFeatures
 import com.here.sdk.mapview.MapScheme
 import com.here.sdk.mapview.MapView
+import com.here.sdk.units.core.utils.EnvironmentLogger
 
 class MainActivity : ComponentActivity() {
 
+
+    private val environmentLogger = EnvironmentLogger()
     private lateinit var permissionsRequestor: PermissionsRequestor
     private var mapView: MapView? = null
     private lateinit var offlineMapsExample: OfflineMapsExample
@@ -83,6 +86,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+
+        // Log application and device details.
+        // It expects a string parameter that describes the application source language.
+        environmentLogger.logEnvironment("Kotlin")
         this.savedInstanceState = savedInstanceState
 
         // Needs to be called before the activity is started.

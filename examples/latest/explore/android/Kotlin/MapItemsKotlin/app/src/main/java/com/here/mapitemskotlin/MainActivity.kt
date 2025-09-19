@@ -20,16 +20,23 @@ package com.here.mapitemskotlin
 
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.here.mapitemskotlin.ui.theme.MapItemsTheme
 import com.here.sdk.core.GeoCoordinates
@@ -40,9 +47,14 @@ import com.here.sdk.core.errors.InstantiationErrorException
 import com.here.sdk.mapview.MapMeasure
 import com.here.sdk.mapview.MapScheme
 import com.here.sdk.mapview.MapView
+import com.here.sdk.units.core.views.UnitButton
+import com.here.sdk.units.popupmenu.PopupMenuView
+import com.here.sdk.units.core.utils.EnvironmentLogger
 
 class MainActivity : ComponentActivity() {
 
+
+    private val environmentLogger = EnvironmentLogger()
     private var permissionsRequestor: PermissionsRequestor? = null
     private var mapView: MapView? = null
     private var mapItemsExample: MapItemsExample? = null
@@ -53,6 +65,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         // Needs to be called before the activity is started.
+
+        // Log application and device details.
+        // It expects a string parameter that describes the application source language.
+        environmentLogger.logEnvironment("Kotlin")
         permissionsRequestor = PermissionsRequestor(this)
 
         // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
@@ -65,11 +81,10 @@ class MainActivity : ComponentActivity() {
             MapItemsTheme {
                 Scaffold(
                     modifier = Modifier.fillMaxSize()
-
                 ) { paddingValues ->
                     Box(modifier = Modifier.padding(paddingValues)) {
                         HereMapView(savedInstanceState)
-                        CustomDropDownMenu()
+                        ButtonRows()
                     }
                 }
             }
@@ -90,6 +105,87 @@ class MainActivity : ComponentActivity() {
                 handleAndroidPermissions()
             }
         })
+    }
+
+    @Composable
+    fun ButtonRows() {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(DEFAULT_UI_SPACE.dp),
+            verticalArrangement = Arrangement.spacedBy(DEFAULT_UI_SPACE.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                PopupMenuViewComposable(modifier = Modifier.weight(ROW_WEIGHT)) { view -> setupPopupMenuForMapObjects(view) }
+                Spacer(modifier = Modifier.width(DEFAULT_UI_SPACE.dp))
+                PopupMenuViewComposable(modifier = Modifier.weight(ROW_WEIGHT)) { view -> setupPopupMenuForMapMarkers(view) }
+                Spacer(modifier = Modifier.width(DEFAULT_UI_SPACE.dp))
+                PopupMenuViewComposable(modifier = Modifier.weight(ROW_WEIGHT)) { view -> setupPopupMenuForMapViewPins(view) }
+            }
+        }
+    }
+
+    // Wrap the PopupMenuView into a Composable in order to use it with Jetpack Compose.
+    @Composable
+    fun PopupMenuViewComposable(
+        modifier: Modifier = Modifier,
+        onViewReady: (PopupMenuView) -> Unit = {}
+    ) {
+        AndroidView(
+            modifier = modifier,
+            factory = { context ->
+                PopupMenuView(context).apply {
+                    val button = getChildAt(0) as? UnitButton
+                    button?.setPadding(DEFAULT_UI_SPACE * 2, DEFAULT_UI_SPACE, DEFAULT_UI_SPACE * 2, DEFAULT_UI_SPACE)
+                 }},
+            update = { view -> onViewReady(view) }
+        )
+    }
+
+    private fun setupPopupMenuForMapObjects(popupMenuView: PopupMenuView) {
+        val menuItems = mutableMapOf<String?, Runnable?>()
+        menuItems["Polyline"] = Runnable { mapObjectsExample?.showMapPolyline() }
+        menuItems["Polyline with gradients"] = Runnable { mapObjectsExample?.showGradientMapPolyLine() }
+        menuItems["Arrow"] = Runnable { mapObjectsExample?.showMapArrow() }
+        menuItems["Polygon"] = Runnable { mapObjectsExample?.showMapPolygon() }
+        menuItems["Circle"] = Runnable { mapObjectsExample?.showMapCircle() }
+        menuItems["Enable visibility ranges for polylines"] = Runnable { mapObjectsExample?.enableVisibilityRangesForPolyline() }
+        menuItems["Clear items"] = Runnable { mapObjectsExample?.clearMapButtonClicked() }
+
+        val popupMenuUnit = popupMenuView.popupMenuUnit
+        popupMenuUnit.setMenuContent("Map objects", menuItems)
+    }
+
+    private fun setupPopupMenuForMapMarkers(popupMenuView: PopupMenuView) {
+        val menuItems = mutableMapOf<String?, Runnable?>()
+        menuItems["Anchored (2D)"] = Runnable { mapItemsExample?.showAnchoredMapMarkers() }
+        menuItems["Centered (2D)"] = Runnable { mapItemsExample?.showCenteredMapMarkers() }
+        menuItems["Marker with text"] = Runnable { mapItemsExample?.showMapMarkerWithText() }
+        menuItems["MapMarkerCluster"] = Runnable { mapItemsExample?.showMapMarkerCluster() }
+        menuItems["LocationIndicator (PED)"] = Runnable { mapItemsExample?.showLocationIndicatorPedestrian() }
+        menuItems["LocationIndicator (NAV)"] = Runnable { mapItemsExample?.showLocationIndicatorNavigation() }
+        menuItems["LocationIndicator Active/Inactive"] = Runnable { mapItemsExample?.toggleActiveStateForLocationIndicator() }
+        menuItems["Flat marker"] = Runnable { mapItemsExample?.showFlatMapMarker() }
+        menuItems["2D texture"] = Runnable { mapItemsExample?.show2DTexture() }
+        menuItems["3D object"] = Runnable { mapItemsExample?.showMapMarker3D() }
+        menuItems["Clear map"] = Runnable { mapItemsExample?.clearMap() }
+
+        val popupMenuUnit = popupMenuView.popupMenuUnit
+        popupMenuUnit.setMenuContent("Map markers", menuItems)
+    }
+
+    private fun setupPopupMenuForMapViewPins(popupMenuView: PopupMenuView) {
+        val menuItems = mutableMapOf<String?, Runnable?>()
+        menuItems["Default"] = Runnable { mapViewPinExample?.showMapViewPin() }
+        menuItems["Anchored"] = Runnable { mapViewPinExample?.showAnchoredMapViewPin() }
+        menuItems["Clear map"] = Runnable { mapViewPinExample?.clearMap() }
+
+        val popupMenuUnit = popupMenuView.popupMenuUnit
+        popupMenuUnit.setMenuContent("Map view pins", menuItems)
     }
 
     private fun initializeHERESDK() {
@@ -130,7 +226,7 @@ class MainActivity : ComponentActivity() {
         // Load a scene from the HERE SDK to render the map with a map scheme.
         mapViewNonNull.mapScene.loadScene(MapScheme.NORMAL_DAY) { mapError ->
             if (mapError == null) {
-                mapObjectsExample = MapObjectsExample(mapViewNonNull)
+                mapObjectsExample = MapObjectsExample(this@MainActivity, mapViewNonNull)
                 mapItemsExample = MapItemsExample(this@MainActivity, mapViewNonNull)
                 mapViewPinExample = MapViewPinExample(this@MainActivity, mapViewNonNull)
 
@@ -141,52 +237,6 @@ class MainActivity : ComponentActivity() {
                 Log.d(TAG, "Loading of map failed: mapError: ${mapError.name}")
             }
         }
-    }
-
-    @Composable
-    fun CustomDropDownMenu() {
-        DropdownMenu(
-            onMapObjectClick = { item ->
-                when (item) {
-                    "Polyline" -> mapObjectsExample?.showMapPolyline()
-                    "Gradient Polyline" -> mapObjectsExample?.showGradientMapPolyLine()
-                    "Arrow" -> mapObjectsExample?.showMapArrow()
-                    "Polygon" -> mapObjectsExample?.showMapPolygon()
-                    "Circle" -> mapObjectsExample?.showMapCircle()
-                    "Enable visibility ranges" -> {
-                        Toast.makeText(
-                            this,
-                            "Enabled visibility ranges for MapPolyLine",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        mapObjectsExample?.enableVisibilityRangesForPolyline()
-                    }
-                    "Clear Items" -> mapObjectsExample?.clearMapButtonClicked()
-                }
-            },
-            onMapMarkerClick = { item ->
-                when (item) {
-                    "Anchored (2D)" -> mapItemsExample?.showAnchoredMapMarkers()
-                    "Centered (2D)" -> mapItemsExample?.showCenteredMapMarkers()
-                    "Marker with Text" -> mapItemsExample?.showMapMarkerWithText()
-                    "MapMarkerCluster" -> mapItemsExample?.showMapMarkerCluster()
-                    "Location (PED)" -> mapItemsExample?.showLocationIndicatorPedestrian()
-                    "Location (NAV)" -> mapItemsExample?.showLocationIndicatorNavigation()
-                    "Active/Inactive" -> mapItemsExample?.toggleActiveStateForLocationIndicator()
-                    "Flat Marker" -> mapItemsExample?.showFlatMapMarker()
-                    "2D Texture" -> mapItemsExample?.show2DTexture()
-                    "3D Object" -> mapItemsExample?.showMapMarker3D()
-                    "Clear Map" -> mapItemsExample?.clearMap()
-                }
-            },
-            onMapViewPinClick = { item ->
-                when (item) {
-                    "Default" -> mapViewPinExample?.showMapViewPin()
-                    "Anchored" -> mapViewPinExample?.showAnchoredMapViewPin()
-                    "Clear Map" -> mapViewPinExample?.clearMap()
-                }
-            }
-        )
     }
 
     override fun onPause() {
@@ -222,5 +272,7 @@ class MainActivity : ComponentActivity() {
 
     private companion object {
         private val TAG = MainActivity::class.java.simpleName
+        const val ROW_WEIGHT = 1f
+        const val DEFAULT_UI_SPACE = 16
     }
 }

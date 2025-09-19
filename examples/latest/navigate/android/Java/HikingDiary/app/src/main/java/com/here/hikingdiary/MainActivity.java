@@ -58,13 +58,18 @@ import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
+import com.here.sdk.units.mapswitcher.MapSwitcherUnit;
+import com.here.sdk.units.mapswitcher.MapSwitcherView;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.here.sdk.units.core.utils.EnvironmentLogger;
 
 public class MainActivity extends AppCompatActivity {
 
+    private EnvironmentLogger environmentLogger = new EnvironmentLogger();
     private static final String TAG = MainActivity.class.getSimpleName();
     public static final String CLICKED_INDEX_KEY = MenuActivity.CLICKED_INDEX_KEY;
     public static final String DELETE_INDEX_KEY = MenuActivity.DELETE_INDEX_KEY;
@@ -78,6 +83,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // Log application and device details.
+        // It expects a string parameter that describes the application source language.
+        environmentLogger.logEnvironment("Java");
+
         // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
         initializeHERESDK();
 
@@ -89,6 +98,9 @@ public class MainActivity extends AppCompatActivity {
         // Get a MapView instance from layout.
         mapView = findViewById(R.id.map_view);
         mapView.onCreate(savedInstanceState);
+
+        // Use the HERE SDK Units library for a simple map switcher, see libs folder.
+        setupMapSwitcher();
 
         SwitchCompat mySwitch = findViewById(R.id.switchMapLayer);
         mySwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -168,6 +180,12 @@ public class MainActivity extends AppCompatActivity {
         // to allow using the device's sensors for HERE Positioning.
         HEREPositioningTermsAndPrivacyHelper privacyHelper = new HEREPositioningTermsAndPrivacyHelper(this);
         privacyHelper.showAppTermsAndPrivacyPolicyDialogIfNeeded(this::handleAndroidPermissions);
+    }
+
+    private void setupMapSwitcher() {
+        MapSwitcherView mapSwitcherView = findViewById(R.id.map_switcher);
+        MapSwitcherUnit mapSwitcherUnit = mapSwitcherView.mapSwitcherUnit;
+        mapSwitcherUnit.setup(mapView, getSupportFragmentManager());
     }
 
     @Override

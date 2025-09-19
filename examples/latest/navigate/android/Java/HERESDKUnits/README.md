@@ -8,6 +8,7 @@ In this repository, units primarily extract boilerplate so that the HERE SDK exa
 
 Current sample units include:
 
+- **Core**: A basic component that is required by other units.
 - **MapSwitcher**: A component that switches between map schemes.
 - **PopupMenu**: A menu component without HERE SDK dependencies.
 

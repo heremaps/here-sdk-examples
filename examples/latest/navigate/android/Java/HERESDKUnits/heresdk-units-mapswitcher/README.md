@@ -4,7 +4,10 @@ A reusable unit that switches map schemes when the user taps a button.
 
 ## Integrate the unit into your app
 
-1. Copy `heresdk-units-mapswitcher-release.aar` into your example app's lib folder.
+1. Find the latest units in the [units folder](`../units/`)  or compile them yourself.
+
+- Copy `heresdk-units-core-release-v[version].aar` into your example app's lib folder.
+- Copy `heresdk-units-mapswitcher-release-v[version].aar` into your example app's lib folder.
 
 2. Add the unit to your layout file. To position it in the bottom-left corner, use:
 

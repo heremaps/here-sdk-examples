@@ -59,7 +59,7 @@ class RoutingExample(private val context: Context, private val mapView: MapView)
 
     private val mapMarkerList = arrayListOf<MapMarker>()
     private val mapPolylines = arrayListOf<MapPolyline>()
-    private var routingEngine: RoutingEngine? = null
+    private var routingEngine: RoutingEngine
     private var startGeoCoordinates: GeoCoordinates? = null
     private var destinationGeoCoordinates: GeoCoordinates? = null
     private var trafficDisabled = false
@@ -80,23 +80,30 @@ class RoutingExample(private val context: Context, private val mapView: MapView)
     }
 
     fun addRoute() {
-        startGeoCoordinates = createRandomGeoCoordinatesAroundMapCenter()
-        destinationGeoCoordinates = createRandomGeoCoordinatesAroundMapCenter()
-        val startWaypoint = Waypoint(startGeoCoordinates!!)
-        val destinationWaypoint = Waypoint(destinationGeoCoordinates!!)
+        val startingPoint = createRandomGeoCoordinatesAroundMapCenter()
+        val destinationPoint = createRandomGeoCoordinatesAroundMapCenter()
+
+        // Store the generated coordinates in global variables for use in other functions.
+        startGeoCoordinates = startingPoint
+        destinationGeoCoordinates = destinationPoint
+
+        val startWaypoint = Waypoint(startingPoint)
+        val destinationWaypoint = Waypoint(destinationPoint)
 
         waypoints = arrayListOf(startWaypoint, destinationWaypoint)
         calculateRoute(waypoints)
     }
 
     private fun calculateRoute(waypoints: List<Waypoint>) {
-        routingEngine?.calculateRoute(
+        routingEngine.calculateRoute(
             waypoints,
             carOptions,
             object : CalculateRouteCallback {
                 override fun onRouteCalculated(routingError: RoutingError?, routes: List<Route>?) {
+                    // When routingError is null, the list of routes is guaranteed to be not empty.
                     if (routingError == null) {
-                        val route: Route = routes!![0]
+                        val routes = routes ?: return
+                        val route = routes[0]
                         showRouteDetails(route)
                         showRouteOnMap(route)
                         logRouteRailwayCrossingDetails(route)
@@ -152,15 +159,21 @@ class RoutingExample(private val context: Context, private val mapView: MapView)
         val dateFormat: DateFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
 
         for (i in route.sections.indices) {
-            val section: Section = route.sections.get(i)
+            val section: Section = route.sections[i]
+
+            val formattedDepartureLocationTime = section.departureLocationTime
+                ?.localTime
+                ?.let(dateFormat::format)
+                ?: "Unknown"
+
+            val formattedArrivalLocationTime = section.arrivalLocationTime
+                ?.localTime
+                ?.let(dateFormat::format)
+                ?: "Unknown"
 
             Log.d(TAG, "Route Section : " + (i + 1))
-            Log.d(TAG, "Route Section Departure Time : "
-                        + dateFormat.format(section.departureLocationTime!!.localTime)
-            )
-            Log.d(TAG, "Route Section Arrival Time : "
-                        + dateFormat.format(section.arrivalLocationTime!!.localTime)
-            )
+            Log.d(TAG, "Route Section Departure Time : " + formattedDepartureLocationTime)
+            Log.d(TAG, "Route Section Arrival Time : " + formattedArrivalLocationTime)
             Log.d(TAG, "Route Section length : " + section.lengthInMeters + " m")
             Log.d(TAG, "Route Section duration : " + section.duration.seconds + " s")
         }
@@ -297,14 +310,13 @@ class RoutingExample(private val context: Context, private val mapView: MapView)
     }
 
     fun addWaypoints() {
-        if (startGeoCoordinates == null || destinationGeoCoordinates == null) {
-            showDialog("Error", "Please add a route first.")
-            return
-        }
+        val startingPoint = startGeoCoordinates ?: return showDialog("Error", "Please add a route first.")
+        val destinationPoint = destinationGeoCoordinates ?: return showDialog("Error", "Please add a route first.")
 
         val waypoint1 = Waypoint(createRandomGeoCoordinatesAroundMapCenter())
         val waypoint2 = Waypoint(createRandomGeoCoordinatesAroundMapCenter())
-        waypoints = arrayListOf(Waypoint(startGeoCoordinates!!), waypoint1, waypoint2, Waypoint(destinationGeoCoordinates!!))
+        waypoints = arrayListOf(Waypoint(startingPoint), waypoint1, waypoint2, Waypoint(destinationPoint))
+
         calculateRoute(waypoints)
     }
 
@@ -315,8 +327,8 @@ class RoutingExample(private val context: Context, private val mapView: MapView)
 
             // Enable usage of HOV and HOT lanes.
             // Note: These lanes will only be used if they are available in the selected country.
-            carOptions.allowOptions.allowHov = true;
-            carOptions.allowOptions.allowHot = true;
+            carOptions.allowOptions.allowHov = true
+            carOptions.allowOptions.allowHot = true
 
             // When occupantsNumber is greater than 1, it enables the vehicle to use HOV/HOT lanes.
             carOptions.occupantsNumber = 4

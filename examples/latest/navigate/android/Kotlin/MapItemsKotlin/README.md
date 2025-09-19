@@ -2,6 +2,8 @@ The MapItems example app shows how to pin images, native views and 3D objects to
 
 **Note**: This is the same app as the "**MapItems**" app, but implemented in Kotlin instead of Java.
 
+This example uses HERE SDK Units for supporting functionality that isn’t essential to the code samples in this app. The units are included in the app’s libs folder. For more details, see the "Java/HERESDKUnits" app.
+
 Build instructions:
 -------------------
 

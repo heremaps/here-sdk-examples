@@ -49,6 +49,12 @@ class NavigationExample : DynamicRoutingDelegate, MessageDelegate {
         // By default, enable auto-zoom during guidance.
         visualNavigator.cameraBehavior = DynamicCameraBehavior()
 
+        // By default, the MapView renders at 60 frames per second (fps).
+        // When turn-by-turn navigation is enabled via the VisualNavigator,
+        // the frame rate is reduced to 30 fps. This value can be customized;
+        // for example, it is set to 60 fps below.
+        visualNavigator.guidanceFrameRate = 60
+        
         visualNavigator.startRendering(mapView: mapView)
 
         // A class to receive real location events.

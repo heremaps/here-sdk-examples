@@ -21,12 +21,7 @@ package com.here.mapitems;
 
 import android.content.Context;
 import android.os.Bundle;
-
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -42,31 +37,97 @@ import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
+import com.here.sdk.units.popupmenu.PopupMenuUnit;
+import com.here.sdk.units.popupmenu.PopupMenuView;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+import com.here.sdk.units.core.utils.EnvironmentLogger;
+import com.here.sdk.units.core.utils.PermissionsRequestor;
 
 public class MainActivity extends AppCompatActivity {
 
+    private EnvironmentLogger environmentLogger = new EnvironmentLogger();
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private PermissionsRequestor permissionsRequestor;
     private MapView mapView;
-    private MapItemsExample mapItemsExample;
     private MapObjectsExample mapObjectsExample;
+    private MapItemsExample mapItemsExample;
     private MapViewPinExample mapViewPinExample;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // Log application and device details.
+        // It expects a string parameter that describes the application source language.
+        environmentLogger.logEnvironment("Java");
+
         // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
         initializeHERESDK();
 
         setContentView(R.layout.activity_main);
 
-        // Get a MapView instance from layout
+        // Get a MapView instance from layout.
         mapView = findViewById(R.id.map_view);
         mapView.onCreate(savedInstanceState);
 
+        // Use the HERE SDK Units library for a simple popup menu, see libs folder.
+        // HERE SDK Units are compiled with the HERESDKUnits app you can find in this repo.
+        setMapObjectsMenu();
+        setMapMarkerMenu();
+        setMapViewPinsMenu();
+
         handleAndroidPermissions();
+    }
+
+    private void setMapObjectsMenu() {
+        // Define menu items with the code that should be executed when clicking on the item.
+        Map<String, Runnable> menuItems = new LinkedHashMap<>();
+        menuItems.put("Polyline", () -> mapObjectsExample.showMapPolyline());
+        menuItems.put("Polyline with gradients", () -> mapObjectsExample.showGradientMapPolyLine());
+        menuItems.put("Polyline with visibility ranges", () -> mapObjectsExample.enableVisibilityRangesForPolyline());
+        menuItems.put("Arrow", () -> mapObjectsExample.showMapArrow());
+        menuItems.put("Polygon", () -> mapObjectsExample.showMapPolygon());
+        menuItems.put("Circle", () -> mapObjectsExample.showMapCircle());
+        menuItems.put("Clear map", () -> mapObjectsExample.clearMapButtonClicked());
+
+        PopupMenuView popupMenuView = findViewById(R.id.menu_button_map_objects);
+        PopupMenuUnit popupMenuUnit = popupMenuView.popupMenuUnit;
+        popupMenuUnit.setMenuContent("Map objects", menuItems);
+    }
+
+    private void setMapMarkerMenu() {
+        // Define menu items with the code that should be executed when clicking on the item.
+        Map<String, Runnable> menuItems = new LinkedHashMap<>();
+        menuItems.put("Anchored (2D)", () -> mapItemsExample.showAnchoredMapMarkers());
+        menuItems.put("Centered (2D)", () -> mapItemsExample.showCenteredMapMarkers());
+        menuItems.put("Marker with text", () -> mapItemsExample.showMapMarkerWithText());
+        menuItems.put("MapMarkerCluster", () -> mapItemsExample.showMapMarkerCluster());
+        menuItems.put("Location (PED)", () -> mapItemsExample.showLocationIndicatorPedestrian());
+        menuItems.put("Location (NAV)", () -> mapItemsExample.showLocationIndicatorNavigation());
+        menuItems.put("Active/Inactive", () -> mapItemsExample.toggleActiveStateForLocationIndicator());
+        menuItems.put("Flat marker", () -> mapItemsExample.showFlatMapMarker());
+        menuItems.put("2D texture", () -> mapItemsExample.show2DTexture());
+        menuItems.put("3D object", () -> mapItemsExample.showMapMarker3D());
+        menuItems.put("Clear map", () -> mapItemsExample.clearMap());
+
+        PopupMenuView popupMenuView = findViewById(R.id.menu_button_map_markers);
+        PopupMenuUnit popupMenuUnit = popupMenuView.popupMenuUnit;
+        popupMenuUnit.setMenuContent("Map markers", menuItems);
+    }
+
+    private void setMapViewPinsMenu() {
+        // Define menu items with the code that should be executed when clicking on the item.
+        Map<String, Runnable> menuItems = new LinkedHashMap<>();
+        menuItems.put("Default", () -> mapViewPinExample.showMapViewPin());
+        menuItems.put("Anchored", () -> mapViewPinExample.showAnchoredMapViewPin());
+        menuItems.put("Clear map", () -> mapViewPinExample.clearMap());
+
+        PopupMenuView popupMenuView = findViewById(R.id.menu_button_mapview_pins);
+        PopupMenuUnit popupMenuUnit = popupMenuView.popupMenuUnit;
+        popupMenuUnit.setMenuContent("MapView pins", menuItems);
     }
 
     private void initializeHERESDK() {
@@ -109,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onLoadScene(@Nullable MapError mapError) {
                 if (mapError == null) {
-                    mapObjectsExample = new MapObjectsExample(mapView);
+                    mapObjectsExample = new MapObjectsExample(MainActivity.this, mapView);
                     mapItemsExample = new MapItemsExample(MainActivity.this, mapView);
                     mapViewPinExample = new MapViewPinExample(MainActivity.this, mapView);
 
@@ -158,91 +219,6 @@ public class MainActivity extends AppCompatActivity {
             // For safety reasons, we explicitly set the shared instance to null to avoid situations,
             // where a disposed instance is accidentally reused.
             SDKNativeEngine.setSharedInstance(null);
-        }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater=getMenuInflater();
-        inflater.inflate(R.menu.map_option_menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()){
-            // Map Objects:
-            case R.id.arrow_menu_item:
-                mapObjectsExample.showMapArrow();
-                return true;
-            case R.id.circle_menu_item:
-                mapObjectsExample.showMapCircle();
-                return true;
-            case R.id.polygon_menu_item:
-                mapObjectsExample.showMapPolygon();
-                return true;
-            case R.id.polyline_menu_item:
-                mapObjectsExample.showMapPolyline();
-                return true;
-            case R.id.gradient_polyline_menu_item:
-                mapObjectsExample.showGradientMapPolyLine();
-                return true;
-            case R.id.polyline_enable_visibility:
-                Toast.makeText(this, "Enabled visibility ranges for an existing MapPolyline.", Toast.LENGTH_SHORT).show();
-                mapObjectsExample.enableVisibilityRangesForPolyline();
-                return true;
-            case R.id.clear_map_objects_menu_item:
-                mapObjectsExample.clearMapButtonClicked();
-                return true;
-
-            // Map Marker:
-            case R.id.anchored_2D_menu_item:
-                mapItemsExample.showAnchoredMapMarkers();
-                return true;
-            case R.id.centered_2D_menu_item:
-                mapItemsExample.showCenteredMapMarkers();
-                return true;
-            case R.id.map_marker_with_text:
-                mapItemsExample.showMapMarkerWithText();
-                return true;
-            case R.id.map_marker_cluster_menu_item:
-                mapItemsExample.showMapMarkerCluster();
-                return true;
-            case R.id.location_ped_menu_item:
-                mapItemsExample.showLocationIndicatorPedestrian();
-                return true;
-            case R.id.location_nav_menu_item:
-                mapItemsExample.showLocationIndicatorNavigation();
-                return true;
-            case R.id.active_inactive_menu_item:
-                mapItemsExample.toggleActiveStateForLocationIndicator();
-                return true;
-            case R.id.flat_menu_item_image:
-                mapItemsExample.showFlatMapMarker();
-                return true;
-            case R.id.flat_menu_item:
-                mapItemsExample.show2DTexture();
-                return true;
-            case R.id.obj_3D_menu_item:
-                mapItemsExample.showMapMarker3D();
-                return true;
-            case R.id.clear_map_marker_menu_item:
-                mapItemsExample.clearMap();
-                return true;
-
-            // MapView Pins:
-            case R.id.default_menu_item:
-                mapViewPinExample.showMapViewPin();
-                return true;
-            case R.id.anchored_menu_item:
-                mapViewPinExample.showAnchoredMapViewPin();
-                return true;
-            case R.id.clear_map_view_pins_menu_item:
-                mapViewPinExample.clearMap();
-                return true;
-
-            default:
-                return super.onOptionsItemSelected(item);
         }
     }
 }
