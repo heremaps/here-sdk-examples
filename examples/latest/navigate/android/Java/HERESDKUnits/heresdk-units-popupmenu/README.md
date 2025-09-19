@@ -6,9 +6,12 @@ The list of entries is not limited. Each item’s name must be unique. If the it
 
 This unit has no dependency to the HERE SDK AAR.
 
-## Integrate the unit into your app
+## Integrate the unit into your app for XML-based layouts and Java
 
-1. Copy `heresdk-units-popupmenu-release.aar` into your example app's lib folder.
+1. Find the latest units in the [units folder](`../units/`)  or compile them yourself.
+
+- Copy `heresdk-units-core-release-v[version].aar` into your example app's lib folder.
+- Copy `heresdk-units-popupmenu-release-v[version].aar` into your example app's lib folder.
 
 2. Add the unit to your layout file. Example:
 
@@ -34,7 +37,63 @@ This unit has no dependency to the HERE SDK AAR.
         PopupMenuView popupMenuView = findViewById(R.id.popup_menu_button1);
         PopupMenuUnit popupMenuUnit = popupMenuView.popupMenuUnit;
         popupMenuUnit.setMenuContent("Menu 1", menuItems);
-    } 
+    }
+```
+
+## Integrate the unit into your app with Jetpack Compose and Kotlin
+
+1. Find the latest units in the [units folder](`../units/`)  or compile them yourself.
+
+- Copy `heresdk-units-core-release-v[version].aar` into your example app's lib folder.
+- Copy `heresdk-units-popupmenu-release-v[version].aar` into your example app's lib folder.
+
+2. Include the `appcompat` AndroidX library, as it is needed by the Core unit. Add the following to your app's `build.gradle.kts` in the `dependencies` closure. Adapt the version as needed:
+
+```
+implementation("androidx.appcompat:appcompat:1.7.1")
+```
+
+3. Create a wrapper to use the unit in Jetpack Compose:
+
+```
+@Composable
+fun PopupMenuViewComposable(modifier: Modifier = Modifier) {
+    AndroidView(
+        modifier = modifier,
+        factory = { context ->
+            PopupMenuView(context).apply {
+                // Set padding once when created using raw pixel values.
+                val button = getChildAt(0) as? android.widget.Button
+                button?.setPadding(32, 16, 32, 16)
+                setupPopupMenu(this)
+            }},
+    )
+}
+```
+
+4. Add the unit to your UI block. Example:
+
+```       
+Box(modifier = Modifier.padding(paddingValues)) {
+    HereMapView(savedInstanceState)
+    PopupMenuViewComposable(modifier = Modifier.fillMaxWidth().padding(16.dp))
+}
+```
+
+Note that you can also use the unit without modifiers like so: `PopupMenuViewComposable()`.
+
+5. Use the unit in your `Activity` or `Fragment`. Example:
+
+```
+private fun setupPopupMenu(popupMenuView: PopupMenuView) {
+    // Define menu entries with the code that should be executed when clicking on the item.
+    val menuItems = mutableMapOf<String?, Runnable?>()
+        menuItems["Item 1"] = Runnable { Log.d("Menu", "Item 1 clicked") }
+        menuItems["Item 2"] = Runnable { Log.d("Menu", "Item 2 clicked") }
+
+    val popupMenuUnit = popupMenuView.popupMenuUnit
+    popupMenuUnit.setMenuContent("Menu 1", menuItems)
+}
 ```
 
 4. Sync with Gradle and run the app.

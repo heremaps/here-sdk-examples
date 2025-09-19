@@ -50,7 +50,6 @@ class MapViewPinExample(private val context: Context, private val mapView: MapVi
 
         // Add circle to indicate map center.
         addCircle(MAP_CENTER_GEO_COORDINATES)
-
     }
 
     fun showMapViewPin() {

@@ -23,25 +23,33 @@ android {
     namespace 'com.here.unittesting'
 }
 
-// Use the mock JAR when executing unit tests and the real HERE SDK AAR when building the app.
-def getHereSdkArtefactName() {
-    def aarFile = fileTree(dir: 'libs', include: ['heresdk-*.aar']).first()
-    // Filename without extension is necessary.
-    return org.apache.commons.io.FilenameUtils.getBaseName(aarFile.name)
+// Use the mock JAR when executing unit tests and the real HERE SDK AARs when building the app.
+def getHereSdkArtefactNames() {
+    def aarFiles = fileTree(dir: 'libs', include: ['heresdk-*.aar'])
+    def artefactNames = []
+    aarFiles.each { file ->
+        // Filename without extension is necessary.
+        artefactNames.add(org.apache.commons.io.FilenameUtils.getBaseName(file.name))
+    }
+    return artefactNames
 }
 
-// Exclude HERE SDK's AAR from unit test's dependencies.
+// Exclude HERE SDK's AARs from unit test's dependencies.
 configurations.testImplementation {
-    exclude module: getHereSdkArtefactName()
+    getHereSdkArtefactNames().each { artefactName ->
+        exclude module: artefactName
+    }
 }
 
 dependencies {
-    // It's not possible to exclude an AAR file from dependencies
-    // when it was added using 'fileTree'
-    // as Gradle does not provide such a mechanism. Instead, below we load HERE SDK's AAR
-    // from a 'local' repository. The name can be hardcoded and is loaded with wildcards, for example:
-    // 'heresdk-explore-4.4.6.0.2841.release' is acceptable as file name.
-    implementation(name: getHereSdkArtefactName(), ext:'aar')
+    // It's not possible to exclude AAR files from dependencies
+    // when they were added using 'fileTree'
+    // as Gradle does not provide such a mechanism. Instead, below we load HERE SDK's AARs
+    // from a 'local' repository. The names can be hardcoded and are loaded with wildcards, for example:
+    // 'heresdk-explore-4.4.6.0.2841.release' and 'heresdk-units-core-release-v1.0' are acceptable as file names.
+    getHereSdkArtefactNames().each { artefactName ->
+        implementation(name: artefactName, ext:'aar')
+    }
 
     implementation 'androidx.appcompat:appcompat:1.3.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.1'

@@ -31,7 +31,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.here.navigationheadless.PermissionsRequestor.ResultListener;
 import com.here.sdk.core.LocationListener;
 import com.here.sdk.core.engine.AuthenticationMode;
 import com.here.sdk.core.engine.SDKNativeEngine;
@@ -48,6 +47,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import com.here.sdk.units.core.utils.EnvironmentLogger;
+import com.here.sdk.units.core.utils.PermissionsRequestor;
 
 // The Navigation Headless example app shows how the HERE SDK can be set up to navigate without
 // following a route in the simplest way without showing a map view. The app uses the `Navigator` class.
@@ -64,6 +65,7 @@ import java.io.InputStream;
 // In addition, a timer is shown to present the elapsed time while the example app is running.
 public class MainActivity extends AppCompatActivity {
 
+    private EnvironmentLogger environmentLogger = new EnvironmentLogger();
     private static final String TAG = MainActivity.class.getSimpleName();
     private PermissionsRequestor permissionsRequestor;
 
@@ -78,6 +80,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Log application and device details.
+        // It expects a string parameter that describes the application source language.
+        environmentLogger.logEnvironment("Java");
 
         // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
         if (SDKNativeEngine.getSharedInstance() == null) {
@@ -134,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void handleAndroidPermissions() {
         permissionsRequestor = new PermissionsRequestor(this);
-        permissionsRequestor.request(new ResultListener(){
+        permissionsRequestor.request(new PermissionsRequestor.ResultListener(){
 
             @Override
             public void permissionsGranted() {

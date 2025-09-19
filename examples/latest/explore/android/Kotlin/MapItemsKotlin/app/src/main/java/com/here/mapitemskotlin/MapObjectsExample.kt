@@ -18,7 +18,9 @@
  */
 package com.here.mapitemskotlin
 
+import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import com.here.sdk.core.Color
 import com.here.sdk.core.GeoCircle
 import com.here.sdk.core.GeoCoordinates
@@ -40,7 +42,7 @@ import com.here.sdk.mapview.MapView
 import com.here.sdk.mapview.RenderSize
 import com.here.time.Duration
 
-class MapObjectsExample(private val mapView: MapView) {
+class MapObjectsExample(private val context: Context, mapView: MapView) {
 
     private val BERLIN_GEO_COORDINATES: GeoCoordinates = GeoCoordinates(52.51760485151816, 13.380312380535472)
     private var mapScene: MapScene? = null
@@ -118,6 +120,8 @@ class MapObjectsExample(private val mapView: MapView) {
         // meaning the polyline is visible at minimumZoomLevel but not at maximumZoomLevel.
         // The polyline is rendered only when the map zoom level falls within any of the defined ranges.
         mapPolyline?.visibilityRanges = visibilityRanges
+
+        Toast.makeText(context, "Enabled visibility ranges for MapPolyLine", Toast.LENGTH_SHORT).show()
     }
 
     fun showMapArrow() {

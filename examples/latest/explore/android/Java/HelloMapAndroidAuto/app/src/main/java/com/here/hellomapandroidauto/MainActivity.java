@@ -25,16 +25,18 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 
-import com.here.hellomapandroidauto.PermissionsRequestor.ResultListener;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.mapview.MapError;
 import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
+import com.here.sdk.units.core.utils.EnvironmentLogger;
+import com.here.sdk.units.core.utils.PermissionsRequestor;
 
 public class MainActivity extends AppCompatActivity {
 
+    private EnvironmentLogger environmentLogger = new EnvironmentLogger();
     private static final String TAG = MainActivity.class.getSimpleName();
     private PermissionsRequestor permissionsRequestor;
     private MapView mapView;
@@ -42,6 +44,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Log application and device details.
+        // It expects a string parameter that describes the application source language.
+        environmentLogger.logEnvironment("Java");
 
         // Will perform actual initialization of HERE SDK only once during lifetime of application
         // (if it is not already initialized via HelloMapCarAppService).
@@ -68,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void handleAndroidPermissions() {
         permissionsRequestor = new PermissionsRequestor(this);
-        permissionsRequestor.request(new ResultListener(){
+        permissionsRequestor.request(new PermissionsRequestor.ResultListener(){
 
             @Override
             public void permissionsGranted() {

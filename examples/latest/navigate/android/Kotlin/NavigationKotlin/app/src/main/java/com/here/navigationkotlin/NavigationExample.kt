@@ -70,6 +70,12 @@ class NavigationExample(
             throw RuntimeException("Initialization of VisualNavigator failed: " + e.error.name)
         }
 
+        // By default, the MapView renders at 60 frames per second (fps).
+        // When turn-by-turn navigation is enabled via the VisualNavigator,
+        // the frame rate is reduced to 30 fps. This value can be customized;
+        // for example, it is set to 60 fps below.
+        visualNavigator.guidanceFrameRate = 60
+
         // This enables a navigation view including a rendered navigation arrow.
         visualNavigator.startRendering(mapView!!)
 

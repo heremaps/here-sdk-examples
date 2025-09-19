@@ -32,9 +32,12 @@ import com.here.sdk.core.errors.InstantiationErrorException
 import com.here.sdk.mapview.MapMeasure
 import com.here.sdk.mapview.MapScheme
 import com.here.sdk.mapview.MapView
+import com.here.sdk.units.core.utils.EnvironmentLogger
 
 class MainActivity : AppCompatActivity() {
 
+
+    private val environmentLogger = EnvironmentLogger()
     private var permissionsRequestor: PermissionsRequestor? = null
     private var mapView: MapView? = null
 
@@ -45,6 +48,10 @@ class MainActivity : AppCompatActivity() {
         // Before creating a MapView instance please make sure that the HERE SDK is initialized.
         // Since in this example we inflate the MapView from a layout, make sure to initialize
         // the HERE SDK before calling setContentView(...).
+
+        // Log application and device details.
+        // It expects a string parameter that describes the application source language.
+        environmentLogger.logEnvironment("Kotlin")
         initializeHERESDK()
 
         enableEdgeToEdge()

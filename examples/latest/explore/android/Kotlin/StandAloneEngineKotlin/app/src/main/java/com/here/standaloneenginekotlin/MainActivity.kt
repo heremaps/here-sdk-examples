@@ -46,9 +46,12 @@ import com.here.sdk.search.SearchEngine
 import com.here.sdk.search.SearchError
 import com.here.sdk.search.SearchOptions
 import com.here.standaloneenginekotlin.ui.theme.StandAloneEngineTheme
+import com.here.sdk.units.core.utils.EnvironmentLogger
 
 class MainActivity : ComponentActivity() {
 
+
+    private val environmentLogger = EnvironmentLogger()
     private lateinit var searchEngine: SearchEngine
     private var infoText by mutableStateOf("Info (see logs).")
 
@@ -57,6 +60,10 @@ class MainActivity : ComponentActivity() {
 
         // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
         // Before creating a MapView instance please make sure that the HERE SDK is initialized.
+
+        // Log application and device details.
+        // It expects a string parameter that describes the application source language.
+        environmentLogger.logEnvironment("Kotlin")
         initializeHERESDK()
 
         enableEdgeToEdge()

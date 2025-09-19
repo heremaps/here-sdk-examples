@@ -20,7 +20,6 @@
 package com.here.navigationkotlin
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -42,16 +41,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -63,16 +55,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.here.navigationkotlin.ui.theme.NavigationTheme
-import com.here.sdk.consent.ConsentActivity
 import com.here.sdk.core.engine.AuthenticationMode
 import com.here.sdk.core.engine.SDKNativeEngine
 import com.here.sdk.core.engine.SDKOptions
@@ -83,8 +72,11 @@ import com.here.sdk.mapview.MapFeatures
 import com.here.sdk.mapview.MapScene
 import com.here.sdk.mapview.MapScheme
 import com.here.sdk.mapview.MapView
+import com.here.sdk.units.core.utils.EnvironmentLogger
 
 class MainActivity: ComponentActivity() {
+
+    private val environmentLogger = EnvironmentLogger()
     private var permissionsRequestor: PermissionsRequestor? = null
     private var mapView: MapView? = null
     private var app: App? = null
@@ -94,6 +86,10 @@ class MainActivity: ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         // Needs to be called before the activity is started.
+
+        // Log application and device details.
+        // It expects a string parameter that describes the application source language.
+        environmentLogger.logEnvironment("Kotlin")
         permissionsRequestor = PermissionsRequestor(this)
 
         // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.

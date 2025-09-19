@@ -38,9 +38,12 @@ import com.here.sdk.mapview.MapView;
 
 import java.util.HashMap;
 import java.util.Map;
+import com.here.sdk.units.core.utils.EnvironmentLogger;
+import com.here.sdk.units.core.utils.PermissionsRequestor;
 
 public class MainActivity extends AppCompatActivity {
 
+    private EnvironmentLogger environmentLogger = new EnvironmentLogger();
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private PermissionsRequestor permissionsRequestor;
@@ -50,6 +53,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Log application and device details.
+        // It expects a string parameter that describes the application source language.
+        environmentLogger.logEnvironment("Java");
 
         // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
         initializeHERESDK();
@@ -113,9 +120,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Enable the PUBLIC_TRANSIT map feature to display public transit lines for subways, trams, trains, monorails, and ferries.
-    // Note that this API is only available with the Navigate License.
+    // Note that this API is only available with the Navigate license.
     private void enablePublicTransitFeatures() {
-        // Optionally, uncomment the following three lines when you are using the Navigate Edition:
+        // Optionally, uncomment the following three lines when you are using the Navigate license:
         // Map<String,String> mapFeatures = new HashMap<>();
         // mapFeatures.put(MapFeatures.PUBLIC_TRANSIT, MapFeatureModes.PUBLIC_TRANSIT_ALL);
         // mapView.getMapScene().enableFeatures(mapFeatures);

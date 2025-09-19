@@ -1,5 +1,7 @@
 The MapItems example app shows how to pin images, native views and 3D objects to mark specific spots on the map. You can find how this is done in [MapItemsExample.java](app/src/main/java/com/here/mapitems/MapItemsExample.java).
 
+This example uses HERE SDK Units for supporting functionality that isn’t essential to the code samples in this app. The units are included in the app’s libs folder. For more details, see the "HERESDKUnits" app.
+
 Build instructions:
 -------------------
 

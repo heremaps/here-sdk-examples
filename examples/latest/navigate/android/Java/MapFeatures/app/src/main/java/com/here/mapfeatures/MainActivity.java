@@ -48,9 +48,12 @@ import com.here.sdk.units.popupmenu.PopupMenuView;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import com.here.sdk.units.core.utils.EnvironmentLogger;
+import com.here.sdk.units.core.utils.PermissionsRequestor;
 
 public class MainActivity extends AppCompatActivity {
 
+    private EnvironmentLogger environmentLogger = new EnvironmentLogger();
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private PermissionsRequestor permissionsRequestor;
@@ -63,6 +66,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Log application and device details.
+        // It expects a string parameter that describes the application source language.
+        environmentLogger.logEnvironment("Java");
 
         // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
         initializeHERESDK();
@@ -92,7 +99,6 @@ public class MainActivity extends AppCompatActivity {
         mapViewGlobe.onCreate(savedInstanceState);
 
         // Use the HERE SDK Units library for a simple popup menu, see libs folder.
-        // HERE SDK Units are compiled with the HERESDKUnits app you can find in this repo.
         setMapFeaturesMenu();
         setMapSchemesMenu();
 

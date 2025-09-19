@@ -42,6 +42,8 @@ import com.here.sdk.search.SearchOptions;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.here.sdk.units.core.utils.EnvironmentLogger;
+import com.here.sdk.units.core.utils.PermissionsRequestor;
 
 /**
  * This example app shows that an engine can be used independently from a MapView,
@@ -50,6 +52,7 @@ import java.util.List;
  */
 public class MainActivity extends AppCompatActivity {
 
+    private EnvironmentLogger environmentLogger = new EnvironmentLogger();
     private static final String TAG = MainActivity.class.getName();
 
     private SearchEngine searchEngine;
@@ -58,6 +61,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Log application and device details.
+        // It expects a string parameter that describes the application source language.
+        environmentLogger.logEnvironment("Java");
 
         // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
         initializeHERESDK();

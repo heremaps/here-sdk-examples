@@ -24,12 +24,25 @@
 	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<true/>
+	<!-- Scene configuration -->
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
 		<true/>
 		<key>UISceneConfigurations</key>
 		<dict>
+			<!-- iPhone / iPad App Scene -->
+			<key>UIWindowSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneConfigurationName</key>
+					<string>Default Configuration</string>
+					<key>UISceneClassName</key>
+					<string>UIWindowScene</string>
+				</dict>
+			</array>
+
+			<!-- CarPlay App Scene -->
 			<key>CPTemplateApplicationSceneSessionRoleApplication</key>
 			<array>
 				<dict>
@@ -42,6 +55,15 @@
 				</dict>
 			</array>
 		</dict>
+	</dict>
+	<key>UIRequiresFullScreen</key>
+	<true/>
+	<!-- This tells iOS that the app is built for modern devices, allow fullscreen edge-to-edge rendering. 
+	Without this, iOS will run the app in "compatibility mode". -->
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIColorName</key>
+		<string>White</string>
 	</dict>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>

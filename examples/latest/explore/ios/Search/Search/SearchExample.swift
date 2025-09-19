@@ -190,9 +190,22 @@ class SearchExample: TapDelegate,
         geocodeAddressAtLocation(queryString: streetName, geoCoordinates: geoCoordinates)
     }
 
+    /**
+     * Performs a geocoding search for the given address string near a specific location.
+     *
+     * @param queryString     The address or place name to search for.
+     * @param geoCoordinates  The reference location used to narrow down search results
+     *
+     * This method clears the map, builds an AddressQuery with the provided parameters,
+     * configures search options (language and max results), and executes the geocoding
+     * request via the SearchEngine with a callback to handle results.
+     */
     private func geocodeAddressAtLocation(queryString: String, geoCoordinates: GeoCoordinates) {
         clearMap()
 
+        // The geoCoordinates act as a reference location to prioritize the search results.
+        // This helps the SearchEngine return addresses that are more relevant and closer to the user’s
+        // current location instead of global or less relevant matches.
         let query = AddressQuery(queryString, near: geoCoordinates)
         let geocodingOptions = SearchOptions(languageCode: LanguageCode.deDe,
                                              maxItems: 25)

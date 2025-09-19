@@ -339,9 +339,22 @@ public class SearchExample {
                 autosuggestCallback);
     }
 
+    /**
+     * Performs a geocoding search for the given address string near a specific location.
+     *
+     * @param queryString     The address or place name to search for.
+     * @param geoCoordinates  The reference location used to narrow down search results
+     *
+     * This method clears the map, builds an AddressQuery with the provided parameters,
+     * configures search options (language and max results), and executes the geocoding
+     * request via the SearchEngine with a callback to handle results.
+     */
     private void geocodeAddressAtLocation(String queryString, GeoCoordinates geoCoordinates) {
         clearMap();
 
+        // The geoCoordinates act as a reference location to prioritize the search results.
+        // This helps the SearchEngine return addresses that are more relevant and closer to the user’s
+        // current location instead of global or less relevant matches.
         AddressQuery query = new AddressQuery(queryString, geoCoordinates);
 
         SearchOptions options = new SearchOptions();
