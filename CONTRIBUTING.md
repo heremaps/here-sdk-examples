@@ -4,7 +4,7 @@ The team behind the [HERE SDK](https://github.com/heremaps/here-sdk-examples) gr
 [pull requests](https://help.github.com/articles/about-pull-requests/) filed against the
 [GitHub project](https://github.com/heremaps/here-sdk-examples/pulls).
 
-Thank you for taking the time to contribute.
+Thank you for taking the time to contribute!
 
 # Signing each commit
 
