@@ -75,7 +75,6 @@ class PermissionsRequestor(private val activity: Activity) {
                     ) != PackageManager.PERMISSION_GRANTED
                 ) {
                     val shouldAdd = when {
-                        Build.VERSION.SDK_INT == Build.VERSION_CODES.M && permission == Manifest.permission.CHANGE_NETWORK_STATE -> false
                         Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && permission == Manifest.permission.ACCESS_BACKGROUND_LOCATION -> false
                         else -> true
                     }

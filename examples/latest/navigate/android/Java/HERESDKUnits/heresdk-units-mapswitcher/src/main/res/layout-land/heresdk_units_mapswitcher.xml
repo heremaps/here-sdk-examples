@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <!-- Single row for landscape orientation -->
+    <LinearLayout
+        android:id="@+id/horizontal_row"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:weightSum="4"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Custom button 1 -->
+        <TextView
+            android:id="@+id/menu_item1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/satellite_scheme"
+            android:gravity="center"
+            android:drawablePadding="4dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"
+            android:layout_margin="4dp"
+            app:drawableTopCompat="@drawable/satellite_map_scheme" />
+
+        <!-- Custom button 2 -->
+        <TextView
+            android:id="@+id/menu_item2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/normal_day_scheme"
+            android:gravity="center"
+            android:drawablePadding="4dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"
+            android:layout_margin="4dp"
+            app:drawableTopCompat="@drawable/normal_map_scheme" />
+
+        <!-- Custom button 3 -->
+        <TextView
+            android:id="@+id/menu_item3"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/hybrid_day_scheme"
+            android:gravity="center"
+            android:drawablePadding="4dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"
+            android:layout_margin="4dp"
+            app:drawableTopCompat="@drawable/hybrid_map_scheme" />
+
+        <!-- Custom button 4 -->
+        <TextView
+            android:id="@+id/menu_item4"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/topo_day_scheme"
+            android:gravity="center"
+            android:drawablePadding="4dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"
+            android:layout_margin="4dp"
+            app:drawableTopCompat="@drawable/topo_day_scheme" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

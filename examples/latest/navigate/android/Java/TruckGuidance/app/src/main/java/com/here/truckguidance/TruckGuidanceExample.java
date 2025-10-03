@@ -260,6 +260,7 @@ public class TruckGuidanceExample {
         mapFeatures.put(MapFeatures.VEHICLE_RESTRICTIONS, MapFeatureModes.DEFAULT);
         mapFeatures.put(MapFeatures.ENVIRONMENTAL_ZONES, MapFeatureModes.DEFAULT);
         mapFeatures.put(MapFeatures.CONGESTION_ZONES, MapFeatureModes.DEFAULT);
+        mapFeatures.put(MapFeatures.TRUCK_PREFERRED_ROADS, MapFeatureModes.TRUCK_PREFERRED_ROADS_ALL);
         mapView.getMapScene().enableFeatures(mapFeatures);
     }
 

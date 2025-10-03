@@ -76,13 +76,14 @@
             <ListView
                 android:id="@+id/drawingList"
                 android:layout_width="180dp"
-                android:layout_height="300dp"
-                android:layout_marginRight="58dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="58dp"
                 android:layout_alignBottom="@+id/drawing_switcher_button"
                 android:layout_alignParentEnd="true"
                 android:divider="@null"
                 android:dividerHeight="0dp"
                 android:elevation="3dp"
+                android:padding="5dp"
                 android:background="@drawable/drawing_listview_background"/>
             <com.here.sdk.examples.venues.LevelSwitcher
                 xmlns:custom="http://schemas.android.com/apk/res-auto"

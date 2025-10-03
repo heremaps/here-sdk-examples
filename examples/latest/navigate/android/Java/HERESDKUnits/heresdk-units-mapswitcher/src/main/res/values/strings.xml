@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="satellite_scheme">Satellite Scheme</string>
+    <string name="normal_day_scheme">Normal Day Scheme</string>
+    <string name="hybrid_day_scheme">Hybrid Day Scheme</string>
+    <string name="topo_day_scheme">Topo Day Scheme</string>
+</resources>

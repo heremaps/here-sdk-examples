@@ -186,6 +186,7 @@ class TruckGuidanceExample {
       MapFeatures.vehicleRestrictions: MapFeatureModes.defaultMode,
       MapFeatures.environmentalZones: MapFeatureModes.defaultMode,
       MapFeatures.congestionZones: MapFeatureModes.defaultMode,
+      MapFeatures.truckPreferredRoads: MapFeatureModes.truckPreferredRoadsAll
     };
 
     _hereMapController.mapScene.enableFeatures(mapFeatures);

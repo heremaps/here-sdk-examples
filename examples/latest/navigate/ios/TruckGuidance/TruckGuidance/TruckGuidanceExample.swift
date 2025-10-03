@@ -201,6 +201,7 @@ class TruckGuidanceExample: TapDelegate,
         mapFeatures[MapFeatures.vehicleRestrictions] = MapFeatureModes.defaultMode
         mapFeatures[MapFeatures.environmentalZones] = MapFeatureModes.defaultMode
         mapFeatures[MapFeatures.congestionZones] = MapFeatureModes.defaultMode
+        mapFeatures[MapFeatures.truckPreferredRoads] = MapFeatureModes.truckPreferredRoadsAll
         mapView.mapScene.enableFeatures(mapFeatures)
     }
 

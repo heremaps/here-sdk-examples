@@ -66,12 +66,12 @@ public class MapFeaturesExample {
 
     public void enableCongestionZones() {
         mapFeatures.put(MapFeatures.CONGESTION_ZONES, MapFeatureModes.CONGESTION_ZONES_ALL);
-        mapScene.enableFeatures( mapFeatures);
+        mapScene.enableFeatures(mapFeatures);
     }
 
     public void enableEnvironmentalZones() {
         mapFeatures.put(MapFeatures.ENVIRONMENTAL_ZONES, MapFeatureModes.ENVIRONMENTAL_ZONES_ALL);
-        mapScene.enableFeatures( mapFeatures);
+        mapScene.enableFeatures(mapFeatures);
     }
 
     public void enableExtrudedBuildings() {
