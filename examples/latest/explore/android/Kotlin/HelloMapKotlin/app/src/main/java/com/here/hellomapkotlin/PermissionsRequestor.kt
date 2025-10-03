@@ -58,13 +58,6 @@ class PermissionsRequestor(private val activity: Activity) {
                     if (permissions != null) {
                         for (permission in permissions) {
                             if (ContextCompat.checkSelfPermission(activity, permission) != PackageManager.PERMISSION_GRANTED) {
-                                if (Build.VERSION.SDK_INT == Build.VERSION_CODES.M
-                                    && permission == Manifest.permission.CHANGE_NETWORK_STATE) {
-                                    // Exclude CHANGE_NETWORK_STATE as it does not require explicit user approval.
-                                    // This workaround is needed for devices running Android 6.0.0,
-                                    // see https://issuetracker.google.com/issues/37067994
-                                    continue
-                                }
                                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q &&
                                     permission == Manifest.permission.ACCESS_BACKGROUND_LOCATION) {
                                     continue

@@ -26,15 +26,20 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.here.sdk.core.GeoCircle;
 import com.here.sdk.core.GeoCoordinates;
+import com.here.sdk.core.GeoPolygon;
 import com.here.sdk.core.Location;
 import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.location.LocationAccuracy;
+import com.here.sdk.maploader.MapLoaderError;
 import com.here.sdk.mapview.MapView;
 import com.here.sdk.navigation.DynamicCameraBehavior;
 import com.here.sdk.navigation.SpeedBasedCameraBehavior;
 import com.here.sdk.navigation.VisualNavigator;
+import com.here.sdk.prefetcher.PolygonPrefetcher;
+import com.here.sdk.prefetcher.PrefetchStatusListener;
 import com.here.sdk.prefetcher.RoutePrefetcher;
 import com.here.sdk.routing.Route;
 import com.here.sdk.routing.RoutingError;
@@ -56,6 +61,7 @@ public class NavigationExample {
     private final HEREPositioningSimulator herePositioningSimulator;
     private DynamicRoutingEngine dynamicRoutingEngine;
     private RoutePrefetcher routePrefetcher;
+    private PolygonPrefetcher polygonPrefetcher;
     private final NavigationHandler navigationHandler;
     private final TextView messageView;
 
@@ -69,6 +75,7 @@ public class NavigationExample {
         // The RoutePrefetcher downloads map data in advance into the map cache.
         // This is not mandatory, but can help to improve the guidance experience.
         routePrefetcher = new RoutePrefetcher(SDKNativeEngine.getSharedInstance());
+        polygonPrefetcher = new PolygonPrefetcher(SDKNativeEngine.getSharedInstance());
 
         try {
             // Without a route set, this starts tracking mode.
@@ -102,13 +109,32 @@ public class NavigationExample {
     }
 
     private void prefetchMapData(GeoCoordinates currentGeoCoordinates) {
-        // Prefetches map data around the provided location with a radius of 2 km into the map cache.
-        // For the best experience, prefetchAroundLocationWithRadius() should be called as early as possible.
-        double radiusInMeters = 2000.0;
-        routePrefetcher.prefetchAroundLocationWithRadius(currentGeoCoordinates, radiusInMeters);
-        // Prefetches map data within a corridor along the route that is currently set to the provided Navigator instance.
-        // This happens continuously in discrete intervals.
+        // Prefetches map data around the provided location with a radius of 12 km into the map cache.
+        // For the best experience, prefetch() should be called as early as possible.
+
+        double radiusInMeters = 12000.0;
+
+        GeoCircle geoCircle = new GeoCircle(currentGeoCoordinates, radiusInMeters);
+        polygonPrefetcher.prefetch(new GeoPolygon(geoCircle), new PrefetchStatusListener() {
+            @Override
+            public void onProgress(int percentage) {
+                messageView.setText("Prefetch progress: " + percentage + "%");
+            }
+
+            @Override
+            public void onComplete(@Nullable MapLoaderError mapLoaderError) {
+                if (mapLoaderError == null) {
+                    messageView.setText("Prefetch completed successfully");
+                } else {
+                    messageView.setText("Prefetch failed: " + mapLoaderError);
+                }
+            }
+        });
+
+        // Prefetches map data within a fixed-length corridor of 10 km along the route that is currently set to the provided Navigator instance.
+        // This happens continuously in discrete intervals to fetch new corridors as the user is progressing along the route.
         // If no route is set, no data will be prefetched.
+        // Alternatively, it is also possible to prefetch an entire route in advance using prefetchGeoCorridor(...). 
         routePrefetcher.prefetchAroundRouteOnIntervals(visualNavigator);
     }
 

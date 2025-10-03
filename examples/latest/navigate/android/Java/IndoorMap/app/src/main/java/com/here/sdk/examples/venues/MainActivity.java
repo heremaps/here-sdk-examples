@@ -113,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar progressBar, progressBarBottom;
     private ToggleButton topologyButton;
 
-    // Set value for hrn with your platform catalog HRN value if you wan    t to load non default collection.
+    // Set value for hrn with your platform catalog HRN value if you want to load non default collection.
     private String HRN = "YOUR_CATALOG_HRN";
 
     //Label text preference as per user choice
@@ -775,6 +775,7 @@ public class MainActivity extends AppCompatActivity {
             }
             if(sheetBehavior.getState() != BottomSheetBehavior.STATE_COLLAPSED)
                 sheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+            venue_search.setText("");
         } catch (Exception e) {
             Log.d(TAG, "No Maps Found. " + e.toString());
         }

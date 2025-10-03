@@ -42,6 +42,24 @@ class MapItemsExample: TapDelegate {
         mapView.mapScene.loadScene(mapScheme: MapScheme.normalDay, completion: onLoadScene)
         
         showDialog(title: "Note", message: "You can tap 2D markers.")
+        
+        registerCustomFont()
+    }
+    
+    func registerCustomFont() {
+        // Register a custom font from the assets folder.
+        // Place the font file in the "assets" directory.
+        // Adjust file name and path as appropriate for your project.
+        let fontFileName = "SignTextNarrow_Bold.ttf"
+
+        // Make custom font assets available for use with MapImage.TextStyle.
+        // "SignTextNarrow_Bold" is the font name which needs to be referenced when
+        // creating a MapMarker, as shown in this example below.
+        // Supported font formats can be found in the API Reference.
+        // Use the asset folder or specify an absolute file path.
+        // You can register multiple fonts with different names. Repeated registration with the same font name is ignored.
+        let assetManager = AssetsManager(mapView.mapContext)
+        assetManager.registerFont(fontName: "SignTextNarrow_Bold", fontPath: fontFileName)
     }
     
     // Completion handler for loadScene().
@@ -122,7 +140,8 @@ class MapItemsExample: TapDelegate {
                 textColor: textStyleCurrent.textColor,
                 textOutlineSize: textOutlineSizeInPixels,
                 textOutlineColor: textStyleCurrent.textOutlineColor,
-                placements: placements
+                placements: placements,
+                fontName: "SignTextNarrow_Bold" // The font name as registered via assetsManager.registerFont above. If an empty string is provided or the asses is not found, a default font will be used.
             )
         } catch let error as MapMarker.TextStyle.InstantiationError {
             // An error code will indicate what went wrong, for example, when negative values are set for text size.

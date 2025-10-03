@@ -35,6 +35,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.here.sdk.venue.control.VenueDrawingSelectionListener;
 import com.here.sdk.venue.control.VenueSelectionListener;
@@ -56,6 +57,7 @@ public class DrawingSwitcher implements View.OnClickListener, AdapterView.OnItem
     private ImageButton titleView;
     private ListView listView;
     private boolean collapsed;
+    final private int maxRowsVisibleInList = 3;
 
     public DrawingSwitcher(Context context, ImageButton imageButton, ListView listView) {
 
@@ -138,42 +140,101 @@ public class DrawingSwitcher implements View.OnClickListener, AdapterView.OnItem
     // Sets a new venue for this DrawingSwitcher.
     private void setVenue(Venue venue) {
         this.venue = venue;
-        int count = 0;
-        int height = 0;
         ListAdapter listAdapter;
         if (this.venue != null) {
             // Get names of drawings.
             VenueModel venueModel = this.venue.getVenueModel();
             List<VenueDrawing> drawings = venueModel.getDrawings();
-            count = drawings.size();
             final List<String> drawingNames = new ArrayList<>();
             for (VenueDrawing drawing : drawings) {
                 drawingNames.add(getDrawingName(drawing));
+                Log.d("DrawingSwitcher", "Structure Name:" + getDrawingName(drawing));
             }
 
             // Set a name of the selected drawings
             String selectedDrawingName = getDrawingName(this.venue.getSelectedDrawing());
 
             // Set a new adapter with the new list of drawing's names.
-            final StringArrayAdapter adapter =
-                    new StringArrayAdapter(context, drawingNames);
-            ViewGroup.MarginLayoutParams margin = (ViewGroup.MarginLayoutParams) listView.getLayoutParams();
+            final StringArrayAdapter adapter = new StringArrayAdapter(context, drawingNames);
             listView.setAdapter(adapter);
-            listAdapter = listView.getAdapter();
-            for(int i=0; i<count; i++){
-                View childView = listAdapter.getView(i, null, listView);
-                childView.measure(View.MeasureSpec.makeMeasureSpec(0,
-                        View.MeasureSpec.UNSPECIFIED), View.MeasureSpec
-                        .makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
-                height += childView.getMeasuredHeight();
-            }
-            Log.d("DrawingSwitcher", "marginTop:" + margin.topMargin + " height: " + height);
-            margin.setMargins(margin.leftMargin, 1450 - height, margin.rightMargin, margin.bottomMargin);
+
+            // This Runnable gets called after the ListView has been measured
+            // and laid out. Then we calculate the height of listView.
+            listView.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (listView.getWidth() > 0) {
+                        setListViewHeight(drawings.size());
+                    } else {
+                        listView.post(this);
+                    }
+                }
+            });
             setCollapsed(true);
             setVisible(true);
         }
 
     }
+
+    //update the drawing switcher listView height according to adapter items.
+    private void setListViewHeight(int drawingListSize) {
+        ListAdapter listAdapter = listView.getAdapter();
+        if (listAdapter == null) {
+            return;
+        }
+
+        int totalHeight = 0;
+        totalHeight += listView.getPaddingTop() + listView.getPaddingBottom();
+
+        // row width = width - padding left - padding right.
+        int listViewWidth = Math.max(1, listView.getWidth() - listView.getPaddingLeft() - listView.getPaddingRight());
+        // Measure with exact width, unlimited height.
+        int widthSpec = View.MeasureSpec.makeMeasureSpec(listViewWidth, View.MeasureSpec.EXACTLY);
+        int heightSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+        int itemCount = Math.min(drawingListSize, maxRowsVisibleInList);
+
+        for (int i = 0; i < itemCount; i++) {
+            View listItem = listAdapter.getView(i, null, listView);
+            listItem.measure(widthSpec, heightSpec);
+
+            // this contains the padding as well.
+            int itemHeight = listItem.getMeasuredHeight();
+
+            // add top and bottom margin
+            ViewGroup.LayoutParams lp = listItem.getLayoutParams();
+            if (lp instanceof ViewGroup.MarginLayoutParams) {
+                ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) lp;
+                itemHeight += mlp.topMargin + mlp.bottomMargin;
+            }
+
+            totalHeight += itemHeight;
+        }
+
+        int dividerHeight = listView.getDividerHeight();
+        totalHeight += dividerHeight * (itemCount - 1);
+        ViewGroup.LayoutParams params = listView.getLayoutParams();
+
+        params.height = totalHeight;
+        listView.setLayoutParams(params);
+        Log.d("DrawingSwitcher", "ItemWidth:" + listViewWidth + " VisibleHeight: "
+                + totalHeight + " MaxRowVisible:" + maxRowsVisibleInList);
+
+        listView.post(() -> {
+            for (int indx = 0; indx < listView.getChildCount(); indx++) {
+                View row = listView.getChildAt(indx);
+                if (row != null) {
+                    TextView tv = row.findViewById(R.id.itemText);
+                    int lines = tv != null ? tv.getLineCount() : -1;
+                    Log.d("DrawingSwitcher", "setHeight:" + listView.getLayoutParams().height
+                            + ", actualListViewHeight:" + listView.getHeight() + ", rowHeight:"
+                            + row.getHeight() + ", textViewLines:" + lines + ", paddingTB:"
+                            + (listView.getPaddingTop() + listView.getPaddingBottom()) + ", childWidthAtRuntime:"
+                            + (listView.getWidth() - listView.getPaddingLeft() - listView.getPaddingRight()));
+                }
+            }
+        });
+    }
+
 
     // Updates the title with a new selected drawing.
     private void onDrawingSelected(final VenueDrawing selectedDrawing) {

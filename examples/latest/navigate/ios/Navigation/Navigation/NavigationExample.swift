@@ -32,6 +32,7 @@ class NavigationExample : DynamicRoutingDelegate, MessageDelegate {
     private let herePositioningProvider: HEREPositioningProvider
     private let herePositioningSimulator: HEREPositioningSimulator
     private let routePrefetcher: RoutePrefetcher
+    private let polygonPrefetcher: PolygonPrefetcher
     private let navigationHandler: NavigationHandler
     private let routeCalculator: RouteCalculator
     var messageDelegate: MessageDelegate?
@@ -65,6 +66,7 @@ class NavigationExample : DynamicRoutingDelegate, MessageDelegate {
         // The RoutePrefetcher downloads map data in advance into the map cache.
         // This is not mandatory, but can help to improve the guidance experience.
         routePrefetcher = RoutePrefetcher(SDKNativeEngine.sharedInstance!)
+        polygonPrefetcher = PolygonPrefetcher(SDKNativeEngine.sharedInstance!)
 
         // An engine to find better routes during guidance.
         dynamicRoutingEngine = NavigationExample.createDynamicRoutingEngine()
@@ -82,17 +84,44 @@ class NavigationExample : DynamicRoutingDelegate, MessageDelegate {
                                               // Choose a suitable accuracy for the tbt navigation use case.
                                               accuracy: .navigation)
     }
+    
+    private class MyPrefetchStatusListener: PrefetchStatusListener {
+        private var messageDelegate: MessageDelegate?
 
+        init(messageDelegate: MessageDelegate?) {
+            self.messageDelegate = messageDelegate
+        }
+
+        func onProgress(percentage: Int32) {
+            messageDelegate?.updateMessage("Prefetch progress: \(percentage)%")
+        }
+
+        func onComplete(error: MapLoaderError?) {
+            if let error = error {
+                messageDelegate?.updateMessage("Prefetch failed: \(error)")
+            } else {
+                messageDelegate?.updateMessage("Prefetch completed successfully")
+            }
+        }
+    }
+    
     private func prefetchMapData(currentGeoCoordinates: GeoCoordinates) {
-        // Prefetches map data around the provided location with a radius of 2 km into the map cache.
-        // For the best experience, prefetchAroundLocationWithRadius() should be called as early as possible.
-        routePrefetcher.prefetchAroundLocationWithRadius(currentLocation: currentGeoCoordinates, radiusInMeters: 2000.0)
-        // Prefetches map data within a corridor along the route that is currently set to the provided Navigator instance.
-        // This happens continuously in discrete intervals.
+        // Prefetches map data around the provided location with a radius of 12 km into the map cache.
+        // For the best experience, prefetch() should be called as early as possible.
+        let geoCircle = GeoCircle(center: currentGeoCoordinates, radiusInMeters: 12000.0)
+        
+        polygonPrefetcher.prefetch(
+                geoPolygon: GeoPolygon(geoCircle: geoCircle),
+                callback: { MyPrefetchStatusListener(messageDelegate: self.messageDelegate) }()
+            )
+
+        // Prefetches map data within a fixed-length corridor of 10 km along the route that is currently set to the provided Navigator instance.
+        // This happens continuously in discrete intervals to fetch new corridors as the user is progressing along the route.
         // If no route is set, no data will be prefetched.
+        // Alternatively, it is also possible to prefetch an entire route in advance using prefetchGeoCorridor(...).
         routePrefetcher.prefetchAroundRouteOnIntervals(navigator: visualNavigator)
     }
-
+    
     // Use this engine to periodically search for better routes during guidance, ie. when the traffic
     // situation changes.
     //
