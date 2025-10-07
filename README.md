@@ -1,4 +1,4 @@
-# HERE SDK 4.x (Lite, Explore & Navigate) - Examples for Android, iOS and Flutter
+# HERE SDK 4.x - Examples for Android, iOS and Flutter
 
 ![License](https://img.shields.io/badge/license-Apache%202-blue)
 ![Platform](https://img.shields.io/badge/platform-Android-green.svg)
@@ -20,9 +20,9 @@ The HERE SDK consumes data from the [HERE Platform](https://www.here.com/product
 
 For an overview of the existing features, please check the _Developer Guide_ for the platform of your choice. Here you will also find numerous code snippets, detailed tutorials, the _API Reference_ and the latest _Release Notes_:
 
-- Documentation for the HERE SDK for Android ([Lite](https://www.here.com/docs/category/here-sdk-ios-lite), [Explore](https://www.here.com/docs/bundle/sdk-for-android-explore-developer-guide/page/README.html), [Navigate](https://www.here.com/docs/bundle/sdk-for-android-navigate-developer-guide/page/README.html))
-- Documentation for the HERE SDK for iOS ([Explore](https://www.here.com/docs/bundle/sdk-for-ios-explore-developer-guide/page/README.html), [Navigate](https://www.here.com/docs/bundle/sdk-for-ios-navigate-developer-guide/page/README.html))
-- Documentation for the HERE SDK for Flutter ([Explore](https://www.here.com/docs/bundle/sdk-for-flutter-explore-developer-guide/page/README.html), [Navigate](https://www.here.com/docs/bundle/sdk-for-flutter-navigate-developer-guide/page/README.html))
+- Documentation for the [HERE SDK for Android](https://www.here.com/docs/bundle/sdk-for-android-developer-guide/page/README.html)
+- Documentation for the [HERE SDK for iOS](https://www.here.com/docs/bundle/sdk-for-ios-developer-guide/page/README.html)
+- Documentation for the [HERE SDK for Flutter](https://www.here.com/docs/bundle/sdk-for-flutter-developer-guide/page/README.html)
 
 > For now, HERE SDK (Navigate) is only available upon request. Please contact your HERE representative to receive access including a set of evaluation credentials.
 
@@ -36,7 +36,7 @@ For an overview of the existing features, please check the _Developer Guide_ for
 
 Find the [latest examples](examples/latest) for the license and platform of your choice:
 
-- Examples for the HERE SDK for Android ([Lite](examples/latest/lite/android/), [Explore](examples/latest/explore/android/), [Navigate](examples/latest/navigate/android/))
+- Examples for the HERE SDK for Android ([Explore](examples/latest/explore/android/), [Navigate](examples/latest/navigate/android/))
 - Examples for the HERE SDK for iOS ([Explore](examples/latest/explore/ios/), [Navigate](examples/latest/navigate/ios/))
 - Examples for the HERE SDK for Flutter ([Explore](examples/latest/explore/flutter/), [Navigate](examples/latest/navigate/flutter/))
 
