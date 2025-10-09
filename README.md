@@ -8,6 +8,8 @@
 
 In this repository you can find the [latest example apps](examples/latest) that show key features of the HERE SDK in ready-to-use applications.
 
+// Testing access
+
 ## About the HERE SDK
 
 The [HERE SDK](https://developer.here.com/products/here-sdk) enables you to build powerful location-aware applications. Explore maps that are fast and smooth to interact with, pan/zoom across map views of varying resolutions, and enable the display of various elements such as routes and POIs on highly customizable map views.
