@@ -64,3 +64,5 @@ Thank you for using the HERE SDK.
 Copyright (C) 2019-2025 HERE Europe B.V.
 
 See the [LICENSE](LICENSE) file in the root of this repository for license details.
+
+Adding new line for testing this
