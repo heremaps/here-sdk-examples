@@ -103,15 +103,16 @@ public class App {
         clearMap();
     }
 
-    public void toggleTrackingButtonOnClicked() {
+    public boolean toggleCameraTracking(){
+        if (isCameraTrackingEnabled){
+            isCameraTrackingEnabled = false;
+            navigationExample.stopCameraTracking();
+            return false;
+        }
         // By default, this is enabled.
         navigationExample.startCameraTracking();
         isCameraTrackingEnabled = true;
-    }
-
-    public void toggleTrackingButtonOffClicked() {
-        navigationExample.stopCameraTracking();
-        isCameraTrackingEnabled = false;
+        return true;
     }
 
     private void calculateRoute(boolean isSimulated) {

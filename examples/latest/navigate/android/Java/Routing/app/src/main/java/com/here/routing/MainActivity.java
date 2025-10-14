@@ -40,9 +40,13 @@ import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import com.here.sdk.units.core.utils.EnvironmentLogger;
 import com.here.sdk.units.core.utils.PermissionsRequestor;
+import com.here.sdk.units.core.views.UnitButton;
+import com.here.sdk.units.popupmenu.PopupMenuUnit;
+import com.here.sdk.units.popupmenu.PopupMenuView;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -70,7 +74,21 @@ public class MainActivity extends AppCompatActivity {
         mapView = findViewById(R.id.map_view);
         mapView.onCreate(savedInstanceState);
 
+        setUpPopupMenu();
+
         handleAndroidPermissions();
+    }
+
+    private void setUpPopupMenu() {
+        Map<String, Runnable> menuItems = new LinkedHashMap<>();
+        menuItems.put("Add Route", this::addRouteButtonClicked);
+        menuItems.put("Add Waypoints", this::addWaypointsButtonClicked);
+        menuItems.put("Update Traffic", this::updateTrafficOnRoute);
+        menuItems.put("Clear Map", this::clearMapButtonClicked);
+
+        PopupMenuView popupMenuView = findViewById(R.id.popup_menu_button1);
+        PopupMenuUnit popupMenuUnit = popupMenuView.popupMenuUnit;
+        popupMenuUnit.setMenuContent("Select Action", menuItems);
     }
 
     private void initializeHERESDK() {
@@ -126,24 +144,34 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void addRouteButtonClicked(View view) {
+    public void addRouteButtonClicked() {
         routingExample.addRoute();
     }
 
-    public void toggleTrafficOptimization(View view) {
+    public void toggleTrafficOptimization() {
         routingExample.toggleTrafficOptimization();
     }
 
-    public void addWaypointsButtonClicked(View view) {
+    public void addWaypointsButtonClicked() {
         routingExample.addWaypoints();
     }
 
-    public void clearMapButtonClicked(View view) {
+    public void clearMapButtonClicked() {
         routingExample.clearMap();
     }
 
-    public void updateTrafficOnRoute(View view) {
+    public void updateTrafficOnRoute() {
         routingExample.onUpdateTrafficOnRouteButtonClick();
+    }
+
+    public void onToggleTrackingClicked(View view) {
+        UnitButton unitButton = (UnitButton) view;
+        boolean status = routingExample.toggleTrafficOptimization();
+        if (status){
+            unitButton.setText("Traffic optimization: Off");
+        } else {
+            unitButton.setText("Traffic optimization: On");
+        }
     }
 
     @Override

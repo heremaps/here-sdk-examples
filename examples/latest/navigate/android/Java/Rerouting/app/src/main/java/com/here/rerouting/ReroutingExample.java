@@ -70,18 +70,17 @@ import com.here.sdk.navigation.RouteDeviationListener;
 import com.here.sdk.navigation.RouteProgress;
 import com.here.sdk.navigation.RouteProgressListener;
 import com.here.sdk.navigation.VisualNavigator;
-import com.here.sdk.routing.CalculateRouteCallback;
 import com.here.sdk.routing.CarOptions;
 import com.here.sdk.routing.LocalizedRoadNumber;
 import com.here.sdk.routing.Maneuver;
 import com.here.sdk.routing.ManeuverAction;
 import com.here.sdk.routing.RoadTexts;
-import com.here.sdk.routing.RoadType;
 import com.here.sdk.routing.Route;
 import com.here.sdk.routing.RoutingEngine;
 import com.here.sdk.routing.RoutingError;
 import com.here.sdk.routing.Section;
 import com.here.sdk.routing.Span;
+import com.here.sdk.routing.StreetAttributes;
 import com.here.sdk.routing.Waypoint;
 import com.here.time.Duration;
 
@@ -96,6 +95,7 @@ import java.util.Locale;
 // location source for the LocationSimulator.
 // This example also shows a maneuver panel with road shield icons.
 public class ReroutingExample {
+    public enum RoadType {HIGHWAY, RURAL, URBAN}
 
     private static final String TAG = ReroutingExample.class.getName();
 
@@ -365,7 +365,7 @@ public class ReroutingExample {
         }
 
         ManeuverAction action = nextManeuver.getAction();
-        String roadName = getRoadName(nextManeuver);
+        String roadName = getRoadName(nextManeuver, visualNavigator.getRoute());
         String distanceText = convertDistance(nextManeuverProgress.remainingDistanceInMeters);
         String maneuverText = action.name() + " on " + roadName + " in " + distanceText;
 
@@ -394,7 +394,7 @@ public class ReroutingExample {
         }
     }
 
-    private String getRoadName(Maneuver maneuver) {
+    private String getRoadName(Maneuver maneuver, Route route) {
         RoadTexts currentRoadTexts = maneuver.getRoadTexts();
         RoadTexts nextRoadTexts = maneuver.getNextRoadTexts();
 
@@ -407,7 +407,7 @@ public class ReroutingExample {
 
         // On highways, we want to show the highway number instead of a possible road name,
         // while for inner city and urban areas road names are preferred over road numbers.
-        if (maneuver.getNextRoadType() == RoadType.HIGHWAY) {
+        if (getRoadType(maneuver, route) == RoadType.HIGHWAY) {
             roadName = nextRoadNumber == null ? nextRoadName : nextRoadNumber;
         }
 
@@ -422,6 +422,38 @@ public class ReroutingExample {
         }
 
         return roadName;
+    }
+
+    // Determines the road type for a given maneuver based on street attributes.
+    // Return The road type classification (HIGHWAY, URBAN, RURAL, or UNDEFINED).
+    private RoadType getRoadType(Maneuver maneuver, Route route) {
+        Section sectionOfManeuver = route.getSections().get(maneuver.getSectionIndex());
+        List<Span> spansInSection = sectionOfManeuver.getSpans();
+
+        // If attributes list is empty then the road type is rural.
+        if(spansInSection.isEmpty()) {
+            return RoadType.RURAL;
+        }
+
+        Span currentSpan = spansInSection.get(maneuver.getSpanIndex());
+        List<StreetAttributes> streetAttributes = currentSpan.getStreetAttributes();
+
+        // If attributes list contains either CONTROLLED_ACCESS_HIGHWAY, or MOTORWAY or RAMP then the road type is highway.
+        // Check for highway attributes (highest priority)
+        if (streetAttributes.contains(StreetAttributes.CONTROLLED_ACCESS_HIGHWAY)
+                || streetAttributes.contains(StreetAttributes.MOTORWAY)
+                || streetAttributes.contains(StreetAttributes.RAMP)) {
+            return RoadType.HIGHWAY;
+        }
+
+        // If attributes list contains BUILT_UP_AREA then the road type is urban.
+        // Check for urban attributes (second priority)
+        if (streetAttributes.contains(StreetAttributes.BUILT_UP_AREA)) {
+            return RoadType.URBAN;
+        }
+
+        // If the road type is neither urban nor highway, default to rural for all other cases.
+        return RoadType.RURAL;
     }
 
     @Nullable

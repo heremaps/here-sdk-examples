@@ -29,6 +29,7 @@ import androidx.appcompat.app.AlertDialog;
 import com.here.sdk.core.Color;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.GeoPolyline;
+import com.here.sdk.core.LocalizedText;
 import com.here.sdk.core.Point2D;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.core.threading.TaskHandle;
@@ -50,6 +51,8 @@ import com.here.sdk.routing.Maneuver;
 import com.here.sdk.routing.ManeuverAction;
 import com.here.sdk.routing.PaymentMethod;
 import com.here.sdk.routing.Route;
+import com.here.sdk.routing.RouteLabel;
+import com.here.sdk.routing.RouteLabelType;
 import com.here.sdk.routing.RoutePlace;
 import com.here.sdk.routing.RouteRailwayCrossing;
 import com.here.sdk.routing.RoutingEngine;
@@ -70,7 +73,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 
 public class RoutingExample {
 
@@ -83,7 +85,7 @@ public class RoutingExample {
     private final RoutingEngine routingEngine;
     private GeoCoordinates startGeoCoordinates;
     private GeoCoordinates destinationGeoCoordinates;
-    private boolean trafficDisabled;
+    private boolean trafficEnabled;
     private final TimeUtils timeUtils;
     private Route currentRoute;
     private static final double OFFROAD_DISTANCE_THRESHOLD_METERS = 500.0;
@@ -147,6 +149,7 @@ public class RoutingExample {
                             logRouteSectionDetails(currentRoute);
                             logRouteViolations(currentRoute);
                             logTollDetails(currentRoute);
+                            logRouteLabels(currentRoute);
                         } else {
                             showDialog("Error while calculating a route:", routingError.toString());
                         }
@@ -173,12 +176,13 @@ public class RoutingExample {
         }
     }
 
-    public void toggleTrafficOptimization() {
-        trafficDisabled = !trafficDisabled;
+    public boolean toggleTrafficOptimization() {
+        trafficEnabled = !trafficEnabled;
         if (!waypoints.isEmpty()) {
             calculateRoute(waypoints);
         }
-        Toast.makeText(context, "Traffic optimization is " + (trafficDisabled ? "Disabled" : "Enabled"), Toast.LENGTH_LONG).show();
+        Toast.makeText(context, "Traffic optimization is " + (trafficEnabled ? "Enabled" : "Disabled"), Toast.LENGTH_LONG).show();
+        return trafficEnabled;
     }
 
 
@@ -241,6 +245,23 @@ public class RoutingExample {
                     }
                 }
             }
+        }
+    }
+
+    private void logRouteLabels(Route route) {
+        // Get the list of the street names or route numbers through which the route is going to pass.
+        // Make sure to enable this feature via routeOptions.enableRouteLabels (see below).
+        List<RouteLabel> routeLabels = route.getRouteLabels();
+
+        if (routeLabels.isEmpty()) {
+            Log.d(TAG, "No route labels found for this route.");
+            return;
+        }
+
+        for (RouteLabel routeLabel : routeLabels) {
+            LocalizedText name = routeLabel.name;
+            RouteLabelType routeLabelType = routeLabel.type;
+            Log.d(TAG, "Route label: " + name.text + ", Type: " + routeLabelType.name());
         }
     }
 
@@ -409,9 +430,13 @@ public class RoutingExample {
 
         // Disabled - Traffic optimization is completely disabled, including long-term road closures. It helps in producing stable routes.
         // Time dependent - Traffic optimization is enabled, the shape of the route will be adjusted according to the traffic situation which depends on departure time and arrival time.
-        carOptions.routeOptions.trafficOptimizationMode = trafficDisabled ?
-                TrafficOptimizationMode.DISABLED :
-                TrafficOptimizationMode.TIME_DEPENDENT;
+        carOptions.routeOptions.trafficOptimizationMode = trafficEnabled ?
+                TrafficOptimizationMode.TIME_DEPENDENT :
+                TrafficOptimizationMode.DISABLED;
+
+        // Specifies whether route labels should be included in the route response.
+        carOptions.routeOptions.enableRouteLabels = true;
+
         return carOptions;
     }
 
@@ -478,7 +503,7 @@ public class RoutingExample {
     }
 
     public void updateTrafficOnRoute(Route route) {
-        if (trafficDisabled) {
+        if (!trafficEnabled) {
             showDialog("Traffic", "Disabled traffic optimization.");
             return;
         }

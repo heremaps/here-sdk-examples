@@ -108,7 +108,9 @@ class NavigationExample : DynamicRoutingDelegate, MessageDelegate {
     private func prefetchMapData(currentGeoCoordinates: GeoCoordinates) {
         // Prefetches map data around the provided location with a radius of 12 km into the map cache.
         // For the best experience, prefetch() should be called as early as possible.
-        let geoCircle = GeoCircle(center: currentGeoCoordinates, radiusInMeters: 12000.0)
+        // Note that prefetchAroundRouteOnIntervals starts 1 km before reaching the end of the current corridor of 10 km (see below). 
+        // Hence, for the first part of the route it is recommended to use the PolygonPrefetcher to cover the start of the route.
+        let geoCircle = GeoCircle(center: currentGeoCoordinates, radiusInMeters: 10000.0)
         
         polygonPrefetcher.prefetch(
                 geoPolygon: GeoPolygon(geoCircle: geoCircle),

@@ -45,10 +45,12 @@ import com.here.sdk.routing.CalculateTrafficOnRouteCallback;
 import com.here.sdk.routing.Maneuver;
 import com.here.sdk.routing.ManeuverAction;
 import com.here.sdk.routing.RoadTexts;
-import com.here.sdk.routing.RoadType;
 import com.here.sdk.routing.Route;
 import com.here.sdk.routing.RoutingEngine;
 import com.here.sdk.routing.RoutingError;
+import com.here.sdk.routing.Section;
+import com.here.sdk.routing.Span;
+import com.here.sdk.routing.StreetAttributes;
 import com.here.sdk.routing.TrafficOnRoute;
 import com.here.sdk.trafficawarenavigation.DynamicRoutingEngine;
 
@@ -58,6 +60,7 @@ import java.util.Locale;
 // This class handles voice navigation along with handling other events such as updating traffic on the route.
 // Note that this class does not show an exhaustive list of all possible events.
 public class NavigationHandler {
+    public enum RoadType {HIGHWAY, RURAL, URBAN}
 
     private static final String TAG = NavigationHandler.class.getName();
 
@@ -115,7 +118,7 @@ public class NavigationHandler {
                 }
 
                 ManeuverAction action = nextManeuver.getAction();
-                String roadName = getRoadName(nextManeuver);
+                String roadName = getRoadName(nextManeuver, visualNavigator.getRoute());
                 String logMessage = action.name() + " on " + roadName +
                         " in " + nextManeuverProgress.remainingDistanceInMeters + " meters.";
 
@@ -233,7 +236,7 @@ public class NavigationHandler {
         return languageCodeForCurrenDevice;
     }
 
-    private String getRoadName(Maneuver maneuver) {
+    private String getRoadName(Maneuver maneuver, Route route) {
         RoadTexts currentRoadTexts = maneuver.getRoadTexts();
         RoadTexts nextRoadTexts = maneuver.getNextRoadTexts();
 
@@ -246,7 +249,7 @@ public class NavigationHandler {
 
         // On highways, we want to show the highway number instead of a possible road name,
         // while for inner city and urban areas road names are preferred over road numbers.
-        if (maneuver.getNextRoadType() == RoadType.HIGHWAY) {
+        if (getRoadType(maneuver, route) == RoadType.HIGHWAY) {
             roadName = nextRoadNumber == null ? nextRoadName : nextRoadNumber;
         }
 
@@ -261,6 +264,38 @@ public class NavigationHandler {
         }
 
         return roadName;
+    }
+
+    // Determines the road type for a given maneuver based on street attributes.
+    // Return The road type classification (HIGHWAY, URBAN, RURAL, or UNDEFINED).
+    private RoadType getRoadType(Maneuver maneuver, Route route) {
+        Section sectionOfManeuver = route.getSections().get(maneuver.getSectionIndex());
+        List<Span> spansInSection = sectionOfManeuver.getSpans();
+
+        // If attributes list is empty then the road type is rural.
+        if(spansInSection.isEmpty()) {
+            return RoadType.RURAL;
+        }
+
+        Span currentSpan = spansInSection.get(maneuver.getSpanIndex());
+        List<StreetAttributes> streetAttributes = currentSpan.getStreetAttributes();
+
+        // If attributes list contains either CONTROLLED_ACCESS_HIGHWAY, or MOTORWAY or RAMP then the road type is highway.
+        // Check for highway attributes.
+        if (streetAttributes.contains(StreetAttributes.CONTROLLED_ACCESS_HIGHWAY)
+                || streetAttributes.contains(StreetAttributes.MOTORWAY)
+                || streetAttributes.contains(StreetAttributes.RAMP)) {
+            return RoadType.HIGHWAY;
+        }
+
+        // If attributes list contains BUILT_UP_AREA then the road type is urban.
+        // Check for urban attributes.
+        if (streetAttributes.contains(StreetAttributes.BUILT_UP_AREA)) {
+            return RoadType.URBAN;
+        }
+
+        // If the road type is neither urban nor highway, default to rural for all other cases.
+        return RoadType.RURAL;
     }
 
     // Periodically updates the traffic information for the current route.

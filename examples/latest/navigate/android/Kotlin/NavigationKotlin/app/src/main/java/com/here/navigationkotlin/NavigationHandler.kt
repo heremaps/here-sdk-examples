@@ -37,9 +37,12 @@ import com.here.sdk.navigation.VisualNavigator
 import com.here.sdk.routing.CalculateTrafficOnRouteCallback
 import com.here.sdk.routing.Maneuver
 import com.here.sdk.routing.ManeuverAction
-import com.here.sdk.routing.RoadType
+import com.here.sdk.routing.Route
 import com.here.sdk.routing.RoutingEngine
 import com.here.sdk.routing.RoutingError
+import com.here.sdk.routing.Section
+import com.here.sdk.routing.Span
+import com.here.sdk.routing.StreetAttributes
 import com.here.sdk.routing.TrafficOnRoute
 import com.here.sdk.trafficawarenavigation.DynamicRoutingEngine
 import java.util.Locale
@@ -50,6 +53,10 @@ class NavigationHandler(
     private val context: Context?,
     private val messageView: MessageViewUpdater
 ) {
+    enum class RoadType {
+        HIGHWAY, RURAL, URBAN
+    }
+
     private var previousManeuverIndex = -1
     private var lastMapMatchedLocation: MapMatchedLocation? = null
 
@@ -95,7 +102,7 @@ class NavigationHandler(
                     return@RouteProgressListener
 
                 val action = nextManeuver.action
-                val roadName = getRoadName(nextManeuver)
+                val roadName = getRoadName(nextManeuver, visualNavigator.route)
                 val logMessage = action.name + " on " + roadName + " in " + nextManeuverProgress.remainingDistanceInMeters + " meters."
 
                 // Angle is null for some maneuvers like Depart, Arrive and Roundabout.
@@ -254,7 +261,7 @@ class NavigationHandler(
         return languageCodeForCurrenDevice
     }
 
-    private fun getRoadName(maneuver: Maneuver): String {
+    private fun getRoadName(maneuver: Maneuver, route: Route?): String {
         val currentRoadTexts = maneuver.roadTexts
         val nextRoadTexts = maneuver.nextRoadTexts
 
@@ -265,10 +272,12 @@ class NavigationHandler(
 
         var roadName = nextRoadName ?: nextRoadNumber
 
-        // On highways, we want to show the highway number instead of a possible road name,
-        // while for inner city and urban areas road names are preferred over road numbers.
-        if (maneuver.nextRoadType == RoadType.HIGHWAY) {
-            roadName = nextRoadNumber ?: nextRoadName
+        route?.let {
+            // On highways, we want to show the highway number instead of a possible road name,
+            // while for inner city and urban areas road names are preferred over road numbers.
+            if (getRoadType(maneuver, route) == RoadType.HIGHWAY) {
+                roadName = nextRoadNumber ?: nextRoadName
+            }
         }
 
         if (maneuver.action == ManeuverAction.ARRIVE) {
@@ -282,6 +291,44 @@ class NavigationHandler(
         }
 
         return roadName
+    }
+
+    // Determines the road type for a given maneuver based on street attributes.
+    // Return The road type classification (HIGHWAY, URBAN, RURAL, or UNDEFINED).
+    private fun getRoadType(maneuver: Maneuver, route: Route): RoadType {
+        val sectionOfManeuver: Section = route.sections[maneuver.sectionIndex]
+        val spansInSection: List<Span?> = sectionOfManeuver.spans
+
+        // If attributes list is empty then the road type is rural.
+        if (spansInSection.isEmpty()) {
+            return RoadType.RURAL
+        }
+
+        val currentSpan: Span? = spansInSection[maneuver.spanIndex]
+        val streetAttributes: List<StreetAttributes>? = currentSpan?.streetAttributes
+
+        // If attributes are not accessible then defaulting to rural road type.
+        if (currentSpan == null || streetAttributes == null) {
+            return RoadType.RURAL
+        }
+
+        // If attributes list contains either CONTROLLED_ACCESS_HIGHWAY, or MOTORWAY or RAMP then the road type is highway.
+        // Check for highway attributes.
+        if (streetAttributes.contains(StreetAttributes.CONTROLLED_ACCESS_HIGHWAY)
+            || streetAttributes.contains(StreetAttributes.MOTORWAY)
+            || streetAttributes.contains(StreetAttributes.RAMP)
+        ) {
+            return RoadType.HIGHWAY
+        }
+
+        // If attributes list contains BUILT_UP_AREA then the road type is urban.
+        // Check for urban attributes.
+        if (streetAttributes.contains(StreetAttributes.BUILT_UP_AREA)) {
+            return RoadType.URBAN
+        }
+
+        // If the road type is neither urban nor highway, default to rural for all other cases.
+        return RoadType.RURAL
     }
 
     // Periodically updates the traffic information for the current route.
