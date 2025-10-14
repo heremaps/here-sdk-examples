@@ -25,7 +25,7 @@ android {
 
 // Use the mock JAR when executing unit tests and the real HERE SDK AARs when building the app.
 def getHereSdkArtefactNames() {
-    def aarFiles = fileTree(dir: 'libs', include: ['heresdk-*.aar'])
+    def aarFiles = fileTree(dir: 'libs', include: ['*.aar'])
     def artefactNames = []
     aarFiles.each { file ->
         // Filename without extension is necessary.

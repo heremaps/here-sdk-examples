@@ -48,6 +48,7 @@ import com.here.sdk.mapview.MapCameraAnimation;
 import com.here.sdk.mapview.MapCameraAnimationFactory;
 import com.here.sdk.mapview.MapCameraUpdate;
 import com.here.sdk.mapview.MapCameraUpdateFactory;
+import com.here.sdk.mapview.MapContentSettings;
 import com.here.sdk.mapview.MapFeatureModes;
 import com.here.sdk.mapview.MapFeatures;
 import com.here.sdk.mapview.MapImage;
@@ -95,8 +96,10 @@ import com.here.sdk.search.SearchError;
 import com.here.sdk.search.SearchOptions;
 import com.here.sdk.search.TruckAmenities;
 import com.here.sdk.transport.HazardousMaterial;
+import com.here.sdk.transport.TransportMode;
 import com.here.sdk.transport.TruckSpecifications;
 import com.here.sdk.transport.TruckType;
+import com.here.sdk.transport.TunnelCategory;
 import com.here.sdk.transport.VehicleProfile;
 import com.here.sdk.transport.VehicleType;
 import com.here.time.Duration;
@@ -186,6 +189,10 @@ public class TruckGuidanceExample {
         transportProfile.vehicleProfile = createVehicleProfile();
         visualNavigator.setTrackingTransportProfile(transportProfile);
 
+        // Optionally, set a filter to configure which icons to show for MapFeatures.VEHICLE_RESTRICTIONS.
+        // By default, all icons are shown.
+        // configureVehicleRestrictionFilter();
+
         enableLayers();
         setTapGestureHandler();
         setupListeners();
@@ -245,6 +252,25 @@ public class TruckGuidanceExample {
         truckSpecifications.trailerCount = MyTruckSpecs.trailerCount;
         truckSpecifications.truckType = MyTruckSpecs.truckType;
         return truckSpecifications;
+    }
+
+    // Configure the displayed vehicle restrictions.
+    // Only the specified types will be shown. For example, when TRUCK is set, then only
+    // icons applicable for trucks are displayed. 
+    // TunnelCategory belongs to the HazardousMaterial.
+    // Tunnels are categorized from B (low risk, few restrictions) to E (high risk)
+    // based on their safety features and the potential danger posed by the goods
+    // transported through them.
+    private void configureVehicleRestrictionFilter() {
+        List<HazardousMaterial> hazardousMaterials = new ArrayList<>();
+        hazardousMaterials.add(HazardousMaterial.EXPLOSIVE);
+        hazardousMaterials.add(HazardousMaterial.FLAMMABLE);
+        
+        MapContentSettings.configureVehicleRestrictionFilter(
+                TransportMode.TRUCK,
+                createTruckSpecifications(),
+                hazardousMaterials,
+                TunnelCategory.B);
     }
 
     public void setUICallback(MainActivity.UICallback callback) {

@@ -1,4 +1,4 @@
 include ':app'
-include ':heresdk-units-core'
-include ':heresdk-units-popupmenu'
-include ':heresdk-units-mapswitcher'
+include ':here-sdk-units-core'
+include ':here-sdk-units-popupmenu'
+include ':here-sdk-units-mapswitcher'

@@ -168,6 +168,9 @@ class RoutingExample {
         ? TrafficOptimizationMode.timeDependent
         : TrafficOptimizationMode.disabled;
 
+    // Specifies whether route labels should be included in the route response.
+    carOptions.routeOptions.enableRouteLabels = true;
+
     _currentRouteCalculationTask = _routingEngine.calculateCarRoute(waypoints, carOptions, (
       RoutingError? routingError,
       List<here.Route>? routeList,
@@ -182,6 +185,7 @@ class RoutingExample {
         _logRouteSectionDetails(route);
         _logRouteViolations(route);
         _logTollDetails(route);
+        _logRouteLabels(route);
         _animateToRoute(route);
       } else {
         var error = routingError.toString();
@@ -240,6 +244,22 @@ class RoutingExample {
           }
         }
       }
+    }
+  }
+
+  void _logRouteLabels(here.Route route) {
+    // Get the list of the street names or route numbers through which the route is going to pass.
+    // Make sure to enable this feature via routeOptions.enableRouteLabels (see below).
+    List<RouteLabel> routeLabels = route.routeLabels;
+
+    if (routeLabels.isEmpty) {
+      print("No route labels found for this route.");
+    }
+
+    for (RouteLabel routeLabel in routeLabels) {
+      LocalizedText name = routeLabel.name;
+      RouteLabelType routeLabelType = routeLabel.type;
+      print("Route label: ${name.text}, type: $routeLabelType");
     }
   }
 

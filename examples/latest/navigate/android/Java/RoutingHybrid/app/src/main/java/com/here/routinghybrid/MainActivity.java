@@ -39,9 +39,12 @@ import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import com.here.sdk.units.core.utils.EnvironmentLogger;
 import com.here.sdk.units.core.utils.PermissionsRequestor;
+import com.here.sdk.units.popupmenu.PopupMenuUnit;
+import com.here.sdk.units.popupmenu.PopupMenuView;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -69,7 +72,23 @@ public class MainActivity extends AppCompatActivity {
         mapView = findViewById(R.id.map_view);
         mapView.onCreate(savedInstanceState);
 
+        setUpPopupMenu();
+
         handleAndroidPermissions();
+    }
+
+    private void setUpPopupMenu() {
+        Map<String, Runnable> menuItems = new LinkedHashMap<>();
+        menuItems.put("Add Route", this::addRouteButtonClicked);
+        menuItems.put("Add Waypoints", this::addWaypointsButtonClicked);
+        menuItems.put("Load Segments", this::loadSegmentDataButtonClicked);
+        menuItems.put("Switch Online", this::switchOnlineButtonClicked);
+        menuItems.put("Switch Offline", this::switchOfflineButtonClicked);
+        menuItems.put("Clear Map", this::clearMapButtonClicked);
+
+        PopupMenuView popupMenuView = findViewById(R.id.popup_menu_button1);
+        PopupMenuUnit popupMenuUnit = popupMenuView.popupMenuUnit;
+        popupMenuUnit.setMenuContent("Select Action", menuItems);
     }
 
     private void initializeHERESDK() {
@@ -129,25 +148,25 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void addRouteButtonClicked(View view) {
+    public void addRouteButtonClicked() {
         routingExample.addRoute();
     }
 
-    public void addWaypointsButtonClicked(View view) {
+    public void addWaypointsButtonClicked() {
         routingExample.addWaypoints();
     }
 
-    public void clearMapButtonClicked(View view) {
+    public void clearMapButtonClicked() {
         routingExample.clearMap();
     }
 
-    public void loadSegmentDataButtonClicked(View view) {routingExample.loadAndProcessSegmentData();}
+    public void loadSegmentDataButtonClicked() {routingExample.loadAndProcessSegmentData();}
 
-    public void switchOnlineButtonClicked(View view) {
+    public void switchOnlineButtonClicked() {
         routingExample.onSwitchOnlineButtonClicked();
     }
 
-    public void switchOfflineButtonClicked(View view) {
+    public void switchOfflineButtonClicked() {
         routingExample.onSwitchOfflineButtonClicked();
     }
 

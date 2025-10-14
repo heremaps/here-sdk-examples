@@ -20,7 +20,6 @@
 package com.here.navigation;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
@@ -48,9 +47,13 @@ import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import com.here.sdk.units.core.utils.EnvironmentLogger;
 import com.here.sdk.units.core.utils.PermissionsRequestor;
+import com.here.sdk.units.core.views.UnitButton;
+import com.here.sdk.units.popupmenu.PopupMenuUnit;
+import com.here.sdk.units.popupmenu.PopupMenuView;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -91,18 +94,7 @@ public class MainActivity extends AppCompatActivity {
 
         mapView.onCreate(savedInstanceState);
 
-        ToggleButton toggleTrackingButton = findViewById(R.id.toggleTrackingButton);
-        toggleTrackingButton.setTextOn("Camera Tracking: ON");
-        toggleTrackingButton.setTextOff("Camera Tracking: OFF");
-        toggleTrackingButton.setChecked(true);
-        toggleTrackingButton.setOnClickListener(v -> {
-            if (app == null) return;
-            if (toggleTrackingButton.isChecked()) {
-                app.toggleTrackingButtonOnClicked();
-            } else {
-                app.toggleTrackingButtonOffClicked();
-            }
-        });
+        setUpPopupMenu();
 
         // Shows an example of how to present application terms and a privacy policy dialog as
         // required by legal requirements when using HERE Positioning.
@@ -110,6 +102,18 @@ public class MainActivity extends AppCompatActivity {
         // Afterwards, Android permissions need to be checked to allow using the device's sensors.
         HEREPositioningTermsAndPrivacyHelper privacyHelper = new HEREPositioningTermsAndPrivacyHelper(this);
         privacyHelper.showAppTermsAndPrivacyPolicyDialogIfNeeded(this::handleAndroidPermissions);
+    }
+
+    private void setUpPopupMenu() {
+        // Define menu items with the code that should be executed when clicking on the item.
+        Map<String, Runnable> menuItems = new LinkedHashMap<>();
+        menuItems.put("Add Route (Simulated Location)", this::addRouteSimulatedLocationButtonClicked);
+        menuItems.put("Add Route (Device Location)", this::addRouteDeviceLocationButtonClicked);
+        menuItems.put("Clear Map / Stop Navigation", () -> clearMapButtonClicked());
+
+        PopupMenuView popupMenuView = findViewById(R.id.popup_menu_button1);
+        PopupMenuUnit popupMenuUnit = popupMenuView.popupMenuUnit;
+        popupMenuUnit.setMenuContent("Select Action", menuItems);
     }
 
     private void initializeHERESDK() {
@@ -170,21 +174,32 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void addRouteSimulatedLocationButtonClicked(View view) {
+    public void addRouteSimulatedLocationButtonClicked() {
         if (app != null) {
             app.addRouteSimulatedLocation();
         }
     }
 
-    public void addRouteDeviceLocationButtonClicked(View view) {
+    public void addRouteDeviceLocationButtonClicked() {
         if (app != null) {
             app.addRouteDeviceLocation();
         }
     }
 
-    public void clearMapButtonClicked(View view) {
+    public void clearMapButtonClicked() {
         if (app != null) {
             app.clearMapButtonPressed();
+        }
+    }
+
+    public void onToggleTrackingClicked(View view) {
+        UnitButton button = (UnitButton) view;
+        if (app == null) return;
+        boolean status = app.toggleCameraTracking();
+        if (status){
+            button.setText("Camera Tracking: ON");
+        } else {
+            button.setText("Camera Tracking: OFF");
         }
     }
 

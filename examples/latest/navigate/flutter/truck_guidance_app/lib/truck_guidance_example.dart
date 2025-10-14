@@ -112,6 +112,10 @@ class TruckGuidanceExample {
     transportProfile.vehicleProfile = _createVehicleProfile();
     _visualNavigator?.trackingTransportProfile = transportProfile;
 
+    // Optionally, set a filter to configure which icons to show for MapFeatures.vehicleRestrictions.
+    // By default, all icons are shown.
+    // _configureVehicleRestrictionFilter();
+
     _enableLayers();
     _setTapGestureHandler();
     _setupListeners();
@@ -175,6 +179,25 @@ class TruckGuidanceExample {
     truckSpecifications.trailerCount = MyTruckSpecs.trailerCount;
     truckSpecifications.truckType = MyTruckSpecs.truckType;
     return truckSpecifications;
+  }
+
+  // Configure the displayed vehicle restrictions.
+  // Only the specified types will be shown. For example, when truck is set, then only
+  // icons applicable for trucks are displayed.
+  // TunnelCategory belongs to the HazardousMaterial.
+  // Tunnels are categorized from b (low risk, few restrictions) to e (high risk)
+  // based on their safety features and the potential danger posed by the goods
+  // transported through them.
+  void _configureVehicleRestrictionFilter() {
+    List<HazardousMaterial> hazardousMaterials = [];
+    hazardousMaterials.add(HazardousMaterial.explosive);
+    hazardousMaterials.add(HazardousMaterial.flammable);
+
+    MapContentSettings.configureVehicleRestrictionFilter(
+        TransportMode.truck,
+        _createTruckSpecifications(),
+        hazardousMaterials,
+        TunnelCategory.b);
   }
 
   // Enable layers that may be useful for truck drivers.

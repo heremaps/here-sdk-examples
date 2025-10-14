@@ -25,9 +25,9 @@ android {
 
 dependencies {
     // Add available HERE SDK Units for use in this host project for easy development of units. Note that when integrating compiled units as AAR into your own apps, this is not needed.
-    implementation project(path: ':heresdk-units-core')
-    implementation project(path: ':heresdk-units-popupmenu')
-    implementation project(path: ':heresdk-units-mapswitcher')
+    implementation project(path: ':here-sdk-units-core')
+    implementation project(path: ':here-sdk-units-mapswitcher')
+    implementation project(path: ':here-sdk-units-popupmenu')
 
     // Picks any AAR matching the pattern found in HERESDKUnits/app/libs/ folder.
     // Note that the HERE SDK Units itself are directly included as dependent modules, see above.
