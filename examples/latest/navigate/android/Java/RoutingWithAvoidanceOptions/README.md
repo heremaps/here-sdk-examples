@@ -1,7 +1,7 @@
-The Routing example app shows how to calculate routes with `AvoidanceOptions` and how to 
-use the `SegmentDataLoader` to retrieve data from the map.
-It also allows to pick segments from the map to avoid certain areas or roads.
-You can find how this is done in [RoutingExample.java](app/src/main/java/com/here/routing/RoutingExample.java).
+The Routing example app shows how to calculate routes with `AvoidanceOptions` and how to
+use the `SegmentDataLoader` to retrieve data from the map. It also allows to pick segments from the map to avoid certain areas or roads. You can find how this is done in [RoutingExample.java](app/src/main/java/com/here/routing/RoutingExample.java).
+
+This example uses **HERE SDK Units** to support functionality such as permission handling or buttons that are not essential to the code snippets shown in this app, as the focus is on demonstrating how to use the APIs provided by the HERE SDK. The HERE SDK Units are included as AARs in the app’s `libs` folder. For more details, see the "HERESDKUnits" app to customize or create your own unit libraries.
 
 Build instructions:
 -------------------

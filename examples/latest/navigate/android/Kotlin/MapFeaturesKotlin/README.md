@@ -1,7 +1,8 @@
 The MapFeaturesKotlin example app demonstrates how to load and switch between various map schemes, enable specialized map features allowing you to overlay extra content on the map, such as 3D landmarks, onto the map and toggle between Globe and Web Mercator map projections. You can find how this is done in [MapFeaturesExample.kt](app/src/main/java/com/here/mapfeatureskotlin/MapFeaturesExample.kt) and [MapSchemesExample.kt](app/src/main/java/com/here/mapfeatureskotlin/MapSchemesExample.kt).
 
-
 **Note**: This is the same app as the "**MapFeatures**" app, but implemented in Kotlin instead of Java.
+
+This example uses **HERE SDK Units** to support functionality such as permission handling or buttons that are not essential to the code snippets shown in this app, as the focus is on demonstrating how to use the APIs provided by the HERE SDK. The HERE SDK Units are included as AARs in the app’s `libs` folder. For more details, see the "HERESDKUnits" app to customize or create your own unit libraries.
 
 Build instructions:
 -------------------

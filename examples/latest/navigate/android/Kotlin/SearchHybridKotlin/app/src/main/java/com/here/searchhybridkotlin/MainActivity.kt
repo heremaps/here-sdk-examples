@@ -52,6 +52,7 @@ import com.here.sdk.mapview.MapScheme
 import com.here.sdk.mapview.MapView
 import com.here.searchhybridkotlin.ui.theme.SearchHybridTheme
 import com.here.sdk.units.core.utils.EnvironmentLogger
+import com.here.sdk.units.core.utils.PermissionsRequestor
 
 class MainActivity : ComponentActivity() {
 
@@ -184,17 +185,16 @@ class MainActivity : ComponentActivity() {
 
     // Convenience method to check all permissions that have been added to the AndroidManifest.
     private fun handleAndroidPermissions() {
-        permissionsRequestor.requestPermissionsFromManifest(
-            object : PermissionsRequestor.ResultListener {
-                override fun permissionsGranted() {
-                    loadMapScene()
-                }
-
-                override fun permissionsDenied(deniedPermissions: List<String>) {
-                    Log.e(TAG, "Permissions denied by the user.")
-                }
+        permissionsRequestor.request(object :
+            PermissionsRequestor.ResultListener {
+            override fun permissionsGranted() {
+                loadMapScene()
             }
-        )
+
+            override fun permissionsDenied() {
+                Log.e(TAG, "Permissions denied by user.")
+            }
+        })
     }
 
     private fun loadMapScene() {

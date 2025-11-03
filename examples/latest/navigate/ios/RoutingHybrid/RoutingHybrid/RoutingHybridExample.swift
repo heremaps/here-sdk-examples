@@ -31,7 +31,6 @@ class RoutingHybridExample {
     private var isDeviceConnected = false
     private var startGeoCoordinates: GeoCoordinates?
     private var destinationGeoCoordinates: GeoCoordinates?
-    private var segmentDataLoader: SegmentDataLoader?
 
     init(_ mapView: MapView) {
         self.mapView = mapView
@@ -56,12 +55,6 @@ class RoutingHybridExample {
             // to calculate a route, when not all map tiles are loaded. Especially, the
             // vector tiles for lower zoom levels are required to find possible paths.
             try offlineRoutingEngine = OfflineRoutingEngine()
-            
-            // It is recommended to download or to prefetch a route corridor beforehand to ensure a smooth user experience during navigation. For simplicity, this is left out for this example.
-
-            // With the segment data loader information can be retrieved from cached or installed offline map data, for example on road attributes. This feature can be used independent from a route. It is recommended to not rely on the cache alone. For simplicity, this is left out for this example.
-            try segmentDataLoader = SegmentDataLoader()
-                        
         } catch let InstantiationError {
             fatalError("Initialization failed. Cause: \(InstantiationError)")
         }
@@ -84,53 +77,6 @@ class RoutingHybridExample {
         mapView.mapScene.enableFeatures([MapFeatures.trafficIncidents : MapFeatureModes.defaultMode]);
     }
     
-    // Load segment data and fetch information from the map around the starting point of the requested route.
-    func loadAndProcessSegmentData() {
-        // The necessary SegmentDataLoaderOptions need to be turned on in order to find the requested information. It is recommended to turn on only the fields that you are interested in.
-        var segmentDataLoaderOptions = SegmentDataLoaderOptions()
-        segmentDataLoaderOptions.loadBaseSpeeds = true
-        segmentDataLoaderOptions.loadRoadAttributes = true
-        
-        let radiusInMeters = 500.0
-        
-        guard let startGeoCoordinates = startGeoCoordinates else {
-            showDialog(title: "SegmentDataLoader", message: "You need to add a route beforehand as we use the start coordinates to load segment data.")
-            return
-        }
-
-        do {
-            let segmentIds = try segmentDataLoader?.getSegmentsAroundCoordinates(startGeoCoordinates, radiusInMeters: radiusInMeters)
-            
-            guard let segmentDataLoader = segmentDataLoader, 
-                  let segmentIds = segmentIds else {
-                print("segmentDataLoader is nil")
-                return
-            }
-
-            for segmentId in segmentIds {
-                let segmentData = try segmentDataLoader.loadData(segment: segmentId, options: segmentDataLoaderOptions)
-                    
-                if (segmentData.spans.isEmpty) {
-                    print("SegmentSpanDataList is empty")
-                    continue
-                }
-
-                let segmentSpanDataList = segmentData.spans
-                    
-                for span in segmentSpanDataList {
-                    print("Physical attributes of \(span) span.")
-                    print("Private roads: \(String(describing: span.physicalAttributes?.isPrivate))")
-                    print("Dirt roads: \(String(describing: span.physicalAttributes?.isDirtRoad))")
-                    print("Bridge: \(String(describing: span.physicalAttributes?.isBridge))")
-                    print("Tollway: \(String(describing: span.roadUsages?.isTollway))")
-                    print("Average expected speed: \(String(describing: span.positiveDirectionBaseSpeedInMetersPerSecond))")
-                }
-            }
-        } catch let MapDataLoaderError {
-            print("Error loading segment data: \(MapDataLoaderError)")
-        }
-    }
-    
     // Calculates a route with two waypoints (start / destination).
     func addRoute() {
         setRoutingEngine()
@@ -138,10 +84,9 @@ class RoutingHybridExample {
         startGeoCoordinates = createRandomGeoCoordinatesAroundMapCenter()
         destinationGeoCoordinates = createRandomGeoCoordinatesAroundMapCenter()
 
-        let carOptions = CarOptions()
         routingEngine.calculateRoute(with: [Waypoint(coordinates: startGeoCoordinates!),
                                             Waypoint(coordinates: destinationGeoCoordinates!)],
-                                     carOptions: carOptions) { (routingError, routes) in
+                                     carOptions: getCarOptions()) { (routingError, routes) in
 
                                         if let error = routingError {
                                             self.showDialog(title: "Error while calculating a route:", message: "\(error)")
@@ -153,6 +98,7 @@ class RoutingHybridExample {
                                         self.showRouteDetails(route: route!)
                                         self.showRouteOnMap(route: route!)
                                         self.logRouteViolations(route: route!)
+                                        self.logRouteLabels(route: route!)
         }
     }
 
@@ -164,6 +110,23 @@ class RoutingHybridExample {
             for notice in section.sectionNotices {
                 print("This route contains the following warning: \(notice.code)")
             }
+        }
+    }
+    
+    private func logRouteLabels(route: Route) {
+        // Get the list of the street names or route numbers through which the route is going to pass.
+        // Make sure to enable this feature via routeOptions.enableRouteLabels (see below).
+        let routeLabels = route.routeLabels
+            
+        if routeLabels.isEmpty {
+            print("No route labels found for this route.")
+            return
+        }
+            
+        for routeLabel in routeLabels {
+            let name = routeLabel.name
+            let routeLabelType = routeLabel.type
+            print("Route label: \(name.text), Type: \(routeLabelType)")
         }
     }
 
@@ -279,9 +242,8 @@ class RoutingHybridExample {
                          Waypoint(coordinates: waypoint2GeoCoordinates),
                          Waypoint(coordinates: destinationGeoCoordinates)]
 
-        let carOptions = CarOptions()
         routingEngine.calculateRoute(with: waypoints,
-                                     carOptions: carOptions) { (routingError, routes) in
+                                     carOptions: getCarOptions()) { (routingError, routes) in
 
                                         if let error = routingError {
                                             self.showDialog(title: "Error while calculating a route:", message: "\(error)")
@@ -292,6 +254,7 @@ class RoutingHybridExample {
                                         self.showRouteDetails(route: route!)
                                         self.showRouteOnMap(route: route!)
                                         self.logRouteViolations(route: route!)
+                                        self.logRouteLabels(route: route!)
 
                                         // Draw a circle to indicate the location of the waypoints.
                                         self.addCircleMapMarker(geoCoordinates: waypoint1GeoCoordinates, imageName: "red_dot.png")
@@ -327,7 +290,16 @@ class RoutingHybridExample {
         isDeviceConnected = false
         showDialog(title: "Note", message: "The app uses now the OfflineRoutingEngine.")
     }
-
+    
+    private func getCarOptions() -> CarOptions {
+           var carOptions = CarOptions()
+           
+           // Specifies whether route labels should be included in the route response.
+           carOptions.routeOptions.enableRouteLabels = true;
+        
+           return carOptions
+       }
+    
     private func createRandomGeoCoordinatesAroundMapCenter() -> GeoCoordinates {
         let scaleFactor = UIScreen.main.scale
         let mapViewWidthInPixels = Double(mapView.bounds.width * scaleFactor)

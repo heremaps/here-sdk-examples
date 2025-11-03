@@ -256,4 +256,10 @@ public class PublicTransportRoutingExample {
         builder.setMessage(message);
         builder.show();
     }
+
+    // Dispose the TransitRoutingEngine instance to cancel any pending requests
+    // and shut it down for proper resource cleanup.
+    public void dispose() {
+        transitRoutingEngine.dispose();
+    }
 }

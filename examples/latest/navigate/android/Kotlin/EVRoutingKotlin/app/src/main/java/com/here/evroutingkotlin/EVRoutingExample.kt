@@ -740,4 +740,10 @@ class EVRoutingExample(private val context: Context, private val mapView: MapVie
         builder.setMessage(message)
         builder.show()
     }
+
+    // Dispose the RoutingEngine instance to cancel any pending requests
+    // and shut it down for proper resource cleanup.
+    fun dispose() {
+        routingEngine.dispose()
+    }
 }

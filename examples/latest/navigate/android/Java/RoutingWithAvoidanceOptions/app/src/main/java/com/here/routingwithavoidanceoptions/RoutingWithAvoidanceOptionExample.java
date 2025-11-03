@@ -285,7 +285,7 @@ public class RoutingWithAvoidanceOptionExample {
                 loadSegmentData(segmentId);
             }
         } catch (MapDataLoaderException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("SegmentDataLoader.loadData failed: ${e.toString()}");
         }
     }
 
@@ -517,6 +517,12 @@ public class RoutingWithAvoidanceOptionExample {
         builder.setTitle(title);
         builder.setMessage(message);
         builder.show();
+    }
+
+    // Dispose the RoutingEngine instance to cancel any pending requests
+    // and shut it down for proper resource cleanup.
+    public void dispose() {
+        routingEngine.dispose();
     }
 }
 

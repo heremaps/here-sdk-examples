@@ -33,12 +33,16 @@ import com.here.sdk.mapview.MapMeasure
 import com.here.sdk.mapview.MapScheme
 import com.here.sdk.mapview.MapView
 import com.here.sdk.units.core.utils.EnvironmentLogger
+import com.here.sdk.units.core.utils.PermissionsRequestor
 
+/**
+ * This is the main activity of the HelloMapKotlin app.
+ * It shows how to initialize the HERE SDK and how to display a map.
+ */
 class MainActivity : AppCompatActivity() {
 
-
     private val environmentLogger = EnvironmentLogger()
-    private var permissionsRequestor: PermissionsRequestor? = null
+    private lateinit var permissionsRequestor: PermissionsRequestor
     private var mapView: MapView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -96,9 +100,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // Convenience method to check all permissions that have been added to the AndroidManifest.
     private fun handleAndroidPermissions() {
         permissionsRequestor = PermissionsRequestor(this)
-        permissionsRequestor?.request(object : PermissionsRequestor.ResultListener {
+        permissionsRequestor.request(object :
+            PermissionsRequestor.ResultListener {
             override fun permissionsGranted() {
                 loadMapScene()
             }

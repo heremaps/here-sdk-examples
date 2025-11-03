@@ -261,10 +261,14 @@ class RoutingWithAvoidanceOptionsExample {
           ..loadRoadAttributes = true
           ..loadFunctionalRoadClass = true;
 
-    segmentData = _segmentDataLoader.loadData(
-      ocmSegmentId,
-      segmentDataLoaderOptions,
-    );
+    try {
+      segmentData = _segmentDataLoader.loadData(
+        ocmSegmentId,
+        segmentDataLoaderOptions,
+      );
+    } on MapDataLoaderExceptionException catch (e) {
+      throw Exception('SegmentDataLoader.loadData failed: ${e.toString()}');
+    }
 
     final segmentSpanDataList = segmentData.spans;
     final segmentReference = segmentData.segmentReference;

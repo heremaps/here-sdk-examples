@@ -6,6 +6,7 @@ A reusable unit providing essential core functionalities such as buttons, animat
 
 - **UnitButton**: A customizable button view.
 - **UnitAnimations**: Utility methods for applying touch and click animations to views.
+- **PermissionsRequestor**: A helper class to check for Android permissions.
 
 ## Integrate the unit into your app
 
@@ -27,3 +28,59 @@ A reusable unit providing essential core functionalities such as buttons, animat
 3. Sync with Gradle and run the app.
 
 4. Clone the repo with the HERE SDK Units project and adapt the unit to your needs.
+
+## How to use the PermissionsRequestor
+
+Add the following code to your `Activity` (Java):
+
+```java
+private PermissionsRequestor permissionsRequestor;
+
+private void handleAndroidPermissions() {
+    permissionsRequestor = new PermissionsRequestor(this);
+    permissionsRequestor.request(new PermissionsRequestor.ResultListener(){
+
+        @Override
+        public void permissionsGranted() {
+            loadMapScene();
+        }
+
+        @Override
+        public void permissionsDenied() {
+            Log.e(TAG, "Permissions denied by user.");
+        }
+    });
+}
+
+@Override
+public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    permissionsRequestor.onRequestPermissionsResult(requestCode, grantResults);
+}
+```
+
+For Kotlin it looks like this:
+
+```kotlin
+private var permissionsRequestor: PermissionsRequestor? = null
+
+private fun handleAndroidPermissions() {
+    permissionsRequestor = PermissionsRequestor(this)
+    permissionsRequestor?.request(object : PermissionsRequestor.ResultListener {
+        override fun permissionsGranted() {
+            loadMapScene()
+        }
+
+        override fun permissionsDenied() {
+            Log.e(TAG, "Permissions denied by user.")
+        }
+    })
+}
+
+override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    permissionsRequestor?.onRequestPermissionsResult(requestCode, grantResults)
+}
+```
+
+Make sure to call `handleAndroidPermissions()`, for example, in the `onCreate()` method.

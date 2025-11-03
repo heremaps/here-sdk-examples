@@ -1,5 +1,7 @@
 This example app shows how to load custom maps that have been made with the [HERE Style Editor](https://platform.here.com/style-editor/). Note that this requires HERE SDK 4.12.1.0 or higher. You can find how this is done in [CustomMapStylesExample.java](app/src/main/java/com/here/custommapstyles/CustomMapStylesExample.java).
 
+This example uses **HERE SDK Units** to support functionality such as permission handling or buttons that are not essential to the code snippets shown in this app, as the focus is on demonstrating how to use the APIs provided by the HERE SDK. The HERE SDK Units are included as AARs in the app’s `libs` folder. For more details, see the "HERESDKUnits" app to customize or create your own unit libraries.
+
 Build instructions:
 -------------------
 

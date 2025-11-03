@@ -257,7 +257,7 @@ public class TruckGuidanceExample {
     // Configure the displayed vehicle restrictions.
     // Only the specified types will be shown. For example, when TRUCK is set, then only
     // icons applicable for trucks are displayed. 
-    // TunnelCategory belongs to the HazardousMaterial.
+    // TunnelCategory are closely related to the HazardousMaterial.
     // Tunnels are categorized from B (low risk, few restrictions) to E (high risk)
     // based on their safety features and the potential danger posed by the goods
     // transported through them.
@@ -1034,5 +1034,11 @@ public class TruckGuidanceExample {
         builder.setTitle(title);
         builder.setMessage(message);
         builder.show();
+    }
+
+    // Dispose the RoutingEngine instance to cancel any pending requests
+    // and shut it down for proper resource cleanup.
+    public void dispose() {
+        routingEngine.dispose();
     }
 }

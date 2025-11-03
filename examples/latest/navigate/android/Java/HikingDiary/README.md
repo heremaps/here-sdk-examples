@@ -3,6 +3,8 @@ You can find a complete [tutorial](https://www.here.com/docs/bundle/sdk-for-andr
 
 This example uses HERE SDK Units for supporting functionality that isn’t essential to the code samples in this app. The units are included in the app’s libs folder. For more details, see the "HERESDKUnits" app.
 
+This example uses **HERE SDK Units** to support functionality such as permission handling or buttons that are not essential to the code snippets shown in this app, as the focus is on demonstrating how to use the APIs provided by the HERE SDK. The HERE SDK Units are included as AARs in the app’s `libs` folder. For more details, see the "HERESDKUnits" app to customize or create your own unit libraries.
+
 Build instructions:
 -------------------
 

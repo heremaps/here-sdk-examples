@@ -52,9 +52,6 @@ struct ContentView: View {
                      CustomButton(title: "Switch offline") {
                          routingHybridExample?.onSwitchOfflineButtonClicked()
                      }
-                     CustomButton(title: "Load segments") {
-                         routingHybridExample?.loadAndProcessSegmentData()
-                     }
                  }
              }
          }

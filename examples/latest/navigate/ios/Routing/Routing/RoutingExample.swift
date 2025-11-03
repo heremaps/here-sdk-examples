@@ -152,7 +152,6 @@ class RoutingExample {
             self.logRouteSectionDetails(route: self.currentRoute!)
             self.logRouteViolations(route: self.currentRoute!)
             self.logTollDetails(route: self.currentRoute!)
-            self.logRouteLabels(route: self.currentRoute!)
         }
     }
     
@@ -183,23 +182,6 @@ class RoutingExample {
         }
     }
     
-    private func logRouteLabels(route: Route) {
-        // Get the list of the street names or route numbers through which the route is going to pass.
-        // Make sure to enable this feature via routeOptions.enableRouteLabels (see below).
-        let routeLabels = route.routeLabels
-        
-        if routeLabels.isEmpty {
-            print("No route labels found for this route.")
-            return
-        }
-        
-        for routeLabel in routeLabels {
-            let name = routeLabel.name
-            let routeLabelType = routeLabel.type
-            print("Route label: \(name.text), Type: \(routeLabelType)")
-        }
-    }
-    
     private func getCaroptions() -> CarOptions {
         var carOptions = CarOptions()
         carOptions.routeOptions.enableTolls = true
@@ -226,9 +208,7 @@ class RoutingExample {
         // Disabled - Traffic optimization is completely disabled, including long-term road closures. It helps in producing stable routes.
         // Time dependent - Traffic optimization is enabled, the shape of the route will be adjusted according to the traffic situation which depends on departure time and arrival time.
         carOptions.routeOptions.trafficOptimizationMode = disableOptimization ? TrafficOptimizationMode.disabled : TrafficOptimizationMode.timeDependent
-        
-        // Specifies whether route labels should be included in the route response.
-        carOptions.routeOptions.enableRouteLabels = true;
+
         return carOptions
     }
     

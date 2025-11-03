@@ -1,5 +1,7 @@
 The Traffic example app shows how to toggle traffic flow and traffic incidents visualization on a map and how to use the TrafficEngine to query such data in realtime, for example, along a route. You can find how this is done in [TrafficExample.java](app/src/main/java/com/here/traffic/TrafficExample.java) and [RoutingExample.java](app/src/main/java/com/here/traffic/RoutingExample.java).
 
+This example uses **HERE SDK Units** to support functionality such as permission handling or buttons that are not essential to the code snippets shown in this app, as the focus is on demonstrating how to use the APIs provided by the HERE SDK. The HERE SDK Units are included as AARs in the app’s `libs` folder. For more details, see the "HERESDKUnits" app to customize or create your own unit libraries.
+
 Build instructions:
 -------------------
 

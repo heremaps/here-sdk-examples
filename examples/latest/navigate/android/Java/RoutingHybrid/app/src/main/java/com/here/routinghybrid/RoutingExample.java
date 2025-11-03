@@ -24,23 +24,17 @@ import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 
 import com.here.sdk.core.Color;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.GeoPolyline;
+import com.here.sdk.core.LocalizedText;
 import com.here.sdk.core.Point2D;
 import com.here.sdk.core.errors.InstantiationErrorException;
-import com.here.sdk.mapdata.OCMSegmentId;
-import com.here.sdk.mapdata.SegmentData;
 import com.here.sdk.mapdata.SegmentDataLoader;
-import com.here.sdk.mapdata.MapDataLoaderException;
-import com.here.sdk.mapdata.SegmentDataLoaderOptions;
-import com.here.sdk.mapdata.SegmentSpanData;
 import com.here.sdk.mapview.LineCap;
-import com.here.sdk.mapview.MapArrow;
 import com.here.sdk.mapview.MapCamera;
 import com.here.sdk.mapview.MapImage;
 import com.here.sdk.mapview.MapImageFactory;
@@ -57,6 +51,8 @@ import com.here.sdk.routing.Maneuver;
 import com.here.sdk.routing.ManeuverAction;
 import com.here.sdk.routing.OfflineRoutingEngine;
 import com.here.sdk.routing.Route;
+import com.here.sdk.routing.RouteLabel;
+import com.here.sdk.routing.RouteLabelType;
 import com.here.sdk.routing.RoutingEngine;
 import com.here.sdk.routing.RoutingError;
 import com.here.sdk.routing.RoutingInterface;
@@ -86,8 +82,6 @@ public class RoutingExample {
     private GeoCoordinates startGeoCoordinates;
     private GeoCoordinates destinationGeoCoordinates;
     private boolean isDeviceConnected = true;
-    private final SegmentDataLoader segmentDataLoader;
-
     @SuppressLint("SuspiciousIndentation")
     public RoutingExample(Context context, MapView mapView) {
         this.context = context;
@@ -113,61 +107,8 @@ public class RoutingExample {
             offlineRoutingEngine = new OfflineRoutingEngine();
 
             // It is recommended to download or to prefetch a route corridor beforehand to ensure a smooth user experience during navigation. For simplicity, this is left out for this example.
-
-            // With the segment data loader information can be retrieved from cached or installed offline map data, for example on road attributes. This feature can be used independent from a route. It is recommended to not rely on the cache alone. For simplicity, this is left out for this example.
-            segmentDataLoader = new SegmentDataLoader();
-
         } catch (InstantiationErrorException e) {
             throw new RuntimeException("SegmentDataLoader initialization failed." + e.getMessage());
-        }
-    }
-
-    // Load segment data and fetch information from the map around the starting point of the requested route.
-    public void loadAndProcessSegmentData() {
-
-        List<OCMSegmentId> segmentIds;
-        SegmentData segmentData;
-
-        // The necessary SegmentDataLoaderOptions need to be turned on in order to find the requested information.
-        // It is recommended to turn on only the data you are interested in by setting the corresponding fields to true.
-        SegmentDataLoaderOptions segmentDataLoaderOptions = new SegmentDataLoaderOptions();
-
-        segmentDataLoaderOptions.loadBaseSpeeds = true;
-        segmentDataLoaderOptions.loadRoadAttributes = true;
-
-        double radiusInMeters = 500;
-
-        if (startGeoCoordinates == null) {
-            Toast.makeText(context, "You need to add a route beforehand as we use the start coordinates to search for segment data.", Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        Toast.makeText(context, "The app will now load attributes of a map segment. For more details check the logs.", Toast.LENGTH_LONG).show();
-
-        try {
-            segmentIds = segmentDataLoader.getSegmentsAroundCoordinates(startGeoCoordinates, radiusInMeters);
-
-            for (OCMSegmentId segmentId : segmentIds) {
-                segmentData = segmentDataLoader.loadData(segmentId, segmentDataLoaderOptions);
-
-                List<SegmentSpanData> segmentSpanDataList = segmentData.getSpans();
-
-                if (segmentSpanDataList == null) {
-                    Log.e(TAG, "SegmentSpanDataList is null. Maybe there's no data, or try again with offline maps (not shown in this app).");
-                    continue;
-                }
-
-                for (SegmentSpanData span : segmentSpanDataList) {
-                    Log.d(TAG, "Physical attributes of " + span.toString() + " span.");
-                    Log.d(TAG, "Private roads: " + span.getPhysicalAttributes().isPrivate);
-                    Log.d(TAG, "Dirt roads: " + span.getPhysicalAttributes().isDirtRoad);
-                    Log.d(TAG, "Bridge: " + span.getPhysicalAttributes().isBridge);
-                    Log.d(TAG, "Tollway: " + span.getRoadUsages().isTollway);
-                    Log.d(TAG, "Average expected speed: " + span.getPositiveDirectionBaseSpeedInMetersPerSecond());
-                }
-            }
-        } catch (MapDataLoaderException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -185,7 +126,7 @@ public class RoutingExample {
 
         routingEngine.calculateRoute(
                 waypoints,
-                new CarOptions(),
+                getCarOptions(),
                 new CalculateRouteCallback() {
                     @Override
                     public void onRouteCalculated(@Nullable RoutingError routingError, @Nullable List<Route> routes) {
@@ -194,6 +135,7 @@ public class RoutingExample {
                             showRouteDetails(route);
                             showRouteOnMap(route);
                             logRouteViolations(route);
+                            logRouteLabels(route);
                         } else {
                             showDialog("Error while calculating a route:", routingError.toString());
                         }
@@ -217,6 +159,23 @@ public class RoutingExample {
                     Log.d(TAG, "The violation " + violationCode + " starts at " + toString(violationStartPoint) + " and ends at " + toString(violationEndPoint) + " .");
                 }
             }
+        }
+    }
+
+    private void logRouteLabels(Route route) {
+        // Get the list of the street names or route numbers through which the route is going to pass.
+        // Make sure to enable this feature via routeOptions.enableRouteLabels (see below).
+        List<RouteLabel> routeLabels = route.getRouteLabels();
+
+        if (routeLabels.isEmpty()) {
+            Log.d(TAG, "No route labels found for this route.");
+            return;
+        }
+
+        for (RouteLabel routeLabel : routeLabels) {
+            LocalizedText name = routeLabel.name;
+            RouteLabelType routeLabelType = routeLabel.type;
+            Log.d(TAG, "Route label: " + name.text + ", Type: " + routeLabelType.name());
         }
     }
 
@@ -340,7 +299,7 @@ public class RoutingExample {
 
         routingEngine.calculateRoute(
                 waypoints,
-                new CarOptions(),
+                getCarOptions(),
                 new CalculateRouteCallback() {
                     @Override
                     public void onRouteCalculated(@Nullable RoutingError routingError, @Nullable List<Route> routes) {
@@ -349,6 +308,7 @@ public class RoutingExample {
                             showRouteDetails(route);
                             showRouteOnMap(route);
                             logRouteViolations(route);
+                            logRouteLabels(route);
 
                             // Draw a circle to indicate the location of the waypoints.
                             addCircleMapMarker(waypoint1.coordinates, R.drawable.red_dot);
@@ -392,6 +352,14 @@ public class RoutingExample {
                 getRandom(lon - 0.02, lon + 0.02));
     }
 
+    private CarOptions getCarOptions() {
+        CarOptions carOptions = new CarOptions();
+
+        // Specifies whether route labels should be included in the route response.
+        carOptions.routeOptions.enableRouteLabels = true;
+
+        return carOptions;
+    }
     private double getRandom(double min, double max) {
         return min + Math.random() * (max - min);
     }
@@ -435,6 +403,13 @@ public class RoutingExample {
         builder.setTitle(title);
         builder.setMessage(message);
         builder.show();
+    }
+
+    // Dispose the RoutingEngine and OfflineRoutingEngine instance to cancel 
+    // any pending requests and shut it down for proper resource cleanup.
+    public void dispose() {
+        onlineRoutingEngine.dispose();
+        offlineRoutingEngine.dispose();
     }
 }
 

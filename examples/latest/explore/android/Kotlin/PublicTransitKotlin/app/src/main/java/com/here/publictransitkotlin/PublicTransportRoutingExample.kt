@@ -242,6 +242,12 @@ class PublicTransportRoutingExample(private val context: Context, private val ma
         builder.show()
     }
 
+    // Dispose the TransitRoutingEngine instance to cancel any pending requests
+    // and shut it down for proper resource cleanup.
+    fun dispose() {
+        transitRoutingEngine.dispose()
+    }
+
     companion object {
         private val TAG: String = PublicTransportRoutingExample::class.java.name
     }
