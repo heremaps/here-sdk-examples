@@ -4,6 +4,8 @@ Note that the app does not show all available listeners. Take a look also at the
 see how to enhance applications with traffic information, dynamic routing or real location updates.
 This app uses only simulated location events.
 
+This example uses **HERE SDK Units** to support functionality such as permission handling or buttons that are not essential to the code snippets shown in this app, as the focus is on demonstrating how to use the APIs provided by the HERE SDK. The HERE SDK Units are included as AARs in the app’s `libs` folder. For more details, see the "HERESDKUnits" app to customize or create your own unit libraries.
+
 Build instructions:
 -------------------
 

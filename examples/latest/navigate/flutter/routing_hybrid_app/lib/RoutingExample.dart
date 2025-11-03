@@ -39,7 +39,6 @@ class RoutingExample {
   late RoutingInterface _routingEngine;
   late RoutingEngine _onlineRoutingEngine;
   late OfflineRoutingEngine _offlineRoutingEngine;
-  late SegmentDataLoader _segmentDataLoader;
   GeoCoordinates? _startGeoCoordinates;
   GeoCoordinates? _destinationGeoCoordinates;
   ShowDialogFunction _showDialog;
@@ -68,13 +67,6 @@ class RoutingExample {
       // to calculate a route, when not all map tiles are loaded. Especially, the
       // vector tiles for lower zoom levels are required to find possible paths.
       _offlineRoutingEngine = OfflineRoutingEngine();
-
-      // It is recommended to download or to prefetch a route corridor beforehand to ensure a smooth user experience during navigation.
-      // For simplicity, this is left out for this example.
-      // With the segment data loader information can be retrieved from cached or installed offline map data, for example on road attributes.
-      // This feature can be used independent from a route.
-      // It is recommended to not rely on the cache alone. For simplicity, this is left out for this example.
-      _segmentDataLoader = SegmentDataLoader();
     } on InstantiationException {
       throw ("Initialization failed.");
     }
@@ -83,54 +75,13 @@ class RoutingExample {
     useOnlineRoutingEngine();
   }
 
-  // Load segment data and fetch information from the map around the starting point of the requested route.
-  void loadAndProcessSegmentData() {
-    if (_startGeoCoordinates == null) {
-      _showDialog("SegmentData", "You need to add the route before loading the segment data.");
-      return;
-    }
-
-    _showDialog("SegmentData", "Loading attributes of a map segment. Check logs for details.");
-
-    double radiusInMeters = 500;
-
-    // The necessary SegmentDataLoaderOptions need to be turned on in order to find the requested information.
-    // It is recommended to turn on only the data you are interested in by setting the corresponding fields to true.
-    SegmentDataLoaderOptions options = SegmentDataLoaderOptions();
-
-    options.loadBaseSpeeds = true;
-    options.loadRoadAttributes = true;
-
-    try {
-      // Fetch segment IDs around the starting coordinates
-      List<OCMSegmentId> segmentIds =
-          _segmentDataLoader.getSegmentsAroundCoordinates(_startGeoCoordinates!, radiusInMeters);
-
-      for (OCMSegmentId segmentId in segmentIds) {
-        SegmentData segmentData = _segmentDataLoader.loadData(segmentId, options);
-
-        List<SegmentSpanData> segmentSpanDataList = segmentData.spans;
-        if (segmentSpanDataList.isEmpty) {
-          debugPrint("SegmentSpanDataList is empty.");
-          continue;
-        }
-
-        for (SegmentSpanData span in segmentSpanDataList) {
-          debugPrint("Physical attributes of ${span.toString()} span.");
-          debugPrint("Private roads: ${span.physicalAttributes?.isPrivate}");
-          debugPrint("Dirt roads: ${span.physicalAttributes?.isDirtRoad}");
-          debugPrint("Bridge: ${span.physicalAttributes?.isBridge}");
-          debugPrint("Tollway: ${span.roadUsages?.isTollway}");
-          debugPrint("Average expected speed: ${span.positiveDirectionBaseSpeedInMetersPerSecond}");
-        }
-      }
-    } catch (e) {
-      debugPrint("Error loading segment data: $e");
-    }
-  }
-
   // Calculates a route with two waypoints (start / destination).
   Future<void> addRoute() async {
+    CarOptions carOptions = CarOptions();
+
+    // Specifies whether route labels should be included in the route response.
+    carOptions.routeOptions.enableRouteLabels = true;
+
     clearMap();
 
     _startGeoCoordinates = _BERLIN_HQ_GEO_COORDINATES;
@@ -140,7 +91,7 @@ class RoutingExample {
 
     List<Waypoint> waypoints = [startWaypoint, destinationWaypoint];
 
-    _routingEngine.calculateCarRoute(waypoints, CarOptions(),
+    _routingEngine.calculateCarRoute(waypoints, carOptions,
         (RoutingError? routingError, List<here.Route>? routeList) async {
       if (routingError == null) {
         // When error is null, it is guaranteed that the list is not empty.
@@ -148,6 +99,7 @@ class RoutingExample {
         _showRouteDetails(route);
         _showRouteOnMap(route);
         _logRouteViolations(route);
+        _logRouteLabels(route);
       } else {
         var error = routingError.toString();
         _showDialog('Error', 'Error while calculating a route: $error');
@@ -162,6 +114,11 @@ class RoutingExample {
       return;
     }
 
+    CarOptions carOptions = new CarOptions();
+
+    // Specifies whether route labels should be included in the route response.
+    carOptions.routeOptions.enableRouteLabels = true;
+
     clearMap();
 
     var startWaypoint = Waypoint.withDefaults(_startGeoCoordinates!);
@@ -173,7 +130,7 @@ class RoutingExample {
 
     List<Waypoint> waypoints = [startWaypoint, waypoint1, waypoint2, destinationWaypoint];
 
-    _routingEngine.calculateCarRoute(waypoints, CarOptions(),
+    _routingEngine.calculateCarRoute(waypoints, carOptions,
         (RoutingError? routingError, List<here.Route>? routeList) async {
       if (routingError == null) {
         // When error is null, it is guaranteed that the list is not empty.
@@ -181,6 +138,7 @@ class RoutingExample {
         _showRouteDetails(route);
         _showRouteOnMap(route);
         _logRouteViolations(route);
+        _logRouteLabels(route);
         _animateToRoute(route);
 
         // Draw a circle to indicate the location of the waypoints.
@@ -200,6 +158,22 @@ class RoutingExample {
       for (var notice in section.sectionNotices) {
         print("This route contains the following warning: " + notice.code.toString());
       }
+    }
+  }
+
+  void _logRouteLabels(here.Route route) {
+    // Get the list of the street names or route numbers through which the route is going to pass.
+    // Make sure to enable this feature via routeOptions.enableRouteLabels (see below).
+    List<RouteLabel> routeLabels = route.routeLabels;
+
+    if (routeLabels.isEmpty) {
+      print("No route labels found for this route.");
+    }
+
+    for (RouteLabel routeLabel in routeLabels) {
+      LocalizedText name = routeLabel.name;
+      RouteLabelType routeLabelType = routeLabel.type;
+      print("Route label: ${name.text}, type: $routeLabelType");
     }
   }
 

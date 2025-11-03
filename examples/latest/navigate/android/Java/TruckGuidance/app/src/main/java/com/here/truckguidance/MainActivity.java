@@ -290,6 +290,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void disposeHERESDK() {
+        if (truckGuidanceExample != null) {
+            truckGuidanceExample.dispose();
+        }
+
         // Free HERE SDK resources before the application shuts down.
         // Usually, this should be called only on application termination.
         // Afterwards, the HERE SDK is no longer usable unless it is initialized again.

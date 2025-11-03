@@ -19,7 +19,7 @@ import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.MethodChannel;
 
 public class MainActivity extends FlutterActivity implements SynthesizatorCallbackInterface {
-    static final String SYNTHESIZATION_CHANNEL = "com.here.sdk.example/spatialAudioExample";
+    static final String SYNTHESIZATION_CHANNEL = "com.here.sdk.examples/spatialAudioExample";
     private SpatialAudioHandler spatialAudioHandler;
     private ExecutorService fileCleanUpExecutor;
     private Handler handler = new Handler(Looper.getMainLooper());

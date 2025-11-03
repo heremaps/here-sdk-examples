@@ -57,7 +57,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  static const methodChannel = MethodChannel('com.here.sdk.example/spatialAudioExample');
+  static const methodChannel = MethodChannel('com.here.sdk.examples/spatialAudioExample');
   late HERE.SpatialAudioCuePanning spatialAudioCuePanning;
   late final AppLifecycleListener _appLifecycleListener;
   HereMapController? _hereMapController;

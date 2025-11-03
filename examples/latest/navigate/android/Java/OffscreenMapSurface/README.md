@@ -1,8 +1,10 @@
 This example app shows how the HERE SDK can be used to generate images of the map, without the need to put a `MapView` on screen.
 
 - The app screen shows four map images rendered at random zoom levels on each button click.
-- A `MapSurface` is used to render the images offscreen. 
+- A `MapSurface` is used to render the images offscreen.
 - Note that no `MapView` instance is created for this app and hence the `MapView.TakeScreenshotCallback` API is _not_ used for this low-level render example.
+
+This example uses **HERE SDK Units** to support functionality such as permission handling or buttons that are not essential to the code snippets shown in this app, as the focus is on demonstrating how to use the APIs provided by the HERE SDK. The HERE SDK Units are included as AARs in the app’s `libs` folder. For more details, see the "HERESDKUnits" app to customize or create your own unit libraries.
 
 Build instructions:
 -------------------

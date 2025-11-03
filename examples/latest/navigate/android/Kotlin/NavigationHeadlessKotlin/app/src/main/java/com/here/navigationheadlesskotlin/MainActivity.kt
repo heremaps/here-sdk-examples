@@ -86,6 +86,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.io.File
 import com.here.sdk.units.core.utils.EnvironmentLogger
+import com.here.sdk.units.core.utils.PermissionsRequestor
 
 class MainActivity: ComponentActivity() {
 
@@ -205,7 +206,6 @@ class MainActivity: ComponentActivity() {
 
     // Convenience method to check all permissions that have been added to the AndroidManifest.
     private fun handleAndroidPermissions() {
-        permissionsRequestor = PermissionsRequestor(this)
         permissionsRequestor.request(object :
             PermissionsRequestor.ResultListener {
             override fun permissionsGranted() {
@@ -213,7 +213,7 @@ class MainActivity: ComponentActivity() {
             }
 
             override fun permissionsDenied() {
-                Log.e(com.here.navigationheadlesskotlin.MainActivity.Companion.TAG, "Permissions denied by user.")
+                Log.e(TAG, "Permissions denied by user.")
             }
         })
     }

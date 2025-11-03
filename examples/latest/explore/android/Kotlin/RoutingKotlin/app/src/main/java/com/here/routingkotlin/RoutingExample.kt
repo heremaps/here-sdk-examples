@@ -450,6 +450,12 @@ class RoutingExample(private val context: Context, private val mapView: MapView)
         builder.show()
     }
 
+    // Dispose the RoutingEngine instance to cancel any pending requests
+    // and shut it down for proper resource cleanup.
+    fun dispose() {
+        routingEngine.dispose()
+    }
+    
     companion object {
         private val TAG: String = RoutingExample::class.java.name
     }

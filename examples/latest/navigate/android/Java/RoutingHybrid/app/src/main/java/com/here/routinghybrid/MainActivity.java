@@ -21,11 +21,12 @@ package com.here.routinghybrid;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import android.util.Log;
-import android.view.View;
 
 import com.here.sdk.core.engine.AuthenticationMode;
 import com.here.sdk.core.engine.SDKNativeEngine;
@@ -37,6 +38,8 @@ import com.here.sdk.mapview.MapFeatures;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
+import com.here.sdk.units.core.utils.EnvironmentLogger;
+import com.here.sdk.units.core.utils.PermissionsRequestor;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -81,7 +84,6 @@ public class MainActivity extends AppCompatActivity {
         Map<String, Runnable> menuItems = new LinkedHashMap<>();
         menuItems.put("Add Route", this::addRouteButtonClicked);
         menuItems.put("Add Waypoints", this::addWaypointsButtonClicked);
-        menuItems.put("Load Segments", this::loadSegmentDataButtonClicked);
         menuItems.put("Switch Online", this::switchOnlineButtonClicked);
         menuItems.put("Switch Offline", this::switchOfflineButtonClicked);
         menuItems.put("Clear Map", this::clearMapButtonClicked);
@@ -160,8 +162,6 @@ public class MainActivity extends AppCompatActivity {
         routingExample.clearMap();
     }
 
-    public void loadSegmentDataButtonClicked() {routingExample.loadAndProcessSegmentData();}
-
     public void switchOnlineButtonClicked() {
         routingExample.onSwitchOnlineButtonClicked();
     }
@@ -196,6 +196,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void disposeHERESDK() {
+        if (routingExample != null) {
+            routingExample.dispose();
+        }
+
         // Free HERE SDK resources before the application shuts down.
         // Usually, this should be called only on application termination.
         // Afterwards, the HERE SDK is no longer usable unless it is initialized again.

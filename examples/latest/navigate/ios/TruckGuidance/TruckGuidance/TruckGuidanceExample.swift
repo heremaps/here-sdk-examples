@@ -199,7 +199,7 @@ class TruckGuidanceExample: TapDelegate,
     // Configure the displayed vehicle restrictions.
     // Only the specified types will be shown. For example, when truck is set, then only
     // icons applicable for trucks are displayed.
-    // TunnelCategory belongs to the HazardousMaterial.
+    // TunnelCategory are closely related to the HazardousMaterial.
     // Tunnels are categorized from b (low risk, few restrictions) to e (high risk)
     // based on their safety features and the potential danger posed by the goods
     // transported through them.

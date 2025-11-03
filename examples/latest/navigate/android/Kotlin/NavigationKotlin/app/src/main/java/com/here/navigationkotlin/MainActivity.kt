@@ -73,11 +73,12 @@ import com.here.sdk.mapview.MapScene
 import com.here.sdk.mapview.MapScheme
 import com.here.sdk.mapview.MapView
 import com.here.sdk.units.core.utils.EnvironmentLogger
+import com.here.sdk.units.core.utils.PermissionsRequestor
 
 class MainActivity: ComponentActivity() {
 
     private val environmentLogger = EnvironmentLogger()
-    private var permissionsRequestor: PermissionsRequestor? = null
+    private lateinit var permissionsRequestor: PermissionsRequestor
     private var mapView: MapView? = null
     private var app: App? = null
     private var messageViewUpdater: MessageViewUpdater? = null
@@ -285,10 +286,9 @@ class MainActivity: ComponentActivity() {
             throw RuntimeException("Initialization of HERE SDK failed: " + e.error.name)
         }
     }
-
+   // Convenience method to check all permissions that have been added to the AndroidManifest.
     private fun handleAndroidPermissions() {
-        permissionsRequestor = PermissionsRequestor(this)
-        permissionsRequestor!!.request(object :
+        permissionsRequestor.request(object :
             PermissionsRequestor.ResultListener {
             override fun permissionsGranted() {
                 loadMapScene()

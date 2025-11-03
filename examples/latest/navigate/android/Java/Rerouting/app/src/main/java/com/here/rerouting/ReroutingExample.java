@@ -812,4 +812,10 @@ public class ReroutingExample {
         builder.setMessage(message);
         builder.show();
     }
+
+    // Dispose the RoutingEngine instance to cancel any pending requests
+    // and shut it down for proper resource cleanup.
+    public void dispose() {
+        routingEngine.dispose();
+    }
 }

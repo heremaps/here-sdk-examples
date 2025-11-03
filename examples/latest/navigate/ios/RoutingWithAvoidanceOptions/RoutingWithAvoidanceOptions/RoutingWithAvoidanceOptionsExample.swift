@@ -188,7 +188,7 @@ class RoutingWithAvoidanceOptionsExample : LongPressDelegate, TapDelegate {
                 loadSegmentData(ocmSegmentId: segmentId)
             }
         } catch let MapDataLoaderError {
-            print("Error loading segment data: \(MapDataLoaderError)")
+            print("SegmentDataLoader.loadData failed: \(MapDataLoaderError)")
         }
     }
     

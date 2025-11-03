@@ -54,7 +54,7 @@ import com.here.time.Duration
 class TrafficExample(private val context: Context, private val mapView: MapView) {
 
     private val mapPolylines = arrayListOf<MapPolyline>()
-    private var trafficEngine: TrafficEngine? = null
+    private var trafficEngine: TrafficEngine
 
     init {
         val camera: MapCamera = mapView.camera
@@ -179,7 +179,7 @@ class TrafficExample(private val context: Context, private val mapView: MapView)
         // Optionally, specify a language:
         // the language of the country where the incident occurs is used.
         // trafficIncidentsQueryOptions.languageCode = LanguageCode.EN_US;
-        trafficEngine!!.lookupIncident(
+        trafficEngine.lookupIncident(
             originalId, trafficIncidentsQueryOptions
         ) { trafficQueryError, trafficIncident ->
             if (trafficQueryError == null) {
@@ -231,7 +231,7 @@ class TrafficExample(private val context: Context, private val mapView: MapView)
         // Optionally, specify a language:
         // the language of the country where the incident occurs is used.
         // trafficIncidentsQueryOptions.languageCode = LanguageCode.EN_US;
-        trafficEngine!!.queryForIncidents(
+        trafficEngine.queryForIncidents(
             geoCircle, trafficIncidentsQueryOptions
         ) { trafficQueryError, trafficIncidentsList ->
             if (trafficQueryError == null) {

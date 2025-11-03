@@ -29,7 +29,6 @@ import androidx.appcompat.app.AlertDialog;
 import com.here.sdk.core.Color;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.GeoPolyline;
-import com.here.sdk.core.LocalizedText;
 import com.here.sdk.core.Point2D;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.core.threading.TaskHandle;
@@ -51,8 +50,6 @@ import com.here.sdk.routing.Maneuver;
 import com.here.sdk.routing.ManeuverAction;
 import com.here.sdk.routing.PaymentMethod;
 import com.here.sdk.routing.Route;
-import com.here.sdk.routing.RouteLabel;
-import com.here.sdk.routing.RouteLabelType;
 import com.here.sdk.routing.RoutePlace;
 import com.here.sdk.routing.RouteRailwayCrossing;
 import com.here.sdk.routing.RoutingEngine;
@@ -149,7 +146,6 @@ public class RoutingExample {
                             logRouteSectionDetails(currentRoute);
                             logRouteViolations(currentRoute);
                             logTollDetails(currentRoute);
-                            logRouteLabels(currentRoute);
                         } else {
                             showDialog("Error while calculating a route:", routingError.toString());
                         }
@@ -245,23 +241,6 @@ public class RoutingExample {
                     }
                 }
             }
-        }
-    }
-
-    private void logRouteLabels(Route route) {
-        // Get the list of the street names or route numbers through which the route is going to pass.
-        // Make sure to enable this feature via routeOptions.enableRouteLabels (see below).
-        List<RouteLabel> routeLabels = route.getRouteLabels();
-
-        if (routeLabels.isEmpty()) {
-            Log.d(TAG, "No route labels found for this route.");
-            return;
-        }
-
-        for (RouteLabel routeLabel : routeLabels) {
-            LocalizedText name = routeLabel.name;
-            RouteLabelType routeLabelType = routeLabel.type;
-            Log.d(TAG, "Route label: " + name.text + ", Type: " + routeLabelType.name());
         }
     }
 
@@ -434,9 +413,6 @@ public class RoutingExample {
                 TrafficOptimizationMode.TIME_DEPENDENT :
                 TrafficOptimizationMode.DISABLED;
 
-        // Specifies whether route labels should be included in the route response.
-        carOptions.routeOptions.enableRouteLabels = true;
-
         return carOptions;
     }
 
@@ -591,5 +567,11 @@ public class RoutingExample {
         builder.setTitle(title);
         builder.setMessage(message);
         builder.show();
+    }
+
+    // Dispose the RoutingEngine instance to cancel any pending requests
+    // and shut it down for proper resource cleanup.
+    public void dispose() {
+        routingEngine.dispose();
     }
 }
