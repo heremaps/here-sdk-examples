@@ -22,6 +22,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/core.errors.dart';
+import 'package:here_sdk/core.threading.dart';
 import 'package:here_sdk/gestures.dart';
 import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/routing.dart';
@@ -47,6 +48,7 @@ class EVRoutingExample {
   GeoCoordinates? _destinationGeoCoordinates;
   final ShowDialogFunction _showDialog;
   List<String> chargingStationsIDs = [];
+  TaskHandle? _currentRouteCalculationTask;
 
   // Metadata keys used when picking a charging station on the map.
   final String supplierNameMetadataKey = "supplierName";
@@ -94,6 +96,11 @@ class EVRoutingExample {
   // Includes a user waypoint to add an intermediate charging stop along the route,
   // in addition to charging stops that are added by the engine.
   void addEVRoute() {
+    if (_isRouteCalculationRunning) {
+      print("Previous route calculation still in progress.");
+      return;
+    }
+
     clearMap();
     chargingStationsIDs.clear();
 
@@ -104,7 +111,7 @@ class EVRoutingExample {
     var plannedChargingStopWaypoint = createUserPlannedChargingStopWaypoint();
     List<Waypoint> waypoints = [startWaypoint, plannedChargingStopWaypoint, destinationWaypoint];
 
-    _routingEngine.calculateEVCarRoute(waypoints, _getEVCarOptions(), (
+    _currentRouteCalculationTask = _routingEngine.calculateEVCarRoute(waypoints, _getEVCarOptions(), (
       RoutingError? routingError,
       List<here.Route>? routeList,
     ) {
@@ -121,6 +128,8 @@ class EVRoutingExample {
       }
     });
   }
+
+  bool get _isRouteCalculationRunning => _currentRouteCalculationTask?.isFinished == false;
 
   // Simulate a user planned stop based on random coordinates.
   Waypoint createUserPlannedChargingStopWaypoint() {

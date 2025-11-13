@@ -32,6 +32,7 @@ import 'package:here_sdk/routing.dart';
 import 'package:here_sdk/trafficawarenavigation.dart';
 import 'package:navigation_app/RouteCalculator.dart';
 
+import 'ElectronicHorizonHandler.dart';
 import 'HEREPositioningProvider.dart';
 import 'HEREPositioningSimulator.dart';
 import 'NavigationHandler.dart';
@@ -48,6 +49,7 @@ class NavigationExample {
   late RouteCalculator _routeCalculator;
   RoutePrefetcher _routePrefetcher;
   PolygonPrefetcher _polygonPrefetcher;
+  late ElectronicHorizonHandler _electronicHorizonHandler;
 
   NavigationExample(
     HereMapController hereMapController,
@@ -90,12 +92,16 @@ class NavigationExample {
     // An engine to find better routes during guidance.
     _createDynamicRoutingEngine();
 
+    // Optionally retrieve information about the road(s) ahead of the user based on the most probably paths.
+    _electronicHorizonHandler = ElectronicHorizonHandler();
+
     _routeCalculator = routeCalculator;
 
     // A class to handle various kinds of guidance events.
     _navigationHandler = NavigationHandler(
       _visualNavigator,
       _dynamicRoutingEngine,
+      _electronicHorizonHandler,
       _updateMessageState,
       _routeCalculator,
     );
@@ -173,6 +179,7 @@ class NavigationExample {
     _locationSimulationProvider.startLocating(route, _visualNavigator);
 
     _startDynamicSearchForBetterRoutes(route);
+    _electronicHorizonHandler.start(route);
   }
 
   void startNavigation(HERE.Route route) {
@@ -190,6 +197,7 @@ class NavigationExample {
     _herePositioningProvider.startLocating(_visualNavigator, LocationAccuracy.navigation);
 
     _startDynamicSearchForBetterRoutes(route);
+    _electronicHorizonHandler.start(route);
   }
 
   void _startDynamicSearchForBetterRoutes(HERE.Route route) {
@@ -231,6 +239,7 @@ class NavigationExample {
     // Stop in case it was started before.
     _locationSimulationProvider.stop();
     _dynamicRoutingEngine.stop();
+    _electronicHorizonHandler.stop();
     _routePrefetcher.stopPrefetchAroundRoute();
     _startTracking();
     _updateMessageState("Tracking device's location.");

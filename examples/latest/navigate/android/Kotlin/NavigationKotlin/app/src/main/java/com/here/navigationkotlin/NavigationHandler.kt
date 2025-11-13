@@ -21,6 +21,7 @@ package com.here.navigationkotlin
 
 import android.content.Context
 import android.util.Log
+import com.here.navigation.ElectronicHorizonHandler
 import com.here.sdk.core.LanguageCode
 import com.here.sdk.core.UnitSystem
 import com.here.sdk.core.errors.InstantiationErrorException
@@ -75,7 +76,8 @@ class NavigationHandler(
 
     fun setupListeners(
         visualNavigator: VisualNavigator,
-        dynamicRoutingEngine: DynamicRoutingEngine
+        dynamicRoutingEngine: DynamicRoutingEngine,
+        electronicHorizonHandler: ElectronicHorizonHandler
     ) {
         // A helper class for TTS.
         voiceAssistant = VoiceAssistant(context, object : VoiceAssistant.VoiceAssistantListener {
@@ -144,6 +146,9 @@ class NavigationHandler(
                         lastMapMatchedLocation!!,
                         routeProgress.sectionIndex
                     )
+
+                    // Update the ElectronicHorizon with the last map-matched location.
+                    electronicHorizonHandler.update(lastMapMatchedLocation!!)
                 }
                 updateTrafficOnRoute(routeProgress, visualNavigator)
             }

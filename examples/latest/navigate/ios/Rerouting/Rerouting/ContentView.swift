@@ -49,7 +49,7 @@ struct ContentView: View {
                      }
                  }
                  HStack {
-                     CustomToggleButton(onLabel: "Deviation points: Off", offLabel: "Deviation points: On") {
+                     CustomToggleButton(onLabel: "Deviation points: On", offLabel: "Deviation points: Off") {
                          reroutingExample?.onDeviationPointsButtonClicked()
                      }
                      CustomToggleButton(onLabel: "Toggle speed: 8", offLabel: "Toggle speed: 1") {

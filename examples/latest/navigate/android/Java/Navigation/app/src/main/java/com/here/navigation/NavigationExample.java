@@ -64,6 +64,7 @@ public class NavigationExample {
     private PolygonPrefetcher polygonPrefetcher;
     private final NavigationHandler navigationHandler;
     private final TextView messageView;
+    private final ElectronicHorizonHandler electronicHorizonHandler;
 
     public NavigationExample(Context context, MapView mapView, TextView messageView) {
         this.messageView = messageView;
@@ -95,9 +96,12 @@ public class NavigationExample {
 
         createDynamicRoutingEngine();
 
+        // Optionally retrieve information about the road(s) ahead of the user based on the most probably paths.
+        electronicHorizonHandler = new ElectronicHorizonHandler();
+
         // A class to handle various kinds of guidance events.
         navigationHandler = new NavigationHandler(context, messageView);
-        navigationHandler.setupListeners(visualNavigator, dynamicRoutingEngine);
+        navigationHandler.setupListeners(visualNavigator, dynamicRoutingEngine, electronicHorizonHandler);
 
         messageView.setText("Initialization completed.");
     }
@@ -188,6 +192,8 @@ public class NavigationExample {
 
         // Synchronize with the toggle button state.
         updateCameraTracking(isCameraTrackingEnabled);
+
+        electronicHorizonHandler.start(route);
     }
 
     private void startDynamicSearchForBetterRoutes(Route route) {
@@ -233,6 +239,7 @@ public class NavigationExample {
         messageView.setText("Tracking device's location.");
 
         dynamicRoutingEngine.stop();
+        electronicHorizonHandler.stop();
         routePrefetcher.stopPrefetchAroundRoute();
         // Synchronize with the toggle button state.
         updateCameraTracking(isCameraTrackingEnabled);

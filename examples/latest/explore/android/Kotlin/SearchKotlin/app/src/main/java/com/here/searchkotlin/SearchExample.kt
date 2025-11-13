@@ -369,7 +369,7 @@ class SearchExample(private val context: Context, private val mapView: MapView) 
     }
 
     private fun createPoiMapMarker(geoCoordinates: GeoCoordinates): MapMarker {
-        val mapImage = MapImageFactory.fromResource(context.resources, R.drawable.poi)
+        val mapImage = MapImageFactory.fromResource(context.resources, com.here.sdk.units.core.R.drawable.poi)
         return MapMarker(geoCoordinates, mapImage, Anchor2D(0.5, 1.0))
     }
 

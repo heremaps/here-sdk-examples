@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		834F101F2EBE93E000E38D82 /* ElectronicHorizonHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 834F101E2EBE93BC00E38D82 /* ElectronicHorizonHandler.swift */; };
 		83C837C02C207F360004F54E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 83C837BF2C207F360004F54E /* Assets.xcassets */; };
 		83C837C32C207F360004F54E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 83C837C22C207F360004F54E /* Preview Assets.xcassets */; };
 		83C837CB2C20AAE50004F54E /* heresdk.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 83C837CA2C20AAE50004F54E /* heresdk.xcframework */; };
@@ -40,6 +41,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		834F101E2EBE93BC00E38D82 /* ElectronicHorizonHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElectronicHorizonHandler.swift; sourceTree = "<group>"; };
 		83C837B82C207F340004F54E /* Navigation.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Navigation.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		83C837BF2C207F360004F54E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		83C837C22C207F360004F54E /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -97,6 +99,7 @@
 				8639ECC52CDA8F93005FD0A3 /* NavigationAppLogic.swift */,
 				8639ECCF2CDA94E5005FD0A3 /* NavigationExample.swift */,
 				8639ECC32CDA8F83005FD0A3 /* NavigationHandler.swift */,
+				834F101E2EBE93BC00E38D82 /* ElectronicHorizonHandler.swift */,
 				8639ECCD2CDA8FBD005FD0A3 /* HEREPositioningProvider.swift */,
 				8639ECCB2CDA8FAE005FD0A3 /* HEREPositioningSimulator.swift */,
 				8639ECC92CDA8FA7005FD0A3 /* LanguageCodeConverter.swift */,
@@ -208,6 +211,7 @@
 				8639ECBE2CDA8F5C005FD0A3 /* TimeUtils.swift in Sources */,
 				8639ECBA2CDA8F38005FD0A3 /* CustomViews.swift in Sources */,
 				8639ECC82CDA8FA0005FD0A3 /* NavigationApp.swift in Sources */,
+				834F101F2EBE93E000E38D82 /* ElectronicHorizonHandler.swift in Sources */,
 				8639ECD02CDA94EA005FD0A3 /* NavigationExample.swift in Sources */,
 				8639ECCA2CDA8FA8005FD0A3 /* LanguageCodeConverter.swift in Sources */,
 			);

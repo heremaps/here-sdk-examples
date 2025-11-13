@@ -38,6 +38,7 @@ import com.here.sdk.core.Point2D;
 import com.here.sdk.core.Rectangle2D;
 import com.here.sdk.core.Size2D;
 import com.here.sdk.core.errors.InstantiationErrorException;
+import com.here.sdk.core.threading.TaskHandle;
 import com.here.sdk.gestures.TapListener;
 import com.here.sdk.mapview.LineCap;
 import com.here.sdk.mapview.MapCamera;
@@ -75,6 +76,7 @@ import com.here.sdk.routing.RoutingEngine;
 import com.here.sdk.routing.RoutingError;
 import com.here.sdk.routing.Section;
 import com.here.sdk.routing.SectionNotice;
+import com.here.sdk.routing.Span;
 import com.here.sdk.routing.Waypoint;
 import com.here.sdk.search.CategoryQuery;
 import com.here.sdk.search.Details;
@@ -99,6 +101,8 @@ import java.util.List;
 // (isoline routing).
 public class EVRoutingExample {
 
+    private static final String TAG = EVRoutingExample.class.getName();
+
     private final Context context;
     private final MapView mapView;
     private final List<MapMarker> mapMarkers = new ArrayList<>();
@@ -110,6 +114,7 @@ public class EVRoutingExample {
     private GeoCoordinates destinationGeoCoordinates;
     private final List<String> chargingStationsIDs = new ArrayList<>();
     private final IsolineRoutingEngine isolineRoutingEngine;
+    private TaskHandle currentRouteCalculationTask;
 
     // Metadata keys used when picking a charging station on the map.
     private final String SUPPLIER_NAME_METADATA_KEY = "supplier_name";
@@ -120,6 +125,10 @@ public class EVRoutingExample {
     private final String RESERVED_CONNECTORS_METADATA_KEY = "reserved_connectors";
     private final String LAST_UPDATED_METADATA_KEY = "last_updated";
     private final String REQUIRED_CHARGING_METADATA_KEY = "required_charging";
+
+    // Store the user-defined charging stop to verify whether it was
+    // included or modified in the calculated route, based on reachability.
+    private Waypoint lastPlannedChargingStopWaypoint = null;
 
     public EVRoutingExample(Context context, MapView mapView) {
         this.context = context;
@@ -157,6 +166,11 @@ public class EVRoutingExample {
     // Includes a user waypoint to add an intermediate charging stop along the route, 
     // in addition to charging stops that are added by the engine.
     public void addEVRouteButtonClicked() {
+        if (isRouteCalculationRunning()) {
+            Log.d(TAG, "Previous route calculation still in progress.");
+            return;
+        }
+
         chargingStationsIDs.clear();
 
         startGeoCoordinates = createRandomGeoCoordinatesInViewport();
@@ -164,10 +178,11 @@ public class EVRoutingExample {
         Waypoint startWaypoint = new Waypoint(startGeoCoordinates);
         Waypoint destinationWaypoint = new Waypoint(destinationGeoCoordinates);
         Waypoint plannedChargingStopWaypoint = createUserPlannedChargingStopWaypoint();
+        lastPlannedChargingStopWaypoint = plannedChargingStopWaypoint;
         List<Waypoint> waypoints =
                 new ArrayList<>(Arrays.asList(startWaypoint, plannedChargingStopWaypoint, destinationWaypoint));
 
-        routingEngine.calculateRoute(waypoints, getEVCarOptions(), new CalculateRouteCallback() {
+        currentRouteCalculationTask = routingEngine.calculateRoute(waypoints, getEVCarOptions(), new CalculateRouteCallback() {
             @Override
             public void onRouteCalculated(RoutingError routingError, List<Route> list) {
                 if (routingError != null) {
@@ -180,9 +195,18 @@ public class EVRoutingExample {
                 showRouteOnMap(route);
                 logRouteViolations(route);
                 logEVDetails(route);
+
+                logSpanConsumption(route);
+                logSectionArrivalCharge(route);
+                verifyAndLogPlannedStopOutcome(route);
+
                 searchAlongARoute(route);
             }
         });
+    }
+
+    private boolean isRouteCalculationRunning() {
+        return currentRouteCalculationTask != null && !currentRouteCalculationTask.isFinished();
     }
 
     // Simulate a user planned stop based on random coordinates.
@@ -339,6 +363,141 @@ public class EVRoutingExample {
             }
 
             sectionIndex += 1;
+        }
+    }
+
+    // Logs estimated energy consumption by EV vehicle per span.
+    private void logSpanConsumption(Route route) {
+        int sectionIdx = 0;
+        for (Section section : route.getSections()) {
+            int spanIdx = 0;
+            for (Span span : section.getSpans()) {
+                Double kWh = span.getConsumptionInKilowattHours();
+                if (kWh != null) {
+                    Log.d("EVSpan: ", "Section: " + sectionIdx + " span " + spanIdx + " consumption: " + String.format("%.3f kWh", kWh));
+                } else {
+                    Log.d("EVSpan: ", "Section: " + sectionIdx + " span " + spanIdx + " consumption: n/a");
+                }
+                spanIdx++;
+            }
+            sectionIdx++;
+        }
+    }
+
+    // Logs remaining EV battery charge at the end of each route's section
+    // and verifies the vehicle reachability to the destination.
+    private void logSectionArrivalCharge(Route route) {
+        int sectionIndex = 0;
+
+        // Tracks the most recent arrival charge value; used to determine the final battery state.
+        Double lastSectionArrivalChargeKWh = null;
+
+        // Iterate through all route sections. Each section represents a drive segment
+        // between two waypoints or between two charging stops.
+        for (Section routeSection : route.getSections()) {
+
+            // Retrieve the estimated battery charge when arriving at the end of this section.
+            // If offline data or estimation is missing, this value can be null.
+            Double remainingChargeAtArrivalKWh = (routeSection.getArrivalPlace() != null)
+                    ? routeSection.getArrivalPlace().chargeInKilowattHours
+                    : null;
+
+            // Log the per-section remaining charge in kWh.
+            // This can help to analyze battery consumption patterns along the route.
+            if (remainingChargeAtArrivalKWh != null) {
+                Log.i("EVArrival: ", "Section: " + sectionIndex
+                        + ": remaining charge upon arrival = "
+                        + String.format("%.2f", remainingChargeAtArrivalKWh) + " kWh");
+
+                // Update the last known arrival charge; represents the vehicle's battery
+                // state after completing this section.
+                lastSectionArrivalChargeKWh = remainingChargeAtArrivalKWh;
+            } else {
+                Log.i("EVArrival: ", "Section: " + sectionIndex
+                        + ": remaining charge upon arrival not available");
+            }
+            sectionIndex++;
+        }
+
+        // After processing all sections, validate the vehicle's charge level
+        // at the route's destination (final arrival point).
+        if (lastSectionArrivalChargeKWh != null) {
+            Log.i("EVArrival: ", "Final destination arrival charge = "
+                    + String.format("%.2f", lastSectionArrivalChargeKWh) + " kWh");
+
+            // A negative or very low charge indicates that the vehicle cannot reach
+            // the destination with the current EV configuration.
+            if (lastSectionArrivalChargeKWh < 0.0) {
+                Log.w("EVArrival: ",
+                        "Destination not reachable with the current battery configuration.");
+            }
+        } else {
+            Log.w("EVArrival: ", "No arrival charge data available for any section in this route.");
+        }
+    }
+
+    // Verify and log whether the user-defined charging stop was included, adjusted,
+    // or omitted in the calculated route based on reachability and optimization.
+    private void verifyAndLogPlannedStopOutcome(Route route) {
+        String TAG_CHARGING_STOP = "EVChargingStop: ";
+        // If there is no user-defined charging stop to verify, return.
+        if (lastPlannedChargingStopWaypoint == null) {
+            Log.d(TAG_CHARGING_STOP, "No user-planned charging stop to verify.");
+            return;
+        }
+
+        final double COORDINATE_MATCH_RADIUS_METERS = 200.0;
+        boolean isStopIncludedInRoute = false;
+        String matchedChargingStationName = null;
+
+        GeoCoordinates plannedStopCoordinates = lastPlannedChargingStopWaypoint.coordinates;
+
+        for (Section routeSection : route.getSections()) {
+            // Departure place check.
+            // Determine whether the section's starting point corresponds to the user-defined charging stop.
+            if (routeSection.getDeparturePlace().chargingStation != null) {
+                // Retrieve the map-matched coordinates of the departure charging station.
+                GeoCoordinates departureStationCoordinates = routeSection.getDeparturePlace().mapMatchedCoordinates;
+
+                // Compare departure coordinates and mark as matched if within 200 m, indicating the user stop was included in the route.
+                if (departureStationCoordinates.distanceTo(plannedStopCoordinates) <= COORDINATE_MATCH_RADIUS_METERS) {
+                    isStopIncludedInRoute = true;
+                    matchedChargingStationName = routeSection.getDeparturePlace().chargingStation.name;
+                    break;
+                }
+            }
+
+            // Arrival place check.
+            // Determine whether the section’s endpoint corresponds to the user-defined charging stop.
+            if (routeSection.getArrivalPlace().chargingStation != null) {
+                // Retrieve the map-matched coordinates of the arrival charging station.
+                GeoCoordinates arrivalStationCoordinates = routeSection.getArrivalPlace().mapMatchedCoordinates;
+
+                // Compare arrival coordinates and mark as matched if within 200 m, confirming the user stop was applied.
+                if (arrivalStationCoordinates.distanceTo(plannedStopCoordinates) <= COORDINATE_MATCH_RADIUS_METERS) {
+                    isStopIncludedInRoute = true;
+                    matchedChargingStationName = routeSection.getArrivalPlace().chargingStation.name;
+                    break;
+                }
+            }
+        }
+
+        // Log verification results
+        if (isStopIncludedInRoute) {
+            Log.i(TAG_CHARGING_STOP,
+                    "User-defined charging stop was included in the calculated route"
+                            + (matchedChargingStationName != null
+                            ? " (≈ " + matchedChargingStationName + ")."
+                            : "."));
+            Log.d(TAG_CHARGING_STOP,
+                    "Verification result: Stop successfully matched within "
+                            + COORDINATE_MATCH_RADIUS_METERS + " meters.");
+        } else {
+            Log.i(TAG_CHARGING_STOP,
+                    "User-defined charging stop was adjusted or replaced during route optimization.");
+            Log.w(TAG_CHARGING_STOP,
+                    "Verification result: Planned stop coordinates did not match any charging station within "
+                            + COORDINATE_MATCH_RADIUS_METERS + " meters.");
         }
     }
 

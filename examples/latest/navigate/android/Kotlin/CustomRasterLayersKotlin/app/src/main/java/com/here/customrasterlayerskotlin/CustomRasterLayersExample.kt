@@ -121,7 +121,7 @@ class CustomRasterLayersExample {
     }
 
     private fun addPOIMapMarker(geoCoordinates: GeoCoordinates) {
-        val mapImage = MapImageFactory.fromResource(context.resources, R.drawable.poi)
+        val mapImage = MapImageFactory.fromResource(context.resources, com.here.sdk.units.core.R.drawable.poi)
 
         // The bottom, middle position should point to the location.
         // By default, the anchor point is set to 0.5, 0.5.

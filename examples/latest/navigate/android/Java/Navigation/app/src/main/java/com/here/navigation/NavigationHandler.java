@@ -86,7 +86,7 @@ public class NavigationHandler {
     }
 
     // Note that this class does not show all available listeners that can be used for turn-by-turn navigation.
-    public void setupListeners(VisualNavigator visualNavigator, DynamicRoutingEngine dynamicRoutingEngine) {
+    public void setupListeners(VisualNavigator visualNavigator, DynamicRoutingEngine dynamicRoutingEngine, ElectronicHorizonHandler electronicHorizonHandler) {
 
         // A helper class for TTS.
         voiceAssistant = new VoiceAssistant(context, new VoiceAssistant.VoiceAssistantListener() {
@@ -138,6 +138,9 @@ public class NavigationHandler {
                     // Update the route based on the current location of the driver.
                     // We periodically want to search for better traffic-optimized routes.
                     dynamicRoutingEngine.updateCurrentLocation(lastMapMatchedLocation, routeProgress.sectionIndex);
+
+                    // Update the ElectronicHorizon with the last map-matched location.
+                    electronicHorizonHandler.update(lastMapMatchedLocation);
                 }
 
                 updateTrafficOnRoute(routeProgress, visualNavigator);

@@ -51,7 +51,10 @@ public class UnitButton  extends AppCompatButton {
         UnitAnimations.applyClickAnimation(this, new float[]{0.92f,0.85f}, new float[]{1.0f,1.0f}, 150);
 
         // Generate and set a unique ID for this button.
-        setId(View.generateViewId());
+        // Only generate ID if not already set (for XML inflation).
+        if (getId() == NO_ID) {
+            setId(View.generateViewId());
+        }
 
         // Set default styling.
         setBackgroundColor(getResources().getColor(R.color.default_units_button_color, null));

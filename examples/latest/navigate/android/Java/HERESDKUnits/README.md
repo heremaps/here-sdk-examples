@@ -192,3 +192,13 @@ You can remove a module with the IDE or manually.
 
 - **Android Studio**: Select **File > Project Structure… > Modules**, choose the module, click **– Remove**, sync the project, then delete the module directory from disk.
 - **Manual**: Remove the module from `settings.gradle` (`include(":<module>")`), remove any `project(":<module>")` dependencies from other modules, sync Gradle, and delete the module directory.
+
+## Use assets from the core module
+
+HERE SDK Units share drawable assets via the `heresdk-units-core` module. Use these identifiers:
+
+- Point of interest: `R.drawable.poi`  
+- Route start marker: `R.drawable.poi_start`  
+- Route destination marker: `R.drawable.poi_destination`
+
+Add the core module as a dependency to access these shared assets.

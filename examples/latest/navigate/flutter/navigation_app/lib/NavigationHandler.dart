@@ -29,6 +29,7 @@ import 'package:here_sdk/trafficawarenavigation.dart';
 import 'package:navigation_app/RouteCalculator.dart';
 import 'package:navigation_app/time_utils.dart';
 
+import 'ElectronicHorizonHandler.dart';
 import 'LanguageCodeConverter.dart';
 
 // This class combines the various events that can be emitted during turn-by-turn navigation.
@@ -36,6 +37,7 @@ import 'LanguageCodeConverter.dart';
 class NavigationHandler {
   VisualNavigator _visualNavigator;
   DynamicRoutingEngine _dynamicRoutingEngine;
+  ElectronicHorizonHandler _electronicHorizonHandler;
   MapMatchedLocation? _lastMapMatchedLocation;
   int _previousManeuverIndex = -1;
   int lastTrafficUpdateInMilliseconds = 0;
@@ -46,10 +48,12 @@ class NavigationHandler {
   NavigationHandler(
     VisualNavigator visualNavigator,
     DynamicRoutingEngine dynamicRoutingEngine,
+    ElectronicHorizonHandler electronicHorizonHandler,
     ValueChanged<String> updateMessageState,
     RouteCalculator routeCalculator,
   ) : _visualNavigator = visualNavigator,
       _dynamicRoutingEngine = dynamicRoutingEngine,
+      _electronicHorizonHandler = electronicHorizonHandler,
       _updateMessageState = updateMessageState,
       _routeCalculator = routeCalculator {}
 
@@ -108,6 +112,9 @@ class NavigationHandler {
         // Update the route based on the current location of the driver.
         // We periodically want to search for better traffic-optimized routes.
         _dynamicRoutingEngine.updateCurrentLocation(_lastMapMatchedLocation!, routeProgress.sectionIndex);
+
+        // Update the ElectronicHorizon with the last map-matched location.
+        _electronicHorizonHandler.update(_lastMapMatchedLocation!);
       }
 
       updateTrafficOnRoute(routeProgress);
