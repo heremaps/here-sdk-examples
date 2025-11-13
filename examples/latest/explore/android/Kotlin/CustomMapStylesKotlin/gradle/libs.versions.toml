@@ -1,5 +1,5 @@
 [versions]
-agp = "8.9.2"
+agp = "8.13.0"
 kotlin = "2.0.0"
 coreKtx = "1.15.0"
 lifecycleRuntimeKtx = "2.8.7"
@@ -24,4 +24,3 @@ androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "a
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-

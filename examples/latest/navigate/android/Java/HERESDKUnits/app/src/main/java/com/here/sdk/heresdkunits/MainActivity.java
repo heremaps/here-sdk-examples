@@ -39,6 +39,7 @@ import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
 import com.here.sdk.units.core.utils.PermissionsRequestor;
 import com.here.sdk.units.core.utils.EnvironmentLogger;
+import com.here.sdk.units.core.views.UnitDialog;
 import com.here.sdk.units.mapswitcher.MapSwitcherUnit;
 import com.here.sdk.units.mapswitcher.MapSwitcherView;
 import com.here.sdk.units.popupmenu.PopupMenuUnit;
@@ -78,6 +79,8 @@ public class MainActivity extends AppCompatActivity {
         setupPopupMenuUnit1();
         setupPopupMenuUnit2();
         setupMapSwitcher();
+
+        showUnitDialog();
 
         // Note that for this app handling of permissions is optional as no sensitive permissions
         // are required.
@@ -119,6 +122,12 @@ public class MainActivity extends AppCompatActivity {
         PopupMenuView popupMenuView = findViewById(R.id.popup_menu_button2);
         PopupMenuUnit popupMenuUnit = popupMenuView.popupMenuUnit;
         popupMenuUnit.setMenuContent("Menu 2", menuItems);
+    }
+
+    // Unit Dialog with title and description only.
+    private void showUnitDialog() {
+        UnitDialog unitDialog = new UnitDialog(MainActivity.this);
+        unitDialog.showDialog("Note: Title", "This is scrollable long description message.");
     }
 
     private void setupMapSwitcher() {

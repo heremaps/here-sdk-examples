@@ -29,6 +29,7 @@ class NavigationHandler : NavigableLocationDelegate,
 
     private let visualNavigator: VisualNavigator
     private let dynamicRoutingEngine: DynamicRoutingEngine
+    private let electronicHorizonHandler: ElectronicHorizonHandler
     private let voiceAssistant: VoiceAssistant
     private var lastMapMatchedLocation: MapMatchedLocation?
     private var previousManeuverIndex: Int32 = -1
@@ -39,9 +40,11 @@ class NavigationHandler : NavigableLocationDelegate,
 
     init(_ visualNavigator: VisualNavigator,
          _ dynamicRoutingEngine: DynamicRoutingEngine,
+         _ electronicHorizonHandler: ElectronicHorizonHandler,
          _ routeCalculator: RouteCalculator) {
         self.visualNavigator = visualNavigator
         self.dynamicRoutingEngine = dynamicRoutingEngine
+        self.electronicHorizonHandler = electronicHorizonHandler
         self.routeCalculator = routeCalculator
 
         // A helper class for TTS.
@@ -97,6 +100,9 @@ class NavigationHandler : NavigableLocationDelegate,
             dynamicRoutingEngine.updateCurrentLocation(
                 mapMatchedLocation: lastMapMatchedLocation,
                 sectionIndex: routeProgress.sectionIndex)
+            
+            // Update the ElectronicHorizon with the last map-matched location.
+            electronicHorizonHandler.update(mapMatchedLocation: lastMapMatchedLocation)
         }
 
         updateTrafficOnRoute(routeProgress: routeProgress)

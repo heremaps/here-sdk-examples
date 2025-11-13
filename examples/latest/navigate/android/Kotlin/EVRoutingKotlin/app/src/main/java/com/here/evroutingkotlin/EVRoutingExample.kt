@@ -412,8 +412,8 @@ class EVRoutingExample(private val context: Context, private val mapView: MapVie
             route.sections[route.sections.size - 1].arrivalPlace.mapMatchedCoordinates
 
         // Draw a circle to indicate starting point and destination.
-        addCircleMapMarker(startPoint, R.drawable.poi_start)
-        addCircleMapMarker(destination, R.drawable.poi_destination)
+        addCircleMapMarker(startPoint, com.here.sdk.units.core.R.drawable.poi_start)
+        addCircleMapMarker(destination, com.here.sdk.units.core.R.drawable.poi_destination)
     }
 
     // Perform a search for charging stations along the found route.

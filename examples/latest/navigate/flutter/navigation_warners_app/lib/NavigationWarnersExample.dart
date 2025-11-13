@@ -27,6 +27,7 @@ import 'package:here_sdk/routing.dart';
 // Note that this class does not show an exhaustive list of all possible events.
 class NavigationWarnersExample {
   VisualNavigator _visualNavigator;
+  RouteProgress? currentRouteProgress;
 
   NavigationWarnersExample(VisualNavigator visualNavigator) : _visualNavigator = visualNavigator {}
 
@@ -38,6 +39,8 @@ class NavigationWarnersExample {
     // Notifies on the progress along the route including maneuver instructions.
     // These maneuver instructions can be used to compose a visual representation of the next maneuver actions.
     _visualNavigator.routeProgressListener = RouteProgressListener((RouteProgress routeProgress) {
+      this.currentRouteProgress = routeProgress;
+
       // Handle results from onRouteProgressUpdated():
       List<SectionProgress> sectionProgressList = routeProgress.sectionProgress;
       // sectionProgressList is guaranteed to be non-empty.
@@ -483,15 +486,20 @@ class NavigationWarnersExample {
     _visualNavigator.safetyCameraWarningListener = SafetyCameraWarningListener((
       SafetyCameraWarning safetyCameraWarning,
     ) {
+      final currentRoute = _visualNavigator.route;
+
+      final safetyCameraGeoCoordinates = getGeocoordinatesForRemainingDistance(
+        currentRouteProgress!,
+        safetyCameraWarning.distanceToCameraInMeters,
+        currentRoute!,
+      );
+
       if (safetyCameraWarning.distanceType == DistanceType.ahead) {
         print(
-          "Safety camera warning " +
-              safetyCameraWarning.type.name +
-              " ahead in: " +
-              safetyCameraWarning.distanceToCameraInMeters.toString() +
-              "with speed limit =" +
-              safetyCameraWarning.speedLimitInMetersPerSecond.toString() +
-              "m/s",
+          'Safety camera warning ${safetyCameraWarning.type.name} ahead in: '
+              '${safetyCameraWarning.distanceToCameraInMeters} m '
+              'with speed limit = ${safetyCameraWarning.speedLimitInMetersPerSecond} m/s '
+              'at geo-coordinates: ${geoCoordinatesToString(safetyCameraGeoCoordinates)}',
         );
       } else if (safetyCameraWarning.distanceType == DistanceType.passed) {
         print(
@@ -847,4 +855,50 @@ class NavigationWarnersExample {
 
     return roadName;
   }
+
+  // Returns the GeoCoordinates for an object located at the end of the remaining distance.
+  GeoCoordinates getGeocoordinatesForRemainingDistance(
+      RouteProgress routeProgress,
+      double remainingObjectDistanceInMeters,
+      Route currentRoute,) {
+    final currentCCPOffsetInMeters =
+    getOffsetOfCCPOnRouteInMeters(routeProgress, currentRoute);
+
+    // Calculate the offset along the route for the given object.
+    final remainingDistanceOffsetInMeters =
+        currentCCPOffsetInMeters + remainingObjectDistanceInMeters;
+
+    return getGeoCoordinatesFromOffsetInMeters(
+      currentRoute.geometry,
+      remainingDistanceOffsetInMeters,
+    );
+  }
+
+  // Returns the offset of the current camera position (CCP) on the route in meters.
+  double getOffsetOfCCPOnRouteInMeters(RouteProgress routeProgress,
+      Route currentRoute,) {
+    final totalLength = currentRoute.lengthInMeters.toDouble();
+
+    // SectionProgress is guaranteed to be non-empty.
+    final sectionProgressList = routeProgress.sectionProgress;
+    final remainingDistance = sectionProgressList.last.remainingDistanceInMeters
+        .toDouble();
+
+    return totalLength - remainingDistance;
+  }
+
+  // Converts an offset in meters along a GeoPolyline to GeoCoordinates using HERE SDK's coordinatesAtOffsetInMeters.
+  GeoCoordinates getGeoCoordinatesFromOffsetInMeters(GeoPolyline geoPolyline,
+      double offsetInMeters,) {
+    return geoPolyline.coordinatesAtOffsetInMeters(
+      offsetInMeters,
+      GeoPolylineDirection.fromBeginning,
+    );
+  }
+
+  // Converts GeoCoordinates to a human-readable string.
+  String geoCoordinatesToString(GeoCoordinates geoCoordinates) {
+    return '${geoCoordinates.latitude}, ${geoCoordinates.longitude}';
+  }
+
 }

@@ -5,6 +5,7 @@ A reusable unit providing essential core functionalities such as buttons, animat
 ## Core Components
 
 - **UnitButton**: A customizable button view.
+- **UnitDialog**: A customizable dialog view that displays title and scrollable text with rounded corners and pop-in animation.
 - **UnitAnimations**: Utility methods for applying touch and click animations to views.
 - **PermissionsRequestor**: A helper class to check for Android permissions.
 
@@ -28,6 +29,24 @@ A reusable unit providing essential core functionalities such as buttons, animat
 3. Sync with Gradle and run the app.
 
 4. Clone the repo with the HERE SDK Units project and adapt the unit to your needs.
+
+## How to use the UnitDialog in your app
+
+Add the following code to create and show a `UnitDialog` in your app:
+
+```java
+// Create an instance of UnitDialog.
+UnitDialog unitDialog = new UnitDialog(MainActivity.this);
+// reuse as manytimes in the class where it is defined.
+unitDialog.showDialog("Note: Title", "This is scrollable long description message.");
+```
+
+For Kotlin, see below code snippet to show a `UnitDialog`:
+
+```kotlin
+val unitDialog = UnitDialog(this)
+unitDialog.showDialog("Note: Title", "This is a scrollable long description message.")
+```
 
 ## How to use the PermissionsRequestor
 

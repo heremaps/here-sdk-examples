@@ -35,6 +35,7 @@ class NavigationExample : DynamicRoutingDelegate, MessageDelegate {
     private let polygonPrefetcher: PolygonPrefetcher
     private let navigationHandler: NavigationHandler
     private let routeCalculator: RouteCalculator
+    private let electronicHorizonHandler: ElectronicHorizonHandler
     var messageDelegate: MessageDelegate?
 
     init(mapView: MapView, routeCalculator:RouteCalculator) {
@@ -73,8 +74,10 @@ class NavigationExample : DynamicRoutingDelegate, MessageDelegate {
 
         // A class to handle various kinds of guidance events.
 
+        electronicHorizonHandler = ElectronicHorizonHandler()
+        
         navigationHandler = NavigationHandler(
-            visualNavigator, dynamicRoutingEngine, routeCalculator)
+            visualNavigator, dynamicRoutingEngine, electronicHorizonHandler, routeCalculator)
         navigationHandler.messageDelegate = self
     }
 
@@ -190,6 +193,7 @@ class NavigationExample : DynamicRoutingDelegate, MessageDelegate {
         }
 
         startDynamicSearchForBetterRoutes(route)
+        electronicHorizonHandler.start(route: route)
     }
 
     private func startDynamicSearchForBetterRoutes(_ route: Route) {
@@ -207,6 +211,7 @@ class NavigationExample : DynamicRoutingDelegate, MessageDelegate {
         // Without a route the navigator will only notify on the current map-matched location
         // including info such as speed and current street name.
         dynamicRoutingEngine.stop()
+        electronicHorizonHandler.stop()
         routePrefetcher.stopPrefetchAroundRoute()
         visualNavigator.route = nil
         enableDevicePositioning()

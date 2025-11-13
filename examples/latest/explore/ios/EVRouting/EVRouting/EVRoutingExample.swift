@@ -38,6 +38,7 @@ class EVRoutingExample: TapDelegate {
     private var chargingStationsIDs = [String]()
     private var disableOptimization = true
     private var waypoints = [Waypoint]()
+    private var currentRouteCalculationTask: TaskHandle?
     
     // Metadata keys used when picking a charging station on the map.
     private let supplierNameMetadataKey = "supplierName"
@@ -100,13 +101,18 @@ class EVRoutingExample: TapDelegate {
     // Includes a user waypoint to add an intermediate charging stop along the route,
     // in addition to charging stops that are added by the engine.
     func addRoute() {
+        if isRouteCalculationRunning {
+            print("Previous route calculation still in progress.");
+            return;
+        }
+        
         chargingStationsIDs.removeAll()
 
         startGeoCoordinates = createRandomGeoCoordinatesInViewport()
         destinationGeoCoordinates = createRandomGeoCoordinatesInViewport()
         let plannedChargingStopWaypoint = createUserPlannedChargingStopWaypoint()
 
-        routingEngine.calculateRoute(with: [Waypoint(coordinates: startGeoCoordinates!),
+        currentRouteCalculationTask = routingEngine.calculateRoute(with: [Waypoint(coordinates: startGeoCoordinates!),
                                             plannedChargingStopWaypoint,
                                             Waypoint(coordinates: destinationGeoCoordinates!)],
                                      evCarOptions: getEVCarOptions()) { (routingError, routes) in
@@ -123,6 +129,10 @@ class EVRoutingExample: TapDelegate {
             self.logEVDetails(route: route!)
             self.searchAlongARoute(route: route!)
         }
+    }
+    
+    private var isRouteCalculationRunning: Bool {
+        currentRouteCalculationTask?.isFinished == false
     }
     
     // Simulate a user planned stop based on random coordinates.

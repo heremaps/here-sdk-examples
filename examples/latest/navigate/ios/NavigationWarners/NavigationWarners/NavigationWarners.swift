@@ -46,6 +46,7 @@ class NavigationWarners : BorderCrossingWarningDelegate,
                                RealisticViewWarningDelegate {
 
     private var visualNavigator: VisualNavigator!
+    private var currentRouteProgress: RouteProgress?
     
     func setupDelegates(_ visualNavigator: VisualNavigator) {
         self.visualNavigator = visualNavigator
@@ -84,6 +85,8 @@ class NavigationWarners : BorderCrossingWarningDelegate,
     // Conform to RouteProgressDelegate.
     // Notifies on the progress along the route including maneuver instructions.
     func onRouteProgressUpdated(_ routeProgress: RouteProgress) {
+        currentRouteProgress = routeProgress
+        
         // [SectionProgress] is guaranteed to be non-empty.
         let distanceToDestination = routeProgress.sectionProgress.last!.remainingDistanceInMeters
         print("Distance to destination in meters: \(distanceToDestination)")
@@ -188,8 +191,22 @@ class NavigationWarners : BorderCrossingWarningDelegate,
     // Conform to SafetyCameraWarningDelegate.
     // Notifies on safety camera warnings as they appear along the road.
     func onSafetyCameraWarningUpdated(_ safetyCameraWarning: SafetyCameraWarning) {
+        // Safety camera warning GeoCoordinates can only be fetched in non-tracking mode.
+        guard let currentRoute = visualNavigator.route else {
+            fatalError("Route cannot be nil")
+        }
+
+        let safetyCameraGeoCoordinates: GeoCoordinates = getGeocoordinatesForRemainingDistance(
+            routeProgress: currentRouteProgress!,
+            remainingObjectDistanceInMeters: safetyCameraWarning.distanceToCameraInMeters,
+            currentRoute: currentRoute
+        )
+
         if safetyCameraWarning.distanceType == .ahead {
-            print("Safety camera warning \(safetyCameraWarning.type) ahead in: \(safetyCameraWarning.distanceToCameraInMeters) with speed limit = \(safetyCameraWarning.speedLimitInMetersPerSecond)m/s")
+            print("Safety camera warning \(safetyCameraWarning.type) ahead in: " +
+                  "\(safetyCameraWarning.distanceToCameraInMeters) m " +
+                  "with speed limit = \(safetyCameraWarning.speedLimitInMetersPerSecond) m/s " +
+                  "at geo-coordinates: \(geoCoordinatesToString(safetyCameraGeoCoordinates))")
         } else if safetyCameraWarning.distanceType == .passed {
             print("Safety camera warning \(safetyCameraWarning.type) passed: \(safetyCameraWarning.distanceToCameraInMeters) with speed limit = \(safetyCameraWarning.speedLimitInMetersPerSecond)m/s")
         } else if safetyCameraWarning.distanceType == .reached {
@@ -812,5 +829,50 @@ class NavigationWarners : BorderCrossingWarningDelegate,
         // Indicates whether lane recommendation should be used when generating notifications.
         maneuverNotificationOptions.enableLaneRecommendation = true
         visualNavigator.maneuverNotificationOptions = maneuverNotificationOptions
+    }
+    
+    // Returns the GeoCoordinates for an object located at the end of the remaining distance.
+    private func getGeocoordinatesForRemainingDistance(
+        routeProgress: RouteProgress,
+        remainingObjectDistanceInMeters: Double,
+        currentRoute: Route
+    ) -> GeoCoordinates {
+        let currentCCPOffsetInMeters = getOffsetOfCCPOnRouteInMeters(routeProgress: routeProgress, currentRoute: currentRoute)
+        
+        // Calculate the offset along the route for the given object.
+        let remainingDistanceOffsetInMeters = currentCCPOffsetInMeters + remainingObjectDistanceInMeters
+        
+        return getGeoCoordinatesFromOffsetInMeters(
+            geoPolyline: currentRoute.geometry,
+            offsetInMeters: remainingDistanceOffsetInMeters
+        )
+    }
+    
+    // Returns the offset of the current camera position (CCP) on the route in meters.
+    private func getOffsetOfCCPOnRouteInMeters(
+        routeProgress: RouteProgress,
+        currentRoute: Route
+    ) -> Double {
+        let totalLength = Double(currentRoute.lengthInMeters)
+        
+        // SectionProgress is guaranteed to be non-empty.
+        guard let lastSectionProgress = routeProgress.sectionProgress.last else {
+            return 0.0
+        }
+        
+        let remainingDistance = Double(lastSectionProgress.remainingDistanceInMeters)
+        return totalLength - remainingDistance
+    }
+    
+    // Converts an offset in meters along a GeoPolyline to GeoCoordinates using HERE SDK's coordinatesAtOffsetInMeters.
+    private func getGeoCoordinatesFromOffsetInMeters(
+        geoPolyline: GeoPolyline,
+        offsetInMeters: Double
+    ) -> GeoCoordinates {
+        return geoPolyline.coordinatesAt(offsetInMeters: offsetInMeters, direction: .fromBeginning)
+    }
+    
+    private func geoCoordinatesToString(_ geoCoordinates: GeoCoordinates) -> String {
+        return "\(geoCoordinates.latitude), \(geoCoordinates.longitude)"
     }
 }

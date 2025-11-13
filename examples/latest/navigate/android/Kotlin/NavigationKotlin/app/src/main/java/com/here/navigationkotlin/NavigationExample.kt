@@ -20,6 +20,7 @@ package com.here.navigationkotlin
 
 import android.content.Context
 import android.util.Log
+import com.here.navigation.ElectronicHorizonHandler
 import com.here.sdk.core.GeoCoordinates
 import com.here.sdk.core.Location
 import com.here.sdk.core.engine.SDKNativeEngine
@@ -53,6 +54,7 @@ class NavigationExample(
     private var dynamicRoutingEngine: DynamicRoutingEngine? = null
     private val routePrefetcher: RoutePrefetcher
     private val navigationHandler: NavigationHandler
+    private val electronicHorizonHandler: ElectronicHorizonHandler
 
     init {
         // A class to receive real location events.
@@ -81,9 +83,12 @@ class NavigationExample(
 
         createDynamicRoutingEngine()
 
+        // Optionally retrieve information about the road(s) ahead of the user based on the most probably paths.
+        electronicHorizonHandler = ElectronicHorizonHandler()
+
         // A class to handle various kinds of guidance events.
         navigationHandler = NavigationHandler(context, messageView)
-        dynamicRoutingEngine?.let { navigationHandler.setupListeners(visualNavigator, it) }
+        dynamicRoutingEngine?.let { navigationHandler.setupListeners(visualNavigator, it, electronicHorizonHandler) }
 
         messageView.updateText("Initialization completed.")
     }
@@ -152,6 +157,8 @@ class NavigationExample(
 
         startDynamicSearchForBetterRoutes(route)
 
+        electronicHorizonHandler.start(route)
+
         // Synchronize with the toggle button state.
         updateCameraTracking(isCameraTrackingEnabled)
     }
@@ -211,6 +218,7 @@ class NavigationExample(
         messageView.updateText("Tracking device's location.")
 
         dynamicRoutingEngine!!.stop()
+        electronicHorizonHandler.stop()
         routePrefetcher.stopPrefetchAroundRoute()
         // Synchronize with the toggle button state.
         updateCameraTracking(isCameraTrackingEnabled)
