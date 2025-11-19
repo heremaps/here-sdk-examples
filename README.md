@@ -32,7 +32,7 @@ For an overview of the existing features, please check the _Developer Guide_ for
 - [List of example apps for the HERE SDK for iOS](https://www.here.com/docs/bundle/sdk-for-ios-developer-guide/page/topics/examples.html).
 - [List of example apps for the HERE SDK for Flutter](https://www.here.com/docs/bundle/sdk-for-flutter-developer-guide/page/topics/examples.html).
 
-> Not all examples are available for all licenses (formerly known as editions) and platforms. This repo hosts apps for the Lite, Explore and Navigate license.
+> Not all examples are available for all licenses (formerly known as editions) and platforms. This repo hosts apps for the Explore and Navigate license.
 
 Find the [latest examples](examples/latest) for the license and platform of your choice:
 
