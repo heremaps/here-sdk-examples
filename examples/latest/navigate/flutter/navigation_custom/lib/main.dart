@@ -485,18 +485,11 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
   void onLocationUpdated(Location location) {
     // By default, accuracy is nil during simulation, but we want to customize the halo,
     // so we hijack the location object and add an accuracy value.
-    var updatedLocation = _addHorizontalAccuracy(location);
-    // Feed location data into the VisualNavigator.
-    _visualNavigator?.onLocationUpdated(updatedLocation);
-    _lastKnownLocation = updatedLocation;
-  }
-
-  Location _addHorizontalAccuracy(Location simulatedLocation) {
-    var location = Location.withCoordinates(simulatedLocation.coordinates);
-    location.time = simulatedLocation.time;
-    location.bearingInDegrees = simulatedLocation.bearingInDegrees;
+    // Do not do this with real GPS locations!
     location.horizontalAccuracyInMeters = _defaultHaloAccurarcyInMeters;
-    return location;
+    // Feed location data into the VisualNavigator.
+    _visualNavigator?.onLocationUpdated(location);
+    _lastKnownLocation = location;
   }
 
   void _startRouteSimulation(HERE.Route route) {

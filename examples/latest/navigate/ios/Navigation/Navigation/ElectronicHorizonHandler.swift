@@ -51,7 +51,7 @@ class ElectronicHorizonHandler {
     private lazy var electronicHorizonDataLoaderStatusDelegate: ElectronicHorizonDataLoaderStatusDelegate = {
         return createElectronicHorizonDataLoaderStatusDelegate()
     }()
-    
+
     // Keep track of the last requested electronic horizon update to access its segments
     // when data loading is completed.
     private var lastRequestedElectronicHorizonUpdate: ElectronicHorizonUpdate?
@@ -76,7 +76,7 @@ class ElectronicHorizonHandler {
             fatalError("ElectronicHorizonDataLoader is not initialized: \(instantiationError)")
         }
     }
-    
+
     /// Without a route, electronic horizon operates in tracking mode and the most probable path is
     /// estimated based on the current location and previous locations.
     /// With a route, electronic horizon operates in map-matched mode and the route is used
@@ -155,7 +155,8 @@ class ElectronicHorizonHandler {
     }
 
     /// Handle newly arriving map data segments provided by the ElectronicHorizonDataLoader.
-    /// This delegate is called when the status of the data loader is updated and new segments have been loaded.
+    /// This delegate is called when the status of the data loader is updated and new segments have been added
+    /// or removed.
     private func createElectronicHorizonDataLoaderStatusDelegate() -> ElectronicHorizonDataLoaderStatusDelegate {
         class EHStatusDelegate: ElectronicHorizonDataLoaderStatusDelegate {
             weak var handler: ElectronicHorizonHandler?
@@ -169,46 +170,49 @@ class ElectronicHorizonHandler {
 
                 guard let handler = handler,
                       let lastUpdate = handler.lastRequestedElectronicHorizonUpdate else { return }
-
+                
                 // Access the segments that were part of the last requested electronic horizon update.
-                // These segments were requested to be loaded in the call to electronicHorizonDataLoader.loadData().
-                // Internally, the data loader keeps track of which segments were requested for loading and provides them
-                // in order - i.e. a call to electronicHorizonDataLoader.loadData() is followed by a call to this delegate with the
-                // loaded status for the segments that were part of that previous request.
+                // Newly added segments were requested to be loaded in the call to electronicHorizonDataLoader.loadData().
+                // Internally, the data loader keeps track of which segments were requested and keeps updating
+                // the provided ElectronicHorizonUpdate instance over time.
                 for (level, status) in statusMap {
                     // The integer key represents the level of the most preferred path (0) and side paths (1, 2, ...).
-                    // For this example, we only look into fully loaded segments of the most preferred path (level 0).
-                    if status == .fullyLoaded && level == 0 {
-                        // Now, we know that all level 0 segments have been fully loaded and we can access their data.
-                        // Note that addedSegments still contains all levels, so we need to filter for level 0 segments below.
-                        for segment in lastUpdate.addedSegments {
-                            // For any segment you can check the parentPathIndex to determine
-                            // if it is part of the most preferred path (MPP) or a side path.
-                            if segment.parentPathIndex != 0 {
-                                // Skip side path segments as we only want to log MPP segment data in this example.
-                                // And we only want to log fully loaded segments.
-                                continue
-                            }
-
-                            guard let directedOCMSegmentId = segment.segmentId.ocmSegmentId else {
-                                continue
-                            }
-
-                            // Retrieving segment data from the loader is executed synchronous. However, since the data has been
-                            // already loaded, this is a fast operation.
-                            let result = handler.electronicHorizonDataLoader.getSegment(segmentId: directedOCMSegmentId.id)
-                            if result.errorCode == nil, let segmentData = result.segmentData {
-                                // Access the data that was requested to be loaded in SegmentDataLoaderOptions.
-                                // For this example, we just log road signs.
-                                guard let roadSigns = segmentData.roadSigns, !roadSigns.isEmpty else {
+                    // This example shows only how to look at the fully loaded segments of the most preferred path (level 0).
+                    if level == 0 && status == .fullyLoaded {
+                        // Now, level 0 segments have been fully loaded and you can access their data.
+                        // The electronicHorizonPaths list contains segments from all levels,
+                        // so you need to filter for level 0 below.
+                        for electronicHorizonPath in lastUpdate.electronicHorizonPaths {
+                            let electronicHorizonPathSegments = electronicHorizonPath.segments
+                            for segment in electronicHorizonPathSegments {
+                                // For any segment you can check the parentPathIndex to determine
+                                // if it is part of the most preferred path (MPP) or a side path.
+                                if segment.parentPathIndex != 0 {
+                                    // Skip side path segments as we only want to log MPP segment data in this example.
+                                    // And we only want to log fully loaded segments.
                                     continue
                                 }
-                                for roadSign in roadSigns {
-                                    let roadSignCoordinates = handler.getGeoCoordinatesFromOffsetInMeters(
-                                        geoPolyline: segmentData.polyline,
-                                        offsetInMeters: Double(roadSign.offsetInMeters)
-                                    )
-                                    print("\(ElectronicHorizonHandler.LOG_TAG): RoadSign: type = \(roadSign.roadSignType.rawValue), offsetInMeters = \(roadSign.offsetInMeters), lat/lon: \(roadSignCoordinates.latitude)/\(roadSignCoordinates.longitude), segmentId = \(directedOCMSegmentId.id.localId)")
+                                
+                                guard let directedOCMSegmentId = segment.segmentId.ocmSegmentId else {
+                                    continue
+                                }
+                                
+                                // Retrieving segment data from the loader is executed synchronous. However, since the data has been
+                                // already loaded, this is a fast operation.
+                                let result = handler.electronicHorizonDataLoader.getSegment(segmentId: directedOCMSegmentId.id)
+                                if result.errorCode == nil, let segmentData = result.segmentData {
+                                    // Access the data that was requested to be loaded in SegmentDataLoaderOptions.
+                                    // For this example, we just log road signs.
+                                    guard let roadSigns = segmentData.roadSigns, !roadSigns.isEmpty else {
+                                        continue
+                                    }
+                                    for roadSign in roadSigns {
+                                        let roadSignCoordinates = handler.getGeoCoordinatesFromOffsetInMeters(
+                                            geoPolyline: segmentData.polyline,
+                                            offsetInMeters: Double(roadSign.offsetInMeters)
+                                        )
+                                        print("\(ElectronicHorizonHandler.LOG_TAG): RoadSign: type = \(roadSign.roadSignType.rawValue), offsetInMeters = \(roadSign.offsetInMeters), lat/lon: \(roadSignCoordinates.latitude)/\(roadSignCoordinates.longitude), segmentId = \(directedOCMSegmentId.id.localId)")
+                                    }
                                 }
                             }
                         }
@@ -233,7 +237,7 @@ class ElectronicHorizonHandler {
         electronicHorizonDataLoader.removeElectronicHorizonDataLoaderStatusListener(electronicHorizonListener: electronicHorizonDataLoaderStatusDelegate)
         print("\(Self.LOG_TAG): ElectronicHorizon stopped.")
     }
-   
+
     private static func getSDKNativeEngine() -> SDKNativeEngine {
         guard let sdkNativeEngine = SDKNativeEngine.sharedInstance else {
             fatalError("SDKNativeEngine is not initialized.")

@@ -31,7 +31,6 @@ import com.here.sdk.electronichorizon.ElectronicHorizonDataLoaderResult
 import com.here.sdk.electronichorizon.ElectronicHorizonDataLoaderStatusListener
 import com.here.sdk.electronichorizon.ElectronicHorizonListener
 import com.here.sdk.electronichorizon.ElectronicHorizonOptions
-import com.here.sdk.electronichorizon.ElectronicHorizonPathSegment
 import com.here.sdk.electronichorizon.ElectronicHorizonUpdate
 import com.here.sdk.mapdata.DirectedOCMSegmentId
 import com.here.sdk.mapdata.SegmentData
@@ -160,68 +159,68 @@ class ElectronicHorizonHandler {
     }
 
     // Handle newly arriving map data segments provided by the ElectronicHorizonDataLoader.
-    // This listener is called when the status of the data loader is updated and new segments have been loaded.
+    // This listener is called when the status of the data loader is updated and new segments have been added
+    // or removed.
     private fun createElectronicHorizonDataLoaderStatusListener(): ElectronicHorizonDataLoaderStatusListener {
         return object : ElectronicHorizonDataLoaderStatusListener {
             override fun onElectronicHorizonDataLoaderStatusUpdated(statusMap: MutableMap<Int?, ElectronicHorizonDataLoadedStatus?>) {
                 Log.d(LOG_TAG, "ElectronicHorizonDataLoaderStatus updated.")
+                val lastUpdate = lastRequestedElectronicHorizonUpdate ?: return
 
                 // Access the segments that were part of the last requested electronic horizon update.
-                // These segments were requested to be loaded in the call to electronicHorizonDataLoader.loadData().
-                // Internally, the data loader keeps track of which segments were requested for loading and provides them
-                // in order - i.e. a call to electronicHorizonDataLoader.loadData() is followed by a call to this listener with the
-                // loaded status for the segments that were part of that previous request.
+                // Newly added segments were requested to be loaded in the call to electronicHorizonDataLoader.loadData().
+                // Internally, the data loader keeps track of which segments were requested and keeps updating
+                // the provided ElectronicHorizonUpdate instance over time.
                 for (entry in statusMap.entries) {
                     val status: ElectronicHorizonDataLoadedStatus? = entry.value
                     // The integer key represents the level of the most preferred path (0) and side paths (1, 2, ...).
                     val level: Int = entry.key!!
-                    // For this example, we only look into in fully loaded segments of the most preferred path (level 0).
-                    if (status === ElectronicHorizonDataLoadedStatus.FULLY_LOADED && level == 0) {
-                        // Now, we know that all level 0 segments have been fully loaded and we can access their data.
-                        // Note that addedSegments still contains all levels, so we need to filter for level 0 segments below.
-                        val addedSegments: MutableList<ElectronicHorizonPathSegment> =
-                            lastRequestedElectronicHorizonUpdate!!.addedSegments
-                        for (segment in addedSegments) {
-                            // For any segment you can check the parentPathIndex to determine
-                            // if it is part of the most preferred path (MPP) or a side path.
-                            if (segment.parentPathIndex !== 0) {
-                                // Skip side path segments as we only want to log MPP segment data in this example.
-                                // And we only want to log fully loaded segments.
-                                continue
-                            }
-
-                            val directedOCMSegmentId: DirectedOCMSegmentId? =
-                                segment.segmentId.ocmSegmentId
-                            if (directedOCMSegmentId == null) {
-                                continue
-                            }
-
-                            // Retrieving segment data from the loader is executed synchrounous. However, since the data has been
-                            // already loaded, this is a fast operation.
-                            val result: ElectronicHorizonDataLoaderResult =
-                                electronicHorizonDataLoader.getSegment(directedOCMSegmentId.id)
-                            if (result.errorCode == null) {
-                                // When errorCode is null, segmentData is guaranteed to be non-null.
-                                val segmentData: SegmentData = checkNotNull(result.segmentData)
-                                // Access the data that was requested to be loaded in SegmentDataLoaderOptions.
-                                // For this example, we just log road signs.
-                                val roadSigns: MutableList<RoadSign>? = segmentData.getRoadSigns()
-                                if (roadSigns == null || roadSigns.isEmpty()) {
+                    // This example shows only how to look at the fully loaded segments of the most preferred path (level 0).
+                    if (level == 0 && status == ElectronicHorizonDataLoadedStatus.FULLY_LOADED) {
+                        // Now, level 0 segments have been fully loaded and you can access their data.
+                        // The electronicHorizonPaths list contains segments from all levels, so you need to filter for level 0 below.
+                        val electronicHorizonPaths = lastUpdate.electronicHorizonPaths
+                        for (electronicHorizonPath in electronicHorizonPaths) {
+                            val electronicHorizonPathSegments = electronicHorizonPath.segments
+                            for (segment in electronicHorizonPathSegments) {
+                                // For any segment you can check the parentPathIndex to determine
+                                // if it is part of the most preferred path (MPP) or a side path.
+                                if (segment.parentPathIndex != 0) {
+                                    // Skip side path segments as we only want to log MPP segment data in this example.
+                                    // And we only want to log fully loaded segments.
                                     continue
                                 }
-                                for (roadSign in roadSigns) {
-                                    val roadSignCoordinates: GeoCoordinates =
-                                        getGeoCoordinatesFromOffsetInMeters(
-                                            segmentData.getPolyline(),
-                                            roadSign.offsetInMeters.toDouble()
+
+                                val directedOCMSegmentId: DirectedOCMSegmentId = segment.segmentId.ocmSegmentId ?: continue
+
+                                // Retrieving segment data from the loader is executed synchronous. However, since the data has been
+                                // already loaded, this is a fast operation.
+                                val result: ElectronicHorizonDataLoaderResult =
+                                    electronicHorizonDataLoader.getSegment(directedOCMSegmentId.id)
+                                if (result.errorCode == null) {
+                                    // When errorCode is null, segmentData is guaranteed to be non-null.
+                                    val segmentData: SegmentData = checkNotNull(result.segmentData)
+                                    // Access the data that was requested to be loaded in SegmentDataLoaderOptions.
+                                    // For this example, we just log road signs.
+                                    val roadSigns: MutableList<RoadSign>? =
+                                        segmentData.getRoadSigns()
+                                    if (roadSigns == null || roadSigns.isEmpty()) {
+                                        continue
+                                    }
+                                    for (roadSign in roadSigns) {
+                                        val roadSignCoordinates: GeoCoordinates =
+                                            getGeoCoordinatesFromOffsetInMeters(
+                                                segmentData.getPolyline(),
+                                                roadSign.offsetInMeters.toDouble()
+                                            )
+                                        Log.d(
+                                            LOG_TAG, ("RoadSign: type = "
+                                                    + roadSign.roadSignType.name
+                                                    + ", offsetInMeters = " + roadSign.offsetInMeters
+                                                    + ", lat/lon: " + roadSignCoordinates.latitude + "/" + roadSignCoordinates.longitude
+                                                    + ", segmentId = " + directedOCMSegmentId.id.localId)
                                         )
-                                    Log.d(
-                                        LOG_TAG, ("RoadSign: type = "
-                                                + roadSign.roadSignType.name
-                                                + ", offsetInMeters = " + roadSign.offsetInMeters
-                                                + ", lat/lon: " + roadSignCoordinates.latitude + "/" + roadSignCoordinates.longitude
-                                                + ", segmentId = " + directedOCMSegmentId.id.localId)
-                                    )
+                                    }
                                 }
                             }
                         }

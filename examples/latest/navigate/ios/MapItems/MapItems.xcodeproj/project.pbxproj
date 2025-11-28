@@ -21,8 +21,7 @@
 		8666F5F02CE39E0400385C39 /* poi_texture.png in Resources */ = {isa = PBXBuildFile; fileRef = 8666F5EC2CE39E0300385C39 /* poi_texture.png */; };
 		8666F5F12CE39E0400385C39 /* obstacle_texture.png in Resources */ = {isa = PBXBuildFile; fileRef = 8666F5ED2CE39E0400385C39 /* obstacle_texture.png */; };
 		8666F5F22CE39E0400385C39 /* plane.obj in Resources */ = {isa = PBXBuildFile; fileRef = 8666F5EE2CE39E0400385C39 /* plane.obj */; };
-		DCB4B3A92E867EC50097A0C4 /* SignTextNarrow_Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DCB4B3A82E867EC50097A0C4 /* SignTextNarrow_Bold.ttf */; };
-		DCB4B3AA2E867EC50097A0C4 /* SignTextNarrow.LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = DCB4B3A72E867EC50097A0C4 /* SignTextNarrow.LICENSE */; };
+		DC2C96572ECB619A00501DC4 /* SimpleSans.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DC2C96562ECB619A00501DC4 /* SimpleSans.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -54,8 +53,7 @@
 		8666F5EC2CE39E0300385C39 /* poi_texture.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = poi_texture.png; path = ../assets/poi_texture.png; sourceTree = "<group>"; };
 		8666F5ED2CE39E0400385C39 /* obstacle_texture.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = obstacle_texture.png; path = ../assets/obstacle_texture.png; sourceTree = "<group>"; };
 		8666F5EE2CE39E0400385C39 /* plane.obj */ = {isa = PBXFileReference; lastKnownFileType = text; name = plane.obj; path = ../assets/plane.obj; sourceTree = "<group>"; };
-		DCB4B3A72E867EC50097A0C4 /* SignTextNarrow.LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = SignTextNarrow.LICENSE; sourceTree = "<group>"; };
-		DCB4B3A82E867EC50097A0C4 /* SignTextNarrow_Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = SignTextNarrow_Bold.ttf; sourceTree = "<group>"; };
+		DC2C96562ECB619A00501DC4 /* SimpleSans.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = SimpleSans.ttf; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -122,12 +120,11 @@
 		8666F5F32CE39E3400385C39 /* assets */ = {
 			isa = PBXGroup;
 			children = (
+				DC2C96562ECB619A00501DC4 /* SimpleSans.ttf */,
 				8666F5ED2CE39E0400385C39 /* obstacle_texture.png */,
 				8666F5EE2CE39E0400385C39 /* plane.obj */,
 				8666F5EC2CE39E0300385C39 /* poi_texture.png */,
 				8666F5EB2CE39E0300385C39 /* obstacle.obj */,
-				DCB4B3A72E867EC50097A0C4 /* SignTextNarrow.LICENSE */,
-				DCB4B3A82E867EC50097A0C4 /* SignTextNarrow_Bold.ttf */,
 			);
 			path = assets;
 			sourceTree = "<group>";
@@ -193,11 +190,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				8666F5EF2CE39E0400385C39 /* obstacle.obj in Resources */,
+				DC2C96572ECB619A00501DC4 /* SimpleSans.ttf in Resources */,
 				8666F5F02CE39E0400385C39 /* poi_texture.png in Resources */,
 				8666F5F12CE39E0400385C39 /* obstacle_texture.png in Resources */,
 				8666F5F22CE39E0400385C39 /* plane.obj in Resources */,
-				DCB4B3A92E867EC50097A0C4 /* SignTextNarrow_Bold.ttf in Resources */,
-				DCB4B3AA2E867EC50097A0C4 /* SignTextNarrow.LICENSE in Resources */,
 				83C837C32C207F360004F54E /* Preview Assets.xcassets in Resources */,
 				83C837C02C207F360004F54E /* Assets.xcassets in Resources */,
 			);

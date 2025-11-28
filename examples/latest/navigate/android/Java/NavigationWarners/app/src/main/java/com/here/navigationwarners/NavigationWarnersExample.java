@@ -805,13 +805,21 @@ public class NavigationWarnersExample {
     private RoadType getRoadType(Maneuver maneuver, Route route) {
         Section sectionOfManeuver = route.getSections().get(maneuver.getSectionIndex());
         List<Span> spansInSection = sectionOfManeuver.getSpans();
+        int manueverSpanIndex = maneuver.getSpanIndex();
 
         // If attributes list is empty then the road type is rural.
         if(spansInSection.isEmpty()) {
             return RoadType.RURAL;
         }
 
-        Span currentSpan = spansInSection.get(maneuver.getSpanIndex());
+        // The span index for the final maneuvers (those with ManeuverAction.ARRIVE)
+        // cannot be used because they appear after the last span of the route.
+        // Their span index would exceed the span list size, so the previous spanIndex is used instead.
+        if (manueverSpanIndex>= spansInSection.size()){
+            manueverSpanIndex = manueverSpanIndex-1;
+        }
+
+        Span currentSpan = spansInSection.get(manueverSpanIndex);
         List<StreetAttributes> streetAttributes = currentSpan.getStreetAttributes();
 
         // If attributes list contains either CONTROLLED_ACCESS_HIGHWAY, or MOTORWAY or RAMP then the road type is highway.

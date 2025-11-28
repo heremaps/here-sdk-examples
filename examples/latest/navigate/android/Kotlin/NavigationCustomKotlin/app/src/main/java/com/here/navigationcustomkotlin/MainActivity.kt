@@ -80,10 +80,10 @@ import com.here.sdk.routing.RoutingEngine
 import com.here.sdk.routing.RoutingError
 import com.here.sdk.routing.SectionTransportMode
 import com.here.sdk.routing.Waypoint
-import com.here.time.Duration
-import java.util.Date
 import com.here.sdk.units.core.utils.EnvironmentLogger
 import com.here.sdk.units.core.utils.PermissionsRequestor
+import com.here.time.Duration
+import java.util.Date
 
 class MainActivity : ComponentActivity() {
 
@@ -577,21 +577,14 @@ class MainActivity : ComponentActivity() {
 
     private val myLocationListener: LocationListener = object : LocationListener {
         override fun onLocationUpdated(location: Location) {
-            // By default, accuracy is nil during simulation, but we want to customize the halo,
+            // By default, accuracy is null during simulation, but we want to customize the halo,
             // so we hijack the location object and add an accuracy value.
-            val updatedLocation = addHorizontalAccuracy(location)
+            // Do not do this when using real GPS locations!
+            location.horizontalAccuracyInMeters = defaultHaloAccurarcyInMeters
             // Feed location data into the VisualNavigator.
-            visualNavigator?.onLocationUpdated(updatedLocation)
-            lastKnownLocation = updatedLocation
+            visualNavigator?.onLocationUpdated(location)
+            lastKnownLocation = location
         }
-    }
-
-    private fun addHorizontalAccuracy(simulatedLocation: Location): Location {
-        val location = Location(simulatedLocation.coordinates)
-        location.time = simulatedLocation.time
-        location.bearingInDegrees = simulatedLocation.bearingInDegrees
-        location.horizontalAccuracyInMeters = defaultHaloAccurarcyInMeters
-        return location
     }
 
     private fun startRouteSimulation(route: Route) {
