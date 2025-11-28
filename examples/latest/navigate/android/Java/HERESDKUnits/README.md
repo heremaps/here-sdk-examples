@@ -10,7 +10,10 @@ Current sample units include:
 
 - **Core**: A basic component that is required by other units.
 - **MapSwitcher**: A component that switches between map schemes.
+- **MapRuler**: A component that displays the scale of the map.
 - **PopupMenu**: A menu component without HERE SDK dependencies.
+- **CitySelector**: A component that provides a dropdown menu for selecting predefined cities with their coordinates.
+- **Compass**: A component that displays the map’s orientation and allows users to reorient the map to north with a single tap.
 
 See each module’s README for details.
 
@@ -77,19 +80,22 @@ Create the module:
 5. Add your view or logic classes under
    `HERESDKUnits/<your-module>/src/main/java/com/here/sdk/units/<yourunit>/`.
 
-Configure the module:
+Configure the module via the module’s `build.gradle` file:
 
-- Add a compile-time reference to the HERE SDK AAR (units should not bundle the HERE SDK):
+- Add a compile-time reference to the HERE SDK AAR (units should not bundle the HERE SDK in their AAR) and depend on the core unit:
 
   ```gradle
   dependencies {
       // Pick the HERE SDK AAR matching the pattern found in HERESDKUnits/app/libs/.
       // Note: compileOnly ensures that the AAR is not exported together with the resulting unit AAR.
       compileOnly fileTree(dir: file("${project(':app').projectDir}/libs"), include: ['heresdk-navigate-*.aar'])
+
+      // Depend on the core unit to reuse common functionality.
+      api api(project(path: ':here-sdk-units-core'))
   }
   ```
 
-- Set Java compatibility and versioning, and name the output AAR with the version:
+- Set Java compatibility and versioning, and name the output AAR with the version (if not already present in your module's `build.gradle` file):
 
   ```gradle
   android {
@@ -118,7 +124,7 @@ To test a unit without building an AAR for the unit, add a project dependency in
 
 ```gradle
 dependencies {
-    implementation project(path: ':heresdk-units-mapswitcher') // Replace with your module name.
+    implementation project(path: ':here-sdk-units-mapswitcher') // Replace with your module name.
 }
 ```
 
@@ -173,6 +179,8 @@ libs/*.aar
 # Keep HERE SDK Units AARs that contain 'heresdk-units' in the filename. See HERESDKUnits/README.md for details.
 !libs/*heresdk-units*.aar
 ```
+
+Finally, make sure to sync the project now with your Gradle files.
 
 ## Increase the version of units
 

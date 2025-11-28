@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/scaleText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#AA000000"
+        android:padding="8dp"
+        android:layout_margin="10dp"
+        android:text="Scale"
+        android:textColor="#FFFFFF"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/scaleLines"
+        android:textSize="14sp" />
+
+    <RelativeLayout
+        android:id="@+id/scaleLines"
+        android:layout_width="200px"
+        android:layout_height="40px"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="10dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <!-- Left vertical line -->
+        <View
+            android:id="@+id/leftLine"
+            android:layout_width="4px"
+            android:layout_height="200px"
+            android:layout_alignParentStart="true"
+            android:background="#000000" />
+
+        <!-- Right vertical line -->
+        <View
+            android:id="@+id/rightLine"
+            android:layout_width="4px"
+            android:layout_height="200px"
+            android:layout_alignParentEnd="true"
+            android:background="#000000" />
+
+        <!-- Bottom horizontal line -->
+        <View
+            android:id="@+id/bottomLine"
+            android:layout_width="200px"
+            android:layout_height="4px"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:background="#000000" />
+    </RelativeLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -483,20 +483,13 @@ public class MainActivity extends AppCompatActivity {
         public void onLocationUpdated(@NonNull Location location) {
             // By default, accuracy is null during simulation, but we want to customize the halo,
             // so we hijack the location object and add an accuracy value.
-            Location updatedLocation = addHorizontalAccuracy(location);
+            // Do not do this when using real GPS locations!
+            location.horizontalAccuracyInMeters = defaultHaloAccurarcyInMeters;
             // Feed location data into the VisualNavigator.
-            visualNavigator.onLocationUpdated(updatedLocation);
-            lastKnownLocation = updatedLocation;
+            visualNavigator.onLocationUpdated(location);
+            lastKnownLocation = location;
         }
     };
-
-    private Location addHorizontalAccuracy(Location simulatedLocation) {
-        Location location = new Location(simulatedLocation.coordinates);
-        location.time = simulatedLocation.time;
-        location.bearingInDegrees = simulatedLocation.bearingInDegrees;
-        location.horizontalAccuracyInMeters = defaultHaloAccurarcyInMeters;
-        return location;
-    }
 
     private void startRouteSimulation(Route route) {
         if (locationSimulator != null) {

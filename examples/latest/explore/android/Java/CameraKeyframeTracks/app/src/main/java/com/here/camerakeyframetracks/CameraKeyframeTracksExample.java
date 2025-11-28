@@ -37,6 +37,7 @@ import com.here.sdk.core.GeoOrientation;
 import com.here.sdk.mapview.MapCameraAnimation;
 import com.here.sdk.mapview.MapCameraAnimationFactory;
 import com.here.sdk.mapview.MapCameraKeyframeTrack;
+import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapView;
 import com.here.time.Duration;
 
@@ -101,7 +102,7 @@ public class CameraKeyframeTracksExample {
 
         try {
             geoCoordinatesMapCameraKeyframeTrack = MapCameraKeyframeTrack.lookAtTarget(geoCoordinatesKeyframes, new Easing(EasingFunction.LINEAR), KeyframeInterpolationMode.LINEAR);
-            scalarMapCameraKeyframeTrack = MapCameraKeyframeTrack.lookAtDistance(scalarKeyframes, new Easing(EasingFunction.LINEAR), KeyframeInterpolationMode.LINEAR);
+            scalarMapCameraKeyframeTrack = MapCameraKeyframeTrack.lookAtDistance(MapMeasure.Kind.DISTANCE_IN_METERS, scalarKeyframes, new Easing(EasingFunction.LINEAR), KeyframeInterpolationMode.LINEAR);
             geoOrientationMapCameraKeyframeTrack = MapCameraKeyframeTrack.lookAtOrientation(geoOrientationKeyframes, new Easing(EasingFunction.LINEAR), KeyframeInterpolationMode.LINEAR);
         } catch (MapCameraKeyframeTrack.InstantiationException e) {
             // Throws an error if keyframes are empty or the duration of keyframes is invalid.

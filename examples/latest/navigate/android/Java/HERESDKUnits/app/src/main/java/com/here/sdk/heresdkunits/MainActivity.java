@@ -37,13 +37,18 @@ import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
+import com.here.sdk.units.compass.CompassUnit;
+import com.here.sdk.units.compass.CompassView;
 import com.here.sdk.units.core.utils.PermissionsRequestor;
 import com.here.sdk.units.core.utils.EnvironmentLogger;
 import com.here.sdk.units.core.views.UnitDialog;
+import com.here.sdk.units.mapruler.MapScaleView;
 import com.here.sdk.units.mapswitcher.MapSwitcherUnit;
 import com.here.sdk.units.mapswitcher.MapSwitcherView;
 import com.here.sdk.units.popupmenu.PopupMenuUnit;
 import com.here.sdk.units.popupmenu.PopupMenuView;
+import com.here.sdk.units.cityselector.CitySelectorView;
+import com.here.sdk.units.cityselector.CitySelectorUnit;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -78,7 +83,10 @@ public class MainActivity extends AppCompatActivity {
         // Set HERE SDK Units.
         setupPopupMenuUnit1();
         setupPopupMenuUnit2();
+        setupCitySelectorUnit();
         setupMapSwitcher();
+        setupMapScaleRuler();
+        setupCompass();
 
         showUnitDialog();
 
@@ -113,6 +121,11 @@ public class MainActivity extends AppCompatActivity {
         popupMenuUnit.setMenuContent("Menu 1", menuItems);
     }
 
+    private void setupMapScaleRuler() {
+        MapScaleView mapScaleView = findViewById(R.id.map_ruler);
+        mapScaleView.setup(mapView);
+    }
+
     private void setupPopupMenuUnit2() {
         // Define menu items with the code that should be executed when clicking on the item.
         Map<String, Runnable> menuItems = new LinkedHashMap<>();
@@ -122,6 +135,21 @@ public class MainActivity extends AppCompatActivity {
         PopupMenuView popupMenuView = findViewById(R.id.popup_menu_button2);
         PopupMenuUnit popupMenuUnit = popupMenuView.popupMenuUnit;
         popupMenuUnit.setMenuContent("Menu 2", menuItems);
+    }
+
+    private void setupCitySelectorUnit() {
+        CitySelectorView citySelectorView = findViewById(R.id.city_selector);
+        citySelectorView.citySelectorUnit.setOnCitySelectedListener(new CitySelectorUnit.OnCitySelectedListener() {
+            @Override
+            public void onCitySelected(double latitude, double longitude, String cityName) {
+                if (mapView != null) {
+                    double distanceInMeters = 10000;
+                    MapMeasure mapMeasureZoom = new MapMeasure(
+                            MapMeasure.Kind.DISTANCE_IN_METERS, distanceInMeters);
+                    mapView.getCamera().lookAt(new GeoCoordinates(latitude, longitude), mapMeasureZoom);
+                }
+            }
+        });
     }
 
     // Unit Dialog with title and description only.
@@ -134,6 +162,12 @@ public class MainActivity extends AppCompatActivity {
         MapSwitcherView mapSwitcherView = findViewById(R.id.map_switcher);
         MapSwitcherUnit mapSwitcherUnit = mapSwitcherView.mapSwitcherUnit;
         mapSwitcherUnit.setup(mapView, getSupportFragmentManager());
+    }
+
+    private void setupCompass() {
+        CompassView compassView = findViewById(R.id.compass);
+        CompassUnit compassUnit = compassView.compassUnit;
+        compassUnit.setup(mapView, getSupportFragmentManager());
     }
 
     private void handleAndroidPermissions() {

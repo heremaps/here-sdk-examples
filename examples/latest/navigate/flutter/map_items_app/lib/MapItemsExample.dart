@@ -63,18 +63,18 @@ class MapItemsExample {
   void registerCustomFont() {
     // Register a custom font from the assets folder.
     // Place the font file in the "assets" directory.
-    // Full path example: app/src/main/assets/SignTextNarrow_Bold.ttf
+    // Full path example: app/src/main/assets/SimpleSans.ttf
     // Adjust file name and path as appropriate for your project.
-    String fontFileName = "assets/fonts/SignTextNarrow_Bold.ttf";
+    String fontFileName = "assets/fonts/SimpleSans.ttf";
 
     // Make custom font assets available for use with MapImage.TextStyle.
-    // "SignTextNarrow_Bold" is the font name which needs to be referenced when
+    // "SimpleSans" is the font name which needs to be referenced when
     // creating a MapMarker, as shown in this example below.
     // Supported font formats can be found in the API Reference.
     // Use the asset folder or specify an absolute file path.
     // You can register multiple fonts with different names. Repeated registration with the same font name is ignored.
     AssetsManager assetManager = AssetsManager(this._hereMapController.mapContext);
-    assetManager.registerFont("SignTextNarrow_Bold", fontFileName);
+    assetManager.registerFont("SimpleSans", fontFileName);
   }
 
   void showAnchoredMapMarkers() {
@@ -127,7 +127,7 @@ class MapItemsExample {
         textOutlineSizeInPixels,
         textStyleCurrent.textOutlineColor,
         placements,
-        "SignTextNarrow_Bold"  // The font name as registered via assetsManager.registerFont above. If an empty string is provided or the asses is not found, a default font will be used.
+        "SimpleSans"  // The font name as registered via assetsManager.registerFont above. If an empty string is provided or the asses is not found, a default font will be used.
       );
     } on MapMarkerTextStyleInstantiationException catch (e) {
       // An error code will indicate what went wrong, for example, when negative values are set for text size.

@@ -36,6 +36,7 @@ import com.here.sdk.electronichorizon.ElectronicHorizonDataLoaderResult;
 import com.here.sdk.electronichorizon.ElectronicHorizonDataLoaderStatusListener;
 import com.here.sdk.electronichorizon.ElectronicHorizonListener;
 import com.here.sdk.electronichorizon.ElectronicHorizonOptions;
+import com.here.sdk.electronichorizon.ElectronicHorizonPath;
 import com.here.sdk.electronichorizon.ElectronicHorizonPathSegment;
 import com.here.sdk.electronichorizon.ElectronicHorizonUpdate;
 import com.here.sdk.mapdata.DirectedOCMSegmentId;
@@ -145,7 +146,7 @@ public class ElectronicHorizonHandler {
     }
 
     // Create a listener to get notified about electronic horizon updates while a user moves along the road.
-    // This only informs on the available segement IDs and indexes, so that the actual data can be requested
+    // This only informs on the available segment IDs and indexes, so that the actual data can be requested
     // by the ElectronicHorizonDataLoader.
     private ElectronicHorizonListener createElectronicHorizonListener() {
         return new ElectronicHorizonListener() {
@@ -161,7 +162,8 @@ public class ElectronicHorizonHandler {
     }
 
     // Handle newly arriving map data segments provided by the ElectronicHorizonDataLoader.
-    // This listener is called when the status of the data loader is updated and new segments have been loaded.
+    // This listener is called when the status of the data loader is updated and new segments have been added
+    // or removed.
     private ElectronicHorizonDataLoaderStatusListener createElectronicHorizonDataLoaderStatusListener() {
         return new ElectronicHorizonDataLoaderStatusListener() {
             @Override
@@ -169,53 +171,55 @@ public class ElectronicHorizonHandler {
                 Log.d(LOG_TAG, "ElectronicHorizonDataLoaderStatus updated.");
 
                 // Access the segments that were part of the last requested electronic horizon update.
-                // These segments were requested to be loaded in the call to electronicHorizonDataLoader.loadData().
-                // Internally, the data loader keeps track of which segments were requested for loading and provides them
-                // in order - i.e. a call to electronicHorizonDataLoader.loadData() is followed by a call to this listener with the
-                // loaded status for the segments that were part of that previous request.
+                // Newly added segments were requested to be loaded in the call to electronicHorizonDataLoader.loadData().
+                // Internally, the data loader keeps track of which segments were requested and keeps updating
+                // the provided ElectronicHorizonUpdate instance over time.
                 for (Map.Entry<Integer, ElectronicHorizonDataLoadedStatus> entry : statusMap.entrySet()) {
                     ElectronicHorizonDataLoadedStatus status = entry.getValue();
                     // The integer key represents the level of the most preferred path (0) and side paths (1, 2, ...).
                     int level = entry.getKey();
-                    // For this example, we only look into in fully loaded segments of the most preferred path (level 0).
-                    if (status == ElectronicHorizonDataLoadedStatus.FULLY_LOADED && level == 0) {
-                        // Now, we know that all level 0 segments have been fully loaded and we can access their data.
-                        // Note that addedSegments still contains all levels, so we need to filter for level 0 segments below.
-                        List<ElectronicHorizonPathSegment> addedSegments = lastRequestedElectronicHorizonUpdate.addedSegments;
-                        for (ElectronicHorizonPathSegment segment : addedSegments) {
-                            // For any segment you can check the parentPathIndex to determine
-                            // if it is part of the most preferred path (MPP) or a side path.
-                            if (segment.parentPathIndex != 0) {
-                                // Skip side path segments as we only want to log MPP segment data in this example.
-                                // And we only want to log fully loaded segments.
-                                continue;
-                            }
-
-                            DirectedOCMSegmentId directedOCMSegmentId = segment.segmentId.ocmSegmentId;
-                            if (directedOCMSegmentId == null) {
-                                continue;
-                            }
-
-                            // Retrieving segment data from the loader is executed synchrounous. However, since the data has been
-                            // already loaded, this is a fast operation.
-                            ElectronicHorizonDataLoaderResult result = electronicHorizonDataLoader.getSegment(directedOCMSegmentId.id);
-                            if (result.errorCode == null) {
-                                // When errorCode is null, segmentData is guaranteed to be non-null.
-                                SegmentData segmentData = result.segmentData;
-                                assert segmentData != null;
-                                // Access the data that was requested to be loaded in SegmentDataLoaderOptions.
-                                // For this example, we just log road signs.
-                                List<RoadSign> roadSigns = segmentData.getRoadSigns();
-                                if (roadSigns == null || roadSigns.isEmpty()) {
+                    // This example shows only how to look at the fully loaded segments of the most preferred path (level 0).
+                    if (level == 0 && status == ElectronicHorizonDataLoadedStatus.FULLY_LOADED) {
+                        // Now, level 0 segments have been fully loaded and you can access their data.
+                        // The electronicHorizonPaths list contains segments from all levels, so you need to filter for level 0 below.
+                        List<ElectronicHorizonPath> electronicHorizonPaths = lastRequestedElectronicHorizonUpdate.electronicHorizonPaths;
+                        for (ElectronicHorizonPath electronicHorizonPath : electronicHorizonPaths) {
+                            List<ElectronicHorizonPathSegment> electronicHorizonPathSegment = electronicHorizonPath.segments;
+                            for (ElectronicHorizonPathSegment segment : electronicHorizonPathSegment) {
+                                // For any segment you can check the parentPathIndex to determine
+                                // if it is part of the most preferred path (MPP) or a side path.
+                                if (segment.parentPathIndex != 0) {
+                                    // Skip side path segments as we only want to log MPP segment data in this example.
+                                    // And this example only logs fully loaded segments.
                                     continue;
                                 }
-                                for (RoadSign roadSign : roadSigns) {
-                                    GeoCoordinates roadSignCoordinates = getGeoCoordinatesFromOffsetInMeters(segmentData.getPolyline(), roadSign.offsetInMeters);
-                                    Log.d(LOG_TAG, "RoadSign: type = "
-                                            + roadSign.roadSignType.name()
-                                            + ", offsetInMeters = " + roadSign.offsetInMeters
-                                            + ", lat/lon: " + roadSignCoordinates.latitude + "/" + roadSignCoordinates.longitude
-                                            + ", segmentId = " + directedOCMSegmentId.id.localId);
+
+                                DirectedOCMSegmentId directedOCMSegmentId = segment.segmentId.ocmSegmentId;
+                                if (directedOCMSegmentId == null) {
+                                    continue;
+                                }
+
+                                // Retrieving segment data from the loader is executed synchrounous. However, since the data has been
+                                // already loaded, this is a fast operation.
+                                ElectronicHorizonDataLoaderResult result = electronicHorizonDataLoader.getSegment(directedOCMSegmentId.id);
+                                if (result.errorCode == null) {
+                                    // When errorCode is null, segmentData is guaranteed to be non-null.
+                                    SegmentData segmentData = result.segmentData;
+                                    assert segmentData != null;
+                                    // Access the data that was requested to be loaded in SegmentDataLoaderOptions.
+                                    // For this example, we just log road signs.
+                                    List<RoadSign> roadSigns = segmentData.getRoadSigns();
+                                    if (roadSigns == null || roadSigns.isEmpty()) {
+                                        continue;
+                                    }
+                                    for (RoadSign roadSign : roadSigns) {
+                                        GeoCoordinates roadSignCoordinates = getGeoCoordinatesFromOffsetInMeters(segmentData.getPolyline(), roadSign.offsetInMeters);
+                                        Log.d(LOG_TAG, "RoadSign: type = "
+                                                + roadSign.roadSignType.name()
+                                                + ", offsetInMeters = " + roadSign.offsetInMeters
+                                                + ", lat/lon: " + roadSignCoordinates.latitude + "/" + roadSignCoordinates.longitude
+                                                + ", segmentId = " + directedOCMSegmentId.id.localId);
+                                    }
                                 }
                             }
                         }

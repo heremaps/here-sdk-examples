@@ -24,7 +24,7 @@ if (flutterVersionName == null) {
 
 android {
     namespace "com.here.examples.camera_keyframe_tracks_app"
-    compileSdk 35
+    compileSdk 36
 
     lintOptions {
         disable 'InvalidPackage'

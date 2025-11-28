@@ -81,7 +81,8 @@ class CameraKeyframeTracksExample {
         Easing(EasingFunction.linear),
         KeyframeInterpolationMode.linear,
       );
-      scalarMapCameraKeyframeTrack = MapCameraKeyframeTrack.lookAtDistanceWithEasing(
+      scalarMapCameraKeyframeTrack = MapCameraKeyframeTrack.lookAtDistanceWithKind(
+        MapMeasureKind.distanceInMeters,
         scalarKeyframes,
         Easing(EasingFunction.linear),
         KeyframeInterpolationMode.linear,

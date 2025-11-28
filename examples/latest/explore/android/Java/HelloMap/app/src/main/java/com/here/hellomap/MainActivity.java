@@ -37,8 +37,12 @@ import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
+import com.here.sdk.units.compass.CompassUnit;
+import com.here.sdk.units.compass.CompassView;
 import com.here.sdk.units.core.utils.EnvironmentLogger;
 import com.here.sdk.units.core.utils.PermissionsRequestor;
+import com.here.sdk.units.mapruler.MapScaleUnit;
+import com.here.sdk.units.mapruler.MapScaleView;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -80,6 +84,10 @@ public class MainActivity extends AppCompatActivity {
         // Note that for this app handling of permissions is optional as no sensitive permissions
         // are required.
         handleAndroidPermissions();
+
+        // Optionally, add HERE SDK Units to decorate the map view.
+        setupCompass();
+        setupMapScaleView();
     }
 
     private void initializeHERESDK() {
@@ -134,6 +142,19 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    // Optionally, decorate the map view with a compass.
+    private void setupCompass() {
+        CompassView compassView = findViewById(R.id.compass);
+        CompassUnit compassUnit = compassView.compassUnit;
+        compassUnit.setup(mapView, getSupportFragmentManager());
+    }
+
+    // Optionally, decorate the map view with a scale bar.
+    private void setupMapScaleView() {
+        MapScaleView mapScaleView = findViewById(R.id.map_ruler);
+        mapScaleView.setup(mapView);
     }
 
     @Override
