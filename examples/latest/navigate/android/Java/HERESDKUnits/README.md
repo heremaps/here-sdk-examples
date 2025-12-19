@@ -14,6 +14,7 @@ Current sample units include:
 - **PopupMenu**: A menu component without HERE SDK dependencies.
 - **CitySelector**: A component that provides a dropdown menu for selecting predefined cities with their coordinates.
 - **Compass**: A component that displays the map’s orientation and allows users to reorient the map to north with a single tap.
+- **SpeedLimit**: A component that displays the current speed limit as an overlay on the map.
 
 See each module’s README for details.
 
@@ -66,7 +67,7 @@ If you use the Explore license instead of Navigate, remove or adapt any unit cod
 
 Use these conventions to keep modules consistent and discoverable.
 
-- **Module name**: Prefix with `heresdk-units-`, for example `heresdk-units-mapswitcher` (lowercase).
+- **Module name**: Prefix with `here-sdk-units-`, for example `here-sdk-units-mapswitcher` (lowercase).
 - **Package name**: Use `com.here.sdk.units.<yourunit>`.
 
 Create the module:

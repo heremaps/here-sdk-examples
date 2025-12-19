@@ -201,7 +201,7 @@ public class ElectronicHorizonHandler {
 
                                 // Retrieving segment data from the loader is executed synchrounous. However, since the data has been
                                 // already loaded, this is a fast operation.
-                                ElectronicHorizonDataLoaderResult result = electronicHorizonDataLoader.getSegment(directedOCMSegmentId.id);
+                                ElectronicHorizonDataLoaderResult result = electronicHorizonDataLoader.getSegment(directedOCMSegmentId);
                                 if (result.errorCode == null) {
                                     // When errorCode is null, segmentData is guaranteed to be non-null.
                                     SegmentData segmentData = result.segmentData;

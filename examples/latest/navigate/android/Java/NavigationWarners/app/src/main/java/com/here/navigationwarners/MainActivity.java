@@ -22,19 +22,25 @@ package com.here.navigationwarners;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.here.sdk.core.Anchor2D;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.LocationListener;
 import com.here.sdk.core.engine.AuthenticationMode;
 import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.core.engine.SDKOptions;
 import com.here.sdk.core.errors.InstantiationErrorException;
+import com.here.sdk.gestures.GestureState;
 import com.here.sdk.mapview.MapError;
+import com.here.sdk.mapview.MapImage;
+import com.here.sdk.mapview.MapImageFactory;
+import com.here.sdk.mapview.MapMarker;
 import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
@@ -58,11 +64,16 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
     private PermissionsRequestor permissionsRequestor;
     private MapView mapView;
-
     private RoutingEngine routingEngine;
     private VisualNavigator visualNavigator;
     private LocationSimulator locationSimulator;
     private NavigationWarnersExample navigationWarnersExample;
+    private boolean changeDestination = false;
+    private GeoCoordinates startGeoCoordinates;
+    private GeoCoordinates destinationGeoCoordinates;
+    private MapMarker startMapMarker;
+    private MapMarker destinationMapMarker;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +94,18 @@ public class MainActivity extends AppCompatActivity {
             // We can reuse the bundled state and keep the existing HERE SDK instance.
             setupMapView(savedInstanceState);
         }
+
+        showDialog("Navigation Warners",
+                "This app routes to the HERE office in Berlin and logs various TBT events.");
+
+        showDialog("Note", "Do a long press to change start and destination coordinates. " +
+                "Map icons are pickable.");
+
+        startGeoCoordinates = new GeoCoordinates(52.520798, 13.409408);
+        destinationGeoCoordinates =  new GeoCoordinates(52.530905, 13.385007);
+
+        startMapMarker = addPOIMapMarker(startGeoCoordinates, R.drawable.poi_start);
+        destinationMapMarker = addPOIMapMarker(destinationGeoCoordinates, R.drawable.poi_destination);
     }
 
     private void setupMapView(Bundle savedInstanceState) {
@@ -91,6 +114,7 @@ public class MainActivity extends AppCompatActivity {
         mapView = findViewById(R.id.map_view);
         // If the Activity is recreated, we can start with the last bundled state of the map view.
         mapView.onCreate(savedInstanceState);
+        setLongPressGestureHandler(mapView);
     }
 
     private void initializeHERESDK() {
@@ -139,7 +163,6 @@ public class MainActivity extends AppCompatActivity {
                     MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, distanceInMeters);
                     mapView.getCamera().lookAt(
                             new GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
-                    startGuidanceExample();
                 } else {
                     Log.d(TAG, "Loading map failed: mapError: " + mapError.name());
                 }
@@ -147,23 +170,12 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void startGuidanceExample() {
-        showDialog("Navigation Warners",
-                "This app routes to the HERE office in Berlin and logs various TBT events.");
-
-        // We start by calculating a car route.
-        calculateRoute();
-    }
-
-    private void calculateRoute() {
+    private void calculateRoute(Waypoint startWaypoint, Waypoint destinationWaypoint) {
         try {
             routingEngine = new RoutingEngine();
         } catch (InstantiationErrorException e) {
             throw new RuntimeException("Initialization of RoutingEngine failed: " + e.error.name());
         }
-
-        Waypoint startWaypoint = new Waypoint(new GeoCoordinates(52.520798, 13.409408));
-        Waypoint destinationWaypoint = new Waypoint(new GeoCoordinates(52.530905, 13.385007));
 
         routingEngine.calculateRoute(
                 new ArrayList<>(Arrays.asList(startWaypoint, destinationWaypoint)),
@@ -177,6 +189,31 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
     }
+
+    // Use a LongPress handler to define destination waypoint.
+    private void setLongPressGestureHandler(MapView mapView) {
+        mapView.getGestures().setLongPressListener((gestureState, touchPoint) -> {
+            GeoCoordinates geoCoordinates = mapView.viewToGeoCoordinates(touchPoint);
+
+            if (geoCoordinates == null) {
+                showDialog("Note", "Invalid GeoCoordinates.");
+                return;
+            }
+            if (gestureState == GestureState.BEGIN) {
+                // Set new route start or destination geographic coordinates based on long press location.
+                if (changeDestination) {
+                    destinationGeoCoordinates = geoCoordinates;
+                    destinationMapMarker.setCoordinates(geoCoordinates);
+                } else {
+                    startGeoCoordinates = geoCoordinates;
+                    startMapMarker.setCoordinates(geoCoordinates);
+                }
+                // Toggle the marker that should be updated on next long press.
+                changeDestination = !changeDestination;
+            }
+        });
+    }
+
 
     private void startGuidance(Route route) {
         try {
@@ -211,6 +248,10 @@ public class MainActivity extends AppCompatActivity {
 
         locationSimulator.setListener(locationListener);
         locationSimulator.start();
+    }
+
+    public void onStartGuidanceClicked(View view) {
+        calculateRoute(new Waypoint(startGeoCoordinates), new Waypoint(destinationGeoCoordinates));
     }
 
     @Override
@@ -251,6 +292,14 @@ public class MainActivity extends AppCompatActivity {
             // where a disposed instance is accidentally reused.
             SDKNativeEngine.setSharedInstance(null);
         }
+    }
+
+    private MapMarker addPOIMapMarker(GeoCoordinates geoCoordinates, int resourceId) {
+        MapImage mapImage = MapImageFactory.fromResource(this.getResources(), resourceId);
+        Anchor2D anchor2D = new Anchor2D(0.5F, 1);
+        MapMarker mapMarker = new MapMarker(geoCoordinates, mapImage, anchor2D);
+        mapView.getMapScene().addMapMarker(mapMarker);
+        return mapMarker;
     }
 
     private void showDialog(String title, String message) {

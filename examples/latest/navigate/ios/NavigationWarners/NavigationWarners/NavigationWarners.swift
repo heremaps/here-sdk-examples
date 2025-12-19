@@ -21,6 +21,12 @@ import AVFoundation
 import heresdk
 import SwiftUI
 
+enum RoadType {
+    case highway
+    case rural
+    case urban
+}
+
 // This class combines the various events that can be emitted during turn-by-turn navigation.
 // Note that this class does not show an exhaustive list of all possible events.
 class NavigationWarners : BorderCrossingWarningDelegate,
@@ -107,12 +113,12 @@ class NavigationWarners : BorderCrossingWarningDelegate,
         }
 
         let action = nextManeuver.action
-        let roadName = getRoadName(maneuver: nextManeuver)
+        let roadName = getRoadName(maneuver: nextManeuver, route: visualNavigator.route)
         let logMessage = "'\(String(describing: action))' on \(roadName) in \(nextManeuverProgress.remainingDistanceInMeters) meters."
         print(logMessage)
     }
 
-    func getRoadName(maneuver: Maneuver) -> String {
+    func getRoadName(maneuver: Maneuver, route: Route?) -> String {
         let currentRoadTexts = maneuver.roadTexts
         let nextRoadTexts = maneuver.nextRoadTexts
 
@@ -125,7 +131,7 @@ class NavigationWarners : BorderCrossingWarningDelegate,
 
         // On highways, we want to show the highway number instead of a possible road name,
         // while for inner city and urban areas road names are preferred over road numbers.
-        if maneuver.nextRoadType == RoadType.highway {
+        if getRoadType(maneuver: maneuver, route: route!) == RoadType.highway {
             roadName = nextRoadNumber == nil ? nextRoadName : nextRoadNumber
         }
 
@@ -136,6 +142,40 @@ class NavigationWarners : BorderCrossingWarningDelegate,
 
         // Nil happens only in rare cases, when also the fallback above is nil.
         return roadName ?? "unnamed road"
+    }
+    
+    // Determines the road type for a given maneuver based on street attributes.
+    // Return The road type classification (highway, urban, or rural).
+    func getRoadType(maneuver: Maneuver, route: Route) -> RoadType {
+        let sectionIndex = Int(maneuver.sectionIndex)
+        let section = route.sections[sectionIndex]
+        let spans = section.spans
+
+        // If attributes list is empty then the road type is rural.
+        guard !spans.isEmpty else {
+            return .rural
+        }
+        
+        let spanIndex = Int(maneuver.spanIndex)
+        let currentSpan = spans[spanIndex]
+        let streetAttributes = currentSpan.streetAttributes
+
+        // If attributes list contains either CONTROLLED_ACCESS_HIGHWAY, or MOTORWAY or RAMP then the road type is highway.
+        // Check for highway attributes.
+        if streetAttributes.contains(.controlledAccessHighway) ||
+           streetAttributes.contains(.motorway) ||
+           streetAttributes.contains(.ramp) {
+            return .highway
+        }
+
+        // If attributes list contains BUILT_UP_AREA then the road type is urban.
+        // Check for urban attributes.
+        if streetAttributes.contains(.builtUpArea) {
+            return .urban
+        }
+
+        // If the road type is neither urban nor highway, default to rural for all other cases.
+        return .rural
     }
 
     // Conform to CurrentSituationLaneAssistanceViewDelegate.

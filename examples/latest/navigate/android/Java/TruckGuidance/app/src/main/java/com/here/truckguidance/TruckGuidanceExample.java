@@ -97,6 +97,7 @@ import com.here.sdk.search.SearchOptions;
 import com.here.sdk.search.TruckAmenities;
 import com.here.sdk.transport.HazardousMaterial;
 import com.here.sdk.transport.TransportMode;
+import com.here.sdk.transport.TruckCategory;
 import com.here.sdk.transport.TruckSpecifications;
 import com.here.sdk.transport.TruckType;
 import com.here.sdk.transport.TunnelCategory;
@@ -219,6 +220,7 @@ public class TruckGuidanceExample {
         static final Integer axleCount = null;
         static final Integer trailerCount = null;
         static final TruckType truckType = TruckType.STRAIGHT;
+        static final TruckCategory truckCategory = TruckCategory.STRAIGHT;
     }
 
     // Used during tracking mode.
@@ -229,7 +231,7 @@ public class TruckGuidanceExample {
         // The total length including all trailers (if any).
         vehicleProfile.lengthInCentimeters = MyTruckSpecs.lengthInCentimeters;
         vehicleProfile.widthInCentimeters = MyTruckSpecs.widthInCentimeters;
-        vehicleProfile.truckType = MyTruckSpecs.truckType;
+        vehicleProfile.truckCategory = MyTruckSpecs.truckCategory;
         vehicleProfile.trailerCount = MyTruckSpecs.trailerCount == null ? 0 : MyTruckSpecs.trailerCount;
         vehicleProfile.axleCount = MyTruckSpecs.axleCount;
         vehicleProfile.weightPerAxleInKilograms = MyTruckSpecs.weightPerAxleInKilograms;

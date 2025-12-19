@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="50dp"
+    android:layout_height="70dp"
+    android:layout_gravity="bottom|start"
+    android:layout_margin="5dp"
+    android:orientation="vertical"
+    android:gravity="center_horizontal|bottom">
+
+    <TextView
+        android:id="@+id/speed_limit_label"
+        android:layout_width="wrap_content"
+        android:layout_height="15dp"
+        android:gravity="center"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black" />
+
+    <FrameLayout
+        android:id="@+id/speed_limit_outer_circle"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:background="@drawable/speed_limit_circle_red">
+
+        <FrameLayout
+            android:layout_width="37dp"
+            android:layout_height="37dp"
+            android:layout_gravity="center"
+            android:background="@drawable/speed_limit_circle_white">
+
+            <TextView
+                android:id="@+id/speed_limit_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="n/a"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/black" />
+        </FrameLayout>
+    </FrameLayout>
+
+</LinearLayout>

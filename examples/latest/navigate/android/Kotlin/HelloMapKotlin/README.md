@@ -1,6 +1,6 @@
-The HelloMapKotlin example app shows how the HERE SDK can be integrated into your project and how to display a map.
+The HelloMapKotlin example app shows how the HERE SDK can be integrated into your project and how to display a map with XML layouts. If you plan to use Jetpack Compose, look for the HelloMapKotlinJC app instead.
 
-**Note**: This is the same app as the "**HelloMapKotlin**" app, but implemented in Kotlin instead of Java.
+**Note**: This is the same app as the "**HelloMap**" app, but implemented in Kotlin instead of Java.
 
 This example uses **HERE SDK Units** to support functionality such as permission handling or buttons that are not essential to the code snippets shown in this app, as the focus is on demonstrating how to use the APIs provided by the HERE SDK. The HERE SDK Units are included as AARs in the app’s `libs` folder. For more details, see the "HERESDKUnits" app to customize or create your own unit libraries.
 

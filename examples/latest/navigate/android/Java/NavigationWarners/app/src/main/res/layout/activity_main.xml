@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="com.here.navigationwarners.MainActivity">
 
     <com.here.sdk.mapview.MapView
@@ -11,5 +12,23 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
     </com.here.sdk.mapview.MapView>
+    <LinearLayout
+        android:id="@+id/first_button_row"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:backgroundTint="@android:color/holo_blue_light"
+            android:onClick="onStartGuidanceClicked"
+            android:text="Start Guidance"
+            android:textColor="@android:color/white"
+            android:textSize="8sp" />
+    </LinearLayout>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

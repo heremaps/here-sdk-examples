@@ -110,7 +110,7 @@ public class HelloMapScreen extends Screen implements SurfaceCallback {
     public void onSurfaceAvailable(@NonNull SurfaceContainer surfaceContainer) {
         Log.d(TAG, "Received a surface.");
 
-        mapSurface.setSurface(
+        mapSurface.attachSurface(
                 carContext,
                 surfaceContainer.getSurface(),
                 surfaceContainer.getWidth(),

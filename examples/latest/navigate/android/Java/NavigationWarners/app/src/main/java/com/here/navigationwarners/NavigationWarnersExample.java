@@ -122,13 +122,9 @@ import java.util.Objects;
 // More events are shown in the "Navigation" example app.
 public class NavigationWarnersExample {
     public enum RoadType {HIGHWAY, RURAL, URBAN}
-
     private static final String TAG = NavigationWarnersExample.class.getName();
-
     private final Context context;
-
     private RouteProgress currentRouteProgress;
-
     public NavigationWarnersExample(Context context) {
         this.context = context;
     }

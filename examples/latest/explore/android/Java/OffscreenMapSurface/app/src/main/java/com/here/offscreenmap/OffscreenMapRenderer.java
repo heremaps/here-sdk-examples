@@ -81,7 +81,7 @@ public class OffscreenMapRenderer implements MapIdleListener {
         st.setDefaultBufferSize(width, height);
         offscreenRenderSurface = new Surface(st);
         mapSurface = new MapSurface();
-        mapSurface.setSurface(context, offscreenRenderSurface, width, height, renderListener);
+        mapSurface.attachSurface(context, offscreenRenderSurface, width, height, renderListener);
         mapSurface.setOnReadyListener(() -> {
             isReady = true;
             Log.i(TAG, "onReady");

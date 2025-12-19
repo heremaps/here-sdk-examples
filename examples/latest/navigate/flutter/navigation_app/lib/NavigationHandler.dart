@@ -32,6 +32,8 @@ import 'package:navigation_app/time_utils.dart';
 import 'ElectronicHorizonHandler.dart';
 import 'LanguageCodeConverter.dart';
 
+enum RoadType { highway, rural, urban }
+
 // This class combines the various events that can be emitted during turn-by-turn navigation.
 // Note that this class does not show an exhaustive list of all possible events.
 class NavigationHandler {
@@ -87,7 +89,7 @@ class NavigationHandler {
       }
 
       ManeuverAction action = nextManeuver.action;
-      String roadName = _getRoadName(nextManeuver);
+      String roadName = _getRoadName(nextManeuver, _visualNavigator.route);
       String logMessage =
           action.name +
           ' on ' +
@@ -111,7 +113,7 @@ class NavigationHandler {
       if (_lastMapMatchedLocation != null) {
         // Update the route based on the current location of the driver.
         // We periodically want to search for better traffic-optimized routes.
-        _dynamicRoutingEngine.updateCurrentLocation(_lastMapMatchedLocation!, routeProgress.sectionIndex);
+        _dynamicRoutingEngine.updateCurrentLocation(_lastMapMatchedLocation!, routeProgress.routeMatchedLocation.sectionIndex);
 
         // Update the ElectronicHorizon with the last map-matched location.
         _electronicHorizonHandler.update(_lastMapMatchedLocation!);
@@ -187,7 +189,7 @@ class NavigationHandler {
     SectionProgress lastSectionProgress = sectionProgressList.last;
     int traveledDistanceOnLastSectionInMeters =
         currentRoute.lengthInMeters - lastSectionProgress.remainingDistanceInMeters;
-    int lastTraveledSectionIndex = routeProgress.sectionIndex;
+    int lastTraveledSectionIndex = routeProgress.routeMatchedLocation.sectionIndex;
 
     _routeCalculator.calculateTrafficOnRoute(
       currentRoute,
@@ -248,7 +250,7 @@ class NavigationHandler {
     return languageCodeForCurrenDevice;
   }
 
-  String _getRoadName(Maneuver maneuver) {
+  String _getRoadName(Maneuver maneuver, Route? route) {
     RoadTexts currentRoadTexts = maneuver.roadTexts;
     RoadTexts nextRoadTexts = maneuver.nextRoadTexts;
 
@@ -261,8 +263,10 @@ class NavigationHandler {
 
     // On highways, we want to show the highway number instead of a possible road name,
     // while for inner city and urban areas road names are preferred over road numbers.
-    if (maneuver.nextRoadType == RoadType.highway) {
-      roadName = nextRoadNumber == null ? nextRoadName : nextRoadNumber;
+    if (route != null){
+      if (getRoadType(maneuver, route) == RoadType.highway) {
+        roadName = nextRoadNumber == null ? nextRoadName : nextRoadNumber;
+      }
     }
 
     if (maneuver.action == ManeuverAction.arrive) {
@@ -274,5 +278,37 @@ class NavigationHandler {
     roadName ??= 'unnamed road';
 
     return roadName;
+  }
+  
+  // Determines the road type for a given maneuver based on street attributes.
+  // Return The road type classification (highway, urban, or rural).
+  RoadType getRoadType(Maneuver maneuver, Route route) {
+    final section = route.sections[maneuver.sectionIndex];
+    final spans = section.spans;
+
+    // If attributes list is empty then the road type is rural.
+    if (spans.isEmpty) {
+      return RoadType.rural;
+    }
+
+    final currentSpan = spans[maneuver.spanIndex];
+    final streetAttributes = currentSpan.streetAttributes;
+
+    // If attributes list contains either CONTROLLED_ACCESS_HIGHWAY, or MOTORWAY or RAMP then the road type is highway.
+    // Check for highway attributes.
+    if (streetAttributes.contains(StreetAttributes.controlledAccessHighway) ||
+        streetAttributes.contains(StreetAttributes.motorway) ||
+        streetAttributes.contains(StreetAttributes.ramp)) {
+      return RoadType.highway;
+    }
+
+    // If attributes list contains BUILT_UP_AREA then the road type is urban.
+    // Check for urban attributes.
+    if (streetAttributes.contains(StreetAttributes.builtUpArea)) {
+      return RoadType.urban;
+    }
+
+    // If the road type is neither urban nor highway, default to rural for all other cases.
+    return RoadType.rural;
   }
 }
