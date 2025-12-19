@@ -21,10 +21,11 @@ package com.here.unittesting;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import android.util.Log;
 
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.engine.AuthenticationMode;
@@ -35,23 +36,15 @@ import com.here.sdk.mapview.MapError;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
-import com.here.sdk.units.core.utils.EnvironmentLogger;
-import com.here.sdk.units.core.utils.PermissionsRequestor;
 
 public class MainActivity extends AppCompatActivity {
 
-    private EnvironmentLogger environmentLogger = new EnvironmentLogger();
     private static final String TAG = MainActivity.class.getSimpleName();
-    private PermissionsRequestor permissionsRequestor;
     private MapView mapView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Log application and device details.
-        // It expects a string parameter that describes the application source language.
-        environmentLogger.logEnvironment("Java");
 
         // Usually, you need to initialize the HERE SDK only once during the lifetime of an application.
         initializeHERESDK();
@@ -72,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        handleAndroidPermissions();
+        loadMapScene();
     }
 
     private void initializeHERESDK() {
@@ -87,28 +80,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (InstantiationErrorException e) {
             throw new RuntimeException("Initialization of HERE SDK failed: " + e.error.name());
         }
-    }
-
-    private void handleAndroidPermissions() {
-        permissionsRequestor = new PermissionsRequestor(this);
-        permissionsRequestor.request(new PermissionsRequestor.ResultListener(){
-
-            @Override
-            public void permissionsGranted() {
-                loadMapScene();
-            }
-
-            @Override
-            public void permissionsDenied() {
-                Log.e(TAG, "Permissions denied by user.");
-            }
-        });
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        permissionsRequestor.onRequestPermissionsResult(requestCode, grantResults);
     }
 
     private void loadMapScene() {

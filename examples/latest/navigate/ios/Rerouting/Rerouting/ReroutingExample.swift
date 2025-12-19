@@ -20,6 +20,12 @@
 import heresdk
 import SwiftUI
 
+enum RoadType {
+    case highway
+    case rural
+    case urban
+}
+
 // An example that shows how to handle rerouting during guidance alongside.
 // The simulated driver will follow the black line showing on the map - this is done with
 // a second route that is using additional waypoints. This route is set as
@@ -528,7 +534,7 @@ class ReroutingExample: LongPressDelegate,
         }
 
         let action = nextManeuver.action
-        let roadName = getRoadName(maneuver: nextManeuver)
+        let roadName = getRoadName(maneuver: nextManeuver, route: visualNavigator.route)
         let distanceText = convertDistance(meters: maneuverProgress.remainingDistanceInMeters)
         let maneuverText = "Action: \(String(describing: action)) on \(roadName) in \(distanceText)"
 
@@ -563,7 +569,7 @@ class ReroutingExample: LongPressDelegate,
         return (value * divisor).rounded() / divisor
     }
 
-    private func getRoadName(maneuver: Maneuver) -> String {
+    private func getRoadName(maneuver: Maneuver, route: Route?) -> String {
         let currentRoadTexts = maneuver.roadTexts
         let nextRoadTexts = maneuver.nextRoadTexts
 
@@ -576,7 +582,7 @@ class ReroutingExample: LongPressDelegate,
 
         // On highways, we want to show the highway number instead of a possible road name,
         // while for inner city and urban areas road names are preferred over road numbers.
-        if maneuver.nextRoadType == RoadType.highway {
+        if getRoadType(maneuver: maneuver, route: route!) == RoadType.highway {
             roadName = nextRoadNumber == nil ? nextRoadName : nextRoadNumber
         }
 
@@ -587,6 +593,40 @@ class ReroutingExample: LongPressDelegate,
 
         // Nil happens only in rare cases, when also the fallback above is nil.
         return roadName ?? "unnamed road"
+    }
+    
+    // Determines the road type for a given maneuver based on street attributes.
+    // Return The road type classification (highway, urban, or rural).
+    func getRoadType(maneuver: Maneuver, route: Route) -> RoadType {
+        let sectionIndex = Int(maneuver.sectionIndex)
+        let section = route.sections[sectionIndex]
+        let spans = section.spans
+
+        // If attributes list is empty then the road type is rural.
+        guard !spans.isEmpty else {
+            return .rural
+        }
+        
+        let spanIndex = Int(maneuver.spanIndex)
+        let currentSpan = spans[spanIndex]
+        let streetAttributes = currentSpan.streetAttributes
+
+        // If attributes list contains either CONTROLLED_ACCESS_HIGHWAY, or MOTORWAY or RAMP then the road type is highway.
+        // Check for highway attributes.
+        if streetAttributes.contains(.controlledAccessHighway) ||
+           streetAttributes.contains(.motorway) ||
+           streetAttributes.contains(.ramp) {
+            return .highway
+        }
+
+        // If attributes list contains BUILT_UP_AREA then the road type is urban.
+        // Check for urban attributes.
+        if streetAttributes.contains(.builtUpArea) {
+            return .urban
+        }
+
+        // If the road type is neither urban nor highway, default to rural for all other cases.
+        return .rural
     }
 
     private func getSpanForManeuver(route: Route, maneuver: Maneuver) -> Span? {

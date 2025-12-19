@@ -199,7 +199,7 @@ class ElectronicHorizonHandler {
                                 
                                 // Retrieving segment data from the loader is executed synchronous. However, since the data has been
                                 // already loaded, this is a fast operation.
-                                let result = handler.electronicHorizonDataLoader.getSegment(segmentId: directedOCMSegmentId.id)
+                                let result = handler.electronicHorizonDataLoader.getSegment(segmentId: directedOCMSegmentId)
                                 if result.errorCode == nil, let segmentData = result.segmentData {
                                     // Access the data that was requested to be loaded in SegmentDataLoaderOptions.
                                     // For this example, we just log road signs.

@@ -144,7 +144,7 @@ class NavigationHandler(
                     // We periodically want to search for better traffic-optimized routes.
                     dynamicRoutingEngine.updateCurrentLocation(
                         lastMapMatchedLocation!!,
-                        routeProgress.sectionIndex
+                        routeProgress.routeMatchedLocation.sectionIndex
                     )
 
                     // Update the ElectronicHorizon with the last map-matched location.
@@ -366,7 +366,7 @@ class NavigationHandler(
         val lastSectionProgress = sectionProgressList[sectionProgressList.size - 1]
         val traveledDistanceOnLastSectionInMeters =
             currentRoute.lengthInMeters - lastSectionProgress.remainingDistanceInMeters
-        val lastTraveledSectionIndex = routeProgress.sectionIndex
+        val lastTraveledSectionIndex = routeProgress.routeMatchedLocation.sectionIndex
 
         routingEngine.calculateTrafficOnRoute(
             currentRoute,

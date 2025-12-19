@@ -29,6 +29,7 @@ dependencies {
     implementation project(path: ':here-sdk-units-compass')
     implementation project(path: ':here-sdk-units-mapswitcher')
     implementation project(path: ':here-sdk-units-popupmenu')
+    implementation project(path: ':here-sdk-units-speedlimit')
     implementation project(path: ':here-sdk-units-cityselector')
     implementation project(path: ':here-sdk-units-mapruler')
 

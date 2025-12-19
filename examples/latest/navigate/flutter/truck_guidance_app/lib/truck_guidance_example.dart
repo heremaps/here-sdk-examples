@@ -156,7 +156,7 @@ class TruckGuidanceExample {
     // The total length including all trailers (if any).
     vehicleProfile.lengthInCentimeters = MyTruckSpecs.lengthInCentimeters;
     vehicleProfile.widthInCentimeters = MyTruckSpecs.widthInCentimeters;
-    vehicleProfile.truckType = MyTruckSpecs.truckType;
+    vehicleProfile.truckCategory = MyTruckSpecs.truckCategory;
     vehicleProfile.trailerCount = MyTruckSpecs.trailerCount == null ? 0 : MyTruckSpecs.trailerCount;
     vehicleProfile.axleCount = MyTruckSpecs.axleCount;
     vehicleProfile.weightPerAxleInKilograms = MyTruckSpecs.weightPerAxleInKilograms;
@@ -964,4 +964,5 @@ class MyTruckSpecs {
   static final int axleCount = 4;
   static final int trailerCount = 2;
   static final TruckType truckType = TruckType.straight;
+  static final TruckCategory truckCategory = TruckCategory.straight;
 }

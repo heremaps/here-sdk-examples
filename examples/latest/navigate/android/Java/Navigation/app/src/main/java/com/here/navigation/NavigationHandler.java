@@ -137,7 +137,7 @@ public class NavigationHandler {
                 if (lastMapMatchedLocation != null) {
                     // Update the route based on the current location of the driver.
                     // We periodically want to search for better traffic-optimized routes.
-                    dynamicRoutingEngine.updateCurrentLocation(lastMapMatchedLocation, routeProgress.sectionIndex);
+                    dynamicRoutingEngine.updateCurrentLocation(lastMapMatchedLocation, routeProgress.routeMatchedLocation.sectionIndex);
 
                     // Update the ElectronicHorizon with the last map-matched location.
                     electronicHorizonHandler.update(lastMapMatchedLocation);
@@ -329,7 +329,7 @@ public class NavigationHandler {
         List<SectionProgress> sectionProgressList = routeProgress.sectionProgress;
         SectionProgress lastSectionProgress = sectionProgressList.get(sectionProgressList.size() - 1);
         int traveledDistanceOnLastSectionInMeters = currentRoute.getLengthInMeters() - lastSectionProgress.remainingDistanceInMeters;
-        int lastTraveledSectionIndex = routeProgress.sectionIndex;
+        int lastTraveledSectionIndex = routeProgress.routeMatchedLocation.sectionIndex;
 
         routingEngine.calculateTrafficOnRoute(currentRoute, lastTraveledSectionIndex, traveledDistanceOnLastSectionInMeters, new CalculateTrafficOnRouteCallback() {
             @Override

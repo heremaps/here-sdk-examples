@@ -311,7 +311,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
     @Override
     public void surfaceCreated(@NonNull SurfaceHolder holder) {
-        mapSurface.setSurface(getApplicationContext(),
+        mapSurface.attachSurface(getApplicationContext(),
                 holder.getSurface(), holder.getSurfaceFrame().width(), holder.getSurfaceFrame().height(),
                 new RenderListener());
         hasSurface = true;
@@ -320,7 +320,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
     @Override
     public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height) {
-        mapSurface.setSurface(getApplicationContext(), holder.getSurface(), width, height, new RenderListener());
+        mapSurface.attachSurface(getApplicationContext(), holder.getSurface(), width, height, new RenderListener());
         hasSurface = true;
     }
 

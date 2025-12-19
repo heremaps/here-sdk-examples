@@ -47,6 +47,8 @@ import com.here.sdk.units.mapswitcher.MapSwitcherUnit;
 import com.here.sdk.units.mapswitcher.MapSwitcherView;
 import com.here.sdk.units.popupmenu.PopupMenuUnit;
 import com.here.sdk.units.popupmenu.PopupMenuView;
+import com.here.sdk.units.speedlimit.SpeedLimitUnit;
+import com.here.sdk.units.speedlimit.SpeedLimitView;
 import com.here.sdk.units.cityselector.CitySelectorView;
 import com.here.sdk.units.cityselector.CitySelectorUnit;
 
@@ -87,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
         setupMapSwitcher();
         setupMapScaleRuler();
         setupCompass();
+        setupSpeedLimit();
 
         showUnitDialog();
 
@@ -139,7 +142,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupCitySelectorUnit() {
         CitySelectorView citySelectorView = findViewById(R.id.city_selector);
-        citySelectorView.citySelectorUnit.setOnCitySelectedListener(new CitySelectorUnit.OnCitySelectedListener() {
+        CitySelectorUnit citySelectorUnit = citySelectorView.citySelectorUnit;
+        citySelectorUnit.setOnCitySelectedListener(new CitySelectorUnit.OnCitySelectedListener() {
             @Override
             public void onCitySelected(double latitude, double longitude, String cityName) {
                 if (mapView != null) {
@@ -162,6 +166,13 @@ public class MainActivity extends AppCompatActivity {
         MapSwitcherView mapSwitcherView = findViewById(R.id.map_switcher);
         MapSwitcherUnit mapSwitcherUnit = mapSwitcherView.mapSwitcherUnit;
         mapSwitcherUnit.setup(mapView, getSupportFragmentManager());
+    }
+
+    private void setupSpeedLimit() {
+        SpeedLimitView speedLimitView = findViewById(R.id.speed_limit);
+        SpeedLimitUnit speedLimitUnit = speedLimitView.speedLimitUnit;
+        speedLimitUnit.setLabel("Label");
+        speedLimitUnit.setSpeedLimit("50");
     }
 
     private void setupCompass() {

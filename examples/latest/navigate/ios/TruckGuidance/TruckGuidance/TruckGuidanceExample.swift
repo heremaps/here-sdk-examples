@@ -161,6 +161,7 @@ class TruckGuidanceExample: TapDelegate,
         static let axleCount: Int32? = nil
         static let trailerCount: Int32? = nil
         static let truckType: TruckType = .straight
+        static let truckCategory: TruckCategory = .straight
     }
 
     // Used during tracking mode.
@@ -171,7 +172,7 @@ class TruckGuidanceExample: TapDelegate,
         // The total length including all trailers (if any).
         vehicleProfile.lengthInCentimeters = MyTruckSpecs.lengthInCentimeters
         vehicleProfile.widthInCentimeters = MyTruckSpecs.widthInCentimeters
-        vehicleProfile.truckType = MyTruckSpecs.truckType
+        vehicleProfile.truckCategory = MyTruckSpecs.truckCategory
         vehicleProfile.trailerCount = MyTruckSpecs.trailerCount ?? 0
         vehicleProfile.axleCount = MyTruckSpecs.axleCount
         vehicleProfile.weightPerAxleInKilograms = MyTruckSpecs.weightPerAxleInKilograms

@@ -196,7 +196,7 @@ class ElectronicHorizonHandler {
                                 // Retrieving segment data from the loader is executed synchronous. However, since the data has been
                                 // already loaded, this is a fast operation.
                                 val result: ElectronicHorizonDataLoaderResult =
-                                    electronicHorizonDataLoader.getSegment(directedOCMSegmentId.id)
+                                    electronicHorizonDataLoader.getSegment(directedOCMSegmentId)
                                 if (result.errorCode == null) {
                                     // When errorCode is null, segmentData is guaranteed to be non-null.
                                     val segmentData: SegmentData = checkNotNull(result.segmentData)
