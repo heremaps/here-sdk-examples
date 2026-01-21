@@ -21,6 +21,7 @@ import 'package:flutter/material.dart';
 import 'package:here_sdk/core.dart' as HERE;
 import 'package:here_sdk/core.engine.dart';
 import 'package:here_sdk/core.errors.dart';
+import 'package:here_sdk/gestures.dart';
 import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/navigation.dart' as HERE;
 import 'package:here_sdk/routing.dart' as HERE;
@@ -65,6 +66,13 @@ class _MyAppState extends State<MyApp> {
   HERE.LocationSimulator? _locationSimulator;
   NavigationWarnersExample? navigationWarnersExample;
 
+  // Default coordinated in Berlin, which can be change by long-tapping the map
+  HERE.GeoCoordinates _startGeoCoordinates = HERE.GeoCoordinates(52.49047222554655, 13.296884483959285);
+  HERE.GeoCoordinates _destinationGeoCoordinates  = HERE.GeoCoordinates(52.51384077118386, 13.255752692114996);
+  MapMarker? _startMapMarker;
+  MapMarker? _destinationMapMarker;
+  bool _setLongPressDestination = false;
+
   Future<bool> _handleBackPress() async {
     // Handle the back press.
     _visualNavigator?.stopRendering();
@@ -80,9 +88,25 @@ class _MyAppState extends State<MyApp> {
       onWillPop: _handleBackPress,
       child: Scaffold(
         appBar: AppBar(title: Text('Navigation Warners Example')),
-        body: Stack(children: [HereMap(onMapCreated: _onMapCreated)]),
+        body: Stack(
+          children: [
+            HereMap(onMapCreated: _onMapCreated),
+            Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [button('Start Navigation', _startNavigationClicked)],
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  void _startNavigationClicked() {
+    _calculateRoute(HERE.Waypoint(_startGeoCoordinates!), HERE.Waypoint(_destinationGeoCoordinates!));
   }
 
   void _onMapCreated(HereMapController hereMapController) {
@@ -97,26 +121,44 @@ class _MyAppState extends State<MyApp> {
       MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
       _hereMapController!.camera.lookAtPointWithMeasure(HERE.GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
 
-      _startGuidanceExample();
+      _showDialog("Navigation Warners", "This app routes to the HERE office in Berlin and logs various TBT events.");
+      _showDialog("Note", "Do a long press to change start and destination coordinates. " +
+          "Map icons are pickable.");
+
+      _setLongPressGestureHandler();
     });
   }
 
-  _startGuidanceExample() {
-    _showDialog("Navigation Warners", "This app routes to the HERE office in Berlin and logs various TBT events.");
+  void _setLongPressGestureHandler() {
+    _hereMapController?.gestures.longPressListener = LongPressListener((gestureState, touchPoint) {
+      HERE.GeoCoordinates? geoCoordinates = _hereMapController?.viewToGeoCoordinates(touchPoint);
+      if (geoCoordinates == null) {
+        // If the MapView render surface is not attached, it will return null.
+        return;
+      }
 
-    // We start by calculating a car route.
-    _calculateRoute();
+      if (gestureState == GestureState.begin) {
+        // Set new route start or destination geographic coordinates based on long press location.
+        if (_setLongPressDestination) {
+          _destinationGeoCoordinates = geoCoordinates;
+          _destinationMapMarker?.coordinates = geoCoordinates;
+        } else {
+          _startGeoCoordinates = geoCoordinates;
+          _startMapMarker?.coordinates = geoCoordinates;
+        }
+
+        // Toggle the marker that should be updated on next long press.
+        _setLongPressDestination = !_setLongPressDestination;
+      }
+    });
   }
 
-  _calculateRoute() {
+  _calculateRoute(HERE.Waypoint startWaypoint, HERE.Waypoint destinationWaypoint) {
     try {
       _routingEngine = HERE.RoutingEngine();
     } on InstantiationException {
       throw Exception('Initialization of RoutingEngine failed.');
     }
-
-    HERE.Waypoint startWaypoint = HERE.Waypoint(HERE.GeoCoordinates(52.520798, 13.409408));
-    HERE.Waypoint destinationWaypoint = HERE.Waypoint(HERE.GeoCoordinates(52.530905, 13.385007));
 
     _routingEngine!.calculateCarRoute([startWaypoint, destinationWaypoint], HERE.CarOptions(), (
       HERE.RoutingError? routingError,
@@ -180,6 +222,9 @@ class _MyAppState extends State<MyApp> {
           // See more details: https://github.com/flutter/flutter/issues/40940
           {print('AppLifecycleListener detached.'), _disposeHERESDK()},
     );
+
+    _startMapMarker = _addMapMarker(_startGeoCoordinates!, 'assets/poi_start.png');
+    _destinationMapMarker = _addMapMarker(_destinationGeoCoordinates!, 'assets/poi_destination.png');
   }
 
   @override
@@ -193,6 +238,26 @@ class _MyAppState extends State<MyApp> {
     await SDKNativeEngine.sharedInstance?.dispose();
     HERE.SdkContext.release();
     _appLifecycleListener.dispose();
+  }
+
+  MapMarker _addMapMarker(HERE.GeoCoordinates geoCoordinates, String assetPath) {
+    final mapImage = MapImage.withFilePathAndWidthAndHeight(assetPath, 100, 100);
+    final anchor2D = HERE.Anchor2D.withHorizontalAndVertical(0.5, 1.0);
+    final mapMarker = MapMarker.withAnchor(geoCoordinates, mapImage, anchor2D);
+    _hereMapController?.mapScene.addMapMarker(mapMarker);
+    return mapMarker;
+  }
+
+  // A helper method to add a button on top of the HERE map.
+  Align button(String buttonLabel, Function callbackFunction) {
+    return Align(
+      alignment: Alignment.topCenter,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(foregroundColor: Colors.white, backgroundColor: Colors.lightBlueAccent),
+        onPressed: () => callbackFunction(),
+        child: Text(buttonLabel, style: const TextStyle(fontSize: 15)),
+      ),
+    );
   }
 
   // A helper method to show a dialog.
