@@ -21,13 +21,18 @@ import heresdk
 import SwiftUI
 
 // A class that starts turn-by-turn navigation in simulation mode using a hardcoded route.
-class NavigationWarnersExample {
+class NavigationWarnersExample : LongPressDelegate {
     
     private let mapView: MapView    
     private let routingEngine: RoutingEngine
     private let visualNavigator: VisualNavigator
     private var locationSimulator: LocationSimulator!
     private var navigationWarners: NavigationWarners
+    private var startGeoCoordinates: GeoCoordinates
+    private var destinationGeoCoordinates: GeoCoordinates
+    private var changeDestination: Bool
+    private var startMapMarker: MapMarker!
+    private var destinationMapMarker: MapMarker!
     
     init(_ mapView: MapView) {
         self.mapView = mapView
@@ -56,9 +61,24 @@ class NavigationWarnersExample {
         let distanceInMeters = MapMeasure(kind: .distanceInMeters, value: 1000 * 10)
         camera.lookAt(point: GeoCoordinates(latitude: 52.518043, longitude: 13.405991),
                       zoom: distanceInMeters)
+
+        // Default coordinated in Berlin, which can be change by long-tapping the map
+        startGeoCoordinates = GeoCoordinates(latitude: 52.520798, longitude: 13.409408)
+        destinationGeoCoordinates = GeoCoordinates(latitude: 52.530905, longitude: 13.385007)
+        changeDestination = false
+        startMapMarker = addMapMarker(geoCoordinates: startGeoCoordinates, imageName: "poi_start.png")!
+        destinationMapMarker = addMapMarker(geoCoordinates: destinationGeoCoordinates, imageName: "poi_destination.png")!
         
         // Load the map scene using a map scheme to render the map with.
         mapView.mapScene.loadScene(mapScheme: MapScheme.normalDay, completion: onLoadScene)
+        
+        mapView.gestures.longPressDelegate = self
+        
+        showDialog(title: "Navigation Warners",
+                   message: "This app routes to the HERE office in Berlin and logs various TBT events.")
+        showDialog(title: "Note",
+                   message: "Do a long press to change start and destination coordinates. " +
+                   "Map icons are pickable.")
     }
     
     // Completion handler for loadScene().
@@ -68,20 +88,33 @@ class NavigationWarnersExample {
         }
     }
     
-    func startGuidanceExample() {
-        showDialog(title: "Navigation Warners",
-                   message: "This app routes to the HERE office in Berlin and logs various TBT events.")
-
-        // We start by calculating a car route.
-        calculateRoute()
+    func onLongPress(state: heresdk.GestureState, origin: Point2D) {
+        let geoCoordinates = mapView.viewToGeoCoordinates(viewCoordinates: origin)
+        
+        if geoCoordinates == nil {
+            showDialog(title: "Note", message: "Invalid GeoCoordinates.")
+        }
+        
+        if (state == .begin) {
+            // Set new route start or destination geographic coordinates based on long press location.
+            if changeDestination {
+                destinationGeoCoordinates = geoCoordinates!
+                destinationMapMarker.coordinates = geoCoordinates!
+            } else {
+                startGeoCoordinates = geoCoordinates!
+                startMapMarker.coordinates = geoCoordinates!
+            }
+            // Toggle the marker that should be updated on next long press.
+            changeDestination = !changeDestination;
+        }
+    }
+    
+    func onStartGuidanceClicked() {
+        calculateRoute(startWaypoint: Waypoint(coordinates: startGeoCoordinates), destinationWaypoint: Waypoint(coordinates: destinationGeoCoordinates))
     }
     
     // When route calculation is done, we automatically start navigation to keep this example simple.
-    private func calculateRoute() {
-        // Define starting and end point of a route for testing.
-        let startWaypoint = Waypoint(coordinates: GeoCoordinates(latitude: 52.520798, longitude: 13.409408))
-        let destinationWaypoint = Waypoint(coordinates: GeoCoordinates(latitude: 52.530905, longitude: 13.385007))
-
+    private func calculateRoute(startWaypoint: Waypoint, destinationWaypoint: Waypoint) {
         routingEngine.calculateRoute(with: [startWaypoint, destinationWaypoint],
                                      carOptions: CarOptions()) { (routingError, routes) in
             if let error = routingError {
@@ -121,6 +154,22 @@ class NavigationWarnersExample {
         locationSimulator.delegate = locationDelegate
         locationSimulator.start()
     }
+    
+    private func addMapMarker(geoCoordinates: GeoCoordinates, imageName: String) -> MapMarker? {
+        guard
+            let image = UIImage(named: imageName),
+            let imageData = image.pngData() else {
+            return nil
+        }
+        let mapMarker = MapMarker(at: geoCoordinates,
+                                    image: MapImage(pixelData: imageData,
+                                                    imageFormat: ImageFormat.png))
+        mapMarker.anchor = Anchor2D(horizontal: 0.5, vertical: 1.0)
+            
+        mapView.mapScene.addMapMarker(mapMarker)
+        return mapMarker
+    }
+
     
     private func showDialog(title: String, message: String) {
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,

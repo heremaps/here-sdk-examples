@@ -270,7 +270,7 @@ public class NavigationHandler {
     }
 
     // Determines the road type for a given maneuver based on street attributes.
-    // Return The road type classification (HIGHWAY, URBAN, RURAL, or UNDEFINED).
+    // Return The road type classification (HIGHWAY, URBAN or RURAL).
     private RoadType getRoadType(Maneuver maneuver, Route route) {
         Section sectionOfManeuver = route.getSections().get(maneuver.getSectionIndex());
         List<Span> spansInSection = sectionOfManeuver.getSpans();

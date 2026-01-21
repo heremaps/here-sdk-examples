@@ -29,13 +29,15 @@ struct ContentView: View {
          // Show the views on top of each other.
          ZStack(alignment: .top) {             
              // The map view should fill the entire screen.
-             WrappedMapView(mapView: $mapView)
-                 .edgesIgnoringSafeArea(.all)
+             VStack {
+                 CustomButton(title: "Start guidance") {
+                     navigationWarnersExample?.onStartGuidanceClicked()
+                 }
+             }
          }
          .onAppear {
              // ContentView appeared, now we init the example.
              navigationWarnersExample = NavigationWarnersExample(mapView)
-             navigationWarnersExample?.startGuidanceExample()
          }
      }
 }
@@ -46,6 +48,22 @@ private struct WrappedMapView: UIViewRepresentable {
     @Binding var mapView: MapView
     func makeUIView(context: Context) -> MapView { return mapView }
     func updateUIView(_ mapView: MapView, context: Context) { }
+}
+
+// A reusable button to keep the layout clean.
+struct CustomButton: View {
+    let title: String
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .padding()
+                .background(Color(red: 0, green: 182/255, blue: 178/255))
+                .foregroundColor(.white)
+                .cornerRadius(5)
+        }
+    }
 }
 
 struct ContentView_Previews: PreviewProvider {
