@@ -87,7 +87,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/topo_day_scheme"
+            android:text="@string/normal_night_scheme"
             android:gravity="center"
             android:drawablePadding="8dp"
             android:clickable="true"
@@ -95,7 +95,7 @@
             android:padding="12dp"
             android:layout_margin="8dp"
             android:minHeight="80dp"
-            app:drawableTopCompat="@drawable/topo_day_scheme" />
+            app:drawableTopCompat="@drawable/normal_night_scheme" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -86,23 +86,30 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           children: [
             HereMap(onMapCreated: _onMapCreated),
             Column(
-              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Expanded(child: button("Start Simulation", _startNavigationSimulationButtonClicked)),
-                    Expanded(child: button(_trackingState, toggleTrackingButtonClicked)),
-                    Expanded(child: button("Stop", _stopNavigationButtonClicked)),
-                  ],
+                Padding(
+                  padding: const EdgeInsets.all(2),
+                  child: Row(
+                    children: [
+                      Expanded(child: button("Start simulation", _startNavigationSimulationButtonClicked)),
+                      const SizedBox(width: 8),
+                      Expanded(child: button("Start with Positioning", _startNavigationButtonClicked)),
+                    ],
+                  ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [button("Start with HERE Positioning", _startNavigationButtonClicked)],
+                Padding(
+                  padding: const EdgeInsets.all(2),
+                  child: Row(
+                    children: [
+                      Expanded(child: button(_trackingState, toggleTrackingButtonClicked)),
+                      const SizedBox(width: 8),
+                      Expanded(child: button("Clear map / Stop", _stopNavigationButtonClicked)),
+                    ],
+                  ),
                 ),
                 messageStateWidget(_messageState),
               ],
-            ),
+            )
           ],
         ),
       ),
@@ -241,11 +248,17 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   // A helper method to add a button on top of the HERE map.
-  Widget button(String buttonLabel, VoidCallback callbackFunction) {
+  Widget button(String text, VoidCallback onPressed) {
     return ElevatedButton(
+      onPressed: onPressed,
       style: ElevatedButton.styleFrom(backgroundColor: Colors.lightBlueAccent, foregroundColor: Colors.white),
-      onPressed: callbackFunction,
-      child: Text(buttonLabel, style: TextStyle(fontSize: 20)),
+      child: Text(
+        text,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        softWrap: false,
+        textAlign: TextAlign.center,
+      ),
     );
   }
 
@@ -269,11 +282,11 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   Widget messageStateWidget(String messageState) {
     return Card(
       child: Padding(
-        padding: EdgeInsets.all(8.0),
+        padding: EdgeInsets.all(8),
         child: Text(messageState, style: TextStyle(fontSize: 15, color: Colors.white)),
       ),
       color: Colors.blue,
-      margin: EdgeInsets.only(left: 12.0, right: 12.0, top: 8.0),
+      margin: EdgeInsets.only(left: 8, right: 8, top: 8),
     );
   }
 

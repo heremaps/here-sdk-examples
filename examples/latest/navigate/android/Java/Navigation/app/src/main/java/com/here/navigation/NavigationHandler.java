@@ -270,18 +270,27 @@ public class NavigationHandler {
     }
 
     // Determines the road type for a given maneuver based on street attributes.
-    // Return The road type classification (HIGHWAY, URBAN or RURAL).
+    // Returns the road type classification (HIGHWAY, URBAN or RURAL).
     private RoadType getRoadType(Maneuver maneuver, Route route) {
         Section sectionOfManeuver = route.getSections().get(maneuver.getSectionIndex());
         List<Span> spansInSection = sectionOfManeuver.getSpans();
 
         // If attributes list is empty then the road type is rural.
-        if(spansInSection.isEmpty()) {
+        if (spansInSection.isEmpty()) {
             return RoadType.RURAL;
         }
 
-        Span currentSpan = spansInSection.get(maneuver.getSpanIndex());
-        List<StreetAttributes> streetAttributes = currentSpan.getStreetAttributes();
+        Span maneuverSpan;
+
+        // Arrive maneuvers are placed after the last span of the route
+        // and the span index for them would be greater than the span's list size.
+        if (maneuver.getAction() == ManeuverAction.ARRIVE) {
+            maneuverSpan = spansInSection.get(spansInSection.size() - 1);
+        } else {
+            maneuverSpan = spansInSection.get(maneuver.getSpanIndex());
+        }
+
+        List<StreetAttributes> streetAttributes = maneuverSpan.getStreetAttributes();
 
         // If attributes list contains either CONTROLLED_ACCESS_HIGHWAY, or MOTORWAY or RAMP then the road type is highway.
         // Check for highway attributes.

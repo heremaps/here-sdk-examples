@@ -12,7 +12,7 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
 
-        versionName = "1.0"
+        versionName = "1.1"
     }
 
     // Append the versionName when assembling the artifact.
