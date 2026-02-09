@@ -299,23 +299,26 @@ class NavigationHandler(
     }
 
     // Determines the road type for a given maneuver based on street attributes.
-    // Return The road type classification (HIGHWAY, URBAN or RURAL).
+    // Returns the road type classification (HIGHWAY, URBAN or RURAL).
     private fun getRoadType(maneuver: Maneuver, route: Route): RoadType {
         val sectionOfManeuver: Section = route.sections[maneuver.sectionIndex]
-        val spansInSection: List<Span?> = sectionOfManeuver.spans
+        val spansInSection: List<Span> = sectionOfManeuver.spans
 
         // If attributes list is empty then the road type is rural.
         if (spansInSection.isEmpty()) {
             return RoadType.RURAL
         }
 
-        val currentSpan: Span? = spansInSection[maneuver.spanIndex]
-        val streetAttributes: List<StreetAttributes>? = currentSpan?.streetAttributes
+        // Arrive maneuvers are placed after the last span of the route
+        // and the span index for them would be greater than the span's list size.
+        val maneuverSpan =
+            if (maneuver.action == ManeuverAction.ARRIVE) {
+                spansInSection.last()
+            } else {
+                spansInSection[maneuver.spanIndex]
+            }
 
-        // If attributes are not accessible then defaulting to rural road type.
-        if (currentSpan == null || streetAttributes == null) {
-            return RoadType.RURAL
-        }
+        val streetAttributes = maneuverSpan.streetAttributes
 
         // If attributes list contains either CONTROLLED_ACCESS_HIGHWAY, or MOTORWAY or RAMP then the road type is highway.
         // Check for highway attributes.

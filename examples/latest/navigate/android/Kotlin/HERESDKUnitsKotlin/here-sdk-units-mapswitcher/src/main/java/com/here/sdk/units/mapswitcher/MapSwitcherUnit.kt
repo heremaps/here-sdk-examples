@@ -51,9 +51,9 @@ class MapSwitcherUnit {
                 scheme = com.here.sdk.mapview.MapScheme.HYBRID_DAY
             ),
             MapSchemeOption(
-                iconRes = R.drawable.topo_day_scheme,
-                label = "Topographic",
-                scheme = com.here.sdk.mapview.MapScheme.TOPO_DAY
+                iconRes = R.drawable.normal_night_scheme,
+                label = "Night",
+                scheme = com.here.sdk.mapview.MapScheme.NORMAL_NIGHT
             )
         )
     }

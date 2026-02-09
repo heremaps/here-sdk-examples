@@ -86,7 +86,7 @@ public class MapSwitcherBottomSheet extends BottomSheetDialogFragment {
         menuItem4.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                loadMapScene(MapScheme.TOPO_DAY);
+                loadMapScene(MapScheme.NORMAL_NIGHT);
                 dismiss();
             }
         });

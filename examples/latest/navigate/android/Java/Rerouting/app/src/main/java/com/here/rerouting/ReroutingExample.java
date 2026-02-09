@@ -435,8 +435,17 @@ public class ReroutingExample {
             return RoadType.RURAL;
         }
 
-        Span currentSpan = spansInSection.get(maneuver.getSpanIndex());
-        List<StreetAttributes> streetAttributes = currentSpan.getStreetAttributes();
+        Span maneuverSpan;
+
+        // Arrive maneuvers are placed after the last span of the route
+        // and the span index for them would be greater than the span's list size.
+        if (maneuver.getAction() == ManeuverAction.ARRIVE) {
+            maneuverSpan = spansInSection.get(spansInSection.size() - 1);
+        } else {
+            maneuverSpan = spansInSection.get(maneuver.getSpanIndex());
+        }
+
+        List<StreetAttributes> streetAttributes = maneuverSpan.getStreetAttributes();
 
         // If attributes list contains either CONTROLLED_ACCESS_HIGHWAY, or MOTORWAY or RAMP then the road type is highway.
         // Check for highway attributes (highest priority)
