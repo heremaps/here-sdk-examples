@@ -7,7 +7,7 @@ This example uses **HERE SDK Units** to support functionality such as permission
 <center><p>
   <img src="hello_map_jc.jpg" width="650" />
   <figcaption>Screenshot: Optionally, the map can be enhanced with a compass, scale bar and a map switcher.</figcaption>
-</p></center>
+</center>
 
 Build instructions:
 -------------------

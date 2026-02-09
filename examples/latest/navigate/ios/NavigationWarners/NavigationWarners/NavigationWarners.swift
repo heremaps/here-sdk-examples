@@ -156,9 +156,17 @@ class NavigationWarners : BorderCrossingWarningDelegate,
             return .rural
         }
         
-        let spanIndex = Int(maneuver.spanIndex)
-        let currentSpan = spans[spanIndex]
-        let streetAttributes = currentSpan.streetAttributes
+        let maneuverSpan: Span
+        
+        // Arrive maneuvers are placed after the last span of the route
+        // and the span index for them would be greater than the span's list size.
+        if maneuver.action == ManeuverAction.arrive {
+            maneuverSpan = spans.last!
+        } else {
+            maneuverSpan = spans[Int(maneuver.spanIndex)]
+        }
+
+        let streetAttributes = maneuverSpan.streetAttributes
 
         // If attributes list contains either CONTROLLED_ACCESS_HIGHWAY, or MOTORWAY or RAMP then the road type is highway.
         // Check for highway attributes.
