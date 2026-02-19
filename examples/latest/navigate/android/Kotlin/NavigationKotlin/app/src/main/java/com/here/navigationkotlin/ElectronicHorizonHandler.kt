@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  * License-Filename: LICENSE
  */
-package com.here.navigation
+package com.here.navigationkotlin
 
 import android.util.Log
 import com.here.sdk.core.GeoCoordinates
@@ -24,7 +24,6 @@ import com.here.sdk.core.GeoPolyline
 import com.here.sdk.core.GeoPolylineDirection
 import com.here.sdk.core.engine.SDKNativeEngine
 import com.here.sdk.core.errors.InstantiationErrorException
-import com.here.sdk.electronichorizon.ElectronicHorizon
 import com.here.sdk.electronichorizon.ElectronicHorizonDataLoadedStatus
 import com.here.sdk.electronichorizon.ElectronicHorizonDataLoader
 import com.here.sdk.electronichorizon.ElectronicHorizonDataLoaderResult
@@ -32,13 +31,13 @@ import com.here.sdk.electronichorizon.ElectronicHorizonDataLoaderStatusListener
 import com.here.sdk.electronichorizon.ElectronicHorizonListener
 import com.here.sdk.electronichorizon.ElectronicHorizonOptions
 import com.here.sdk.electronichorizon.ElectronicHorizonUpdate
-import com.here.sdk.mapdata.DirectedOCMSegmentId
-import com.here.sdk.mapdata.SegmentData
-import com.here.sdk.mapdata.SegmentDataLoaderOptions
+import com.here.sdk.mapdata.*
 import com.here.sdk.navigation.MapMatchedLocation
 import com.here.sdk.navigation.RoadSign
 import com.here.sdk.routing.Route
 import com.here.sdk.transport.TransportMode
+import com.here.sdk.core.engine.*
+import com.here.sdk.electronichorizon.ElectronicHorizonEngine
 
 // A class that handles electronic horizon related operations.
 // This is not required for navigation, but can be used to get information about the road network ahead of the user.
@@ -59,7 +58,7 @@ import com.here.sdk.transport.TransportMode
 // it will asynchronously request the data from the HERE backend services.
 // It is recommended to use a prefetcher to prefetch region data along the route in advance (not shown in this class).
 class ElectronicHorizonHandler {
-    private var electronicHorizon: ElectronicHorizon? = null
+    private var electronicHorizon: ElectronicHorizonEngine? = null
     private val electronicHorizonDataLoader: ElectronicHorizonDataLoader
     private var electronicHorizonListener: ElectronicHorizonListener
     private var electronicHorizonDataLoaderStatusListener: ElectronicHorizonDataLoaderStatusListener
@@ -101,16 +100,16 @@ class ElectronicHorizonHandler {
         // The first entry of the list is for the most preferred path, the second is for the side paths of the first level,
         // the third is for the side paths of the second level, and so on.
         // Each entry defines how far ahead the path should be provided.
-        val lookAheadDistancesInMeters = mutableListOf<Double?>(1000.0, 500.0, 250.0)
+        val lookAheadDistancesInMeters = listOf(1000.0, 500.0, 250.0)
         // Segments will be removed by the HERE SDK once passed and distance to it exceeds the trailingDistanceInMeters.
         val trailingDistanceInMeters = 500.0
-        val electronicHorizonOptions: ElectronicHorizonOptions =
+        val electronicHorizonOptions =
             ElectronicHorizonOptions(lookAheadDistancesInMeters, trailingDistanceInMeters)
 
         val transportMode: TransportMode = TransportMode.CAR
 
         try {
-            electronicHorizon = ElectronicHorizon(
+            electronicHorizon = ElectronicHorizonEngine(
                 this.sDKNativeEngine,
                 electronicHorizonOptions,
                 transportMode,
@@ -163,7 +162,7 @@ class ElectronicHorizonHandler {
     // or removed.
     private fun createElectronicHorizonDataLoaderStatusListener(): ElectronicHorizonDataLoaderStatusListener {
         return object : ElectronicHorizonDataLoaderStatusListener {
-            override fun onElectronicHorizonDataLoaderStatusUpdated(statusMap: MutableMap<Int?, ElectronicHorizonDataLoadedStatus?>) {
+            override fun onElectronicHorizonDataLoaderStatusUpdated(electronicHorizonDataLoaderStatuses: Map<Int, ElectronicHorizonDataLoadedStatus>) {
                 Log.d(LOG_TAG, "ElectronicHorizonDataLoaderStatus updated.")
                 val lastUpdate = lastRequestedElectronicHorizonUpdate ?: return
 
@@ -171,10 +170,10 @@ class ElectronicHorizonHandler {
                 // Newly added segments were requested to be loaded in the call to electronicHorizonDataLoader.loadData().
                 // Internally, the data loader keeps track of which segments were requested and keeps updating
                 // the provided ElectronicHorizonUpdate instance over time.
-                for (entry in statusMap.entries) {
-                    val status: ElectronicHorizonDataLoadedStatus? = entry.value
+                for (entry in electronicHorizonDataLoaderStatuses.entries) {
+                    val status: ElectronicHorizonDataLoadedStatus = entry.value
                     // The integer key represents the level of the most preferred path (0) and side paths (1, 2, ...).
-                    val level: Int = entry.key!!
+                    val level: Int = entry.key
                     // This example shows only how to look at the fully loaded segments of the most preferred path (level 0).
                     if (level == 0 && status == ElectronicHorizonDataLoadedStatus.FULLY_LOADED) {
                         // Now, level 0 segments have been fully loaded and you can access their data.
@@ -202,15 +201,14 @@ class ElectronicHorizonHandler {
                                     val segmentData: SegmentData = checkNotNull(result.segmentData)
                                     // Access the data that was requested to be loaded in SegmentDataLoaderOptions.
                                     // For this example, we just log road signs.
-                                    val roadSigns: MutableList<RoadSign>? =
-                                        segmentData.getRoadSigns()
+                                    val roadSigns: List<RoadSign>? = segmentData.roadSigns
                                     if (roadSigns == null || roadSigns.isEmpty()) {
                                         continue
                                     }
                                     for (roadSign in roadSigns) {
                                         val roadSignCoordinates: GeoCoordinates =
                                             getGeoCoordinatesFromOffsetInMeters(
-                                                segmentData.getPolyline(),
+                                                segmentData.polyline,
                                                 roadSign.offsetInMeters.toDouble()
                                             )
                                         Log.d(
@@ -256,6 +254,6 @@ class ElectronicHorizonHandler {
         }
 
     companion object {
-        private val LOG_TAG: String = ElectronicHorizonHandler::class.java.getName()
+        private val LOG_TAG: String = ElectronicHorizonHandler::class.java.name
     }
 }

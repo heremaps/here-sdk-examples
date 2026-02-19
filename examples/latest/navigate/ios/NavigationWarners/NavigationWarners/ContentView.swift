@@ -29,6 +29,9 @@ struct ContentView: View {
          // Show the views on top of each other.
          ZStack(alignment: .top) {             
              // The map view should fill the entire screen.
+             WrappedMapView(mapView: $mapView)
+                 .edgesIgnoringSafeArea(.all)
+             
              VStack {
                  CustomButton(title: "Start guidance") {
                      navigationWarnersExample?.onStartGuidanceClicked()

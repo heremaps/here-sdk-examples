@@ -21,7 +21,6 @@ package com.here.navigationkotlin
 
 import android.content.Context
 import android.util.Log
-import com.here.navigation.ElectronicHorizonHandler
 import com.here.sdk.core.LanguageCode
 import com.here.sdk.core.UnitSystem
 import com.here.sdk.core.errors.InstantiationErrorException
@@ -54,9 +53,6 @@ class NavigationHandler(
     private val context: Context?,
     private val messageView: MessageViewUpdater
 ) {
-    enum class RoadType {
-        HIGHWAY, RURAL, URBAN
-    }
 
     private var previousManeuverIndex = -1
     private var lastMapMatchedLocation: MapMatchedLocation? = null
@@ -74,6 +70,8 @@ class NavigationHandler(
         }
     }
 
+    // Note that this class does not show all available listeners that can be used for turn-by-turn navigation.
+    // More listeners are shown in the "NavigationWarnersKotlin" app.
     fun setupListeners(
         visualNavigator: VisualNavigator,
         dynamicRoutingEngine: DynamicRoutingEngine,
@@ -104,8 +102,7 @@ class NavigationHandler(
                     return@RouteProgressListener
 
                 val action = nextManeuver.action
-                val roadName = getRoadName(nextManeuver, visualNavigator.route)
-                val logMessage = action.name + " on " + roadName + " in " + nextManeuverProgress.remainingDistanceInMeters + " meters."
+                val logMessage = "Next maneuver action: " + action.name + " in " + nextManeuverProgress.remainingDistanceInMeters + " meters."
 
                 // Angle is null for some maneuvers like Depart, Arrive and Roundabout.
                 val turnAngle = nextManeuver.turnAngleInDegrees
@@ -218,6 +215,9 @@ class NavigationHandler(
         maneuverNotificationOptions.language = ttsLanguageCode
         // Set the measurement system used for distances.
         maneuverNotificationOptions.unitSystem = UnitSystem.METRIC
+        // Toggle the lane recommendation in the maneuver notifications.
+        // The lane recommendation, if enabled, will be given only for the ManeuverNotificationType.DISTANCE notification type.
+        maneuverNotificationOptions.enableLaneRecommendation = true
         visualNavigator.maneuverNotificationOptions = maneuverNotificationOptions
         Log.d(
             TAG,
@@ -264,79 +264,6 @@ class NavigationHandler(
         }
 
         return languageCodeForCurrenDevice
-    }
-
-    private fun getRoadName(maneuver: Maneuver, route: Route?): String {
-        val currentRoadTexts = maneuver.roadTexts
-        val nextRoadTexts = maneuver.nextRoadTexts
-
-        val currentRoadName = currentRoadTexts.names.defaultValue
-        val currentRoadNumber = currentRoadTexts.numbersWithDirection.defaultValue
-        val nextRoadName = nextRoadTexts.names.defaultValue
-        val nextRoadNumber = nextRoadTexts.numbersWithDirection.defaultValue
-
-        var roadName = nextRoadName ?: nextRoadNumber
-
-        route?.let {
-            // On highways, we want to show the highway number instead of a possible road name,
-            // while for inner city and urban areas road names are preferred over road numbers.
-            if (getRoadType(maneuver, route) == RoadType.HIGHWAY) {
-                roadName = nextRoadNumber ?: nextRoadName
-            }
-        }
-
-        if (maneuver.action == ManeuverAction.ARRIVE) {
-            // We are approaching the destination, so there's no next road.
-            roadName = currentRoadName ?: currentRoadNumber
-        }
-
-        if (roadName == null) {
-            // Happens only in rare cases, when also the fallback is null.
-            roadName = "unnamed road"
-        }
-
-        return roadName
-    }
-
-    // Determines the road type for a given maneuver based on street attributes.
-    // Returns the road type classification (HIGHWAY, URBAN or RURAL).
-    private fun getRoadType(maneuver: Maneuver, route: Route): RoadType {
-        val sectionOfManeuver: Section = route.sections[maneuver.sectionIndex]
-        val spansInSection: List<Span> = sectionOfManeuver.spans
-
-        // If attributes list is empty then the road type is rural.
-        if (spansInSection.isEmpty()) {
-            return RoadType.RURAL
-        }
-
-        // Arrive maneuvers are placed after the last span of the route
-        // and the span index for them would be greater than the span's list size.
-        val maneuverSpan =
-            if (maneuver.action == ManeuverAction.ARRIVE) {
-                spansInSection.last()
-            } else {
-                spansInSection[maneuver.spanIndex]
-            }
-
-        val streetAttributes = maneuverSpan.streetAttributes
-
-        // If attributes list contains either CONTROLLED_ACCESS_HIGHWAY, or MOTORWAY or RAMP then the road type is highway.
-        // Check for highway attributes.
-        if (streetAttributes.contains(StreetAttributes.CONTROLLED_ACCESS_HIGHWAY)
-            || streetAttributes.contains(StreetAttributes.MOTORWAY)
-            || streetAttributes.contains(StreetAttributes.RAMP)
-        ) {
-            return RoadType.HIGHWAY
-        }
-
-        // If attributes list contains BUILT_UP_AREA then the road type is urban.
-        // Check for urban attributes.
-        if (streetAttributes.contains(StreetAttributes.BUILT_UP_AREA)) {
-            return RoadType.URBAN
-        }
-
-        // If the road type is neither urban nor highway, default to rural for all other cases.
-        return RoadType.RURAL
     }
 
     // Periodically updates the traffic information for the current route.

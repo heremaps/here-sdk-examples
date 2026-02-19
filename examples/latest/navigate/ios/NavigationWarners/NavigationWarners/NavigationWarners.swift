@@ -21,12 +21,6 @@ import AVFoundation
 import heresdk
 import SwiftUI
 
-enum RoadType {
-    case highway
-    case rural
-    case urban
-}
-
 // This class combines the various events that can be emitted during turn-by-turn navigation.
 // Note that this class does not show an exhaustive list of all possible events.
 class NavigationWarners : BorderCrossingWarningDelegate,
@@ -113,77 +107,8 @@ class NavigationWarners : BorderCrossingWarningDelegate,
         }
 
         let action = nextManeuver.action
-        let roadName = getRoadName(maneuver: nextManeuver, route: visualNavigator.route)
-        let logMessage = "'\(String(describing: action))' on \(roadName) in \(nextManeuverProgress.remainingDistanceInMeters) meters."
+        let logMessage = "Next maneuver action: '\(String(describing: action))' in \(nextManeuverProgress.remainingDistanceInMeters) meters."
         print(logMessage)
-    }
-
-    func getRoadName(maneuver: Maneuver, route: Route?) -> String {
-        let currentRoadTexts = maneuver.roadTexts
-        let nextRoadTexts = maneuver.nextRoadTexts
-
-        let currentRoadName = currentRoadTexts.names.defaultValue()
-        let currentRoadNumber = currentRoadTexts.numbersWithDirection.defaultValue()
-        let nextRoadName = nextRoadTexts.names.defaultValue()
-        let nextRoadNumber = nextRoadTexts.numbersWithDirection.defaultValue()
-
-        var roadName = nextRoadName == nil ? nextRoadNumber : nextRoadName
-
-        // On highways, we want to show the highway number instead of a possible road name,
-        // while for inner city and urban areas road names are preferred over road numbers.
-        if getRoadType(maneuver: maneuver, route: route!) == RoadType.highway {
-            roadName = nextRoadNumber == nil ? nextRoadName : nextRoadNumber
-        }
-
-        if maneuver.action == ManeuverAction.arrive {
-            // We are approaching destination, so there's no next road.
-            roadName = currentRoadName == nil ? currentRoadNumber : currentRoadName
-        }
-
-        // Nil happens only in rare cases, when also the fallback above is nil.
-        return roadName ?? "unnamed road"
-    }
-    
-    // Determines the road type for a given maneuver based on street attributes.
-    // Return The road type classification (highway, urban, or rural).
-    func getRoadType(maneuver: Maneuver, route: Route) -> RoadType {
-        let sectionIndex = Int(maneuver.sectionIndex)
-        let section = route.sections[sectionIndex]
-        let spans = section.spans
-
-        // If attributes list is empty then the road type is rural.
-        guard !spans.isEmpty else {
-            return .rural
-        }
-        
-        let maneuverSpan: Span
-        
-        // Arrive maneuvers are placed after the last span of the route
-        // and the span index for them would be greater than the span's list size.
-        if maneuver.action == ManeuverAction.arrive {
-            maneuverSpan = spans.last!
-        } else {
-            maneuverSpan = spans[Int(maneuver.spanIndex)]
-        }
-
-        let streetAttributes = maneuverSpan.streetAttributes
-
-        // If attributes list contains either CONTROLLED_ACCESS_HIGHWAY, or MOTORWAY or RAMP then the road type is highway.
-        // Check for highway attributes.
-        if streetAttributes.contains(.controlledAccessHighway) ||
-           streetAttributes.contains(.motorway) ||
-           streetAttributes.contains(.ramp) {
-            return .highway
-        }
-
-        // If attributes list contains BUILT_UP_AREA then the road type is urban.
-        // Check for urban attributes.
-        if streetAttributes.contains(.builtUpArea) {
-            return .urban
-        }
-
-        // If the road type is neither urban nor highway, default to rural for all other cases.
-        return .rural
     }
 
     // Conform to CurrentSituationLaneAssistanceViewDelegate.
@@ -281,9 +206,9 @@ class NavigationWarners : BorderCrossingWarningDelegate,
     // Notifies about merging traffic to the current road.
     func onTrafficMergeWarningUpdated(_ trafficMergeWarning: TrafficMergeWarning) {
         if trafficMergeWarning.distanceType == .ahead {
-            print("There is a merging \(trafficMergeWarning.distanceType) ahead in: \(trafficMergeWarning.distanceToTrafficMergeInMeters) meters, merging from the \(trafficMergeWarning.side) side, with lanes = \(trafficMergeWarning.laneCount)")
+            print("There is a merging \(trafficMergeWarning.roadType) ahead in: \(trafficMergeWarning.distanceToTrafficMergeInMeters) meters, merging from the \(trafficMergeWarning.side) side, with lanes = \(trafficMergeWarning.laneCount)")
         } else if trafficMergeWarning.distanceType == .passed {
-            print("A merging \(trafficMergeWarning.distanceType) passed: \(trafficMergeWarning.distanceToTrafficMergeInMeters) meters, merging from the \(trafficMergeWarning.side) side, with lanes = \(trafficMergeWarning.laneCount)")
+            print("A merging \(trafficMergeWarning.roadType) passed: \(trafficMergeWarning.distanceToTrafficMergeInMeters) meters, merging from the \(trafficMergeWarning.side) side, with lanes = \(trafficMergeWarning.laneCount)")
         } else if trafficMergeWarning.distanceType == .reached {
             // Since the traffic merge warning is given relative to a single position on the route,
             // DistanceType.reached will never be given for this warning.
@@ -810,7 +735,7 @@ class NavigationWarners : BorderCrossingWarningDelegate,
     // Notifies whenever any textual attribute of the current road changes, i.e., the current road texts differ
     // from the previous one. This can be useful during tracking mode, when no maneuver information is provided.
     func onRoadTextsUpdated(_ roadTexts: RoadTexts) {
-        // See getRoadName() how to get the current road name from the provided RoadTexts.
+        // See getRoadName() in the "Rerouting" example app to learn how to get the current road name from the provided RoadTexts.
     }
 
     private func setupBorderCrossingWarnings() {

@@ -86,6 +86,7 @@ public class NavigationHandler {
     }
 
     // Note that this class does not show all available listeners that can be used for turn-by-turn navigation.
+    // More listeners are shown in the "NavigationWarners" app.
     public void setupListeners(VisualNavigator visualNavigator, DynamicRoutingEngine dynamicRoutingEngine, ElectronicHorizonHandler electronicHorizonHandler) {
 
         // A helper class for TTS.
@@ -118,9 +119,7 @@ public class NavigationHandler {
                 }
 
                 ManeuverAction action = nextManeuver.getAction();
-                String roadName = getRoadName(nextManeuver, visualNavigator.getRoute());
-                String logMessage = action.name() + " on " + roadName +
-                        " in " + nextManeuverProgress.remainingDistanceInMeters + " meters.";
+                String logMessage = "Next maneuver action: " + action.name() + " in " + nextManeuverProgress.remainingDistanceInMeters + " meters.";
 
                 String currentETAString = getETA(routeProgress);
 
@@ -141,6 +140,26 @@ public class NavigationHandler {
 
                     // Update the ElectronicHorizon with the last map-matched location.
                     electronicHorizonHandler.update(lastMapMatchedLocation);
+                }
+
+                // Angle is null for some maneuvers like Depart, Arrive and Roundabout.
+                Double turnAngle = nextManeuver.getTurnAngleInDegrees();
+                if (turnAngle != null) {
+                    if (turnAngle > 10) {
+                        Log.d(TAG, "At the next maneuver: Make a right turn of " + turnAngle + " degrees.");
+                    } else if (turnAngle < -10) {
+                        Log.d(TAG, "At the next maneuver: Make a left turn of " + turnAngle + " degrees.");
+                    } else {
+                        Log.d(TAG, "At the next maneuver: Go straight.");
+                    }
+                }
+
+                // Angle is null when the roundabout maneuver is not an enter, exit or keep maneuver.
+                Double roundaboutAngle = nextManeuver.getRoundaboutAngleInDegrees();
+                if (roundaboutAngle != null) {
+                    // Note that the value is negative only for left-driving countries such as UK.
+                    Log.d(TAG, "At the next maneuver: Follow the roundabout for " +
+                            roundaboutAngle + " degrees to reach the exit.");
                 }
 
                 updateTrafficOnRoute(routeProgress, visualNavigator);
@@ -237,77 +256,6 @@ public class NavigationHandler {
         }
 
         return languageCodeForCurrenDevice;
-    }
-
-    private String getRoadName(Maneuver maneuver, Route route) {
-        RoadTexts currentRoadTexts = maneuver.getRoadTexts();
-        RoadTexts nextRoadTexts = maneuver.getNextRoadTexts();
-
-        String currentRoadName = currentRoadTexts.names.getDefaultValue();
-        String currentRoadNumber = currentRoadTexts.numbersWithDirection.getDefaultValue();
-        String nextRoadName = nextRoadTexts.names.getDefaultValue();
-        String nextRoadNumber = nextRoadTexts.numbersWithDirection.getDefaultValue();
-
-        String roadName = nextRoadName == null ? nextRoadNumber : nextRoadName;
-
-        // On highways, we want to show the highway number instead of a possible road name,
-        // while for inner city and urban areas road names are preferred over road numbers.
-        if (getRoadType(maneuver, route) == RoadType.HIGHWAY) {
-            roadName = nextRoadNumber == null ? nextRoadName : nextRoadNumber;
-        }
-
-        if (maneuver.getAction() == ManeuverAction.ARRIVE) {
-            // We are approaching the destination, so there's no next road.
-            roadName = currentRoadName == null ? currentRoadNumber : currentRoadName;
-        }
-
-        if (roadName == null) {
-            // Happens only in rare cases, when also the fallback is null.
-            roadName = "unnamed road";
-        }
-
-        return roadName;
-    }
-
-    // Determines the road type for a given maneuver based on street attributes.
-    // Returns the road type classification (HIGHWAY, URBAN or RURAL).
-    private RoadType getRoadType(Maneuver maneuver, Route route) {
-        Section sectionOfManeuver = route.getSections().get(maneuver.getSectionIndex());
-        List<Span> spansInSection = sectionOfManeuver.getSpans();
-
-        // If attributes list is empty then the road type is rural.
-        if (spansInSection.isEmpty()) {
-            return RoadType.RURAL;
-        }
-
-        Span maneuverSpan;
-
-        // Arrive maneuvers are placed after the last span of the route
-        // and the span index for them would be greater than the span's list size.
-        if (maneuver.getAction() == ManeuverAction.ARRIVE) {
-            maneuverSpan = spansInSection.get(spansInSection.size() - 1);
-        } else {
-            maneuverSpan = spansInSection.get(maneuver.getSpanIndex());
-        }
-
-        List<StreetAttributes> streetAttributes = maneuverSpan.getStreetAttributes();
-
-        // If attributes list contains either CONTROLLED_ACCESS_HIGHWAY, or MOTORWAY or RAMP then the road type is highway.
-        // Check for highway attributes.
-        if (streetAttributes.contains(StreetAttributes.CONTROLLED_ACCESS_HIGHWAY)
-                || streetAttributes.contains(StreetAttributes.MOTORWAY)
-                || streetAttributes.contains(StreetAttributes.RAMP)) {
-            return RoadType.HIGHWAY;
-        }
-
-        // If attributes list contains BUILT_UP_AREA then the road type is urban.
-        // Check for urban attributes.
-        if (streetAttributes.contains(StreetAttributes.BUILT_UP_AREA)) {
-            return RoadType.URBAN;
-        }
-
-        // If the road type is neither urban nor highway, default to rural for all other cases.
-        return RoadType.RURAL;
     }
 
     // Periodically updates the traffic information for the current route.

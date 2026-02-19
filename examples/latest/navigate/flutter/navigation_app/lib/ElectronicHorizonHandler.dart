@@ -32,22 +32,22 @@ import 'package:here_sdk/transport.dart';
 ///
 /// Usage:
 /// 1. Create an instance of this class.
-/// 2. Call start(route) to initialize the ElectronicHorizon.
+/// 2. Call start(route) to initialize the ElectronicHorizonEngine.
 ///    Optionally, null can be provided to operate in tracking mode without a route.
-/// 3. Call update(mapMatchedLocation) with a map-matched location to update the ElectronicHorizon.
-/// 4. Call stop() to stop getting ElectronicHorizon events.
+/// 3. Call update(mapMatchedLocation) with a map-matched location to update the ElectronicHorizonEngine.
+/// 4. Call stop() to stop getting ElectronicHorizonEngine events.
 ///
 /// Note that in this example app we only enable the electronic horizon in car mode while following a route.
 ///
 /// For convenience, the ElectronicHorizonDataLoader wraps a SegmentDataLoader that allows to
-/// continuously load required map data segments based on the most preferred path(s) of the ElectronicHorizon.
+/// continuously load required map data segments based on the most preferred path(s) of the ElectronicHorizonEngine.
 /// When it does not find cached, prefetched or preloaded region data for a segment,
 /// it will asynchronously request the data from the HERE backend services.
 /// It is recommended to use a prefetcher to prefetch region data along the route in advance (not shown in this class).
 class ElectronicHorizonHandler {
   static const String _logTag = 'ElectronicHorizonHandler';
 
-  ElectronicHorizon? _electronicHorizon;
+  ElectronicHorizonEngine? _electronicHorizonEngine;
   late final ElectronicHorizonDataLoader _electronicHorizonDataLoader;
   ElectronicHorizonListener? _electronicHorizonListener;
   ElectronicHorizonDataLoaderStatusListener? _electronicHorizonDataLoaderStatusListener;
@@ -98,14 +98,14 @@ class ElectronicHorizonHandler {
     TransportMode transportMode = TransportMode.car;
 
     try {
-      _electronicHorizon = ElectronicHorizon.WithOptionsAndRoutePathEvaluator(
+      _electronicHorizonEngine = ElectronicHorizonEngine.WithOptionsAndRoutePathEvaluator(
         _getSDKNativeEngine(),
         electronicHorizonOptions,
         transportMode,
         route,
       );
     } on InstantiationException {
-      throw Exception('ElectronicHorizon is not initialized.');
+      throw Exception('ElectronicHorizonEngine is not initialized.');
     }
 
     // Remove any existing electronic horizon listeners.
@@ -113,20 +113,20 @@ class ElectronicHorizonHandler {
 
     // Create and add new listeners.
     _electronicHorizonListener = _createElectronicHorizonListener();
-    _electronicHorizon?.addElectronicHorizonListener(_electronicHorizonListener!);
+    _electronicHorizonEngine?.addElectronicHorizonListener(_electronicHorizonListener!);
     _electronicHorizonDataLoaderStatusListener = _createElectronicHorizonDataLoaderStatusListener();
     _electronicHorizonDataLoader.addElectronicHorizonDataLoaderStatusListener(_electronicHorizonDataLoaderStatusListener!);
-    print('$_logTag: ElectronicHorizon started.');
+    print('$_logTag: ElectronicHorizonEngine started.');
   }
 
-  /// Similar like the VisualNavigator, the ElectronicHorizon also needs to be updated with
+  /// Similar like the VisualNavigator, the ElectronicHorizonEngine also needs to be updated with
   /// a location, with the difference that the location must be map-matched. Therefore, the
   /// location provided by the VisualNavigator can be used.
   void update(MapMatchedLocation mapMatchedLocation) {
-    if (_electronicHorizon == null) {
-      throw StateError('ElectronicHorizon is not initialized. Call start() first.');
+    if (_electronicHorizonEngine == null) {
+      throw StateError('ElectronicHorizonEngine is not initialized. Call start() first.');
     }
-    _electronicHorizon!.update(mapMatchedLocation);
+    _electronicHorizonEngine!.update(mapMatchedLocation);
     print('$_logTag: ElectronicHorizonUpdate mapMatchedLocation received.');
   }
 
@@ -216,18 +216,18 @@ class ElectronicHorizonHandler {
   }
 
   void stop() {
-    if (_electronicHorizon == null) {
+    if (_electronicHorizonEngine == null) {
       return;
     }
 
     if (_electronicHorizonListener != null) {
-      _electronicHorizon!.removeElectronicHorizonListener(_electronicHorizonListener!);
+      _electronicHorizonEngine!.removeElectronicHorizonListener(_electronicHorizonListener!);
     }
     if (_electronicHorizonDataLoaderStatusListener != null) {
       _electronicHorizonDataLoader.removeElectronicHorizonDataLoaderStatusListener(
           _electronicHorizonDataLoaderStatusListener!);
     }
-    print('$_logTag: ElectronicHorizon stopped.');
+    print('$_logTag: ElectronicHorizonEngine stopped.');
   }
 
   SDKNativeEngine _getSDKNativeEngine() {
