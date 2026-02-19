@@ -29,11 +29,11 @@ import com.here.sdk.core.GeoPolyline;
 import com.here.sdk.core.GeoPolylineDirection;
 import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.core.errors.InstantiationErrorException;
-import com.here.sdk.electronichorizon.ElectronicHorizon;
 import com.here.sdk.electronichorizon.ElectronicHorizonDataLoadedStatus;
 import com.here.sdk.electronichorizon.ElectronicHorizonDataLoader;
 import com.here.sdk.electronichorizon.ElectronicHorizonDataLoaderResult;
 import com.here.sdk.electronichorizon.ElectronicHorizonDataLoaderStatusListener;
+import com.here.sdk.electronichorizon.ElectronicHorizonEngine;
 import com.here.sdk.electronichorizon.ElectronicHorizonListener;
 import com.here.sdk.electronichorizon.ElectronicHorizonOptions;
 import com.here.sdk.electronichorizon.ElectronicHorizonPath;
@@ -56,15 +56,15 @@ import java.util.Map;
 //
 // Usage:
 // 1. Create an instance of this class.
-// 2. Call start(route) to initialize the ElectronicHorizon.
+// 2. Call start(route) to initialize the ElectronicHorizonEngine.
 //    Optionally, null can be provided to operate in tracking mode without a route.
-// 3. Call update(mapMatchedLocation) with a map-matched location to update the ElectronicHorizon.
-// 4. Call stop() to stop getting ElectronicHorizon events.
+// 3. Call update(mapMatchedLocation) with a map-matched location to update the ElectronicHorizonEngine.
+// 4. Call stop() to stop getting ElectronicHorizonEngine events.
 //
 // Note that in this example app we only enable the electronic horizon in car mode while following a route.
 //
 // For convenience, the ElectronicHorizonDataLoader wraps a SegmentDataLoader that allows to
-// continuously load required map data segments based on the most preferred path(s) of the ElectronicHorizon.
+// continuously load required map data segments based on the most preferred path(s) of the ElectronicHorizonEngine.
 // When it does not find cached, prefetched or preloaded region data for a segment,
 // it will asynchronously request the data from the HERE backend services.
 // It is recommended to use a prefetcher to prefetch region data along the route in advance (not shown in this class).
@@ -73,7 +73,7 @@ public class ElectronicHorizonHandler {
     private static final String LOG_TAG = ElectronicHorizonHandler.class.getName();
 
     @Nullable
-    private ElectronicHorizon electronicHorizon;
+    private ElectronicHorizonEngine electronicHorizonEngine;
     private final ElectronicHorizonDataLoader electronicHorizonDataLoader;
     private ElectronicHorizonListener electronicHorizonListener;
     private ElectronicHorizonDataLoaderStatusListener electronicHorizonDataLoaderStatusListener;
@@ -118,9 +118,9 @@ public class ElectronicHorizonHandler {
         TransportMode transportMode = TransportMode.CAR;
 
         try {
-            electronicHorizon = new ElectronicHorizon(getSDKNativeEngine(), electronicHorizonOptions, transportMode, route);
+            electronicHorizonEngine = new ElectronicHorizonEngine(getSDKNativeEngine(), electronicHorizonOptions, transportMode, route);
         } catch (InstantiationErrorException e) {
-            throw new RuntimeException("ElectronicHorizon is not initialized: "+ e.error.name());
+            throw new RuntimeException("ElectronicHorizonEngine is not initialized: "+ e.error.name());
         }
 
         // Remove any existing electronic horizon listeners.
@@ -128,20 +128,20 @@ public class ElectronicHorizonHandler {
 
         // Create and add new listeners.
         electronicHorizonListener = createElectronicHorizonListener();
-        electronicHorizon.addElectronicHorizonListener(electronicHorizonListener);
+        electronicHorizonEngine.addElectronicHorizonListener(electronicHorizonListener);
         electronicHorizonDataLoaderStatusListener = createElectronicHorizonDataLoaderStatusListener();
         electronicHorizonDataLoader.addElectronicHorizonDataLoaderStatusListener(electronicHorizonDataLoaderStatusListener);
-        Log.d(LOG_TAG, "ElectronicHorizon started.");
+        Log.d(LOG_TAG, "ElectronicHorizonEngine started.");
     }
 
-    // Similar like the VisualNavigator, the ElectronicHorizon also needs to be updated with
+    // Similar like the VisualNavigator, the ElectronicHorizonEngine also needs to be updated with
     // a location, with the difference that the location must be map-matched. Therefore, the
     // location provided by the VisualNavigator can be used.
     public void update(@NonNull MapMatchedLocation mapMatchedLocation) {
-        if (electronicHorizon == null) {
-            throw new IllegalStateException("ElectronicHorizon is not initialized. Call start() first.");
+        if (electronicHorizonEngine == null) {
+            throw new IllegalStateException("ElectronicHorizonEngine is not initialized. Call start() first.");
         }
-        electronicHorizon.update(mapMatchedLocation);
+        electronicHorizonEngine.update(mapMatchedLocation);
         Log.d(LOG_TAG, "ElectronicHorizonUpdate mapMatchedLocation received.");
     }
 
@@ -235,13 +235,13 @@ public class ElectronicHorizonHandler {
     }
 
     public void stop() {
-        if (electronicHorizon == null) {
+        if (electronicHorizonEngine == null) {
             return;
         }
 
-        electronicHorizon.removeElectronicHorizonListener(electronicHorizonListener);
+        electronicHorizonEngine.removeElectronicHorizonListener(electronicHorizonListener);
         electronicHorizonDataLoader.removeElectronicHorizonDataLoaderStatusListener(electronicHorizonDataLoaderStatusListener);
-        Log.d(LOG_TAG, "ElectronicHorizon stopped.");
+        Log.d(LOG_TAG, "ElectronicHorizonEngine stopped.");
     }
 
     private SDKNativeEngine getSDKNativeEngine() {

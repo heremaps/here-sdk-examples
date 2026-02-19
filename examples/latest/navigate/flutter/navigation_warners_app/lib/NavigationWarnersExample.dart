@@ -67,11 +67,9 @@ class NavigationWarnersExample {
       }
 
       ManeuverAction action = nextManeuver.action;
-      String roadName = _getRoadName(nextManeuver, _visualNavigator.route);
       String logMessage =
+          "Next maneuver action: " +
           action.name +
-          ' on ' +
-          roadName +
           ' in ' +
           nextManeuverProgress.remainingDistanceInMeters.toString() +
           ' meters.';
@@ -574,7 +572,7 @@ class NavigationWarnersExample {
     // Notifies whenever any textual attribute of the current road changes, i.e., the current road texts differ
     // from the previous one. This can be useful during tracking mode, when no maneuver information is provided.
     _visualNavigator.roadTextsListener = RoadTextsListener((RoadTexts roadTexts) {
-      // See _getRoadName() how to get the current road name from the provided RoadTexts.
+      // See _getRoadName() in the "rerouting_app" example app to learn how to get the current road name from the provided RoadTexts.
     });
 
     // Notifies on signposts together with complex junction views.
@@ -828,77 +826,6 @@ class NavigationWarnersExample {
     // - schoolZoneSpeedLimitInMetersPerSecond
     // - timeDependentSpeedLimitInMetersPerSecond
     return speedLimit.effectiveSpeedLimitInMetersPerSecond();
-  }
-
-  String _getRoadName(Maneuver maneuver, Route? route) {
-    RoadTexts currentRoadTexts = maneuver.roadTexts;
-    RoadTexts nextRoadTexts = maneuver.nextRoadTexts;
-
-    String? currentRoadName = currentRoadTexts.names.getDefaultValue();
-    String? currentRoadNumber = currentRoadTexts.numbersWithDirection.getDefaultValue();
-    String? nextRoadName = nextRoadTexts.names.getDefaultValue();
-    String? nextRoadNumber = nextRoadTexts.numbersWithDirection.getDefaultValue();
-
-    String? roadName = nextRoadName == null ? nextRoadNumber : nextRoadName;
-
-    // On highways, we want to show the highway number instead of a possible road name,
-    // while for inner city and urban areas road names are preferred over road numbers.
-    if (route != null){
-      if (getRoadType(maneuver, route) == RoadType.highway) {
-        roadName = nextRoadNumber == null ? nextRoadName : nextRoadNumber;
-      }
-    }
-
-    if (maneuver.action == ManeuverAction.arrive) {
-      // We are approaching the destination, so there's no next road.
-      roadName = currentRoadName == null ? currentRoadNumber : currentRoadName;
-    }
-
-    // Happens only in rare cases, when also the fallback above is null.
-    roadName ??= 'unnamed road';
-
-    return roadName;
-  }
-
-  // Determines the road type for a given maneuver based on street attributes.
-  // Return The road type classification (highway, urban, or rural).
-  RoadType getRoadType(Maneuver maneuver, Route route) {
-    final section = route.sections[maneuver.sectionIndex];
-    final spans = section.spans;
-
-    // If attributes list is empty then the road type is rural.
-    if (spans.isEmpty) {
-      return RoadType.rural;
-    }
-
-    Span maneuverSpan;
-
-    // Arrive maneuvers are placed after the last span of the route
-    // and the span index for them would be greater than the span's list size.
-    if (maneuver.action == ManeuverAction.arrive) {
-      maneuverSpan = spans.last;
-    } else {
-      maneuverSpan = spans[maneuver.spanIndex];
-    }
-
-    var streetAttributes = maneuverSpan.streetAttributes;
-
-    // If attributes list contains either CONTROLLED_ACCESS_HIGHWAY, or MOTORWAY or RAMP then the road type is highway.
-    // Check for highway attributes.
-    if (streetAttributes.contains(StreetAttributes.controlledAccessHighway) ||
-        streetAttributes.contains(StreetAttributes.motorway) ||
-        streetAttributes.contains(StreetAttributes.ramp)) {
-      return RoadType.highway;
-    }
-
-    // If attributes list contains BUILT_UP_AREA then the road type is urban.
-    // Check for urban attributes.
-    if (streetAttributes.contains(StreetAttributes.builtUpArea)) {
-      return RoadType.urban;
-    }
-
-    // If the road type is neither urban nor highway, default to rural for all other cases.
-    return RoadType.rural;
   }
 
   // Returns the GeoCoordinates for an object located at the end of the remaining distance.

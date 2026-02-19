@@ -25,15 +25,15 @@ import heresdk
 ///
 /// Usage:
 /// 1. Create an instance of this class.
-/// 2. Call start(route) to initialize the ElectronicHorizon.
+/// 2. Call start(route) to initialize the ElectronicHorizonEngine.
 ///    Optionally, nil can be provided to operate in tracking mode without a route.
-/// 3. Call update(mapMatchedLocation) with a map-matched location to update the ElectronicHorizon.
-/// 4. Call stop() to stop getting ElectronicHorizon events.
+/// 3. Call update(mapMatchedLocation) with a map-matched location to update the ElectronicHorizonEngine.
+/// 4. Call stop() to stop getting ElectronicHorizonEngine events.
 ///
 /// Note that in this example app we only enable the electronic horizon in car mode while following a route.
 ///
 /// For convenience, the ElectronicHorizonDataLoader wraps a SegmentDataLoader that allows to
-/// continuously load required map data segments based on the most preferred path(s) of the ElectronicHorizon.
+/// continuously load required map data segments based on the most preferred path(s) of the ElectronicHorizonEngine.
 /// When it does not find cached, prefetched or preloaded region data for a segment,
 /// it will asynchronously request the data from the HERE backend services.
 /// It is recommended to use a prefetcher to prefetch region data along the route in advance (not shown in this class).
@@ -41,7 +41,7 @@ class ElectronicHorizonHandler {
 
     private static let LOG_TAG = String(describing: ElectronicHorizonHandler.self)
 
-    private var electronicHorizon: ElectronicHorizon?
+    private var electronicHorizonEngine: ElectronicHorizonEngine?
     private let electronicHorizonDataLoader: ElectronicHorizonDataLoader
 
     private lazy var electronicHorizonDelegate: ElectronicHorizonDelegate = {
@@ -96,14 +96,14 @@ class ElectronicHorizonHandler {
         let transportMode = TransportMode.car
 
         do {
-            electronicHorizon = try ElectronicHorizon(
+            electronicHorizonEngine = try ElectronicHorizonEngine(
                 sdkEngine: ElectronicHorizonHandler.getSDKNativeEngine(),
                 options: electronicHorizonOptions,
                 transportMode: transportMode,
                 route: route
             )
         } catch let instantiationError {
-            fatalError("ElectronicHorizon is not initialized: \(instantiationError)")
+            fatalError("ElectronicHorizonEngine is not initialized: \(instantiationError)")
         }
 
         // Remove any existing electronic horizon delegates.
@@ -111,20 +111,20 @@ class ElectronicHorizonHandler {
 
         // Create and add new delegates.
         electronicHorizonDelegate = createElectronicHorizonDelegate()
-        electronicHorizon!.addElectronicHorizonListener(electronicHorizonListener: electronicHorizonDelegate)
+        electronicHorizonEngine!.addElectronicHorizonListener(electronicHorizonListener: electronicHorizonDelegate)
 
         electronicHorizonDataLoaderStatusDelegate = createElectronicHorizonDataLoaderStatusDelegate()
         electronicHorizonDataLoader.addElectronicHorizonDataLoaderStatusListener(electronicHorizonListener: electronicHorizonDataLoaderStatusDelegate)
 
-        print("\(Self.LOG_TAG): ElectronicHorizon started.")
+        print("\(Self.LOG_TAG): ElectronicHorizonEngine started.")
     }
 
-    /// Similar like the VisualNavigator, the ElectronicHorizon also needs to be updated with
+    /// Similar like the VisualNavigator, the ElectronicHorizonEngine also needs to be updated with
     /// a location, with the difference that the location must be map-matched. Therefore, the
     /// location provided by the VisualNavigator can be used.
     func update(mapMatchedLocation: MapMatchedLocation) {
-        guard let electronicHorizon = electronicHorizon else {
-            fatalError("ElectronicHorizon is not initialized. Call start() first.")
+        guard let electronicHorizon = electronicHorizonEngine else {
+            fatalError("ElectronicHorizonEngine is not initialized. Call start() first.")
         }
         electronicHorizon.update(mapMatchedLocation: mapMatchedLocation)
         print("\(Self.LOG_TAG): ElectronicHorizonUpdate mapMatchedLocation received.")
@@ -231,11 +231,11 @@ class ElectronicHorizonHandler {
     }
 
     func stop() {
-        guard let electronicHorizon = electronicHorizon else { return }
+        guard let electronicHorizon = electronicHorizonEngine else { return }
 
         electronicHorizon.removeElectronicHorizonListener(electronicHorizonListener: electronicHorizonDelegate)
         electronicHorizonDataLoader.removeElectronicHorizonDataLoaderStatusListener(electronicHorizonListener: electronicHorizonDataLoaderStatusDelegate)
-        print("\(Self.LOG_TAG): ElectronicHorizon stopped.")
+        print("\(Self.LOG_TAG): ElectronicHorizonEngine stopped.")
     }
 
     private static func getSDKNativeEngine() -> SDKNativeEngine {

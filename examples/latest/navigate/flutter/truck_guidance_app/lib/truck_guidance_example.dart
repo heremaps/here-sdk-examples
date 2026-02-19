@@ -189,15 +189,36 @@ class TruckGuidanceExample {
   // based on their safety features and the potential danger posed by the goods
   // transported through them.
   void _configureVehicleRestrictionFilter() {
-    List<HazardousMaterial> hazardousMaterials = [];
-    hazardousMaterials.add(HazardousMaterial.explosive);
-    hazardousMaterials.add(HazardousMaterial.flammable);
+    final truckSpecifications = _createTruckSpecifications();
 
-    MapContentSettings.configureVehicleRestrictionFilter(
-        TransportMode.truck,
-        _createTruckSpecifications(),
-        hazardousMaterials,
-        TunnelCategory.b);
+    final vehicleSpecification = VehicleSpecification();
+    vehicleSpecification.grossWeightInKilograms = truckSpecifications.grossWeightInKilograms;
+    vehicleSpecification.heightInCentimeters = truckSpecifications.heightInCentimeters;
+    vehicleSpecification.widthInCentimeters = truckSpecifications.widthInCentimeters;
+    vehicleSpecification.lengthInCentimeters = truckSpecifications.lengthInCentimeters;
+    vehicleSpecification.truckCategory = MyTruckSpecs.truckCategory;
+    vehicleSpecification.tunnelCategory = TunnelCategory.b;
+    vehicleSpecification.hazardousMaterials = [
+      HazardousMaterial.explosive,
+      HazardousMaterial.flammable,
+    ];
+
+    if (truckSpecifications.weightPerAxleInKilograms != null) {
+      vehicleSpecification.weightPerAxleInKilograms = truckSpecifications.weightPerAxleInKilograms;
+    }
+
+    if (truckSpecifications.axleCount != null) {
+      vehicleSpecification.axleCount = truckSpecifications.axleCount;
+    }
+
+    if (truckSpecifications.trailerCount != null) {
+      vehicleSpecification.trailerCount = truckSpecifications.trailerCount;
+    }
+
+    final transportSpecification = TransportSpecification();
+    transportSpecification.transportMode=TransportMode.truck;
+    transportSpecification.vehicleSpecification= vehicleSpecification;
+    MapContentSettings.configureVehicleRestrictionFilterWithTransportSpecification(transportSpecification);
   }
 
   // Enable layers that may be useful for truck drivers.
@@ -763,9 +784,9 @@ class TruckGuidanceExample {
               "ViolatedRestriction: Section $sectionNr: Exceeded maxTunnelCategory: ${details.maxTunnelCategory?.name}",
             );
           }
-          if (details.forbiddenTruckType != null) {
+          if (details.forbiddenTruckCategory != null) {
             print(
-              "ViolatedRestriction: Section $sectionNr: ForbiddenTruckType is required: ${details.forbiddenTruckType?.name}",
+              "ViolatedRestriction: Section $sectionNr: ForbiddenTruckType is required: ${details.forbiddenTruckCategory?.name}",
             );
           }
           if (details.timeRule != null) {

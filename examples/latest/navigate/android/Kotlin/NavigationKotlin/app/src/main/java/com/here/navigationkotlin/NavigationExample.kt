@@ -20,10 +20,9 @@ package com.here.navigationkotlin
 
 import android.content.Context
 import android.util.Log
-import com.here.navigation.ElectronicHorizonHandler
 import com.here.sdk.core.GeoCoordinates
 import com.here.sdk.core.Location
-import com.here.sdk.core.engine.SDKNativeEngine
+import com.here.sdk.core.engine.*
 import com.here.sdk.core.errors.InstantiationErrorException
 import com.here.sdk.location.LocationAccuracy
 import com.here.sdk.mapview.MapView

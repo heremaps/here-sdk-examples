@@ -206,14 +206,37 @@ class TruckGuidanceExample: TapDelegate,
     // transported through them.
     private func configureVehicleRestrictionFilter() {
         var hazardousMaterials: [HazardousMaterial] = []
-        hazardousMaterials.append(HazardousMaterial.explosive)
-        hazardousMaterials.append(HazardousMaterial.flammable)
-        
-        MapContentSettings.configureVehicleRestrictionFilter(
-            transportMode: TransportMode.truck,
-            truckSpecifications: createTruckSpecifications(),
-            hazardousMaterials: hazardousMaterials,
-            tunnelCategory: TunnelCategory.b)
+        hazardousMaterials.append(.explosive)
+        hazardousMaterials.append(.flammable)
+
+        let truckSpecifications = createTruckSpecifications()
+        let truckBuilder = VehicleSpecification.TruckBuilder()
+            .withGrossWeightInKilograms(truckSpecifications.grossWeightInKilograms!)
+            .withHeightInCentimeters(truckSpecifications.heightInCentimeters!)
+            .withWidthInCentimeters(truckSpecifications.widthInCentimeters!)
+            .withLengthInCentimeters(truckSpecifications.lengthInCentimeters!)
+            .withTruckCategory(MyTruckSpecs.truckCategory)
+            .withTunnelCategory(.b)
+            .withHazardousMaterials(hazardousMaterials)
+
+        if let weightPerAxle = truckSpecifications.weightPerAxleInKilograms {
+            truckBuilder.withWeightPerAxleInKilograms(weightPerAxle)
+        }
+
+        if let axleCount = truckSpecifications.axleCount {
+            truckBuilder.withAxleCount(axleCount)
+        }
+
+        if let trailerCount = truckSpecifications.trailerCount {
+            truckBuilder.withTrailerCount(trailerCount)
+        }
+
+        let vehicleSpecification = truckBuilder.build()
+        let transportSpecification = TransportSpecification.TruckBuilder()
+            .withVehicleSpecification(vehicleSpecification)
+            .build()
+
+        MapContentSettings.configureVehicleRestrictionFilter(transportSpecs: transportSpecification)
     }
 
     // Enable layers that may be useful for truck drivers.
@@ -784,7 +807,7 @@ class TruckGuidanceExample: TapDelegate,
                         if let maxTunnelCategory = details.maxTunnelCategory {
                             print("Section \(sectionNr): Exceeded maxTunnelCategory: \(maxTunnelCategory.rawValue)")
                         }
-                        if let forbiddenTruckType = details.forbiddenTruckType {
+                        if let forbiddenTruckType = details.forbiddenTruckCategory {
                             print("Section \(sectionNr): ForbiddenTruckType is required: \(forbiddenTruckType.rawValue)")
                         }
                         if let timeRule = details.timeRule {

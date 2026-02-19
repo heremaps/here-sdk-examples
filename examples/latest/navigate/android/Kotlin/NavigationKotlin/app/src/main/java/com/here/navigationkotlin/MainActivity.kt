@@ -63,7 +63,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.here.navigationkotlin.ui.theme.NavigationTheme
 import com.here.sdk.core.engine.AuthenticationMode
-import com.here.sdk.core.engine.SDKNativeEngine
+import com.here.sdk.core.engine.*
 import com.here.sdk.core.engine.SDKOptions
 import com.here.sdk.core.errors.InstantiationErrorException
 import com.here.sdk.mapview.MapError
