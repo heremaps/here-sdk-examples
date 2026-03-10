@@ -134,12 +134,18 @@ class ElectronicHorizonHandler {
   /// This only informs on the available segment IDs and indexes, so that the actual data can be requested
   /// by the ElectronicHorizonDataLoader.
   ElectronicHorizonListener _createElectronicHorizonListener() {
-    return ElectronicHorizonListener((ElectronicHorizonUpdate electronicHorizonUpdate) {
+    return ElectronicHorizonListener((ElectronicHorizonErrorCode? errorCode, ElectronicHorizonUpdate? electronicHorizonUpdate) {
+      if (errorCode != null) {
+        print('$_logTag: ElectronicHorizonUpdate error: ${errorCode.name}');
+        return;
+      }
       print('$_logTag: ElectronicHorizonUpdate received.');
       // Asynchronously start to load required data for the new segments.
       // Use the ElectronicHorizonDataLoaderStatusListener to get notified when new data is arriving.
       _lastRequestedElectronicHorizonUpdate = electronicHorizonUpdate;
-      _electronicHorizonDataLoader.loadData(electronicHorizonUpdate);
+      if (electronicHorizonUpdate != null) {
+        _electronicHorizonDataLoader.loadData(electronicHorizonUpdate);
+      }
     });
   }
 
@@ -165,7 +171,12 @@ class ElectronicHorizonHandler {
         if (level == 0 && status == ElectronicHorizonDataLoadedStatus.fullyLoaded) {
           // Now, level 0 segments have been fully loaded and you can access their data.
           // The electronicHorizonPaths list contains segments from all levels, so you need to filter for level 0 below.
-          final electronicHorizonPaths = lastUpdate.electronicHorizonPaths;
+          // Skip this iteration to avoid null access.
+          if (lastUpdate.electronicHorizon == null) {
+            // `return` inside forEach exits the current callback and acts like `continue`, skipping to the next item.
+            return;
+          }
+          final electronicHorizonPaths = lastUpdate.electronicHorizon!.paths;
           for (var electronicHorizonPath in electronicHorizonPaths) {
             final electronicHorizonPathSegments = electronicHorizonPath.segments;
             for (var segment in electronicHorizonPathSegments) {

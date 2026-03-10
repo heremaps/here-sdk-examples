@@ -153,6 +153,10 @@ class NavigationHandler {
 
       _lastMapMatchedLocation = mapMatchedLocation;
 
+      final latitude = mapMatchedLocation.coordinates.latitude;
+      final longitude = mapMatchedLocation.coordinates.longitude;
+      print("MapMatchedLocation - Lat: $latitude, Lon: $longitude");
+
       if (_lastMapMatchedLocation?.isDrivingInTheWrongWay == true) {
         // For two-way streets, this value is always false. This feature is supported in tracking mode and when deviating from a route.
         print("This is a one way road. User is driving against the allowed traffic direction.");

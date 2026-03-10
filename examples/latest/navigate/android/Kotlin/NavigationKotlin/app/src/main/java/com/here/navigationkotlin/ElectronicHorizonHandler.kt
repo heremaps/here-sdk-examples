@@ -22,12 +22,14 @@ import android.util.Log
 import com.here.sdk.core.GeoCoordinates
 import com.here.sdk.core.GeoPolyline
 import com.here.sdk.core.GeoPolylineDirection
-import com.here.sdk.core.engine.SDKNativeEngine
+import com.here.sdk.core.engine.*
 import com.here.sdk.core.errors.InstantiationErrorException
 import com.here.sdk.electronichorizon.ElectronicHorizonDataLoadedStatus
 import com.here.sdk.electronichorizon.ElectronicHorizonDataLoader
 import com.here.sdk.electronichorizon.ElectronicHorizonDataLoaderResult
 import com.here.sdk.electronichorizon.ElectronicHorizonDataLoaderStatusListener
+import com.here.sdk.electronichorizon.ElectronicHorizonEngine
+import com.here.sdk.electronichorizon.ElectronicHorizonErrorCode
 import com.here.sdk.electronichorizon.ElectronicHorizonListener
 import com.here.sdk.electronichorizon.ElectronicHorizonOptions
 import com.here.sdk.electronichorizon.ElectronicHorizonUpdate
@@ -36,8 +38,6 @@ import com.here.sdk.navigation.MapMatchedLocation
 import com.here.sdk.navigation.RoadSign
 import com.here.sdk.routing.Route
 import com.here.sdk.transport.TransportMode
-import com.here.sdk.core.engine.*
-import com.here.sdk.electronichorizon.ElectronicHorizonEngine
 
 // A class that handles electronic horizon related operations.
 // This is not required for navigation, but can be used to get information about the road network ahead of the user.
@@ -147,12 +147,22 @@ class ElectronicHorizonHandler {
     // by the ElectronicHorizonDataLoader.
     private fun createElectronicHorizonListener(): ElectronicHorizonListener {
         return object : ElectronicHorizonListener {
-            override fun onElectronicHorizonUpdated(electronicHorizonUpdate: ElectronicHorizonUpdate) {
+            override fun onElectronicHorizonUpdated(
+                errorCode: ElectronicHorizonErrorCode?,
+                electronicHorizonUpdate: ElectronicHorizonUpdate?
+            ) {
+                if (errorCode != null) {
+                    Log.e(LOG_TAG, "ElectronicHorizonUpdate error: " + errorCode.name)
+                    return
+                }
                 Log.d(LOG_TAG, "ElectronicHorizonUpdate received.")
                 // Asynchronously start to load required data for the new segments.
                 // Use the ElectronicHorizonDataLoaderStatusListener to get notified when new data is arriving.
-                lastRequestedElectronicHorizonUpdate = electronicHorizonUpdate
-                electronicHorizonDataLoader.loadData(electronicHorizonUpdate)
+                if (electronicHorizonUpdate != null) {
+                    lastRequestedElectronicHorizonUpdate = electronicHorizonUpdate
+                    electronicHorizonDataLoader.loadData(electronicHorizonUpdate)
+                }
+
             }
         }
     }
@@ -178,7 +188,11 @@ class ElectronicHorizonHandler {
                     if (level == 0 && status == ElectronicHorizonDataLoadedStatus.FULLY_LOADED) {
                         // Now, level 0 segments have been fully loaded and you can access their data.
                         // The electronicHorizonPaths list contains segments from all levels, so you need to filter for level 0 below.
-                        val electronicHorizonPaths = lastUpdate.electronicHorizonPaths
+                        // Skip this iteration to avoid null access.
+                        if (lastUpdate.electronicHorizon == null) {
+                            continue
+                        }
+                        val electronicHorizonPaths = lastUpdate.electronicHorizon!!.paths
                         for (electronicHorizonPath in electronicHorizonPaths) {
                             val electronicHorizonPathSegments = electronicHorizonPath.segments
                             for (segment in electronicHorizonPathSegments) {

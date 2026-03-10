@@ -176,6 +176,8 @@ public class NavigationHandler {
                     return;
                 }
 
+                Log.d(TAG, "MapMatchedLocation - Lat: " + lastMapMatchedLocation.coordinates.latitude + ", Lon: " + lastMapMatchedLocation.coordinates.longitude);
+
                 if (lastMapMatchedLocation.isDrivingInTheWrongWay) {
                     // For two-way streets, this value is always false. This feature is supported in tracking mode and when deviating from a route.
                     Log.d(TAG, "This is a one way road. User is driving against the allowed traffic direction.");

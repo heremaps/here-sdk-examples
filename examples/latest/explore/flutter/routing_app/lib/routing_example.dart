@@ -45,6 +45,8 @@ class RoutingExample {
   here.Route? _currentRoute;
   final offroadDistanceThresholdMeters = 500.0;
   TaskHandle? _currentRouteCalculationTask;
+  GeoCoordinates? _startGeoCoordinates;
+  GeoCoordinates? _destinationGeoCoordinates;
 
   RoutingExample(ShowDialogFunction showDialogCallback, HereMapController hereMapController)
     : _showDialog = showDialogCallback,
@@ -69,15 +71,15 @@ class RoutingExample {
     // Optionally, clear any previous route.
     clearMap();
 
-    var startGeoCoordinates = _createRandomGeoCoordinatesInViewport();
-    var destinationGeoCoordinates = _createRandomGeoCoordinatesInViewport();
-    var startWaypoint = Waypoint.withDefaults(startGeoCoordinates);
-    var destinationWaypoint = Waypoint.withDefaults(destinationGeoCoordinates);
+    _startGeoCoordinates = _createRandomGeoCoordinatesAroundMapCenter();
+    _destinationGeoCoordinates = _createRandomGeoCoordinatesAroundMapCenter();
+    var startWaypoint = Waypoint.withDefaults(_startGeoCoordinates!);
+    var destinationWaypoint = Waypoint.withDefaults(_destinationGeoCoordinates!);
 
     waypoints = [startWaypoint, destinationWaypoint];
 
-    _addMapMarker(startGeoCoordinates, "assets/poi_start.png");
-    _addMapMarker(destinationGeoCoordinates, "assets/poi_destination.png");
+    _addMapMarker(_startGeoCoordinates!, "assets/poi_start.png");
+    _addMapMarker(_destinationGeoCoordinates!, "assets/poi_destination.png");
 
     _calculateRoute(waypoints);
   }
@@ -298,21 +300,27 @@ class RoutingExample {
     // Optionally, clear any previous route.
     clearMap();
 
-    var startGeoCoordinates = _createRandomGeoCoordinatesInViewport();
-    var destinationGeoCoordinates = _createRandomGeoCoordinatesInViewport();
-    var waypoint1GeoCoordinates = _createRandomGeoCoordinatesInViewport();
-    var waypoint2GeoCoordinates = _createRandomGeoCoordinatesInViewport();
-    var startWaypoint = Waypoint.withDefaults(startGeoCoordinates);
+    if (_startGeoCoordinates == null || _destinationGeoCoordinates == null) {
+      _showDialog("Error", "Please add a route first.");
+      return;
+    }
+
+    var waypoint1GeoCoordinates = _createRandomGeoCoordinatesAroundMapCenter();
+    var waypoint2GeoCoordinates = _createRandomGeoCoordinatesAroundMapCenter();
+
     var waypoint1 = Waypoint.withDefaults(waypoint1GeoCoordinates);
     var waypoint2 = Waypoint.withDefaults(waypoint2GeoCoordinates);
-    var destinationWaypoint = Waypoint.withDefaults(destinationGeoCoordinates);
+    waypoints = [
+      Waypoint.withDefaults(_startGeoCoordinates!),
+      waypoint1,
+      waypoint2,
+      Waypoint.withDefaults(_destinationGeoCoordinates!),
+    ];
 
-    waypoints = [startWaypoint, waypoint1, waypoint2, destinationWaypoint];
-
-    _addMapMarker(startGeoCoordinates, "assets/poi_start.png");
+    _addMapMarker(_startGeoCoordinates!, "assets/poi_start.png");
     _addMapMarker(waypoint1GeoCoordinates, "assets/waypoint_one.png");
     _addMapMarker(waypoint2GeoCoordinates, "assets/waypoint_two.png");
-    _addMapMarker(destinationGeoCoordinates, "assets/poi_destination.png");
+    _addMapMarker(_destinationGeoCoordinates!, "assets/poi_destination.png");
 
     _calculateRoute(waypoints);
   }
@@ -475,26 +483,25 @@ class RoutingExample {
     return const Color.fromARGB(160, 0, 0, 0); // Black
   }
 
-  GeoCoordinates _createRandomGeoCoordinatesInViewport() {
-    GeoBox? geoBox = _hereMapController.camera.boundingBox;
-    if (geoBox == null) {
-      // Happens only when map is not fully covering the viewport as the map is tilted.
-      print("The map view is tilted, falling back to fixed destination coordinate.");
-      return GeoCoordinates(52.520798, 13.409408);
+  GeoCoordinates _createRandomGeoCoordinatesAroundMapCenter() {
+    GeoCoordinates? centerGeoCoordinates = _hereMapController.viewToGeoCoordinates(
+      Point2D(_hereMapController.viewportSize.width / 2, _hereMapController.viewportSize.height / 2),
+    );
+
+    if (centerGeoCoordinates == null) {
+      // View points cannot be converted to geographic coordinates on the horizon. 
+      // Should never happen for center coordinates as the horizon is
+      // farther away than _hereMapController.viewportSize.height / 2.
+      throw Exception("CenterGeoCoordinates are null");
     }
 
-    GeoCoordinates northEast = geoBox.northEastCorner;
-    GeoCoordinates southWest = geoBox.southWestCorner;
+    double lat = centerGeoCoordinates.latitude;
+    double lon = centerGeoCoordinates.longitude;
 
-    double minLat = southWest.latitude;
-    double maxLat = northEast.latitude;
-    double lat = _getRandom(minLat, maxLat);
-
-    double minLon = southWest.longitude;
-    double maxLon = northEast.longitude;
-    double lon = _getRandom(minLon, maxLon);
-
-    return GeoCoordinates(lat, lon);
+    return GeoCoordinates(
+      _getRandom(lat - 0.02, lat + 0.02),
+      _getRandom(lon - 0.02, lon + 0.02),
+    );
   }
 
   double _getRandom(double min, double max) {

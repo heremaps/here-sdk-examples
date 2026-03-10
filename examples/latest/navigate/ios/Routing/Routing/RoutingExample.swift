@@ -152,6 +152,7 @@ class RoutingExample {
             self.logRouteSectionDetails(route: self.currentRoute!)
             self.logRouteViolations(route: self.currentRoute!)
             self.logTollDetails(route: self.currentRoute!)
+            self.animateToRoute(route: self.currentRoute!)
         }
     }
     
@@ -337,7 +338,6 @@ class RoutingExample {
         } catch let error {
             fatalError("Failed to render MapPolyline. Cause: \(error)")
         }
-        
         // Optionally, render traffic on route.
         // Please note that this is not the recommended way. It is recommeded to display the default traffic polylines adjacent to route polyline.
         showTrafficOnRoute(route)
@@ -360,6 +360,26 @@ class RoutingExample {
             + ", Location: \(maneuverLocation)"
             print(maneuverInfo)
         }
+    }
+    
+    private func animateToRoute(route: Route) {
+        let bearing: Double = 0
+        let tilt: Double = 0
+        let padding: Double = 50
+        let adjustedWidth = max(0, mapView.viewportSize.width - 2 * padding)
+        let adjustedHeight = max(0, mapView.viewportSize.height - 2 * padding)
+        let origin = Point2D(x: padding, y: padding)
+        let mapViewport = Rectangle2D(origin: origin,
+                                      size: Size2D(width: adjustedWidth, height: adjustedHeight))
+        let geoOrientationUpdate = GeoOrientationUpdate(GeoOrientation(bearing: bearing, tilt: tilt))
+        let mapCameraUpdate = MapCameraUpdateFactory.lookAt(area: route.boundingBox,
+                                                   orientation: geoOrientationUpdate,
+                                                   viewRectangle: mapViewport)
+        let timeIntervalInSeconds: TimeInterval = 3
+        let animation = MapCameraAnimationFactory.createAnimation(from: mapCameraUpdate,
+                                                                  duration: timeIntervalInSeconds,
+                                                                  easing: Easing(EasingFunction.inCubic))
+        mapView.camera.startAnimation(animation)
     }
     
     func addWaypoints() {
