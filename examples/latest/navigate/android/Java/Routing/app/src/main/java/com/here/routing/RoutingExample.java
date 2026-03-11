@@ -26,14 +26,23 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 
+import com.here.sdk.animation.Easing;
+import com.here.sdk.animation.EasingFunction;
 import com.here.sdk.core.Color;
 import com.here.sdk.core.GeoCoordinates;
+import com.here.sdk.core.GeoOrientationUpdate;
 import com.here.sdk.core.GeoPolyline;
 import com.here.sdk.core.Point2D;
+import com.here.sdk.core.Rectangle2D;
+import com.here.sdk.core.Size2D;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.core.threading.TaskHandle;
 import com.here.sdk.mapview.LineCap;
 import com.here.sdk.mapview.MapCamera;
+import com.here.sdk.mapview.MapCameraAnimation;
+import com.here.sdk.mapview.MapCameraAnimationFactory;
+import com.here.sdk.mapview.MapCameraUpdate;
+import com.here.sdk.mapview.MapCameraUpdateFactory;
 import com.here.sdk.mapview.MapImage;
 import com.here.sdk.mapview.MapImageFactory;
 import com.here.sdk.mapview.MapMarker;
@@ -64,6 +73,7 @@ import com.here.sdk.routing.TrafficOnSection;
 import com.here.sdk.routing.TrafficOnSpan;
 import com.here.sdk.routing.TrafficOptimizationMode;
 import com.here.sdk.routing.Waypoint;
+import com.here.time.Duration;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -146,6 +156,7 @@ public class RoutingExample {
                             logRouteSectionDetails(currentRoute);
                             logRouteViolations(currentRoute);
                             logTollDetails(currentRoute);
+                            animateToRoute(currentRoute);
                         } else {
                             showDialog("Error while calculating a route:", routingError.toString());
                         }
@@ -559,6 +570,35 @@ public class RoutingExample {
         MapMarker mapMarker = new MapMarker(geoCoordinates, mapImage);
         mapView.getMapScene().addMapMarker(mapMarker);
         mapMarkerList.add(mapMarker);
+    }
+
+    private void animateToRoute(Route route) {
+
+        double bearing = 0;
+        double tilt = 0;
+        int padding = 50;
+        int width = mapView.getWidth();
+        int height = mapView.getHeight();
+
+        Point2D origin = new Point2D(padding, padding);
+        Size2D sizeInPixels = new Size2D(width - 2 * padding, height - 2 * padding);
+        Rectangle2D mapViewport = new Rectangle2D(origin, sizeInPixels);
+
+        GeoOrientationUpdate orientation = new GeoOrientationUpdate(bearing, tilt);
+
+        MapCameraUpdate update = MapCameraUpdateFactory.lookAt(
+                route.getBoundingBox(),
+                orientation,
+                mapViewport
+        );
+
+        MapCameraAnimation animation = MapCameraAnimationFactory.createAnimation(
+                update,
+                Duration.ofMillis(3000),
+                new Easing(EasingFunction.IN_CUBIC)
+        );
+
+        mapView.getCamera().startAnimation(animation);
     }
 
     private void showDialog(String title, String message) {

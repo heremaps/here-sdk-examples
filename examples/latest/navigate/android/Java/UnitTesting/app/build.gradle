@@ -42,6 +42,7 @@ configurations.testImplementation {
 }
 
 dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.20"
     // It's not possible to exclude AAR files from dependencies
     // when they were added using 'fileTree'
     // as Gradle does not provide such a mechanism. Instead, below we load HERE SDK's AARs

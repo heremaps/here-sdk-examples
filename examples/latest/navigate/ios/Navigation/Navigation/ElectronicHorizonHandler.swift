@@ -141,14 +141,21 @@ class ElectronicHorizonHandler {
                 self.handler = handler
             }
 
-            func onElectronicHorizonUpdated(electronicHorizonUpdate: ElectronicHorizonUpdate) {
+            func onElectronicHorizonUpdated(errorCode: ElectronicHorizonErrorCode?, update: ElectronicHorizonUpdate?) {
+                if let error = errorCode {
+                    print("\(ElectronicHorizonHandler.LOG_TAG): ElectronicHorizonUpdate error: \(error)")
+                    return
+                }
+
+                guard let electronicHorizonUpdate = update else {
+                    return
+                }
+
                 print("\(ElectronicHorizonHandler.LOG_TAG): ElectronicHorizonUpdate received.")
                 // Asynchronously start to load required data for the new segments.
                 // Use the ElectronicHorizonDataLoaderStatusDelegate to get notified when new data is arriving.
                 handler?.lastRequestedElectronicHorizonUpdate = electronicHorizonUpdate
-                if let update = handler?.lastRequestedElectronicHorizonUpdate {
-                    handler?.electronicHorizonDataLoader.loadData(electronicHorizonUpdate: update)
-                }
+                handler?.electronicHorizonDataLoader.loadData(electronicHorizonUpdate: electronicHorizonUpdate)
             }
         }
         return EHDelegate(handler: self)
@@ -182,7 +189,10 @@ class ElectronicHorizonHandler {
                         // Now, level 0 segments have been fully loaded and you can access their data.
                         // The electronicHorizonPaths list contains segments from all levels,
                         // so you need to filter for level 0 below.
-                        for electronicHorizonPath in lastUpdate.electronicHorizonPaths {
+                        guard let electronicHorizon = lastUpdate.electronicHorizon else {
+                            continue
+                        }
+                        for electronicHorizonPath in electronicHorizon.paths {
                             let electronicHorizonPathSegments = electronicHorizonPath.segments
                             for segment in electronicHorizonPathSegments {
                                 // For any segment you can check the parentPathIndex to determine

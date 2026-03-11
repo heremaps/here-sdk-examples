@@ -189,6 +189,9 @@ class NavigationHandler : NavigableLocationDelegate,
         }
 
         lastMapMatchedLocation = navigableLocation.mapMatchedLocation!
+        let latitude = lastMapMatchedLocation!.coordinates.latitude
+        let longitude = lastMapMatchedLocation!.coordinates.longitude
+        print("MapMatchedLocation - Lat: \(latitude), Lon: \(longitude)")
 
         if (lastMapMatchedLocation?.isDrivingInTheWrongWay == true) {
             // For two-way streets, this value is always false. This feature is supported in tracking mode and when deviating from a route.

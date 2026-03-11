@@ -34,10 +34,11 @@ import com.here.sdk.electronichorizon.ElectronicHorizonDataLoader;
 import com.here.sdk.electronichorizon.ElectronicHorizonDataLoaderResult;
 import com.here.sdk.electronichorizon.ElectronicHorizonDataLoaderStatusListener;
 import com.here.sdk.electronichorizon.ElectronicHorizonEngine;
+import com.here.sdk.electronichorizon.ElectronicHorizonErrorCode;
 import com.here.sdk.electronichorizon.ElectronicHorizonListener;
 import com.here.sdk.electronichorizon.ElectronicHorizonOptions;
 import com.here.sdk.electronichorizon.ElectronicHorizonPath;
-import com.here.sdk.electronichorizon.ElectronicHorizonPathSegment;
+import com.here.sdk.electronichorizon.ElectronicHorizonSegment;
 import com.here.sdk.electronichorizon.ElectronicHorizonUpdate;
 import com.here.sdk.mapdata.DirectedOCMSegmentId;
 import com.here.sdk.mapdata.SegmentData;
@@ -151,7 +152,12 @@ public class ElectronicHorizonHandler {
     private ElectronicHorizonListener createElectronicHorizonListener() {
         return new ElectronicHorizonListener() {
             @Override
-            public void onElectronicHorizonUpdated(@NonNull ElectronicHorizonUpdate electronicHorizonUpdate) {
+            public void onElectronicHorizonUpdated(@Nullable ElectronicHorizonErrorCode errorCode,
+                                                   @NonNull ElectronicHorizonUpdate electronicHorizonUpdate) {
+                if (errorCode != null) {
+                    Log.e(LOG_TAG, "ElectronicHorizonUpdate error: " + errorCode.name());
+                    return;
+                }
                 Log.d(LOG_TAG, "ElectronicHorizonUpdate received.");
                 // Asynchronously start to load required data for the new segments.
                 // Use the ElectronicHorizonDataLoaderStatusListener to get notified when new data is arriving.
@@ -180,12 +186,16 @@ public class ElectronicHorizonHandler {
                     int level = entry.getKey();
                     // This example shows only how to look at the fully loaded segments of the most preferred path (level 0).
                     if (level == 0 && status == ElectronicHorizonDataLoadedStatus.FULLY_LOADED) {
+                        // Skip this iteration to avoid null access.
+                        if (lastRequestedElectronicHorizonUpdate.electronicHorizon == null) {
+                            continue;
+                        }
                         // Now, level 0 segments have been fully loaded and you can access their data.
-                        // The electronicHorizonPaths list contains segments from all levels, so you need to filter for level 0 below.
-                        List<ElectronicHorizonPath> electronicHorizonPaths = lastRequestedElectronicHorizonUpdate.electronicHorizonPaths;
+                        // The electronicHorizon.paths list contains segments from all levels, so you need to filter for level 0 below.
+                        List<ElectronicHorizonPath> electronicHorizonPaths = lastRequestedElectronicHorizonUpdate.electronicHorizon.paths;
                         for (ElectronicHorizonPath electronicHorizonPath : electronicHorizonPaths) {
-                            List<ElectronicHorizonPathSegment> electronicHorizonPathSegment = electronicHorizonPath.segments;
-                            for (ElectronicHorizonPathSegment segment : electronicHorizonPathSegment) {
+                            List<ElectronicHorizonSegment> electronicHorizonSegment = electronicHorizonPath.segments;
+                            for (ElectronicHorizonSegment segment : electronicHorizonSegment) {
                                 // For any segment you can check the parentPathIndex to determine
                                 // if it is part of the most preferred path (MPP) or a side path.
                                 if (segment.parentPathIndex != 0) {
