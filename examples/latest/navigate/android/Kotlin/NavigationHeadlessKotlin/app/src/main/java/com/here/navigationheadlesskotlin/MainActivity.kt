@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 HERE Europe B.V.
+ * Copyright (C) 2025-2026 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,9 +65,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
 import com.here.navigationheadlesskotlin.ui.theme.NavigationHeadlesssTheme
 import com.here.sdk.core.LocationListener
-import com.here.sdk.core.engine.AuthenticationMode
-import com.here.sdk.core.engine.SDKNativeEngine
-import com.here.sdk.core.engine.SDKOptions
+import com.here.sdk.core.engine.*
 import com.here.sdk.core.errors.InstantiationErrorException
 import com.here.sdk.navigation.GPXDocument
 import com.here.sdk.navigation.GPXOptions
@@ -121,7 +119,7 @@ class MainActivity: ComponentActivity() {
         handleAndroidPermissions()
 
         enableEdgeToEdge()
-        
+
         startTimer(lifecycleScope)
 
         setContent {
@@ -301,8 +299,8 @@ class MainActivity: ComponentActivity() {
         // from the previous one. This can be useful during tracking mode, when no maneuver information is provided.
         navigator.roadTextsListener = object : RoadTextsListener {
             override fun onRoadTextsUpdated(roadTexts: RoadTexts) {
-                val currentRoadName = roadTexts.names.defaultValue
-                val currentRoadNumber = roadTexts.numbersWithDirection.defaultValue
+                val currentRoadName = roadTexts.names.getDefaultValue()
+                val currentRoadNumber = roadTexts.numbersWithDirection.getDefaultValue()
                 var roadName = currentRoadName ?: currentRoadNumber
                 if (roadName == null) {
                     // Happens only in rare cases, when also the fallback is null.
@@ -315,7 +313,7 @@ class MainActivity: ComponentActivity() {
         navigator.speedLimitListener = object : SpeedLimitListener {
             override fun onSpeedLimitUpdated(speedLimit: SpeedLimit) {
                 val currentEffectiveSpeedLimit = speedLimit.effectiveSpeedLimitInMetersPerSecond()
-                
+
                 speedLimitTextView.value = currentEffectiveSpeedLimit?.let { speedLimit ->
                     if (speedLimit == 0.0) {
                         "Current speed limit: no speed limit"
@@ -343,7 +341,7 @@ class MainActivity: ComponentActivity() {
             throw java.lang.RuntimeException("Initialization of LocationSimulator failed: " + e.error.name)
         }
 
-        locationSimulator.setListener(locationListener)
+        locationSimulator.listener = locationListener
         locationSimulator.start()
     }
 

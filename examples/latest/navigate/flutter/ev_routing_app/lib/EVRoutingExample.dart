@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 HERE Europe B.V.
+ * Copyright (C) 2019-2026 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ class EVRoutingExample {
   final ShowDialogFunction _showDialog;
   List<String> chargingStationsIDs = [];
   TaskHandle? _currentRouteCalculationTask;
+  Waypoint? _lastPlannedChargingWaypoint;
 
   // Metadata keys used when picking a charging station on the map.
   final String supplierNameMetadataKey = "supplierName";
@@ -109,6 +110,8 @@ class EVRoutingExample {
     var startWaypoint = Waypoint(_startGeoCoordinates!);
     var destinationWaypoint = Waypoint(_destinationGeoCoordinates!);
     var plannedChargingStopWaypoint = createUserPlannedChargingStopWaypoint();
+    // Store the user-defined charging stop to verify whether it was included or modified in the route.
+    _lastPlannedChargingWaypoint = plannedChargingStopWaypoint;
     List<Waypoint> waypoints = [startWaypoint, plannedChargingStopWaypoint, destinationWaypoint];
 
     _currentRouteCalculationTask = _routingEngine.calculateEVCarRoute(waypoints, _getEVCarOptions(), (
@@ -121,6 +124,11 @@ class EVRoutingExample {
         _showRouteOnMap(route);
         _logRouteViolations(route);
         _logEVDetails(route);
+
+        _logSpanConsumption(route);
+        _logSectionArrivalCharge(route);
+        _verifyAndLogPlannedStopOutcome(route);
+
         _searchAlongARoute(route);
       } else {
         var error = routingError.toString();
@@ -325,6 +333,109 @@ class EVRoutingExample {
       for (var notice in section.sectionNotices) {
         print("This route contains the following warning: " + notice.code.toString());
       }
+    }
+  }
+
+  // Logs estimated energy consumption by EV vehicle per span.
+  void _logSpanConsumption(here.Route route) {
+    int sectionIndex = 0;
+    for (Section section in route.sections) {
+      int spanIndex = 0;
+      for (Span span in section.spans) {
+        double? kWh = span.consumptionInKilowattHours;
+        if (kWh != null) {
+          print(
+            "EVSpan: Section $sectionIndex span $spanIndex consumption: ${kWh.toStringAsFixed(3)} kWh",
+          );
+        } else {
+          print("EVSpan: Section $sectionIndex span $spanIndex consumption: n/a");
+        }
+        spanIndex += 1;
+      }
+      sectionIndex += 1;
+    }
+  }
+
+  // Logs remaining EV battery charge at the end of each route's section
+  // and verifies the vehicle reachability to the destination.
+  void _logSectionArrivalCharge(here.Route route) {
+    int sectionIndex = 0;
+    double? lastSectionArrivalChargeKWh;
+
+    for (Section routeSection in route.sections) {
+      double? remainingChargeAtArrivalKWh = routeSection.arrivalPlace.chargeInKilowattHours;
+
+      if (remainingChargeAtArrivalKWh != null) {
+        print(
+          "EVArrival: Section $sectionIndex: remaining charge upon arrival = ${remainingChargeAtArrivalKWh.toStringAsFixed(2)} kWh",
+        );
+        lastSectionArrivalChargeKWh = remainingChargeAtArrivalKWh;
+      } else {
+        print("EVArrival: Section $sectionIndex: remaining charge upon arrival not available");
+      }
+      sectionIndex += 1;
+    }
+
+    if (lastSectionArrivalChargeKWh != null) {
+      print(
+        "EVArrival: Final destination arrival charge = ${lastSectionArrivalChargeKWh.toStringAsFixed(2)} kWh",
+      );
+      if (lastSectionArrivalChargeKWh < 0.0) {
+        print("EVArrival: Destination not reachable with the current battery configuration.");
+      }
+    } else {
+      print("EVArrival: No arrival charge data available for any section in this route.");
+    }
+  }
+
+  // Verify and log whether the user-defined charging stop was included, adjusted,
+  // or omitted in the calculated route based on reachability and optimization.
+  void _verifyAndLogPlannedStopOutcome(here.Route route) {
+    if (_lastPlannedChargingWaypoint == null) {
+      print("EVChargingStop: No user-planned charging stop to verify.");
+      return;
+    }
+
+    const double coordinateMatchRadiusMeters = 200.0;
+    bool isStopIncludedInRoute = false;
+    String? matchedChargingStationName;
+
+    GeoCoordinates plannedStopCoordinates = _lastPlannedChargingWaypoint!.coordinates;
+
+    for (Section routeSection in route.sections) {
+      ChargingStation? departureStation = routeSection.departurePlace.chargingStation;
+      if (departureStation != null) {
+        GeoCoordinates departureStationCoordinates = routeSection.departurePlace.mapMatchedCoordinates;
+        if (departureStationCoordinates.distanceTo(plannedStopCoordinates) <= coordinateMatchRadiusMeters) {
+          isStopIncludedInRoute = true;
+          matchedChargingStationName = departureStation.name;
+          break;
+        }
+      }
+
+      ChargingStation? arrivalStation = routeSection.arrivalPlace.chargingStation;
+      if (arrivalStation != null) {
+        GeoCoordinates arrivalStationCoordinates = routeSection.arrivalPlace.mapMatchedCoordinates;
+        if (arrivalStationCoordinates.distanceTo(plannedStopCoordinates) <= coordinateMatchRadiusMeters) {
+          isStopIncludedInRoute = true;
+          matchedChargingStationName = arrivalStation.name;
+          break;
+        }
+      }
+    }
+
+    if (isStopIncludedInRoute) {
+      print(
+        "EVChargingStop: User-defined charging stop was included in the calculated route${matchedChargingStationName != null ? " (≈ $matchedChargingStationName)." : "."}",
+      );
+      print(
+        "EVChargingStop: Verification result: Stop successfully matched within $coordinateMatchRadiusMeters meters.",
+      );
+    } else {
+      print("EVChargingStop: User-defined charging stop was adjusted or replaced during route optimization.");
+      print(
+        "EVChargingStop: Verification result: Planned stop coordinates did not match any charging station within $coordinateMatchRadiusMeters meters.",
+      );
     }
   }
 

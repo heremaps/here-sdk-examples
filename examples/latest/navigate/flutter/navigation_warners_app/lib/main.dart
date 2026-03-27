@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 HERE Europe B.V.
+ * Copyright (C) 2019-2026 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,6 @@ import 'package:here_sdk/core.engine.dart';
 import 'package:here_sdk/core.errors.dart';
 import 'package:here_sdk/gestures.dart';
 import 'package:here_sdk/mapview.dart';
-import 'package:here_sdk/navigation.dart' as HERE;
-import 'package:here_sdk/routing.dart' as HERE;
 import 'package:navigation_warners_app/NavigationWarnersExample.dart';
 
 void main() async {
@@ -61,22 +59,24 @@ class _MyAppState extends State<MyApp> {
   HereMapController? _hereMapController;
   late final AppLifecycleListener _appLifecycleListener;
 
-  HERE.RoutingEngine? _routingEngine;
-  HERE.VisualNavigator? _visualNavigator;
-  HERE.LocationSimulator? _locationSimulator;
   NavigationWarnersExample? navigationWarnersExample;
+  bool _isGuidanceRunning = false;
+  static const String _startGuidanceButtonLabel = 'Start Guidance';
+  static const String _stopGuidanceButtonLabel = 'Stop Guidance';
 
   // Default coordinated in Berlin, which can be change by long-tapping the map
-  HERE.GeoCoordinates _startGeoCoordinates = HERE.GeoCoordinates(52.49047222554655, 13.296884483959285);
-  HERE.GeoCoordinates _destinationGeoCoordinates  = HERE.GeoCoordinates(52.51384077118386, 13.255752692114996);
+  HERE.GeoCoordinates _startGeoCoordinates = HERE.GeoCoordinates(52.520798, 13.409408);
+  HERE.GeoCoordinates _destinationGeoCoordinates  = HERE.GeoCoordinates(52.530905, 13.385007);
   MapMarker? _startMapMarker;
   MapMarker? _destinationMapMarker;
   bool _setLongPressDestination = false;
 
   Future<bool> _handleBackPress() async {
     // Handle the back press.
-    _visualNavigator?.stopRendering();
-    _locationSimulator?.stop();
+    navigationWarnersExample?.stopGuidance();
+    setState(() {
+      _isGuidanceRunning = false;
+    });
 
     // Return true to allow the back press.
     return true;
@@ -95,7 +95,7 @@ class _MyAppState extends State<MyApp> {
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [button('Start Navigation', _startNavigationClicked)],
+                  children: [button(_isGuidanceRunning ? _stopGuidanceButtonLabel : _startGuidanceButtonLabel, _startNavigationClicked)],
                 ),
               ],
             ),
@@ -106,7 +106,24 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _startNavigationClicked() {
-    _calculateRoute(HERE.Waypoint(_startGeoCoordinates!), HERE.Waypoint(_destinationGeoCoordinates!));
+    final example = navigationWarnersExample;
+    if (example == null) {
+      return;
+    }
+
+    if (example.isGuidanceRunning()) {
+      example.stopGuidance();
+      example.animateToRoutePreview(_startGeoCoordinates, _destinationGeoCoordinates);
+      setState(() {
+        _isGuidanceRunning = false;
+      });
+      return;
+    } else {
+      example.startGuidance(_startGeoCoordinates, _destinationGeoCoordinates);
+      setState(() {
+        _isGuidanceRunning = true;
+      });
+    }
   }
 
   void _onMapCreated(HereMapController hereMapController) {
@@ -124,6 +141,10 @@ class _MyAppState extends State<MyApp> {
       _showDialog("Navigation Warners", "This app routes to the HERE office in Berlin and logs various TBT events.");
       _showDialog("Note", "Do a long press to change start and destination coordinates. " +
           "Map icons are pickable.");
+
+      _startMapMarker = _addMapMarker(_startGeoCoordinates, 'assets/poi_start.png');
+      _destinationMapMarker = _addMapMarker(_destinationGeoCoordinates, 'assets/poi_destination.png');
+      navigationWarnersExample = NavigationWarnersExample(_hereMapController!);
 
       _setLongPressGestureHandler();
     });
@@ -153,63 +174,6 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  _calculateRoute(HERE.Waypoint startWaypoint, HERE.Waypoint destinationWaypoint) {
-    try {
-      _routingEngine = HERE.RoutingEngine();
-    } on InstantiationException {
-      throw Exception('Initialization of RoutingEngine failed.');
-    }
-
-    _routingEngine!.calculateCarRoute([startWaypoint, destinationWaypoint], HERE.CarOptions(), (
-      HERE.RoutingError? routingError,
-      List<HERE.Route>? routeList,
-    ) async {
-      if (routingError == null) {
-        // When error is null, it is guaranteed that the routeList is not empty.
-        HERE.Route _calculatedRoute = routeList!.first;
-        _startGuidance(_calculatedRoute);
-      } else {
-        final error = routingError.toString();
-        print('Error while calculating a route: $error');
-      }
-    });
-  }
-
-  _startGuidance(HERE.Route route) {
-    try {
-      // Without a route set, this starts tracking mode.
-      _visualNavigator = HERE.VisualNavigator();
-    } on InstantiationException {
-      throw Exception("Initialization of VisualNavigator failed.");
-    }
-
-    // The example shows how to set-up several listeners that provide useful information during TBT.
-    navigationWarnersExample = NavigationWarnersExample(_visualNavigator!);
-    navigationWarnersExample?.setupListeners();
-
-    // This enables a navigation view including a rendered navigation arrow.
-    _visualNavigator!.startRendering(_hereMapController!);
-
-    // Set a route to follow. This leaves tracking mode.
-    _visualNavigator!.route = route;
-
-    // VisualNavigator acts as LocationListener to receive location updates directly from a location provider.
-    // Any progress along the route is a result of getting a new location fed into the VisualNavigator.
-    _setupLocationSource(_visualNavigator!, route);
-  }
-
-  _setupLocationSource(HERE.LocationListener locationListener, HERE.Route route) {
-    try {
-      // Provides fake GPS signals based on the route geometry.
-      _locationSimulator = HERE.LocationSimulator.withRoute(route, HERE.LocationSimulatorOptions());
-    } on InstantiationException {
-      throw Exception("Initialization of LocationSimulator failed.");
-    }
-
-    _locationSimulator!.listener = locationListener;
-    _locationSimulator!.start();
-  }
-
   @override
   void initState() {
     super.initState();
@@ -222,13 +186,11 @@ class _MyAppState extends State<MyApp> {
           // See more details: https://github.com/flutter/flutter/issues/40940
           {print('AppLifecycleListener detached.'), _disposeHERESDK()},
     );
-
-    _startMapMarker = _addMapMarker(_startGeoCoordinates!, 'assets/poi_start.png');
-    _destinationMapMarker = _addMapMarker(_destinationGeoCoordinates!, 'assets/poi_destination.png');
   }
 
   @override
   void dispose() {
+    navigationWarnersExample?.stopGuidance();
     _disposeHERESDK();
     super.dispose();
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 HERE Europe B.V.
+ * Copyright (C) 2019-2026 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,9 +52,9 @@ class ElectronicHorizonHandler {
         return createElectronicHorizonDataLoaderStatusDelegate()
     }()
 
-    // Keep track of the last requested electronic horizon update to access its segments
+    // Keep track of the last electronic horizon to access its segments
     // when data loading is completed.
-    private var lastRequestedElectronicHorizonUpdate: ElectronicHorizonUpdate?
+    private var lastElectronicHorizon: ElectronicHorizon?
 
     init() {
         // Many more options are available, see SegmentDataLoaderOptions in the API Reference.
@@ -154,8 +154,10 @@ class ElectronicHorizonHandler {
                 print("\(ElectronicHorizonHandler.LOG_TAG): ElectronicHorizonUpdate received.")
                 // Asynchronously start to load required data for the new segments.
                 // Use the ElectronicHorizonDataLoaderStatusDelegate to get notified when new data is arriving.
-                handler?.lastRequestedElectronicHorizonUpdate = electronicHorizonUpdate
-                handler?.electronicHorizonDataLoader.loadData(electronicHorizonUpdate: electronicHorizonUpdate)
+                if electronicHorizonUpdate.electronicHorizon != nil {
+                    handler?.lastElectronicHorizon = electronicHorizonUpdate.electronicHorizon
+                    handler?.electronicHorizonDataLoader.loadData(electronicHorizonUpdate: electronicHorizonUpdate)
+                }
             }
         }
         return EHDelegate(handler: self)
@@ -176,7 +178,7 @@ class ElectronicHorizonHandler {
                 print("\(ElectronicHorizonHandler.LOG_TAG): ElectronicHorizonDataLoaderStatus updated.")
 
                 guard let handler = handler,
-                      let lastUpdate = handler.lastRequestedElectronicHorizonUpdate else { return }
+                let lastUpdate = handler.lastElectronicHorizon else { return }
                 
                 // Access the segments that were part of the last requested electronic horizon update.
                 // Newly added segments were requested to be loaded in the call to electronicHorizonDataLoader.loadData().
@@ -189,9 +191,7 @@ class ElectronicHorizonHandler {
                         // Now, level 0 segments have been fully loaded and you can access their data.
                         // The electronicHorizonPaths list contains segments from all levels,
                         // so you need to filter for level 0 below.
-                        guard let electronicHorizon = lastUpdate.electronicHorizon else {
-                            continue
-                        }
+                        let electronicHorizon = lastUpdate
                         for electronicHorizonPath in electronicHorizon.paths {
                             let electronicHorizonPathSegments = electronicHorizonPath.segments
                             for segment in electronicHorizonPathSegments {

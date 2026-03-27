@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 HERE Europe B.V.
+ * Copyright (C) 2019-2026 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ class NavigationWarnersExample : LongPressDelegate {
     private var changeDestination: Bool
     private var startMapMarker: MapMarker!
     private var destinationMapMarker: MapMarker!
+    private var isGuidanceRunning: Bool
     
     init(_ mapView: MapView) {
         self.mapView = mapView
@@ -66,6 +67,7 @@ class NavigationWarnersExample : LongPressDelegate {
         startGeoCoordinates = GeoCoordinates(latitude: 52.520798, longitude: 13.409408)
         destinationGeoCoordinates = GeoCoordinates(latitude: 52.530905, longitude: 13.385007)
         changeDestination = false
+        isGuidanceRunning = false
         startMapMarker = addMapMarker(geoCoordinates: startGeoCoordinates, imageName: "poi_start.png")!
         destinationMapMarker = addMapMarker(geoCoordinates: destinationGeoCoordinates, imageName: "poi_destination.png")!
         
@@ -109,8 +111,18 @@ class NavigationWarnersExample : LongPressDelegate {
         }
     }
     
-    func onStartGuidanceClicked() {
+    func onGuidanceButtonClicked() -> Bool {
+        if isGuidanceRunning {
+            stopGuidance()
+            return false
+        }
+
         calculateRoute(startWaypoint: Waypoint(coordinates: startGeoCoordinates), destinationWaypoint: Waypoint(coordinates: destinationGeoCoordinates))
+        return true
+    }
+
+    func onStartGuidanceClicked() {
+        _ = onGuidanceButtonClicked()
     }
     
     // When route calculation is done, we automatically start navigation to keep this example simple.
@@ -140,6 +152,35 @@ class NavigationWarnersExample : LongPressDelegate {
         // VisualNavigator acts as LocationDelegate to receive location updates directly from a location provider.
         // Any progress along the route is a result of getting a new location fed into the VisualNavigator.
         setupLocationSource(locationDelegate: visualNavigator, route: route)
+        isGuidanceRunning = true
+    }
+
+    private func stopGuidance() {
+        locationSimulator?.stop()
+        locationSimulator = nil
+
+        visualNavigator.route = nil
+        visualNavigator.stopRendering()
+        isGuidanceRunning = false
+        animateToRoute()
+    }
+    
+    func animateToRoute() {
+        let bearing: Double = 0
+        let tilt: Double = 0
+        let distanceInMeters = 1000 * 10;
+        
+        // We want to show the route fitting in the map view with an additional padding of 300 pixels.
+        let origin: Point2D = Point2D(x: 300.0, y: 300.0)
+        let sizeInPixels: Size2D = Size2D(width: mapView.viewportSize.width - 100, height: mapView.viewportSize.height - 100)
+        let mapViewport:Rectangle2D = Rectangle2D(origin: origin, size: sizeInPixels)
+        
+        let coordinatesList: [GeoCoordinates] = [startGeoCoordinates, destinationGeoCoordinates];
+
+        // Animate to the route overview.
+        let update: MapCameraUpdate = MapCameraUpdateFactory.lookAt(coordinatesList, viewRectangle: mapViewport, orientation: GeoOrientationUpdate(GeoOrientation(bearing: bearing, tilt: tilt)), measureLimit: MapMeasure(kind: .distanceInMeters, value: Double(distanceInMeters)))
+        let animation: MapCameraAnimation = MapCameraAnimationFactory.createAnimation(from: update, duration: TimeInterval(0.5), easing: Easing(EasingFunction.inCubic))
+        mapView.camera.startAnimation(animation)
     }
     
     private func setupLocationSource(locationDelegate: LocationDelegate, route: Route) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 HERE Europe B.V.
+ * Copyright (C) 2019-2026 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ import com.here.sdk.mapview.RenderSize;
 import com.here.sdk.navigation.MapMatchedLocation;
 import com.here.sdk.routing.AvoidanceOptions;
 import com.here.sdk.routing.CalculateRouteCallback;
-import com.here.sdk.routing.CarOptions;
+import com.here.sdk.routing.RoutingOptions;
 import com.here.sdk.routing.Route;
 import com.here.sdk.routing.RoutingEngine;
 import com.here.sdk.routing.RoutingError;
@@ -378,15 +378,15 @@ public class RoutingWithAvoidanceOptionExample {
 
         Waypoint startWaypoint = new Waypoint(startGeoCoordinates);
         Waypoint destinationWaypoint = new Waypoint(destinationGeoCoordinates);
-        CarOptions carOptions = new CarOptions();
-        carOptions.avoidanceOptions = getAvoidanceOptions();
+        RoutingOptions routingOptions = new RoutingOptions();
+        routingOptions.avoidanceOptions = getAvoidanceOptions();
 
         List<Waypoint> waypoints =
                 new ArrayList<>(Arrays.asList(startWaypoint, destinationWaypoint));
 
         routingEngine.calculateRoute(
                 waypoints,
-                carOptions,
+                routingOptions,
                 new CalculateRouteCallback() {
                     @Override
                     public void onRouteCalculated(@Nullable RoutingError routingError, @Nullable List<Route> routes) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 HERE Europe B.V.
+ * Copyright (C) 2019-2026 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ package com.here.navigationkotlin
 
 import com.here.sdk.core.errors.InstantiationErrorException
 import com.here.sdk.routing.CalculateRouteCallback
-import com.here.sdk.routing.CarOptions
+import com.here.sdk.routing.RoutingOptions
 import com.here.sdk.routing.RoutingEngine
 import com.here.sdk.routing.Waypoint
 
@@ -45,7 +45,7 @@ class RouteCalculator {
         val waypoints: List<Waypoint> = listOf(startWaypoint, destinationWaypoint)
 
         // A route handle is required for the DynamicRoutingEngine to get updates on traffic-optimized routes.
-        val routingOptions = CarOptions()
+        val routingOptions = RoutingOptions()
         routingOptions.routeOptions.enableRouteHandle = true
 
         routingEngine!!.calculateRoute(

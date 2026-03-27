@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 HERE Europe B.V.
+ * Copyright (C) 2019-2026 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import com.here.sdk.mapview.MapPolyline.SolidRepresentation
 import com.here.sdk.mapview.MapView
 import com.here.sdk.mapview.RenderSize
 import com.here.sdk.routing.CalculateRouteCallback
-import com.here.sdk.routing.CarOptions
+import com.here.sdk.routing.RoutingOptions
 import com.here.sdk.routing.Route
 import com.here.sdk.routing.RoutingEngine
 import com.here.sdk.routing.RoutingError
@@ -89,7 +89,7 @@ class RoutingExample(private val context: Context, private val mapView: MapView)
     private fun calculateRoute(waypoints: List<Waypoint>) {
         routingEngine.calculateRoute(
             waypoints,
-            CarOptions(),
+            RoutingOptions(),
             object : CalculateRouteCallback {
                 override fun onRouteCalculated(routingError: RoutingError?, routes: List<Route>?) {
                     if (routingError == null) {
@@ -132,11 +132,11 @@ class RoutingExample(private val context: Context, private val mapView: MapView)
         }
 
         if (routeMapPolyline != null) {
-            mapView.getMapScene().addMapPolyline(routeMapPolyline)
+            mapView.mapScene.addMapPolyline(routeMapPolyline)
             mapPolylines.add(routeMapPolyline)
         }
 
-        if (route.getLengthInMeters() / 1000 > 5000) {
+        if (route.lengthInMeters / 1000 > 5000) {
             showDialog("Note", "Skipped showing traffic-on-route for longer routes.");
             return;
         }

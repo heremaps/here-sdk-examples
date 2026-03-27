@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 HERE Europe B.V.
+ * Copyright (C) 2019-2026 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ package com.here.navigation;
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.routing.CalculateRouteCallback;
 import com.here.sdk.routing.CalculateTrafficOnRouteCallback;
-import com.here.sdk.routing.CarOptions;
+import com.here.sdk.routing.RoutingOptions;
 import com.here.sdk.routing.Route;
 import com.here.sdk.routing.RoutingEngine;
 import com.here.sdk.routing.Waypoint;
@@ -51,7 +51,7 @@ public class RouteCalculator {
                 new ArrayList<>(Arrays.asList(startWaypoint, destinationWaypoint));
 
         // A route handle is required for the DynamicRoutingEngine to get updates on traffic-optimized routes.
-        CarOptions routingOptions = new CarOptions();
+        RoutingOptions routingOptions = new RoutingOptions();
         routingOptions.routeOptions.enableRouteHandle = true;
 
         routingEngine.calculateRoute(

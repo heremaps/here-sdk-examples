@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 HERE Europe B.V.
+ * Copyright (C) 2025-2026 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,7 +96,7 @@ class CameraExample(
 
     // Rotate the map by x degrees. Tip: Try to see what happens for negative values.
     private fun rotateMap(bearingStepInDegrees: Int) {
-        val currentBearing: Double = camera.getState().orientationAtTarget.bearing
+        val currentBearing: Double = camera.state.orientationAtTarget.bearing
         val newBearing = currentBearing + bearingStepInDegrees
 
         //By default, bearing will be clamped to the range (0, 360].
@@ -106,7 +106,7 @@ class CameraExample(
 
     // Tilt the map by x degrees.
     private fun tiltMap(tiltStepInDegrees: Int) {
-        val currentTilt: Double = camera.getState().orientationAtTarget.tilt
+        val currentTilt: Double = camera.state.orientationAtTarget.tilt
         val newTilt = currentTilt + tiltStepInDegrees
 
         //By default, tilt will be clamped to the range [0, 70].

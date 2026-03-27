@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 HERE Europe B.V.
+ * Copyright (C) 2019-2026 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import 'package:here_sdk/core.threading.dart';
 import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/routing.dart';
 import 'package:here_sdk/routing.dart' as here;
+import 'package:here_sdk/transport.dart';
 import 'package:intl/intl.dart';
 import 'package:routing_app/time_utils.dart';
 
@@ -142,15 +143,19 @@ class RoutingExample {
   }
 
   void _calculateRoute(List<Waypoint> waypoints) {
-    CarOptions carOptions = CarOptions();
-    carOptions.routeOptions.enableTolls = true;
+    RoutingOptions routingOptions = RoutingOptions();
+    routingOptions.routeOptions.enableTolls = true;
     // This is needed when e.g. requesting TrafficOnRoute data.
-    carOptions.routeOptions.enableRouteHandle = true;
+    routingOptions.routeOptions.enableRouteHandle = true;
 
     // Enable usage of HOV and HOT lanes.
     // Note: These lanes will only be used if they are available in the selected country.
-    carOptions.allowOptions.allowHov = true;
-    carOptions.allowOptions.allowHot = true;
+    routingOptions.allowOptions.allowHov = true;
+    routingOptions.allowOptions.allowHot = true;
+
+    // Set vehicle-specific options via VehicleSpecification.
+    // By default, the transport mode is already set to CAR.
+    VehicleSpecification vehicleSpecification = VehicleSpecification();
 
     // In some cities (e.g., Bogotá, Mexico City, Jakarta), the last digit of the
     // license plate is used intentionally to control traffic in low-emission zones.
@@ -159,18 +164,20 @@ class RoutingExample {
     // for example, on certain week days.
     // Make sure to update this value to the actual last character of your license
     // attached to your vehicle!
-    carOptions.lastCharacterOfLicensePlate = "7";
+    vehicleSpecification.lastCharacterOfLicensePlate = "7";
 
-    // When occupantsNumber is greater than 1, it enables the vehicle to use HOV/HOT lanes.
-    carOptions.occupantsNumber = 4;
+    // When occupancy is greater than 1, it enables the vehicle to use HOV/HOT lanes.
+    vehicleSpecification.occupancy = 4;
+
+    routingOptions.transportSpecification.vehicleSpecification = vehicleSpecification;
 
     // Disabled - Traffic optimization is completely disabled, including long-term road closures. It helps in producing stable routes.
     // Time dependent - Traffic optimization is enabled, the shape of the route will be adjusted according to the traffic situation which depends on departure time and arrival time.
-    carOptions.routeOptions.trafficOptimizationMode = _trafficOptimization
+    routingOptions.routeOptions.trafficOptimizationMode = _trafficOptimization
         ? TrafficOptimizationMode.timeDependent
         : TrafficOptimizationMode.disabled;
 
-    _currentRouteCalculationTask = _routingEngine.calculateCarRoute(waypoints, carOptions, (
+    _currentRouteCalculationTask = _routingEngine.calculateRouteWithRoutingOptions(waypoints, routingOptions, (
       RoutingError? routingError,
       List<here.Route>? routeList,
     ) async {

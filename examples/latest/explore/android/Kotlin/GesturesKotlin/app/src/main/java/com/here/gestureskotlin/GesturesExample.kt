@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 HERE Europe B.V.
+ * Copyright (C) 2025-2026 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,13 +32,13 @@ import com.here.sdk.mapview.MapCamera
 import com.here.sdk.mapview.MapMeasure
 import com.here.sdk.mapview.MapView
 
-class GesturesExample(private val context: Context, private val mapView: MapView) {
+class GesturesExample(context: Context, mapView: MapView) {
 
     private var gestureMapAnimator: GestureMapAnimator? = null
 
     init {
         val camera: MapCamera = mapView.camera
-        val mapMeasureZoom = MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, GesturesExample.DEFAULT_DISTANCE_TO_EARTH_IN_METERS.toDouble())
+        val mapMeasureZoom = MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, DEFAULT_DISTANCE_TO_EARTH_IN_METERS.toDouble())
         camera.lookAt(GeoCoordinates(52.520798, 13.409408), mapMeasureZoom)
 
         gestureMapAnimator = GestureMapAnimator(mapView.camera)
@@ -47,7 +47,6 @@ class GesturesExample(private val context: Context, private val mapView: MapView
         setDoubleTapGestureHandler(mapView)
         setTwoFingerTapGestureHandler(mapView)
         setLongPressGestureHandler(mapView)
-
 
         // Disable the default map gesture behavior for DoubleTap (zooms in) and TwoFingerTap (zooms out)
         // as we want to enable custom map animations when such gestures are detected.

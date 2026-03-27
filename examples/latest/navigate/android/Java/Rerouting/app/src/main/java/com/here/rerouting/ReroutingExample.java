@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 HERE Europe B.V.
+ * Copyright (C) 2019-2026 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,7 +70,7 @@ import com.here.sdk.navigation.RouteDeviationListener;
 import com.here.sdk.navigation.RouteProgress;
 import com.here.sdk.navigation.RouteProgressListener;
 import com.here.sdk.navigation.VisualNavigator;
-import com.here.sdk.routing.CarOptions;
+import com.here.sdk.routing.RoutingOptions;
 import com.here.sdk.routing.LocalizedRoadNumber;
 import com.here.sdk.routing.Maneuver;
 import com.here.sdk.routing.ManeuverAction;
@@ -647,10 +647,10 @@ public class ReroutingExample {
 
     private void calculateRouteForUseWithVisualNavigator() {
         boolean insertDeviationWaypoints = false;
-        CarOptions carOptions = new CarOptions();
+        RoutingOptions routingOptions = new RoutingOptions();
         // A route handle is neccessary for rerouting.
-        carOptions.routeOptions.enableRouteHandle = true;
-        routingEngine.calculateRoute(getCurrentWaypoints(insertDeviationWaypoints), carOptions, (routingError, routes) -> {
+        routingOptions.routeOptions.enableRouteHandle = true;
+        routingEngine.calculateRoute(getCurrentWaypoints(insertDeviationWaypoints), routingOptions, (routingError, routes) -> {
             handleRouteResults(routingError, routes);
         });
     }
@@ -663,7 +663,7 @@ public class ReroutingExample {
 
         // Use deviationWaypoints to create a second route and set it as source for LocationSimulator.
         boolean insertDeviationWaypoints = true;
-        routingEngine.calculateRoute(getCurrentWaypoints(insertDeviationWaypoints), new CarOptions(), (routingError, routes) -> {
+        routingEngine.calculateRoute(getCurrentWaypoints(insertDeviationWaypoints), new RoutingOptions(), (routingError, routes) -> {
             handleDeviationRouteResults(routingError, routes);
         });
     }

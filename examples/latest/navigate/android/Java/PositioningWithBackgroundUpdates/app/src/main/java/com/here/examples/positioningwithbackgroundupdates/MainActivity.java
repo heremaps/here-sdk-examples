@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2025 HERE Europe B.V.
+ * Copyright (C) 2022-2026 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
-import com.here.examples.positioningwithbackgroundupdates.PermissionsRequestor.ResultListener;
 import com.here.sdk.core.engine.AuthenticationMode;
 import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.core.engine.SDKOptions;
@@ -42,6 +41,7 @@ import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
 import com.here.sdk.units.core.utils.EnvironmentLogger;
+import com.here.sdk.units.core.utils.PermissionsRequestor;
 
 /**
  * This is an example app to showcase how to use the HERE SDK for tracking the
@@ -154,18 +154,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void permissionsDenied() {
                 Log.v(TAG, "checkPermissions: Permissions denied");
-                if (permissionsRequestor.isLocationAccessDenied()) {
-                    showDialog(R.string.error, R.string.dialog_msg_cannot_start_app_text);
-                } else if (permissionsRequestor.isPostNotificationsAccessDenied()) {
-                    showDialog(R.string.error, R.string.post_notifications_access_missing_text);
-                }
+                showDialog(R.string.error, R.string.dialog_msg_cannot_start_app_text);
             }
         });
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        permissionsRequestor.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        permissionsRequestor.onRequestPermissionsResult(requestCode, grantResults);
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 

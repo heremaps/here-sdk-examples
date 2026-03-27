@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 HERE Europe B.V.
+ * Copyright (C) 2019-2026 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ import com.here.sdk.mapview.MapView;
 import com.here.sdk.mapview.RenderSize;
 import com.here.sdk.navigation.VisualNavigator;
 import com.here.sdk.routing.CalculateRouteCallback;
-import com.here.sdk.routing.CarOptions;
+import com.here.sdk.routing.RoutingOptions;
 import com.here.sdk.routing.Maneuver;
 import com.here.sdk.routing.ManeuverAction;
 import com.here.sdk.routing.OfflineRoutingEngine;
@@ -126,7 +126,7 @@ public class RoutingExample {
 
         routingEngine.calculateRoute(
                 waypoints,
-                getCarOptions(),
+                getRoutingOptions(),
                 new CalculateRouteCallback() {
                     @Override
                     public void onRouteCalculated(@Nullable RoutingError routingError, @Nullable List<Route> routes) {
@@ -299,7 +299,7 @@ public class RoutingExample {
 
         routingEngine.calculateRoute(
                 waypoints,
-                getCarOptions(),
+                getRoutingOptions(),
                 new CalculateRouteCallback() {
                     @Override
                     public void onRouteCalculated(@Nullable RoutingError routingError, @Nullable List<Route> routes) {
@@ -352,13 +352,13 @@ public class RoutingExample {
                 getRandom(lon - 0.02, lon + 0.02));
     }
 
-    private CarOptions getCarOptions() {
-        CarOptions carOptions = new CarOptions();
+    private RoutingOptions getRoutingOptions() {
+        RoutingOptions routingOptions = new RoutingOptions();
 
         // Specifies whether route labels should be included in the route response.
-        carOptions.routeOptions.enableRouteLabels = true;
+        routingOptions.routeOptions.enableRouteLabels = true;
 
-        return carOptions;
+        return routingOptions;
     }
     private double getRandom(double min, double max) {
         return min + Math.random() * (max - min);

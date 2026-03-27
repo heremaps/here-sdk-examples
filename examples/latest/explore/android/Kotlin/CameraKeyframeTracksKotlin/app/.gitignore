@@ -1,0 +1,7 @@
+/build
+
+# Ignore all AARs in libs.
+/libs/*.aar
+
+# But NOT those that contain 'here-sdk-units' in the filename.
+!libs/*here-sdk-units*.aar

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 HERE Europe B.V.
+ * Copyright (C) 2019-2026 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,9 +54,7 @@ import com.here.sdk.core.GeoCoordinatesUpdate
 import com.here.sdk.core.GeoOrientationUpdate
 import com.here.sdk.core.Location
 import com.here.sdk.core.LocationListener
-import com.here.sdk.core.engine.AuthenticationMode
-import com.here.sdk.core.engine.SDKNativeEngine
-import com.here.sdk.core.engine.SDKOptions
+import com.here.sdk.core.engine.*
 import com.here.sdk.core.errors.InstantiationErrorException
 import com.here.sdk.mapview.LocationIndicator
 import com.here.sdk.mapview.LocationIndicator.IndicatorStyle
@@ -74,7 +72,7 @@ import com.here.sdk.navigation.RouteProgressColors
 import com.here.sdk.navigation.VisualNavigator
 import com.here.sdk.navigation.VisualNavigatorColors
 import com.here.sdk.routing.CalculateRouteCallback
-import com.here.sdk.routing.CarOptions
+import com.here.sdk.routing.RoutingOptions
 import com.here.sdk.routing.Route
 import com.here.sdk.routing.RoutingEngine
 import com.here.sdk.routing.RoutingError
@@ -332,7 +330,7 @@ class MainActivity : ComponentActivity() {
 
     // Calculate a fixed route for testing and start guidance simulation along the route.
     private fun startButtonClicked() {
-        if (visualNavigator?.isRendering() == true) {
+        if (visualNavigator?.isRendering == true) {
             return
         }
 
@@ -341,7 +339,7 @@ class MainActivity : ComponentActivity() {
             val destinationWaypoint = Waypoint(GeoCoordinates(52.530905, 13.385007))
             routingEngine!!.calculateRoute(
                 arrayListOf(startWaypoint, destinationWaypoint),
-                CarOptions(),
+                RoutingOptions(),
                 object : CalculateRouteCallback {
                     override fun onRouteCalculated(routingError: RoutingError?, routes: List<Route>?) {
                         if (routingError == null) {
@@ -368,7 +366,7 @@ class MainActivity : ComponentActivity() {
         isDefaultLocationIndicator = !isDefaultLocationIndicator
 
         // Select pedestrian or navigation assets.
-        if (visualNavigator?.isRendering() == true) {
+        if (visualNavigator?.isRendering == true) {
             switchToNavigationLocationIndicator()
         } else {
             switchToPedestrianLocationIndicator()
@@ -395,18 +393,18 @@ class MainActivity : ComponentActivity() {
 
     private fun switchToPedestrianLocationIndicator() {
         if (isDefaultLocationIndicator) {
-            defaultLocationIndicator?.enable(mapView!!)
-            defaultLocationIndicator?.setLocationIndicatorStyle(IndicatorStyle.PEDESTRIAN)
-            customLocationIndicator?.disable()
+            defaultLocationIndicator.enable(mapView!!)
+            defaultLocationIndicator.locationIndicatorStyle = IndicatorStyle.PEDESTRIAN
+            customLocationIndicator.disable()
         } else {
-            defaultLocationIndicator?.disable()
-            customLocationIndicator?.enable(mapView!!)
-            customLocationIndicator?.setLocationIndicatorStyle(IndicatorStyle.PEDESTRIAN)
+            defaultLocationIndicator.disable()
+            customLocationIndicator.enable(mapView!!)
+            customLocationIndicator.locationIndicatorStyle = IndicatorStyle.PEDESTRIAN
         }
 
         // Set last location from LocationSimulator.
-        defaultLocationIndicator?.updateLocation(getLastKnownLocation())
-        customLocationIndicator?.updateLocation(getLastKnownLocation())
+        defaultLocationIndicator.updateLocation(getLastKnownLocation())
+        customLocationIndicator.updateLocation(getLastKnownLocation())
 
         setSelectedHaloColor()
     }
@@ -498,7 +496,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun startGuidance(route: Route) {
-        if (visualNavigator?.isRendering() == true) {
+        if (visualNavigator?.isRendering == true) {
             return
         }
 
@@ -517,7 +515,7 @@ class MainActivity : ComponentActivity() {
         switchToNavigationLocationIndicator()
 
         // Set a route to follow. This leaves tracking mode.
-        visualNavigator?.setRoute(route)
+        visualNavigator?.route = route
 
         // This app does not use real location updates. Instead it provides location updates based
         // on the geographic coordinates of a route using HERE SDK's LocationSimulator.
@@ -553,11 +551,11 @@ class MainActivity : ComponentActivity() {
         )
 
         // Sets the color used to draw maneuver arrows.
-        visualNavigatorColors.setManeuverArrowColor(maneuverArrowColor)
+        visualNavigatorColors.maneuverArrowColor = maneuverArrowColor
         // Sets route color for a single transport mode. Other modes are kept using defaults.
         visualNavigatorColors.setRouteProgressColors(SectionTransportMode.CAR, routeProgressColors)
         // Sets the adjusted colors for route progress and maneuver arrows based on the day color scheme.
-        visualNavigator?.setColors(visualNavigatorColors)
+        visualNavigator?.colors = visualNavigatorColors
     }
 
     private fun customizeGuidanceView() {
@@ -572,7 +570,7 @@ class MainActivity : ComponentActivity() {
 
         // The CameraBehavior can be updated during guidance at any time as often as desired.
         // Alternatively, use DynamicCameraBehavior for auto-zoom.
-        visualNavigator?.setCameraBehavior(cameraBehavior)
+        visualNavigator?.cameraBehavior = cameraBehavior
     }
 
     private val myLocationListener: LocationListener = object : LocationListener {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 HERE Europe B.V.
+ * Copyright (C) 2019-2026 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ import com.here.sdk.mapview.MapPolyline
 import com.here.sdk.mapview.MapView
 import com.here.sdk.mapview.RenderSize
 import com.here.sdk.routing.CalculateRouteCallback
-import com.here.sdk.routing.CarOptions
 import com.here.sdk.routing.DynamicSpeedInfo
 import com.here.sdk.routing.Maneuver
 import com.here.sdk.routing.ManeuverAction
@@ -50,7 +49,9 @@ import com.here.sdk.routing.Section
 import com.here.sdk.routing.SectionNotice
 import com.here.sdk.routing.Toll
 import com.here.sdk.routing.TrafficOptimizationMode
+import com.here.sdk.routing.RoutingOptions
 import com.here.sdk.routing.Waypoint
+import com.here.sdk.transport.VehicleSpecification
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -97,7 +98,7 @@ class RoutingExample(private val context: Context, private val mapView: MapView)
     private fun calculateRoute(waypoints: List<Waypoint>) {
         routingEngine.calculateRoute(
             waypoints,
-            carOptions,
+            routingOptions,
             object : CalculateRouteCallback {
                 override fun onRouteCalculated(routingError: RoutingError?, routes: List<Route>?) {
                     // When routingError is null, the list of routes is guaranteed to be not empty.
@@ -320,24 +321,26 @@ class RoutingExample(private val context: Context, private val mapView: MapView)
         calculateRoute(waypoints)
     }
 
-    private val carOptions: CarOptions
+    private val routingOptions: RoutingOptions
         get() {
-            val carOptions = CarOptions()
-            carOptions.routeOptions.enableTolls = true
+            val routingOptions = RoutingOptions()
+            routingOptions.routeOptions.enableTolls = true
 
             // Enable usage of HOV and HOT lanes.
             // Note: These lanes will only be used if they are available in the selected country.
-            carOptions.allowOptions.allowHov = true
-            carOptions.allowOptions.allowHot = true
+            routingOptions.allowOptions.allowHov = true
+            routingOptions.allowOptions.allowHot = true
 
-            // When occupantsNumber is greater than 1, it enables the vehicle to use HOV/HOT lanes.
-            carOptions.occupantsNumber = 4
+            // When occupancy is greater than 1, it enables the vehicle to use HOV/HOT lanes.
+            val vehicleSpecification = VehicleSpecification()
+            vehicleSpecification.occupancy = 4
+            routingOptions.transportSpecification.vehicleSpecification = vehicleSpecification
 
             // Disabled - Traffic optimization is completely disabled, including long-term road closures. It helps in producing stable routes.
             // Time dependent - Traffic optimization is enabled, the shape of the route will be adjusted according to the traffic situation which depends on departure time and arrival time.
-            carOptions.routeOptions.trafficOptimizationMode =
+            routingOptions.routeOptions.trafficOptimizationMode =
                 if (trafficDisabled) TrafficOptimizationMode.DISABLED else TrafficOptimizationMode.TIME_DEPENDENT
-            return carOptions
+            return routingOptions
         }
 
     fun clearMap() {

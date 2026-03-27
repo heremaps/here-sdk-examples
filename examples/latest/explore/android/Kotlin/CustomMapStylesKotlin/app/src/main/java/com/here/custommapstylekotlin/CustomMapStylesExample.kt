@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 HERE Europe B.V.
+ * Copyright (C) 2019-2026 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@
 
 package com.here.custommapstyleskotlin
 
-import android.app.AlertDialog
 import android.content.Context
 import android.util.Log
 import com.here.sdk.core.GeoCoordinates

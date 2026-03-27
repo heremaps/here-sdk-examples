@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 HERE Europe B.V.
+ * Copyright (C) 2019-2026 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,11 +26,23 @@ import android.net.Uri;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
+import com.here.sdk.animation.Easing;
+import com.here.sdk.animation.EasingFunction;
 import com.here.sdk.core.GeoCoordinates;
+import com.here.sdk.core.GeoOrientationUpdate;
 import com.here.sdk.core.GeoPolyline;
 import com.here.sdk.core.GeoPolylineDirection;
+import com.here.sdk.core.Point2D;
+import com.here.sdk.core.Rectangle2D;
+import com.here.sdk.core.Size2D;
+import com.here.sdk.core.errors.InstantiationErrorException;
+import com.here.sdk.mapview.MapCameraAnimation;
+import com.here.sdk.mapview.MapCameraAnimationFactory;
+import com.here.sdk.mapview.MapCameraUpdate;
+import com.here.sdk.mapview.MapCameraUpdateFactory;
+import com.here.sdk.mapview.MapMeasure;
+import com.here.sdk.mapview.MapView;
 import com.here.sdk.navigation.AspectRatio;
 import com.here.sdk.navigation.BorderCrossingWarning;
 import com.here.sdk.navigation.BorderCrossingWarningListener;
@@ -51,9 +63,10 @@ import com.here.sdk.navigation.LaneDirection;
 import com.here.sdk.navigation.LaneMarkings;
 import com.here.sdk.navigation.LaneRecommendationState;
 import com.here.sdk.navigation.LaneType;
+import com.here.sdk.navigation.LocationSimulator;
+import com.here.sdk.navigation.LocationSimulatorOptions;
 import com.here.sdk.navigation.LowSpeedZoneWarning;
 import com.here.sdk.navigation.LowSpeedZoneWarningListener;
-import com.here.sdk.navigation.ManeuverNotificationOptions;
 import com.here.sdk.navigation.ManeuverProgress;
 import com.here.sdk.navigation.ManeuverViewLaneAssistance;
 import com.here.sdk.navigation.ManeuverViewLaneAssistanceListener;
@@ -102,16 +115,17 @@ import com.here.sdk.navigation.VisualNavigator;
 import com.here.sdk.navigation.WarningNotificationDistances;
 import com.here.sdk.navigation.WarningType;
 import com.here.sdk.navigation.WeightRestrictionType;
+import com.here.sdk.routing.RoutingOptions;
 import com.here.sdk.routing.Maneuver;
-import com.here.sdk.routing.ManeuverAction;
 import com.here.sdk.routing.PaymentMethod;
 import com.here.sdk.routing.RoadTexts;
 import com.here.sdk.routing.Route;
-import com.here.sdk.routing.Section;
-import com.here.sdk.routing.Span;
-import com.here.sdk.routing.StreetAttributes;
+import com.here.sdk.routing.RoutingEngine;
+import com.here.sdk.routing.Waypoint;
 import com.here.sdk.transport.GeneralVehicleSpeedLimits;
+import com.here.time.Duration;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -123,9 +137,79 @@ import java.util.Objects;
 public class NavigationWarnersExample {
     private static final String TAG = NavigationWarnersExample.class.getName();
     private final Context context;
+    private final MapView mapView;
+    private final RoutingEngine routingEngine;
+    private final VisualNavigator visualNavigator;
+    private LocationSimulator locationSimulator;
+    private boolean isGuidanceRunning = false;
     private RouteProgress currentRouteProgress;
-    public NavigationWarnersExample(Context context) {
+
+    public NavigationWarnersExample(Context context, MapView mapView) {
         this.context = context;
+        this.mapView = mapView;
+
+        try {
+            this.visualNavigator = new VisualNavigator();
+        } catch (InstantiationErrorException e) {
+            throw new RuntimeException("Initialization of VisualNavigator failed: " + e.error.name());
+        }
+
+        try {
+            this.routingEngine = new RoutingEngine();
+        } catch (InstantiationErrorException e) {
+            throw new RuntimeException("Initialization of RoutingEngine failed: " + e.error.name());
+        }
+    }
+
+    public boolean isGuidanceRunning() {
+        return isGuidanceRunning;
+    }
+
+    public void startGuidance(GeoCoordinates startGeoCoordinates,
+                              GeoCoordinates destinationGeoCoordinates) {
+        routingEngine.calculateRoute(
+                new ArrayList<>(Arrays.asList(new Waypoint(startGeoCoordinates), new Waypoint(destinationGeoCoordinates))),
+                new RoutingOptions(),
+                (routingError, routes) -> {
+                    if (routingError == null) {
+                        // When routingError is null, routes is guaranteed to contain at least one route.
+                        Route route = routes.get(0);
+                        startGuidanceWithRoute(route);
+                    } else {
+                        Log.e(TAG, "Route calculation error: " + routingError);
+                    }
+                }
+        );
+    }
+
+    public void stopGuidance() {
+        if (locationSimulator != null) {
+            locationSimulator.stop();
+            locationSimulator = null;
+        }
+
+        visualNavigator.setRoute(null);
+        visualNavigator.stopRendering();
+        isGuidanceRunning = false;
+    }
+
+    private void startGuidanceWithRoute(Route route) {
+        setupListeners(visualNavigator);
+        visualNavigator.startRendering(mapView);
+        visualNavigator.setRoute(route);
+        setupLocationSource(route);
+        isGuidanceRunning = true;
+    }
+
+    private void setupLocationSource(Route route) {
+        try {
+            locationSimulator = new LocationSimulator(route, new LocationSimulatorOptions());
+        } catch (InstantiationErrorException e) {
+            throw new RuntimeException("Initialization of LocationSimulator failed: " + e.error.name());
+        }
+
+        locationSimulator.setListener(visualNavigator);
+        locationSimulator.start();
     }
 
     // More event handling can be seen in the "Navigation" app.
@@ -863,6 +947,30 @@ public class NavigationWarnersExample {
             // lane separator on the left side of the specified lane in the lane driving direction.
             Log.d(TAG, "Lane divider marker for lane " + laneMarkings.laneDividerMarker.value);
         }
+    }
+
+    // Animates the camera to fit the given route.
+    public void animateToRoutePreview(GeoCoordinates startGeoCoordinates, GeoCoordinates destinationGeoCoordinates) {
+        double bearing = 0;
+        double tilt = 0;
+        double distanceInMeters = 1000 * 10;
+        // We want to show the route fitting in the map view with an additional padding of 300 pixels
+        Point2D origin = new Point2D(300, 300);
+        Size2D sizeInPixels = new Size2D(mapView.getWidth() - 600, mapView.getHeight() - 600);
+        Rectangle2D mapViewport = new Rectangle2D(origin, sizeInPixels);
+
+        List<GeoCoordinates> coordinatesList = Arrays.asList(startGeoCoordinates, destinationGeoCoordinates);
+
+        // Animate to the route overview.
+        MapCameraUpdate update = MapCameraUpdateFactory.lookAt(
+                coordinatesList,
+                mapViewport,
+                new GeoOrientationUpdate(bearing, tilt),
+                new MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, distanceInMeters)
+        );
+        MapCameraAnimation animation =
+                MapCameraAnimationFactory.createAnimation(update, Duration.ofMillis(500), new Easing(EasingFunction.IN_CUBIC));
+        mapView.getCamera().startAnimation(animation);
     }
 
     // A method to check if a given LaneDirection is on route or not.

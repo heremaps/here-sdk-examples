@@ -36,7 +36,7 @@ android {
 }
 
 dependencies {
-    compileOnly fileTree(dir: file("${project(':app').projectDir}/libs"), include: ['heresdk-navigate-*.aar'])
+    compileOnly fileTree(dir: file("${project(':app').projectDir}/libs"), include: ['heresdk-*.aar'])
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.10.0'
     implementation 'androidx.activity:activity:1.8.0'

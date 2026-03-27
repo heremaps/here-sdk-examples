@@ -67,7 +67,7 @@ dependencies {
     // Note: compileOnly ensures that the AAR is not exported together with the resulting unit AAR.
     compileOnly(
         fileTree(hereSdkLibsDir) {
-            include("heresdk-navigate-*.aar")
+            include("heresdk-*.aar")
         }
     )
 }
