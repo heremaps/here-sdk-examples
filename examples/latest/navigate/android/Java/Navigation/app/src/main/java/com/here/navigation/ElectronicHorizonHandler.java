@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 HERE Europe B.V.
+ * Copyright (C) 2019-2026 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import com.here.sdk.core.GeoPolyline;
 import com.here.sdk.core.GeoPolylineDirection;
 import com.here.sdk.core.engine.SDKNativeEngine;
 import com.here.sdk.core.errors.InstantiationErrorException;
+import com.here.sdk.electronichorizon.ElectronicHorizon;
 import com.here.sdk.electronichorizon.ElectronicHorizonDataLoadedStatus;
 import com.here.sdk.electronichorizon.ElectronicHorizonDataLoader;
 import com.here.sdk.electronichorizon.ElectronicHorizonDataLoaderResult;
@@ -79,9 +80,9 @@ public class ElectronicHorizonHandler {
     private ElectronicHorizonListener electronicHorizonListener;
     private ElectronicHorizonDataLoaderStatusListener electronicHorizonDataLoaderStatusListener;
 
-    // Keep track of the last requested electronic horizon update to access its segments
+    // Keep track of the last electronic horizon to access its segments
     // when data loading is completed.
-    private ElectronicHorizonUpdate lastRequestedElectronicHorizonUpdate;
+    private ElectronicHorizon lastElectronicHorizon;
 
     public ElectronicHorizonHandler() {
         electronicHorizonListener = createElectronicHorizonListener();
@@ -161,8 +162,10 @@ public class ElectronicHorizonHandler {
                 Log.d(LOG_TAG, "ElectronicHorizonUpdate received.");
                 // Asynchronously start to load required data for the new segments.
                 // Use the ElectronicHorizonDataLoaderStatusListener to get notified when new data is arriving.
-                lastRequestedElectronicHorizonUpdate = electronicHorizonUpdate;
-                electronicHorizonDataLoader.loadData(lastRequestedElectronicHorizonUpdate);
+                if (electronicHorizonUpdate.electronicHorizon != null) {
+                    lastElectronicHorizon = electronicHorizonUpdate.electronicHorizon;
+                    electronicHorizonDataLoader.loadData(electronicHorizonUpdate);
+                }
             }
         };
     }
@@ -187,12 +190,12 @@ public class ElectronicHorizonHandler {
                     // This example shows only how to look at the fully loaded segments of the most preferred path (level 0).
                     if (level == 0 && status == ElectronicHorizonDataLoadedStatus.FULLY_LOADED) {
                         // Skip this iteration to avoid null access.
-                        if (lastRequestedElectronicHorizonUpdate.electronicHorizon == null) {
+                        if (lastElectronicHorizon == null) {
                             continue;
                         }
                         // Now, level 0 segments have been fully loaded and you can access their data.
                         // The electronicHorizon.paths list contains segments from all levels, so you need to filter for level 0 below.
-                        List<ElectronicHorizonPath> electronicHorizonPaths = lastRequestedElectronicHorizonUpdate.electronicHorizon.paths;
+                        List<ElectronicHorizonPath> electronicHorizonPaths = lastElectronicHorizon.paths;
                         for (ElectronicHorizonPath electronicHorizonPath : electronicHorizonPaths) {
                             List<ElectronicHorizonSegment> electronicHorizonSegment = electronicHorizonPath.segments;
                             for (ElectronicHorizonSegment segment : electronicHorizonSegment) {

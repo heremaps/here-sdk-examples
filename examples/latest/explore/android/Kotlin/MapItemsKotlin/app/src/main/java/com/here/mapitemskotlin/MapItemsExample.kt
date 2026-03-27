@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 HERE Europe B.V.
+ * Copyright (C) 2026 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -150,7 +150,7 @@ class MapItemsExample(private val context: Context, private val mapView: MapView
 
         val metadata = Metadata()
         metadata.setString("key_poi_text", "This is a POI with text.")
-        mapMarker.setMetadata(metadata)
+        mapMarker.metadata = metadata
 
         mapView.mapScene.addMapMarker(mapMarker)
         mapMarkerList.add(mapMarker)
@@ -185,7 +185,7 @@ class MapItemsExample(private val context: Context, private val mapView: MapView
 
         val metadata = Metadata()
         metadata.setString("key_cluster", metaDataText)
-        mapMarker.setMetadata(metadata)
+        mapMarker.metadata = metadata
 
         return mapMarker
     }
@@ -277,7 +277,7 @@ class MapItemsExample(private val context: Context, private val mapView: MapView
 
         val metadata = Metadata()
         metadata.setString("key_poi", "This is a POI.")
-        mapMarker.setMetadata(metadata)
+        mapMarker.metadata = metadata
 
         mapView.mapScene.addMapMarker(mapMarker)
         mapMarkerList.add(mapMarker)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 HERE Europe B.V.
+ * Copyright (C) 2026 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,8 +53,8 @@ class MapObjectsExample(private val context: Context, mapView: MapView) {
     private var mapCircle: MapPolygon? = null
 
     init {
-        mapScene = mapView.getMapScene()
-        mapCamera = mapView.getCamera()
+        mapScene = mapView.mapScene
+        mapCamera = mapView.camera
     }
 
     fun showMapPolyline() {

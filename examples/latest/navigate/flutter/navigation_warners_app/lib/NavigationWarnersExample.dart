@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 HERE Europe B.V.
+ * Copyright (C) 2019-2026 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,13 @@
  * License-Filename: LICENSE
  */
 
+import 'dart:async';
+
+import 'package:here_sdk/animation.dart' as HERE;
 import 'package:flutter/services.dart';
 import 'package:here_sdk/core.dart';
+import 'package:here_sdk/core.errors.dart';
+import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/navigation.dart';
 import 'package:here_sdk/routing.dart' as HERE;
 import 'package:here_sdk/routing.dart';
@@ -28,12 +33,105 @@ enum RoadType { highway, rural, urban }
 // This class combines the various events that can be emitted during turn-by-turn navigation.
 // Note that this class does not show an exhaustive list of all possible events.
 class NavigationWarnersExample {
-  VisualNavigator _visualNavigator;
+  final HereMapController _hereMapController;
+  late final VisualNavigator _visualNavigator;
+  late final HERE.RoutingEngine _routingEngine;
+  LocationSimulator? _locationSimulator;
+  bool _isGuidanceRunning = false;
   RouteProgress? currentRouteProgress;
 
-  NavigationWarnersExample(VisualNavigator visualNavigator) : _visualNavigator = visualNavigator {}
+  NavigationWarnersExample(this._hereMapController) {
+    try {
+      _visualNavigator = VisualNavigator();
+    } on InstantiationException {
+      throw Exception("Initialization of VisualNavigator failed.");
+    }
 
-  void setupListeners() {
+    try {
+      _routingEngine = HERE.RoutingEngine();
+    } on InstantiationException {
+      throw Exception('Initialization of RoutingEngine failed.');
+    }
+  }
+
+  bool isGuidanceRunning() {
+    return _isGuidanceRunning;
+  }
+
+  void startGuidance(GeoCoordinates startGeoCoordinates, GeoCoordinates destinationGeoCoordinates) {
+    _routingEngine.calculateCarRoute(
+      [HERE.Waypoint(startGeoCoordinates), HERE.Waypoint(destinationGeoCoordinates)],
+      HERE.CarOptions(),
+      (HERE.RoutingError? routingError, List<HERE.Route>? routeList) {
+        if (routingError == null && routeList != null && routeList.isNotEmpty) {
+          _startGuidanceWithRoute(routeList.first);
+        } else {
+          print('Error while calculating a route: $routingError');
+        }
+      },
+    );
+  }
+
+  void stopGuidance() {
+    _locationSimulator?.stop();
+    _locationSimulator = null;
+
+    _visualNavigator.route = null;
+    _visualNavigator.stopRendering();
+    _isGuidanceRunning = false;
+  }
+
+  void animateToRoutePreview(GeoCoordinates startGeoCoordinates, GeoCoordinates destinationGeoCoordinates) {
+    double bearing = 0;
+    double tilt = 0;
+    double distanceInMeters = 1000 * 10;
+
+    // We want to show the route fitting in the map view with an additional padding of 300 pixels.
+    Point2D origin = Point2D(300, 300);
+    Size2D sizeInPixels = Size2D(
+      _hereMapController.viewportSize.width - 600,
+      _hereMapController.viewportSize.height - 600,
+    );
+    Rectangle2D mapViewport = Rectangle2D(origin, sizeInPixels);
+
+    List<GeoCoordinates> coordinatesList = [startGeoCoordinates, destinationGeoCoordinates];
+
+    // Animate to the route overview.
+    MapCameraUpdate update = MapCameraUpdateFactory.lookAtPoints(
+      coordinatesList,
+      mapViewport,
+      GeoOrientationUpdate(bearing, tilt),
+      MapMeasure(MapMeasureKind.distanceInMeters, distanceInMeters),
+    );
+
+    MapCameraAnimation animation = MapCameraAnimationFactory.createAnimationFromUpdateWithEasing(
+      update,
+      const Duration(milliseconds: 500),
+      HERE.Easing(HERE.EasingFunction.inCubic),
+    );
+    _hereMapController.camera.startAnimation(animation);
+  }
+
+  void _startGuidanceWithRoute(HERE.Route route) {
+    _setupListeners();
+    _visualNavigator.startRendering(_hereMapController);
+    _visualNavigator.route = route;
+    _setupLocationSource(route);
+    _isGuidanceRunning = true;
+  }
+
+  void _setupLocationSource(HERE.Route route) {
+    try {
+      _locationSimulator = LocationSimulator.withRoute(route, LocationSimulatorOptions());
+    } on InstantiationException {
+      throw Exception("Initialization of LocationSimulator failed.");
+    }
+
+    _locationSimulator!.listener = _visualNavigator;
+    _locationSimulator!.start();
+  }
+
+  void _setupListeners() {
     _setupSpeedWarnings();
     _setupSafetyCameraWarningOptions();
     _setupManeuverNotificationOptions();
@@ -123,7 +221,7 @@ class NavigationWarnersExample {
       } else if (milestone.waypointIndex == null && milestoneStatus == MilestoneStatus.reached) {
         // For example, when transport mode changes due to a ferry a system-defined waypoint may have been added.
         print("A system-defined waypoint was reached at: " + milestone.mapMatchedCoordinates.toString());
-      } else if (milestone.waypointIndex == null && milestoneStatus == MilestoneStatus.reached) {
+      } else if (milestone.waypointIndex == null && milestoneStatus == MilestoneStatus.missed) {
         // For example, when transport mode changes due to a ferry a system-defined waypoint may have been added.
         print("A system-defined waypoint was missed at: " + milestone.mapMatchedCoordinates.toString());
       }
@@ -336,7 +434,7 @@ class NavigationWarnersExample {
         lastGeoCoordinatesOnRoute = route.sections.first.departurePlace.originalCoordinates!;
       }
 
-      int distanceInMeters = currentGeoCoordinates.distanceTo(lastGeoCoordinatesOnRoute) as int;
+      int distanceInMeters = currentGeoCoordinates.distanceTo(lastGeoCoordinatesOnRoute).toInt();
       print("RouteDeviation in meters is " + distanceInMeters.toString());
 
       // Now, an application needs to decide if the user has deviated far enough and
@@ -459,6 +557,7 @@ class NavigationWarnersExample {
 
     // Set the warning distances for road signs.
     _visualNavigator.setWarningNotificationDistances(WarningType.roadSign, warningNotificationDistances);
+    _visualNavigator.roadSignWarningOptions = roadSignWarningOptions;
 
     // Notifies on road shields as they appear along the road.
     _visualNavigator.roadSignWarningListener = RoadSignWarningListener((RoadSignWarning roadSignWarning) {

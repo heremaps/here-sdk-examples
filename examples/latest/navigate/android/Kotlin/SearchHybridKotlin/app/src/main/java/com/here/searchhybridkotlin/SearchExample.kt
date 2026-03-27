@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 HERE Europe B.V.
+ * Copyright (C) 2019-2026 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -167,13 +167,13 @@ class SearchExample(private val context: Context, private val mapView: MapView) 
     }
 
     private val addressSearchCallback = object : SearchCallback {
-        override fun onSearchCompleted(searchError: SearchError?, list: MutableList<Place>?) {
+        override fun onSearchCompleted(searchError: SearchError?, places: List<Place>?) {
             if (searchError != null) {
                 showDialog("Reverse geocoding", "Error: $searchError")
                 return
             }
             // If error is null, list is guaranteed to be not empty.
-            showDialog("Reverse geocoded address:", list!![0].address.addressText)
+            showDialog("Reverse geocoded address:", places!![0].address.addressText)
         }
     }
 
@@ -246,7 +246,7 @@ class SearchExample(private val context: Context, private val mapView: MapView) 
     }
 
     private val querySearchCallback = object : SearchCallback {
-        override fun onSearchCompleted(searchError: SearchError?, list: MutableList<Place>?) {
+        override fun onSearchCompleted(searchError: SearchError?, places: List<Place>?) {
             if (searchError != null) {
                 // Note: When using the OfflineSearchEngine, the HERE SDK searches only on cached map data and
                 // search results may not be available for all zoom levels.
@@ -259,10 +259,10 @@ class SearchExample(private val context: Context, private val mapView: MapView) 
                 return
             }
             // If error is null, list is guaranteed to be not empty.
-            showDialog("Search", "Results: ${list!!.size}")
+            showDialog("Search", "Results: ${places!!.size}")
 
             // Add new marker for each search result on map.
-            for (searchResult in list) {
+            for (searchResult in places) {
                 val metadata = Metadata()
                 metadata.setCustomValue("key_search_result", SearchResultMetadata(searchResult))
                 // Note: getGeoCoordinates() may return null only for Suggestions.
@@ -278,14 +278,14 @@ class SearchExample(private val context: Context, private val mapView: MapView) 
     }
 
     private val autosuggestCallback = object : SuggestCallback {
-        override fun onSuggestCompleted(searchError: SearchError?, list: MutableList<Suggestion>?) {
+        override fun onSuggestCompleted(searchError: SearchError?, suggestions: List<Suggestion>?) {
             if (searchError != null) {
                 Log.d(LOG_TAG, "Autosuggest Error: ${searchError.name}")
                 return
             }
             // If error is null, list is guaranteed to be not empty.
-            Log.d(LOG_TAG, "Autosuggest results: ${list!!.size}")
-            for (autosuggestResult in list) {
+            Log.d(LOG_TAG, "Autosuggest results: ${suggestions!!.size}")
+            for (autosuggestResult in suggestions) {
                 var addressText = "Not a place."
                 val place = autosuggestResult.place
                 place?.let {
@@ -380,12 +380,12 @@ class SearchExample(private val context: Context, private val mapView: MapView) 
     }
 
     private val geocodeAddressSearchCallback = object : SearchCallback {
-        override fun onSearchCompleted(searchError: SearchError?, list: MutableList<Place>?) {
+        override fun onSearchCompleted(searchError: SearchError?, places: List<Place>?) {
             if (searchError != null) {
                 showDialog("Geocoding", "Error: $searchError")
                 return
             }
-            for (geocodingResult in list!!) {
+            for (geocodingResult in places!!) {
                 // Note: getGeoCoordinates() may return null only for Suggestions.
                 val geoCoordinates = geocodingResult.geoCoordinates
                 val address = geocodingResult.address
@@ -397,7 +397,7 @@ class SearchExample(private val context: Context, private val mapView: MapView) 
                 )
                 addPoiMapMarker(geoCoordinates)
             }
-            showDialog("Geocoding result", "Size: ${list.size}")
+            showDialog("Geocoding result", "Size: ${places.size}")
         }
     }
 

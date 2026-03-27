@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 HERE Europe B.V.
+ * Copyright (C) 2019-2026 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.here.sdk.core.GeoCoordinates
-import com.here.sdk.core.engine.AuthenticationMode
-import com.here.sdk.core.engine.SDKNativeEngine
-import com.here.sdk.core.engine.SDKOptions
+import com.here.sdk.core.engine.*
 import com.here.sdk.core.errors.InstantiationErrorException
 import com.here.sdk.mapview.MapMeasure
 import com.here.sdk.mapview.MapScheme
@@ -117,7 +115,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        permissionsRequestor?.onRequestPermissionsResult(requestCode, grantResults)
+        permissionsRequestor.onRequestPermissionsResult(requestCode, grantResults)
     }
 
     private fun loadMapScene() {

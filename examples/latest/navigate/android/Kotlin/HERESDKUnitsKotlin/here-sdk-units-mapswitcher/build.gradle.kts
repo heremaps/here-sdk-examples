@@ -62,7 +62,7 @@ dependencies {
 
     compileOnly(
         fileTree(hereSdkLibsDir) {
-            include("heresdk-navigate-*.aar")
+            include("heresdk-*.aar")
         }
     )
 }

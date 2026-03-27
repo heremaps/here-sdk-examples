@@ -39,7 +39,7 @@ android {
 dependencies {
     // Pick the HERE SDK AAR matching the pattern found in HERESDKUnits/app/libs/.
     // Note: compileOnly ensures that the AAR is not exported together with the resulting unit AAR.
-    compileOnly fileTree(dir: file("${project(':app').projectDir}/libs"), include: ['heresdk-navigate-*.aar'])
+    compileOnly fileTree(dir: file("${project(':app').projectDir}/libs"), include: ['heresdk-*.aar'])
 
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'com.google.android.material:material:1.12.0'

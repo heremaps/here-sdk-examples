@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 HERE Europe B.V.
+ * Copyright (C) 2019-2026 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,9 +52,9 @@ class ElectronicHorizonHandler {
   ElectronicHorizonListener? _electronicHorizonListener;
   ElectronicHorizonDataLoaderStatusListener? _electronicHorizonDataLoaderStatusListener;
 
-  // Keep track of the last requested electronic horizon update to access its segments
+  // Keep track of the last electronic horizon to access its segments
   // when data loading is completed.
-  ElectronicHorizonUpdate? _lastRequestedElectronicHorizonUpdate;
+  ElectronicHorizon? _lastElectronicHorizon;
 
   ElectronicHorizonHandler() {
     _electronicHorizonListener = _createElectronicHorizonListener();
@@ -142,9 +142,9 @@ class ElectronicHorizonHandler {
       print('$_logTag: ElectronicHorizonUpdate received.');
       // Asynchronously start to load required data for the new segments.
       // Use the ElectronicHorizonDataLoaderStatusListener to get notified when new data is arriving.
-      _lastRequestedElectronicHorizonUpdate = electronicHorizonUpdate;
-      if (electronicHorizonUpdate != null) {
-        _electronicHorizonDataLoader.loadData(electronicHorizonUpdate);
+      if (electronicHorizonUpdate?.electronicHorizon != null) {
+        _lastElectronicHorizon = electronicHorizonUpdate?.electronicHorizon;
+        _electronicHorizonDataLoader.loadData(electronicHorizonUpdate!);
       }
     });
   }
@@ -156,7 +156,7 @@ class ElectronicHorizonHandler {
     return ElectronicHorizonDataLoaderStatusListener((Map<int, ElectronicHorizonDataLoadedStatus> statusMap) {
       print('$_logTag: ElectronicHorizonDataLoaderStatus updated.');
 
-      final lastUpdate = _lastRequestedElectronicHorizonUpdate;
+      final lastUpdate = _lastElectronicHorizon;
       if (lastUpdate == null) {
         return;
       }
@@ -168,15 +168,15 @@ class ElectronicHorizonHandler {
       statusMap.forEach((int level, ElectronicHorizonDataLoadedStatus status) {
         // The integer key represents the level of the most preferred path (0) and side paths (1, 2, ...).
         // This example shows only how to look at the fully loaded segments of the most preferred path (level 0).
-        if (level == 0 && status == ElectronicHorizonDataLoadedStatus.fullyLoaded) {
+        if (level == 0 &&
+            status == ElectronicHorizonDataLoadedStatus.fullyLoaded) {
           // Now, level 0 segments have been fully loaded and you can access their data.
           // The electronicHorizonPaths list contains segments from all levels, so you need to filter for level 0 below.
           // Skip this iteration to avoid null access.
-          if (lastUpdate.electronicHorizon == null) {
-            // `return` inside forEach exits the current callback and acts like `continue`, skipping to the next item.
+          if (lastUpdate == null) {
             return;
           }
-          final electronicHorizonPaths = lastUpdate.electronicHorizon!.paths;
+          final electronicHorizonPaths = lastUpdate.paths;
           for (var electronicHorizonPath in electronicHorizonPaths) {
             final electronicHorizonPathSegments = electronicHorizonPath.segments;
             for (var segment in electronicHorizonPathSegments) {
@@ -207,7 +207,7 @@ class ElectronicHorizonHandler {
                 }
                 for (RoadSign roadSign in roadSigns) {
                   GeoCoordinates roadSignCoordinates = _getGeoCoordinatesFromOffsetInMeters(
-                      segmentData.polyline, roadSign.offsetInMeters as double);
+                      segmentData.polyline, roadSign.offsetInMeters.toDouble());
                   print('$_logTag: RoadSign: type = ${roadSign.roadSignType.name}, '
                       'offsetInMeters = ${roadSign.offsetInMeters}, '
                       'lat/lon: ${roadSignCoordinates.latitude}/${roadSignCoordinates.longitude}, '

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 HERE Europe B.V.
+ * Copyright (C) 2019-2026 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ class EVRoutingExample: TapDelegate {
     private var disableOptimization = true
     private var waypoints = [Waypoint]()
     private var currentRouteCalculationTask: TaskHandle?
+    private var lastPlannedChargingStopWaypoint: Waypoint?
     
     // Metadata keys used when picking a charging station on the map.
     private let supplierNameMetadataKey = "supplierName"
@@ -105,12 +106,14 @@ class EVRoutingExample: TapDelegate {
             print("Previous route calculation still in progress.");
             return;
         }
-        
+
         chargingStationsIDs.removeAll()
 
         startGeoCoordinates = createRandomGeoCoordinatesInViewport()
         destinationGeoCoordinates = createRandomGeoCoordinatesInViewport()
         let plannedChargingStopWaypoint = createUserPlannedChargingStopWaypoint()
+        // Store the user-defined charging stop to verify whether it was included or modified in the route.
+        lastPlannedChargingStopWaypoint = plannedChargingStopWaypoint
 
         currentRouteCalculationTask = routingEngine.calculateRoute(with: [Waypoint(coordinates: startGeoCoordinates!),
                                             plannedChargingStopWaypoint,
@@ -127,6 +130,11 @@ class EVRoutingExample: TapDelegate {
             self.showRouteOnMap(route: route!)
             self.logRouteViolations(route: route!)
             self.logEVDetails(route: route!)
+            // Logs estimated energy consumption by EV vehicle per span.
+            self.logSpanConsumption(route: route!)
+            self.logSectionArrivalCharge(route: route!)
+            self.verifyAndLogPlannedStopOutcome(route: route!)
+            
             self.searchAlongARoute(route: route!)
         }
     }
@@ -471,7 +479,7 @@ class EVRoutingExample: TapDelegate {
         let metadata = Metadata()
         
         if let chargingPool = placeDetails.evChargingPool {
-            for station in chargingPool.chargingStations {                
+            for station in chargingPool.chargingStations {
                 if let supplierName = station.supplierName {
                     metadata.setString(key: supplierNameMetadataKey, value: supplierName)
                 }
@@ -632,6 +640,95 @@ class EVRoutingExample: TapDelegate {
             }))
 
             rootViewController.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    // Logs estimated energy consumption by EV vehicle per span.
+    private func logSpanConsumption(route: Route) {
+        var sectionIndex = 0
+        for section in route.sections {
+            var spanIndex = 0
+            for span in section.spans {
+                if let kWh = span.consumptionInKilowattHours {
+                    print("EVSpan: Section \(sectionIndex) span \(spanIndex) consumption: \(String(format: "%.3f", kWh)) kWh")
+                } else {
+                    print("EVSpan: Section \(sectionIndex) span \(spanIndex) consumption: n/a")
+                }
+                spanIndex += 1
+            }
+            sectionIndex += 1
+        }
+    }
+
+    // Logs remaining EV battery charge at the end of each route's section
+    // and verifies the vehicle reachability to the destination.
+    private func logSectionArrivalCharge(route: Route) {
+        var sectionIndex = 0
+        var lastSectionArrivalChargeKWh: Double?
+
+        for routeSection in route.sections {
+            let remainingChargeAtArrivalKWh = routeSection.arrivalPlace.chargeInKilowattHours
+
+            if let charge = remainingChargeAtArrivalKWh {
+                print("EVArrival: Section \(sectionIndex): remaining charge upon arrival = \(String(format: "%.2f", charge)) kWh")
+                lastSectionArrivalChargeKWh = charge
+            } else {
+                print("EVArrival: Section \(sectionIndex): remaining charge upon arrival not available")
+            }
+            sectionIndex += 1
+        }
+
+        if let finalCharge = lastSectionArrivalChargeKWh {
+            print("EVArrival: Final destination arrival charge = \(String(format: "%.2f", finalCharge)) kWh")
+            if finalCharge < 0.0 {
+                print("EVArrival: Destination not reachable with the current battery configuration.")
+            }
+        } else {
+            print("EVArrival: No arrival charge data available for any section in this route.")
+        }
+    }
+
+    // Verify and log whether the user-defined charging stop was included, adjusted,
+    // or omitted in the calculated route based on reachability and optimization.
+    private func verifyAndLogPlannedStopOutcome(route: Route) {
+        if lastPlannedChargingStopWaypoint == nil {
+            print("EVChargingStop: No user-planned charging stop to verify.")
+            return
+        }
+
+        let coordinateMatchRadiusMeters = 200.0
+        var isStopIncludedInRoute = false
+        var matchedChargingStationName: String?
+
+        let plannedStopCoordinates = lastPlannedChargingStopWaypoint!.coordinates
+
+        for routeSection in route.sections {
+            if let departureStation = routeSection.departurePlace.chargingStation {
+                let departureStationCoordinates = routeSection.departurePlace.mapMatchedCoordinates
+                if departureStationCoordinates.distance(to: plannedStopCoordinates) <= coordinateMatchRadiusMeters {
+                    isStopIncludedInRoute = true
+                    matchedChargingStationName = departureStation.name
+                    break
+                }
+            }
+
+            if let arrivalStation = routeSection.arrivalPlace.chargingStation {
+                let arrivalStationCoordinates = routeSection.arrivalPlace.mapMatchedCoordinates
+                if arrivalStationCoordinates.distance(to: plannedStopCoordinates) <= coordinateMatchRadiusMeters {
+                    isStopIncludedInRoute = true
+                    matchedChargingStationName = arrivalStation.name
+                    break
+                }
+            }
+        }
+
+        if isStopIncludedInRoute {
+            let suffix = matchedChargingStationName != nil ? " (≈ \(matchedChargingStationName!))." : "."
+            print("EVChargingStop: User-defined charging stop was included in the calculated route\(suffix)")
+            print("EVChargingStop: Verification result: Stop successfully matched within \(coordinateMatchRadiusMeters) meters.")
+        } else {
+            print("EVChargingStop: User-defined charging stop was adjusted or replaced during route optimization.")
+            print("EVChargingStop: Verification result: Planned stop coordinates did not match any charging station within \(coordinateMatchRadiusMeters) meters.")
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 HERE Europe B.V.
+ * Copyright (C) 2019-2026 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,11 +27,7 @@ import com.here.sdk.core.GeoCoordinates
 import com.here.sdk.core.GeoPolygon
 import com.here.sdk.core.LanguageCode
 import com.here.sdk.core.Point2D
-import com.here.sdk.core.engine.AuthenticationMode
-import com.here.sdk.core.engine.LayerConfiguration
-import com.here.sdk.core.engine.SDKBuildInformation
-import com.here.sdk.core.engine.SDKNativeEngine
-import com.here.sdk.core.engine.SDKOptions
+import com.here.sdk.core.engine.*
 import com.here.sdk.core.errors.InstantiationErrorException
 import com.here.sdk.maploader.CatalogUpdateInfo
 import com.here.sdk.maploader.CatalogUpdateProgressListener
@@ -161,16 +157,16 @@ class OfflineMapsExample(
             LanguageCode.DE_DE,
             object : DownloadableRegionsCallback {
                 override fun onCompleted(
-                    mapLoaderError: MapLoaderError?,
-                    list: MutableList<Region>?
+                    maploaderError: MapLoaderError?,
+                    regions: List<Region>?
                 ) {
-                    if (mapLoaderError != null) {
-                        val message = "Downloadable regions error: $mapLoaderError"
+                    if (maploaderError != null) {
+                        val message = "Downloadable regions error: $maploaderError"
                         snackbar.show(message)
                         return
                     }
                     // If error is null, it is guaranteed that the list will not be null.
-                    downloadableRegions = list!!
+                    downloadableRegions = regions!!
 
                     for (region in downloadableRegions) {
                         Log.d("RegionsCallback", region.name)
@@ -327,7 +323,7 @@ class OfflineMapsExample(
             object : SearchCallback {
                 override fun onSearchCompleted(
                     searchError: SearchError?,
-                    list: MutableList<Place>?
+                    places: List<Place>?
                 ) {
                     if (searchError != null) {
                         val message = "Search Error: $searchError"
@@ -336,11 +332,11 @@ class OfflineMapsExample(
                     }
                     // If error is null, it is guaranteed that the items will not be null.
                     val message =
-                        "Test search found " + list!!.size + " results. See log for details."
+                        "Test search found " + places!!.size + " results. See log for details."
                     snackbar.show(message)
 
                     // Log search results.
-                    for (place in list) {
+                    for (place in places) {
                         Log.d("Search", place.title + ", " + place.address.addressText)
                     }
                 }
@@ -357,16 +353,16 @@ class OfflineMapsExample(
 
         mapUpdater.retrieveCatalogsUpdateInfo(object : CatalogsUpdateInfoCallback {
             override fun apply(
-                mapLoaderError: MapLoaderError?,
-                catalogList: MutableList<CatalogUpdateInfo>?
+                error: MapLoaderError?,
+                catalogs: List<CatalogUpdateInfo>?
             ) {
-                if (mapLoaderError != null) {
-                    Log.e("CatalogUpdateCheck", "Error: " + mapLoaderError.name)
+                if (error != null) {
+                    Log.e("CatalogUpdateCheck", "Error: " + error.name)
                     return
                 }
 
                 // When error is null, then the list is guaranteed to be not null.
-                if (catalogList!!.isEmpty()) {
+                if (catalogs!!.isEmpty()) {
                     Log.d("CatalogUpdateCheck", "No map updates are available.")
                 }
 
@@ -379,7 +375,7 @@ class OfflineMapsExample(
                 // All map data is part of downloadable regions. A catalog contains references to the
                 // available regions. The map data for a region may differ based on the catalog that is used
                 // or on the version that is downloaded and installed.
-                for (catalogUpdateInfo in catalogList) {
+                for (catalogUpdateInfo in catalogs) {
                     Log.d(
                         "CatalogUpdateCheck",
                         "Catalog name:" + catalogUpdateInfo.installedCatalog.catalogIdentifier.hrn
@@ -464,7 +460,7 @@ class OfflineMapsExample(
         logInstalledRegions()
 
         // Note that this value will not change during the lifetime of an app.
-        val persistentMapStatus = mapDownloader.initialPersistentMapStatus
+        val persistentMapStatus = mapDownloader.getInitialPersistentMapStatus()
         if (persistentMapStatus != PersistentMapStatus.OK) {
             // Something went wrong after the app was closed the last time. It seems the offline map data is
             // corrupted. This can eventually happen, when an ongoing map download was interrupted due to a crash.
@@ -633,7 +629,7 @@ class OfflineMapsExample(
         }
 
         try {
-            val mapVersionHandle = mapUpdater.currentMapVersion
+            val mapVersionHandle = mapUpdater.getCurrentMapVersion()
             // Version string my look like "47.47,47.47".
             Log.d("Installed map version: ", mapVersionHandle.stringRepresentation(","))
         } catch (e: MapLoaderException) {
@@ -780,7 +776,7 @@ class OfflineMapsExample(
     private fun getInstalledRegionList(): List<InstalledRegion> {
         var installedRegionList: List<InstalledRegion> = ArrayList()
         try {
-            installedRegionList = mapDownloader.installedRegions
+            installedRegionList = mapDownloader.getInstalledRegions()
         } catch (e: MapLoaderException) {
             Log.d("Fetching installedRegions failed", e.error.toString())
         }

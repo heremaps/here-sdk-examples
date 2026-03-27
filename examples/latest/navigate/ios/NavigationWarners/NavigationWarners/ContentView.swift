@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2025 HERE Europe B.V.
+ * Copyright (C) 2022-2026 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ struct ContentView: View {
     
     @State private var mapView = MapView()
     @State private var navigationWarnersExample: NavigationWarnersExample?
+    @State private var isGuidanceRunning = false
     
     var body: some View {
          // Show the views on top of each other.
@@ -33,8 +34,10 @@ struct ContentView: View {
                  .edgesIgnoringSafeArea(.all)
              
              VStack {
-                 CustomButton(title: "Start guidance") {
-                     navigationWarnersExample?.onStartGuidanceClicked()
+                 CustomButton(title: isGuidanceRunning ? "Stop Guidance" : "Start Guidance") {
+                     if let navigationWarnersExample = navigationWarnersExample {
+                         isGuidanceRunning = navigationWarnersExample.onGuidanceButtonClicked()
+                     }
                  }
              }
          }

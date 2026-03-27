@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2025 HERE Europe B.V.
+ * Copyright (C) 2019-2026 HERE Europe B.V.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import com.here.sdk.core.GeoPolyline
 import com.here.sdk.core.GeoPolylineDirection
 import com.here.sdk.core.engine.*
 import com.here.sdk.core.errors.InstantiationErrorException
+import com.here.sdk.electronichorizon.ElectronicHorizon
 import com.here.sdk.electronichorizon.ElectronicHorizonDataLoadedStatus
 import com.here.sdk.electronichorizon.ElectronicHorizonDataLoader
 import com.here.sdk.electronichorizon.ElectronicHorizonDataLoaderResult
@@ -65,7 +66,7 @@ class ElectronicHorizonHandler {
 
     // Keep track of the last requested electronic horizon update to access its segments
     // when data loading is completed.
-    private var lastRequestedElectronicHorizonUpdate: ElectronicHorizonUpdate? = null
+    private var lastElectronicHorizon: ElectronicHorizon? = null
 
     init {
         electronicHorizonListener = createElectronicHorizonListener()
@@ -158,8 +159,8 @@ class ElectronicHorizonHandler {
                 Log.d(LOG_TAG, "ElectronicHorizonUpdate received.")
                 // Asynchronously start to load required data for the new segments.
                 // Use the ElectronicHorizonDataLoaderStatusListener to get notified when new data is arriving.
-                if (electronicHorizonUpdate != null) {
-                    lastRequestedElectronicHorizonUpdate = electronicHorizonUpdate
+                if (electronicHorizonUpdate?.electronicHorizon != null) {
+                    lastElectronicHorizon = electronicHorizonUpdate.electronicHorizon
                     electronicHorizonDataLoader.loadData(electronicHorizonUpdate)
                 }
 
@@ -174,7 +175,7 @@ class ElectronicHorizonHandler {
         return object : ElectronicHorizonDataLoaderStatusListener {
             override fun onElectronicHorizonDataLoaderStatusUpdated(electronicHorizonDataLoaderStatuses: Map<Int, ElectronicHorizonDataLoadedStatus>) {
                 Log.d(LOG_TAG, "ElectronicHorizonDataLoaderStatus updated.")
-                val lastUpdate = lastRequestedElectronicHorizonUpdate ?: return
+                val lastUpdate = lastElectronicHorizon ?: return
 
                 // Access the segments that were part of the last requested electronic horizon update.
                 // Newly added segments were requested to be loaded in the call to electronicHorizonDataLoader.loadData().
@@ -189,10 +190,10 @@ class ElectronicHorizonHandler {
                         // Now, level 0 segments have been fully loaded and you can access their data.
                         // The electronicHorizonPaths list contains segments from all levels, so you need to filter for level 0 below.
                         // Skip this iteration to avoid null access.
-                        if (lastUpdate.electronicHorizon == null) {
+                        if (lastUpdate == null) {
                             continue
                         }
-                        val electronicHorizonPaths = lastUpdate.electronicHorizon!!.paths
+                        val electronicHorizonPaths = lastUpdate.paths
                         for (electronicHorizonPath in electronicHorizonPaths) {
                             val electronicHorizonPathSegments = electronicHorizonPath.segments
                             for (segment in electronicHorizonPathSegments) {
