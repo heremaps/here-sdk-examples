@@ -24,46 +24,72 @@ import 'package:here_sdk/mapview.datasource.dart';
 
 class CustomRasterLayersExample {
   HereMapController _hereMapController;
-  MapLayer? _rasterMapLayerStyle;
-  RasterDataSource? _rasterDataSourceStyle;
   MapImage? _poiMapImage;
+
+  MapLayer? _outdoorLayer;
+  RasterDataSource? _outdoorDataSource;
+  MapLayer? _transportLayer;
+  RasterDataSource? _transportDataSource;
 
   CustomRasterLayersExample(this._hereMapController) {
     double distanceToEarthInMeters = 60 * 1000;
     MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
     _hereMapController.camera.lookAtPointWithMeasure(GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
 
-    String dataSourceName = "myRasterDataSourceOutdoorStyle";
-    _rasterDataSourceStyle = _createRasterDataSource(dataSourceName);
-    _rasterMapLayerStyle = _createMapLayer(dataSourceName);
+    _initializeRasterLayers();
 
-    // We want to start with the default map style.
-    _rasterMapLayerStyle?.setEnabled(false);
-
-    // Add a POI marker
+    // Add a POI marker at the camera location to demonstrate marker rendering above custom raster layers
     _addPOIMapMarker(GeoCoordinates(52.530932, 13.384915), 1);
   }
 
-  void enableButtonClicked() {
-    _rasterMapLayerStyle?.setEnabled(true);
-  }
-
-  void disableButtonClicked() {
-    _rasterMapLayerStyle?.setEnabled(false);
-  }
-
-  RasterDataSource _createRasterDataSource(String dataSourceName) {
-    // Note: As an example, below is an URL template of an outdoor layer from thunderforest.com.
+  void _initializeRasterLayers() {
+    // Note: As an example, below are URL templates of an outdoor and a transport layer from thunderforest.com.
     // On their web page you can register a key. Without setting a valid API key, the tiles will
     // show a watermark.
     // More details on the terms of usage can be found here: https://www.thunderforest.com/terms/
     // For example, your application must have working links to https://www.thunderforest.com
     // and https://www.osm.org/copyright.
-    // For the below template URL, please pay attention to the following attribution:
+    // For the below URL templates, please pay attention to the following attribution:
     // Maps © www.thunderforest.com, Data © www.osm.org/copyright.
     // Alternatively, choose another tile provider or use the (customizable) map styles provided by HERE.
-    String templateUrl = "https://tile.thunderforest.com/outdoors/{z}/{x}/{y}.png";
+    const String templateUrlOutdoors = 'https://tile.thunderforest.com/outdoors/{z}/{x}/{y}.png';
+    const String templateUrlTransport = 'https://tile.thunderforest.com/transport/{z}/{x}/{y}.png';
 
+    const String outdoorDataSourceName = 'myRasterDataSourceOutdoors';
+    _outdoorDataSource = _createRasterDataSourceWithTemplate(
+      outdoorDataSourceName,
+      templateUrlOutdoors,
+    );
+    _outdoorLayer = _createMapLayer(outdoorDataSourceName);
+    _outdoorLayer?.setEnabled(false);
+
+    const String transportDataSourceName = 'myRasterDataSourceTransport';
+    _transportDataSource = _createRasterDataSourceWithTemplate(
+      transportDataSourceName,
+      templateUrlTransport,
+    );
+    _transportLayer = _createMapLayer(transportDataSourceName);
+    _transportLayer?.setEnabled(false);
+  }
+
+  void enableOutdoorLayer() {
+    _outdoorLayer?.setEnabled(true);
+  }
+
+  void enableTransportLayer() {
+    _transportLayer?.setEnabled(true);
+  }
+
+  void disableOutdoorLayer() {
+    _outdoorLayer?.setEnabled(false);
+  }
+
+  void disableTransportLayer() {
+    _transportLayer?.setEnabled(false);
+  }
+
+  // Generic helper to create a raster data source for a given name and tile URL template.
+  RasterDataSource _createRasterDataSourceWithTemplate(String dataSourceName, String templateUrl) {
     // The storage levels available for this data source. Supported range [0, 31].
     List<int> storageLevels = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
     RasterDataSourceProviderConfiguration rasterProviderConfig = RasterDataSourceProviderConfiguration.withDefaults(
@@ -75,8 +101,9 @@ class CustomRasterLayersExample {
     // If you want to add transparent layers then set this to true.
     rasterProviderConfig.hasAlphaChannel = false;
 
-    // Raster tiles are stored in a separate cache on the device.
-    String path = "cache/raster/mycustomlayer";
+    // Use a dedicated cache path per data source to keep layers separated on disk.
+    // Raster tiles are stored in a separate cache, independent from the map cache used for vector data.
+    String path = 'cache/raster/' + dataSourceName;
     int maxDiskSizeInBytes = 1024 * 1024 * 128; // 128 MB
     RasterDataSourceCacheConfiguration cacheConfig = RasterDataSourceCacheConfiguration(path, maxDiskSizeInBytes);
 
@@ -90,7 +117,7 @@ class CustomRasterLayersExample {
   MapLayer _createMapLayer(String dataSourceName) {
     // The layer should be rendered on top of other layers including the "labels" layer
     // so that we don't overlap the raster layer over POI markers.
-    MapLayerPriority priority = MapLayerPriorityBuilder().renderedAfterLayer("labels").build();
+    MapLayerPriority priority = MapLayerPriorityBuilder().renderedAfterLayer('labels').build();
 
     // And it should be visible for all zoom levels. The minimum tilt level is 0 and maximum zoom level is 23.
     MapLayerVisibilityRange range = MapLayerVisibilityRange(MapCameraLimits.minTilt, MapCameraLimits.maxZoomLevel);
@@ -99,20 +126,22 @@ class CustomRasterLayersExample {
       // Build and add the layer to the map.
       MapLayer mapLayer = MapLayerBuilder()
           .forMap(_hereMapController.hereMapControllerCore) // mandatory parameter
-          .withName(dataSourceName + "Layer") // mandatory parameter
+          .withName(dataSourceName + 'Layer') // mandatory parameter
           .withDataSource(dataSourceName, MapContentType.rasterImage)
           .withPriority(priority)
           .withVisibilityRange(range)
           .build();
       return mapLayer;
     } on MapLayerBuilderInstantiationException {
-      throw Exception("MapLayer creation failed.");
+      throw Exception('MapLayer creation failed.');
     }
   }
 
   void onDestroy() {
-    _rasterMapLayerStyle?.destroy();
-    _rasterDataSourceStyle?.destroy();
+    _outdoorLayer?.destroy();
+    _outdoorDataSource?.destroy();
+    _transportLayer?.destroy();
+    _transportDataSource?.destroy();
   }
 
   Future<void> _addPOIMapMarker(GeoCoordinates geoCoordinates, int drawOrder) async {

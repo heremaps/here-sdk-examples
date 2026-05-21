@@ -13,6 +13,7 @@
 		83C837CB2C20AAE50004F54E /* heresdk.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 83C837CA2C20AAE50004F54E /* heresdk.xcframework */; };
 		83C837CC2C20AAE50004F54E /* heresdk.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 83C837CA2C20AAE50004F54E /* heresdk.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		83C837D12C20EFA70004F54E /* EVRoutingExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C837D02C20EFA70004F54E /* EVRoutingExample.swift */; };
+		E035CF512F7BB5F700AACB95 /* EVSearchExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = E035CF502F7BB5F700AACB95 /* EVSearchExample.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -36,6 +37,7 @@
 		83C837BF2C207F360004F54E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		83C837CA2C20AAE50004F54E /* heresdk.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = heresdk.xcframework; sourceTree = "<group>"; };
 		83C837D02C20EFA70004F54E /* EVRoutingExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EVRoutingExample.swift; sourceTree = "<group>"; };
+		E035CF502F7BB5F700AACB95 /* EVSearchExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EVSearchExample.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -70,6 +72,7 @@
 		83C837BA2C207F340004F54E /* EVRouting */ = {
 			isa = PBXGroup;
 			children = (
+				E035CF502F7BB5F700AACB95 /* EVSearchExample.swift */,
 				83C837BB2C207F340004F54E /* EVRoutingApp.swift */,
 				83C837BD2C207F340004F54E /* ContentView.swift */,
 				83C837D02C20EFA70004F54E /* EVRoutingExample.swift */,
@@ -157,6 +160,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				83C837BE2C207F340004F54E /* ContentView.swift in Sources */,
+				E035CF512F7BB5F700AACB95 /* EVSearchExample.swift in Sources */,
 				83C837BC2C207F340004F54E /* EVRoutingApp.swift in Sources */,
 				83C837D12C20EFA70004F54E /* EVRoutingExample.swift in Sources */,
 			);

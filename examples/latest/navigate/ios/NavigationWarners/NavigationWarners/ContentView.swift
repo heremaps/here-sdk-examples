@@ -25,6 +25,7 @@ struct ContentView: View {
     @State private var mapView = MapView()
     @State private var navigationWarnersExample: NavigationWarnersExample?
     @State private var isGuidanceRunning = false
+    @State private var useWarnerEngine = false
     
     var body: some View {
          // Show the views on top of each other.
@@ -37,6 +38,18 @@ struct ContentView: View {
                  CustomButton(title: isGuidanceRunning ? "Stop Guidance" : "Start Guidance") {
                      if let navigationWarnersExample = navigationWarnersExample {
                          isGuidanceRunning = navigationWarnersExample.onGuidanceButtonClicked()
+                     }
+                 }
+                 CustomButton(title: useWarnerEngine ? "Mode: WarnerEngine (Beta)" : "Mode: Per-Type Listeners",
+                              backgroundColor: Color.orange) {
+                     useWarnerEngine.toggle()
+                     navigationWarnersExample?.useWarnerEngine = useWarnerEngine
+                     // If guidance is running, restart it with the new mode.
+                     if isGuidanceRunning {
+                         if let example = navigationWarnersExample {
+                             isGuidanceRunning = example.onGuidanceButtonClicked() // stop
+                             isGuidanceRunning = example.onGuidanceButtonClicked() // start
+                         }
                      }
                  }
              }
@@ -59,13 +72,14 @@ private struct WrappedMapView: UIViewRepresentable {
 // A reusable button to keep the layout clean.
 struct CustomButton: View {
     let title: String
+    var backgroundColor: Color = Color(red: 0, green: 182/255, blue: 178/255)
     let action: () -> Void
     
     var body: some View {
         Button(action: action) {
             Text(title)
                 .padding()
-                .background(Color(red: 0, green: 182/255, blue: 178/255))
+                .background(backgroundColor)
                 .foregroundColor(.white)
                 .cornerRadius(5)
         }

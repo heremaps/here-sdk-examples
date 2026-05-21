@@ -111,10 +111,10 @@ class ElectronicHorizonHandler {
 
         // Create and add new delegates.
         electronicHorizonDelegate = createElectronicHorizonDelegate()
-        electronicHorizonEngine!.addElectronicHorizonListener(electronicHorizonListener: electronicHorizonDelegate)
+        electronicHorizonEngine!.addElectronicHorizonDelegate(_: electronicHorizonDelegate)
 
         electronicHorizonDataLoaderStatusDelegate = createElectronicHorizonDataLoaderStatusDelegate()
-        electronicHorizonDataLoader.addElectronicHorizonDataLoaderStatusListener(electronicHorizonListener: electronicHorizonDataLoaderStatusDelegate)
+        electronicHorizonDataLoader.addElectronicHorizonDataLoaderStatusDelegate(_: electronicHorizonDataLoaderStatusDelegate)
 
         print("\(Self.LOG_TAG): ElectronicHorizonEngine started.")
     }
@@ -152,10 +152,14 @@ class ElectronicHorizonHandler {
                 }
 
                 print("\(ElectronicHorizonHandler.LOG_TAG): ElectronicHorizonUpdate received.")
-                // Asynchronously start to load required data for the new segments.
-                // Use the ElectronicHorizonDataLoaderStatusDelegate to get notified when new data is arriving.
+                
+                // Store last known horizon if present.
                 if electronicHorizonUpdate.electronicHorizon != nil {
                     handler?.lastElectronicHorizon = electronicHorizonUpdate.electronicHorizon
+                }
+                // Asynchronously start to load required data for the new segments.
+                // Use the ElectronicHorizonDataLoaderStatusListener to get notified when new data is arriving.
+                if electronicHorizonUpdate.segmentChanges != nil {
                     handler?.electronicHorizonDataLoader.loadData(electronicHorizonUpdate: electronicHorizonUpdate)
                 }
             }
@@ -243,8 +247,8 @@ class ElectronicHorizonHandler {
     func stop() {
         guard let electronicHorizon = electronicHorizonEngine else { return }
 
-        electronicHorizon.removeElectronicHorizonListener(electronicHorizonListener: electronicHorizonDelegate)
-        electronicHorizonDataLoader.removeElectronicHorizonDataLoaderStatusListener(electronicHorizonListener: electronicHorizonDataLoaderStatusDelegate)
+        electronicHorizon.removeElectronicHorizonDelegate(_: electronicHorizonDelegate)
+        electronicHorizonDataLoader.removeElectronicHorizonDataLoaderStatusDelegate(_: electronicHorizonDataLoaderStatusDelegate)
         print("\(Self.LOG_TAG): ElectronicHorizonEngine stopped.")
     }
 

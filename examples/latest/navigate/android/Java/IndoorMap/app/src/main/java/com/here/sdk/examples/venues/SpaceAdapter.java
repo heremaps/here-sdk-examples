@@ -11,6 +11,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.here.sdk.venue.control.Venue;
 import com.here.sdk.venue.data.VenueGeometry;
 import com.here.sdk.venue.data.VenueInfo;
 
@@ -32,7 +33,6 @@ class SpaceViewHolder extends RecyclerView.ViewHolder{
 }
 
 public class SpaceAdapter extends RecyclerView.Adapter<SpaceViewHolder> {
-
     private static final String TAG = SpaceAdapter.class.getSimpleName();
     private Context context;
     private List<VenueGeometry> items;
@@ -54,7 +54,7 @@ public class SpaceAdapter extends RecyclerView.Adapter<SpaceViewHolder> {
         String spaceName, spaceAddress;
         VenueGeometry geometry = items.get(position);
         spaceName = geometry.getName() + ", " + geometry.getLevel().getName();
-        spaceAddress = geometry.getInternalAddress() != null? geometry.getInternalAddress().getAddress() : "";
+        spaceAddress = geometry.getInternalAddress() != null ? geometry.getInternalAddress().getAddress() : "";
         holder.spaceName.setText(spaceName);
         if(spaceAddress.isEmpty())
             holder.addressLayout.setVisibility(View.GONE);

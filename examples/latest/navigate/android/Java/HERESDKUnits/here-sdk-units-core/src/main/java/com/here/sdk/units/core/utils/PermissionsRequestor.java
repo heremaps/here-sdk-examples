@@ -21,6 +21,8 @@ package com.here.sdk.units.core.utils;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -28,16 +30,22 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.here.sdk.units.core.R;
+
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Convenience class to request the Android permissions as defined by manifest.
+ * It reads all permissions declared in the app's manifest, filters to those not yet granted, and requests them from the user.
  */
 public class PermissionsRequestor {
 
     private static final int PERMISSIONS_REQUEST_CODE = 42;
     private ResultListener resultListener;
     private final Activity activity;
+    private static boolean requestBackgroundLocation = false;
 
     public PermissionsRequestor(Activity activity) {
         this.activity = activity;
@@ -55,7 +63,7 @@ public class PermissionsRequestor {
         if (missingPermissions.length == 0) {
             resultListener.permissionsGranted();
         } else {
-            ActivityCompat.requestPermissions(activity, missingPermissions, PERMISSIONS_REQUEST_CODE);
+            requestPermissions(missingPermissions);
         }
     }
 
@@ -76,10 +84,18 @@ public class PermissionsRequestor {
             }
             if (packageInfo.requestedPermissions != null) {
                 for (String permission : packageInfo.requestedPermissions) {
+                    // Only runtime (dangerous) permissions can be requested.
+                    // Non-runtime permissions (e.g. androidx.car.app.*) are granted at
+                    // install time and must not be passed to requestPermissions(),
+                    // as they would be immediately denied, blocking all other grants.
+                    if (!permission.startsWith("android.permission.")) {
+                        continue;
+                    }
                     if (ContextCompat.checkSelfPermission(
                             activity, permission) != PackageManager.PERMISSION_GRANTED) {
+                        // ACCESS_BACKGROUND_LOCATION is needed on Android 10+ (API 29+)
                         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q &&
-                            permission.equals(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
+                                permission.equals(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
                             continue;
                         }
                         permissionList.add(permission);
@@ -92,7 +108,34 @@ public class PermissionsRequestor {
         return permissionList.toArray(new String[0]);
     }
 
-    public void onRequestPermissionsResult(int requestCode, @NonNull int[] grantResults) {
+    private void requestPermissions(String[] permissions) {
+        List<String> newPermissionList = new LinkedList<>();
+        for (final String permission : permissions) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && permission.equals(
+                    Manifest.permission.ACCESS_BACKGROUND_LOCATION) && !requestBackgroundLocation) {
+                // In >= Android 11 background location access cannot be requested at the same time
+                // as basic location access (fine or coarse) but user should be provided a way to
+                // enable it from application settings after basic location access has been granted.
+
+                // This flag enables this functionality in onRequestPermissionsResult().
+                requestBackgroundLocation = true;
+
+                if (permissions.length == 1) {
+                    // Only background access requested -> request it now.
+                    requestBackgroundLocationAccess();
+                }
+            } else {
+                newPermissionList.add(permission);
+            }
+        }
+
+        if (newPermissionList.size() > 0) {
+            ActivityCompat.requestPermissions(activity, newPermissionList.toArray(new String[0]), PERMISSIONS_REQUEST_CODE);
+        }
+        // else might be zero if only background location access was requested (see handling above).
+    }
+
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (resultListener == null) {
             return;
         }
@@ -103,16 +146,80 @@ public class PermissionsRequestor {
         }
 
         if (requestCode == PERMISSIONS_REQUEST_CODE) {
-            boolean allGranted = true;
-            for (int result : grantResults) {
-                allGranted &= result == PackageManager.PERMISSION_GRANTED;
+            boolean result = true;
+            for (int i = 0; i < permissions.length; i++) {
+                final String permission = permissions[i];
+                final int grantResult = grantResults[i];
+
+                if ((permission.equals(Manifest.permission.ACCESS_FINE_LOCATION) ||
+                        permission.equals(Manifest.permission.ACCESS_COARSE_LOCATION)) &&
+                        (grantResult == PackageManager.PERMISSION_DENIED)) {
+                    // Do not request background location if basic location access has been denied.
+                    requestBackgroundLocation = false;
+                }
+
+                result &= grantResult == PackageManager.PERMISSION_GRANTED;
             }
 
-            if (allGranted) {
+            if (requestBackgroundLocationAccess()) {
+                // Signal that not all permissions have been granted yet.
+                result = false;
+            }
+
+            if (result) {
                 resultListener.permissionsGranted();
             } else {
                 resultListener.permissionsDenied();
             }
         }
+    }
+
+    private boolean requestBackgroundLocationAccess() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R &&
+                requestBackgroundLocation &&
+                ActivityCompat.shouldShowRequestPermissionRationale(
+                        activity,
+                        Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+            builder.setTitle(R.string.here_sdk_units_background_access_dialog_title);
+            builder.setMessage(String.format(
+                    activity.getString(R.string.here_sdk_units_background_access_dialog_text),
+                    activity.getPackageManager().getBackgroundPermissionOptionLabel()));
+            builder.setPositiveButton(R.string.here_sdk_units_background_access_button_settings, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    requestPermissions(new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION});
+                    requestBackgroundLocation = false;
+                }
+            });
+            AlertDialog dialog = builder.create();
+            dialog.show();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public boolean isLocationAccessDenied() {
+        return ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_DENIED ||
+                ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_COARSE_LOCATION)
+                        == PackageManager.PERMISSION_DENIED;
+    }
+
+    public boolean isBackgroundLocationDenied() {
+        if (requestBackgroundLocation) {
+            return false;
+        }
+        return ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                == PackageManager.PERMISSION_DENIED;
+    }
+
+    public boolean isNotificationDenied() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            return ContextCompat.checkSelfPermission(activity, Manifest.permission.POST_NOTIFICATIONS)
+                    == PackageManager.PERMISSION_DENIED;
+        }
+        return false;
     }
 }

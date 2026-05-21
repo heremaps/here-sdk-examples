@@ -77,10 +77,10 @@ class RoutingExample {
 
   // Calculates a route with two waypoints (start / destination).
   Future<void> addRoute() async {
-    CarOptions carOptions = CarOptions();
+    RoutingOptions routingOptions = RoutingOptions();
 
     // Specifies whether route labels should be included in the route response.
-    carOptions.routeOptions.enableRouteLabels = true;
+    routingOptions.routeOptions.enableRouteLabels = true;
 
     clearMap();
 
@@ -91,7 +91,7 @@ class RoutingExample {
 
     List<Waypoint> waypoints = [startWaypoint, destinationWaypoint];
 
-    _routingEngine.calculateCarRoute(waypoints, carOptions,
+    _routingEngine.calculateRouteWithRoutingOptions(waypoints, routingOptions,
         (RoutingError? routingError, List<here.Route>? routeList) async {
       if (routingError == null) {
         // When error is null, it is guaranteed that the list is not empty.
@@ -114,10 +114,10 @@ class RoutingExample {
       return;
     }
 
-    CarOptions carOptions = new CarOptions();
+    RoutingOptions routingOptions = RoutingOptions();
 
     // Specifies whether route labels should be included in the route response.
-    carOptions.routeOptions.enableRouteLabels = true;
+    routingOptions.routeOptions.enableRouteLabels = true;
 
     clearMap();
 
@@ -130,7 +130,7 @@ class RoutingExample {
 
     List<Waypoint> waypoints = [startWaypoint, waypoint1, waypoint2, destinationWaypoint];
 
-    _routingEngine.calculateCarRoute(waypoints, carOptions,
+    _routingEngine.calculateRouteWithRoutingOptions(waypoints, routingOptions,
         (RoutingError? routingError, List<here.Route>? routeList) async {
       if (routingError == null) {
         // When error is null, it is guaranteed that the list is not empty.

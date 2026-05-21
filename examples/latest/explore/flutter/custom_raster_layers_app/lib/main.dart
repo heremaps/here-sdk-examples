@@ -64,9 +64,20 @@ class _MyAppState extends State<MyApp> {
         body: Stack(
           children: [
             HereMap(onMapCreated: _onMapCreated),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [button('Enable', _enableButtonClicked), button('Disable', _disableButtonClicked)],
+            // Top row of buttons to control raster layers.
+            Align(
+              alignment: Alignment.topCenter,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _button('Outdoors', _outdoorsButtonClicked),
+                    _button('Transport', _transportButtonClicked),
+                    _button('Disable', _disableButtonClicked),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
@@ -80,9 +91,9 @@ class _MyAppState extends State<MyApp> {
         _customRasterLayersExample = CustomRasterLayersExample(hereMapController);
 
         String message =
-            "For this example app, an outdoor layer from thunderforest.com is used. " +
+            "For this example app, outdoor and transport layers from thunderforest.com are used. " +
             "Without setting a valid API key, these raster tiles will show a watermark (terms of usage: https://www.thunderforest.com/terms/)." +
-            "\n Attribution for the outdoor layer: \n Maps © www.thunderforest.com, \n Data © www.osm.org/copyright.";
+            "\n Attribution for the outdoor and transport layers: \n Maps © www.thunderforest.com, \n Data © www.osm.org/copyright.";
 
         _showDialog("Note", message);
       } else {
@@ -90,13 +101,22 @@ class _MyAppState extends State<MyApp> {
       }
     });
   }
-
-  void _enableButtonClicked() {
-    _customRasterLayersExample?.enableButtonClicked();
+  
+  void _outdoorsButtonClicked() {
+    // Disable the transport layer to avoid overlapping of the layers.
+    _customRasterLayersExample?.disableTransportLayer();
+    _customRasterLayersExample?.enableOutdoorLayer();
+  }
+  
+  void _transportButtonClicked() {
+    // Disable the outdoor layer to avoid overlapping of the layers.
+    _customRasterLayersExample?.disableOutdoorLayer();
+    _customRasterLayersExample?.enableTransportLayer();
   }
 
   void _disableButtonClicked() {
-    _customRasterLayersExample?.disableButtonClicked();
+    _customRasterLayersExample?.disableOutdoorLayer();
+    _customRasterLayersExample?.disableTransportLayer();
   }
 
   @override
@@ -127,14 +147,14 @@ class _MyAppState extends State<MyApp> {
   }
 
   // A helper method to add a button on top of the HERE map.
-  Align button(String buttonLabel, Function callbackFunction) {
-    return Align(
-      alignment: Alignment.topCenter,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(foregroundColor: Colors.white, backgroundColor: Colors.lightBlueAccent),
-        onPressed: () => callbackFunction(),
-        child: Text(buttonLabel, style: TextStyle(fontSize: 20)),
+  Widget _button(String buttonLabel, VoidCallback callbackFunction) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        foregroundColor: Colors.white,
+        backgroundColor: Colors.lightBlueAccent,
       ),
+      onPressed: callbackFunction,
+      child: Text(buttonLabel, style: TextStyle(fontSize: 16)),
     );
   }
 

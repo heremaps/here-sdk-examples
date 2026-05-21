@@ -3,6 +3,12 @@ Note that the app does not show all available listeners. Take a look also at the
 see how to enhance applications with traffic information, dynamic routing or real location updates.
 This app uses only simulated location events.
 
+The app includes a toggle button ("Mode: Per-Type Listeners" / "Mode: WarnerEngine (Beta)") that lets you switch between two warning approaches at runtime:
+- **Per-Type Listeners**: The previous approach using individual delegates on the VisualNavigator for each warning type (e.g., SafetyCameraWarningDelegate, TruckRestrictionsWarningDelegate).
+- **WarnerEngine (Beta)**: The new unified approach using a single WarningDelegate on the WarnerEngine obtained from the VisualNavigator. All warning events are received through one callback and detailed warning data is looked up via the WarningsRegistry.
+
+Toggling while guidance is running will restart the session with the newly selected mode. Check the console output to see which warnings are received.
+
 Build instructions:
 -------------------
 

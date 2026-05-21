@@ -319,10 +319,10 @@ class RoutingWithAvoidanceOptionsExample {
   }
 
   void _calculateRoute(List<Waypoint> waypoints) {
-    CarOptions carOptions = CarOptions();
-    carOptions.avoidanceOptions = _getAvoidanceOptions();
+    RoutingOptions routingOptions = RoutingOptions();
+    routingOptions.avoidanceOptions = _getAvoidanceOptions();
 
-    _routingEngine.calculateCarRoute(waypoints, carOptions, (
+    _routingEngine.calculateRouteWithRoutingOptions(waypoints, routingOptions, (
       RoutingError? routingError,
       List<here.Route>? routeList,
     ) async {

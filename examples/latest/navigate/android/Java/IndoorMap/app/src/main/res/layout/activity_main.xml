@@ -1,16 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.here.sdk.examples.venues.MainActivity">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context="com.here.sdk.examples.venues.MainActivity"
+    android:id="@+id/mainActivity">
+
+
     <ProgressBar
-        android:layout_width="100dp"
-        android:layout_height="100dp"
         android:id="@+id/progress_bar"
+        android:layout_width="75dp"
+        android:layout_height="75dp"
         android:layout_gravity="center"
         android:elevation="10dp"
+        android:indeterminate="true"
         android:indeterminateDrawable="@drawable/progress_bar"
         android:visibility="gone"/>
     <LinearLayout

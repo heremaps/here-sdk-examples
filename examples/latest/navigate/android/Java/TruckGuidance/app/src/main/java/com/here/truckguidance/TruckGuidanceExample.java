@@ -39,7 +39,7 @@ import com.here.sdk.core.PickedPlace;
 import com.here.sdk.core.Point2D;
 import com.here.sdk.core.Rectangle2D;
 import com.here.sdk.core.Size2D;
-import com.here.sdk.core.TransportProfile;
+
 import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.gestures.GestureState;
 import com.here.sdk.mapview.LineCap;
@@ -82,7 +82,7 @@ import com.here.sdk.routing.RoutingError;
 import com.here.sdk.routing.Section;
 import com.here.sdk.routing.SectionNotice;
 import com.here.sdk.routing.Span;
-import com.here.sdk.routing.TruckOptions;
+import com.here.sdk.routing.RoutingOptions;
 import com.here.sdk.routing.ViolatedRestriction;
 import com.here.sdk.routing.Waypoint;
 import com.here.sdk.routing.ZoneCategory;
@@ -99,12 +99,8 @@ import com.here.sdk.transport.HazardousMaterial;
 import com.here.sdk.transport.TransportMode;
 import com.here.sdk.transport.TransportSpecification;
 import com.here.sdk.transport.TruckCategory;
-import com.here.sdk.transport.TruckSpecifications;
-import com.here.sdk.transport.TruckType;
 import com.here.sdk.transport.TunnelCategory;
-import com.here.sdk.transport.VehicleProfile;
 import com.here.sdk.transport.VehicleSpecification;
-import com.here.sdk.transport.VehicleType;
 import com.here.time.Duration;
 
 import java.util.ArrayList;
@@ -182,15 +178,15 @@ public class TruckGuidanceExample {
             throw new RuntimeException("Initialization of Navigator failed: " + e.error.name());
         }
 
-        // Create a TransportProfile instance.
-        // This profile is currently only used to retrieve speed limits during tracking mode
-        // when no route is set to the VisualNavigator instance.
-        // This profile needs to be set only once during the lifetime of the VisualNavigator
+        // Create a TransportSpecification to configure vehicle properties for tracking mode.
+        // Used to retrieve speed limits when no route is set to the VisualNavigator instance.
+        // This needs to be set only once during the lifetime of the VisualNavigator
         // instance - unless it should be updated.
         // Note that currently not all parameters are consumed, see API Reference for details.
-        TransportProfile transportProfile = new TransportProfile();
-        transportProfile.vehicleProfile = createVehicleProfile();
-        visualNavigator.setTrackingTransportProfile(transportProfile);
+        TransportSpecification transportSpecification = new TransportSpecification.TruckBuilder()
+                .withVehicleSpecification(createVehicleSpecification())
+                .build();
+        visualNavigator.setTrackingTransportSpecification(transportSpecification);
 
         // Optionally, set a filter to configure which icons to show for MapFeatures.VEHICLE_RESTRICTIONS.
         // By default, all icons are shown.
@@ -221,41 +217,32 @@ public class TruckGuidanceExample {
         static final Integer weightPerAxleInKilograms = null;
         static final Integer axleCount = null;
         static final Integer trailerCount = null;
-        static final TruckType truckType = TruckType.STRAIGHT;
         static final TruckCategory truckCategory = TruckCategory.STRAIGHT;
     }
 
-    // Used during tracking mode.
-    private VehicleProfile createVehicleProfile() {
-        VehicleProfile vehicleProfile = new VehicleProfile(VehicleType.TRUCK);
-        vehicleProfile.grossWeightInKilograms = MyTruckSpecs.grossWeightInKilograms;
-        vehicleProfile.heightInCentimeters = MyTruckSpecs.heightInCentimeters;
-        // The total length including all trailers (if any).
-        vehicleProfile.lengthInCentimeters = MyTruckSpecs.lengthInCentimeters;
-        vehicleProfile.widthInCentimeters = MyTruckSpecs.widthInCentimeters;
-        vehicleProfile.truckCategory = MyTruckSpecs.truckCategory;
-        vehicleProfile.trailerCount = MyTruckSpecs.trailerCount == null ? 0 : MyTruckSpecs.trailerCount;
-        vehicleProfile.axleCount = MyTruckSpecs.axleCount;
-        vehicleProfile.weightPerAxleInKilograms = MyTruckSpecs.weightPerAxleInKilograms;
-        return vehicleProfile;
-    }
-
-    // Used for route calculation.
-    private TruckSpecifications createTruckSpecifications() {
-        TruckSpecifications truckSpecifications = new TruckSpecifications();
+    // Creates a VehicleSpecification for this truck, used for both routing and tracking mode.
+    // Replaces the deprecated TruckSpecifications and VehicleProfile classes.
+    private VehicleSpecification createVehicleSpecification() {
         // When weight is not set, possible weight restrictions will not be taken into consideration
         // for route calculation. By default, weight is not set.
         // Specify the weight including trailers and shipped goods (if any).
-        truckSpecifications.grossWeightInKilograms = MyTruckSpecs.grossWeightInKilograms;
-        truckSpecifications.heightInCentimeters = MyTruckSpecs.heightInCentimeters;
-        truckSpecifications.widthInCentimeters = MyTruckSpecs.widthInCentimeters;
-        // The total length including all trailers (if any).
-        truckSpecifications.lengthInCentimeters = MyTruckSpecs.lengthInCentimeters;
-        truckSpecifications.weightPerAxleInKilograms = MyTruckSpecs.weightPerAxleInKilograms;
-        truckSpecifications.axleCount = MyTruckSpecs.axleCount;
-        truckSpecifications.trailerCount = MyTruckSpecs.trailerCount;
-        truckSpecifications.truckType = MyTruckSpecs.truckType;
-        return truckSpecifications;
+        VehicleSpecification.TruckBuilder truckBuilder = new VehicleSpecification.TruckBuilder()
+                .withGrossWeightInKilograms(MyTruckSpecs.grossWeightInKilograms)
+                .withHeightInCentimeters(MyTruckSpecs.heightInCentimeters)
+                .withWidthInCentimeters(MyTruckSpecs.widthInCentimeters)
+                // The total length including all trailers (if any).
+                .withLengthInCentimeters(MyTruckSpecs.lengthInCentimeters)
+                .withTruckCategory(MyTruckSpecs.truckCategory);
+        if (MyTruckSpecs.weightPerAxleInKilograms != null) {
+            truckBuilder.withWeightPerAxleInKilograms(MyTruckSpecs.weightPerAxleInKilograms);
+        }
+        if (MyTruckSpecs.axleCount != null) {
+            truckBuilder.withAxleCount(MyTruckSpecs.axleCount);
+        }
+        if (MyTruckSpecs.trailerCount != null) {
+            truckBuilder.withTrailerCount(MyTruckSpecs.trailerCount);
+        }
+        return truckBuilder.build();
     }
 
     // Configure the displayed vehicle restrictions.
@@ -270,25 +257,24 @@ public class TruckGuidanceExample {
         hazardousMaterials.add(HazardousMaterial.EXPLOSIVE);
         hazardousMaterials.add(HazardousMaterial.FLAMMABLE);
 
-        TruckSpecifications truckSpecifications = createTruckSpecifications();
-
+        // Build a VehicleSpecification with the truck's base specs, plus tunnel and hazmat filters.
         VehicleSpecification.TruckBuilder truckBuilder = new VehicleSpecification.TruckBuilder()
-                .withGrossWeightInKilograms(truckSpecifications.grossWeightInKilograms)
-                .withHeightInCentimeters(truckSpecifications.heightInCentimeters)
-                .withWidthInCentimeters(truckSpecifications.widthInCentimeters)
-                .withLengthInCentimeters(truckSpecifications.lengthInCentimeters)
+                .withGrossWeightInKilograms(MyTruckSpecs.grossWeightInKilograms)
+                .withHeightInCentimeters(MyTruckSpecs.heightInCentimeters)
+                .withWidthInCentimeters(MyTruckSpecs.widthInCentimeters)
+                .withLengthInCentimeters(MyTruckSpecs.lengthInCentimeters)
                 .withTruckCategory(MyTruckSpecs.truckCategory)
                 .withTunnelCategory(TunnelCategory.B)
                 .withHazardousMaterials(hazardousMaterials);
 
-        if (truckSpecifications.weightPerAxleInKilograms != null) {
-            truckBuilder.withWeightPerAxleInKilograms(truckSpecifications.weightPerAxleInKilograms);
+        if (MyTruckSpecs.weightPerAxleInKilograms != null) {
+            truckBuilder.withWeightPerAxleInKilograms(MyTruckSpecs.weightPerAxleInKilograms);
         }
-        if (truckSpecifications.axleCount != null) {
-            truckBuilder.withAxleCount(truckSpecifications.axleCount);
+        if (MyTruckSpecs.axleCount != null) {
+            truckBuilder.withAxleCount(MyTruckSpecs.axleCount);
         }
-        if (truckSpecifications.trailerCount != null) {
-            truckBuilder.withTrailerCount(truckSpecifications.trailerCount);
+        if (MyTruckSpecs.trailerCount != null) {
+            truckBuilder.withTrailerCount(MyTruckSpecs.trailerCount);
         }
 
         VehicleSpecification vehicleSpecification = truckBuilder.build();
@@ -716,7 +702,7 @@ public class TruckGuidanceExample {
             // Start tracking.
             visualNavigator.setRoute(null);
             startRendering();
-            // Note that during tracking the above set TransportProfile becomes active to receive
+            // Note that during tracking the above set TransportSpecification becomes active to receive
             // suitable speed limits.
             showDialog("Note", "Started tracking along the last calculated route.");
         } else {
@@ -782,9 +768,13 @@ public class TruckGuidanceExample {
         showRouteOnMap(lastCalculatedTruckRoute, truckRouteColor, truckRouteWidthInPixels);
     }
 
-    private TruckOptions createTruckOptions() {
-        TruckOptions truckOptions = new TruckOptions();
-        truckOptions.routeOptions.enableTolls = true;
+    private RoutingOptions createTruckOptions() {
+        RoutingOptions routingOptions = new RoutingOptions();
+        routingOptions.routeOptions.enableTolls = true;
+
+        // Set to truck mode so that routing accounts for truck-specific restrictions.
+        routingOptions.transportSpecification.transportMode = TransportMode.TRUCK;
+        routingOptions.transportSpecification.vehicleSpecification = createVehicleSpecification();
 
         AvoidanceOptions avoidanceOptions = new AvoidanceOptions();
         avoidanceOptions.roadFeatures = Arrays.asList(
@@ -795,10 +785,9 @@ public class TruckGuidanceExample {
                 RoadFeatures.CAR_SHUTTLE_TRAIN);
         // Exclude emission zones to not pollute the air in sensible inner city areas.
         avoidanceOptions.zoneCategories = Arrays.asList(ZoneCategory.ENVIRONMENTAL);
-        truckOptions.avoidanceOptions = avoidanceOptions;
-        truckOptions.truckSpecifications = createTruckSpecifications();
+        routingOptions.avoidanceOptions = avoidanceOptions;
 
-        return truckOptions;
+        return routingOptions;
     }
 
     // A route may contain several warnings, for example, when a certain route option could not be fulfilled.
@@ -838,7 +827,7 @@ public class TruckGuidanceExample {
                         // for example, when trucks are not allowed on this section in the given time frame.
                         continue;
                     }
-                    // The provided TruckSpecifications or TruckOptions are violated by the below values.
+                    // The provided VehicleSpecification or RoutingOptions are violated by the below values.
                     if (details.maxWeight != null) {
                         Log.d("ViolatedRestriction", "Section " + sectionNr + ": " +
                                 "Exceeded maxWeightInKilograms: " + details.maxWeight);
@@ -875,7 +864,7 @@ public class TruckGuidanceExample {
                     }
                     if (details.forbiddenTruckCategory != null) {
                         Log.d("ViolatedRestriction", "Section " + sectionNr + ": " +
-                                "ForbiddenTruckType is required: " + details.forbiddenTruckCategory.name());
+                                "ForbiddenTruckCategory is required: " + details.forbiddenTruckCategory.name());
                     }
                     if (details.timeRule != null) {
                         Log.d("ViolatedRestriction", "Section " + sectionNr + ": " +
@@ -996,7 +985,7 @@ public class TruckGuidanceExample {
         }
 
         // Optionally, hide irrelevant icons from the vehicle restriction layer that cross our route. If the route crosses
-        // such icons, then they are not applicable based on the provided TruckSpecifications.
+        // such icons, then they are not applicable based on the provided VehicleSpecification.
         // By default, the restriction layer shows all restrictions independent of specific vehicle specifications.
         // Note that the VisualNavigator, too, hides all icons that cross the route during guidance.
         // routeMapPolyline.setMapContentCategoriesToBlock(Arrays.asList(MapContentCategory.VEHICLE_RESTRICTION_ICONS));

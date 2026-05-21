@@ -154,14 +154,12 @@ public class VenueTapHandler {
             let imageName: String
             
             switch mode {
-            case .auto:
+            case .car:
                 imageName = "img_car"
             case .taxi:
                 imageName = "img_taxi"
-            case .motorcycle:
+            case .scooter:
                 imageName = "img_bike"
-            case .emergencyVehicle:
-                imageName = "img_ambulance"
             case .pedestrian:
                 imageName = "img_pedestrian"
                 pedestrianDirectionality = access.direction
@@ -343,7 +341,7 @@ public class VenueTapHandler {
         }
     }
 
-    func deselectGeometry() {
+    public func deselectGeometry() {
         // If the map marker is already on the screen, remove it.
         if let currentMarker = marker {
             mapView.mapScene.removeMapMarker(currentMarker)

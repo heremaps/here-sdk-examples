@@ -330,13 +330,13 @@ class RoutingWithAvoidanceOptionsExample : LongPressDelegate, TapDelegate {
         
         let startWaypoint = Waypoint(coordinates: startGeoCoordinates)
         let destinationWaypoint = Waypoint(coordinates: destinationGeoCoordinates)
-        var carOptions = CarOptions()
-        carOptions.avoidanceOptions = getAvoidanceOptions()
+        var routingOptions = RoutingOptions()
+        routingOptions.avoidanceOptions = getAvoidanceOptions()
         
         let waypoints: [Waypoint] = [startWaypoint, destinationWaypoint]
         
         routingEngine.calculateRoute(with: waypoints,
-                                     carOptions: carOptions) { (routingError, routes) in
+                                     options: routingOptions) { (routingError, routes) in
             
             if let error = routingError {
                 self.showDialog(title: "Error while calculating a route:", message: "\(error)")

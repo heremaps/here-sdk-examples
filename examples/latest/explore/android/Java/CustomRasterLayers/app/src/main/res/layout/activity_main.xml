@@ -18,14 +18,25 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
+
         <Button
+            android:id="@+id/btn_outdoors"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Enable"
-            android:onClick="enableButtonClicked" />
+            android:text="Outdoors"
+            android:onClick="outdoorsButtonClicked" />
 
         <Button
+            android:id="@+id/btn_transport"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Transport"
+            android:onClick="transportButtonClicked" />
+
+        <Button
+            android:id="@+id/btn_disable"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"

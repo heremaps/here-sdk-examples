@@ -54,10 +54,10 @@ class RoutingExample {
         let startWaypoint = Waypoint(coordinates: createRandomGeoCoordinatesAroundMapCenter())
         let destinationWaypoint = Waypoint(coordinates: createRandomGeoCoordinatesAroundMapCenter())
         let waypoints = [startWaypoint, destinationWaypoint]
-        let carOptions = CarOptions()
+        let routingOptions = RoutingOptions()
             
         routingEngine.calculateRoute(with: waypoints,
-                                     carOptions: carOptions) { (routingError, routes) in
+                                     options: routingOptions) { (routingError, routes) in
             if let error = routingError {
                 self.showDialog(title: "Error while calculating a route", message: "\(error)")
                 return

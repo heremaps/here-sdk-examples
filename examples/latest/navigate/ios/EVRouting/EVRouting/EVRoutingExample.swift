@@ -27,6 +27,7 @@ import SwiftUI
 class EVRoutingExample: TapDelegate {
     
     private let mapView: MapView
+    private let camera: MapCamera
     private let searchEngine: SearchEngine
     private var mapMarkers = [MapMarker]()
     private var mapPolylineList = [MapPolyline]()
@@ -50,9 +51,36 @@ class EVRoutingExample: TapDelegate {
     private let reservedConnectorsMetadataKey = "reservedConnectors"
     private let lastUpdatedMetadataKey = "lastUpdated"
     private let requiredChargingMetadataKey = "requiredCharging"
+
+    // Metadata keys for EVCP 3.0 data (used when isEVCP3 is true).
+    private let nameMetadataKey = "name"
+    private let cpoIdMetadataKey = "cpo_id"
+    private let subOperatorNameMetadataKey = "sub_operator_name"
+    private let emspNamesMetadataKey = "emsp_names"
+    private let facilityTypesMetadataKey = "facility_types"
+    private let parkingTypeMetadataKey = "parking_type"
+    private let energyMixMetadataKey = "energy_mix"
+    private let tariffCountMetadataKey = "tariff_count"
+    private let connectorGroupCountMetadataKey = "connector_group_count"
+    private let supportedVehicleCountMetadataKey = "supported_vehicle_count"
+    private let truckRestrictionsMetadataKey = "truck_restrictions"
+    private let restrictionCountMetadataKey = "restriction_count"
+    private let supportPhoneNumberMetadataKey = "support_phone_number"
+    private let timeZoneMetadataKey = "time_zone"
+    private let openingHoursMetadataKey = "opening_hours"
+
+    private var evSearchExample: EVSearchExample?
+
+    // This flag enables the use of the EVSearchEngine.
+    // This engine will look online for enhanced data for EV charging stations.
+    // Internally, the engine accesses the Electric Vehicle Charging Point (EVCP) 3.0 backend.
+    // Find more info here: https://www.here.com/docs/bundle/ev-charge-points-api-v3-developer-guide/page/README.html
+    // ATTENTION: This new API requires a separate license; find info more in the linked document.
+    private var isEVCP3 :Bool = false
     
     init(_ mapView: MapView) {
         self.mapView = mapView
+        camera = mapView.camera
 
         do {
             try routingEngine = RoutingEngine()
@@ -74,12 +102,22 @@ class EVRoutingExample: TapDelegate {
         } catch let engineInstantiationError {
             fatalError("Failed to initialize search engine. Cause: \(engineInstantiationError)")
         }
-        
+
+        // Create an instance of EVSearchExample to enable EVSearchEngine for enriching search results with EVCP 3.0 data.
+        evSearchExample = EVSearchExample()
+        if isEVCP3 {
+            // Attach EVSearchEngine to SearchEngine for EV enrichment.
+            // Place results will contain additional data such as operator, sub-operator and eMSPs info, facility types, parking type, energy mix.
+            if let evSearchEngine = evSearchExample?.getSearchEngine() {
+                searchEngine.setEVInterface(evcpInterface: evSearchEngine)
+            } else {
+                print("Failed to set EV interface: evSearchEngine is nil")
+            }
+        }
         // Setting a tap delegate to pick markers from map.
         mapView.gestures.tapDelegate = self
         
         // Configure the map.
-        let camera = mapView.camera
         let distanceInMeters = MapMeasure(kind: .distanceInMeters, value: 1000 * 10)
         camera.lookAt(point: GeoCoordinates(latitude: 52.520798, longitude: 13.409408),
                       zoom: distanceInMeters)
@@ -118,7 +156,7 @@ class EVRoutingExample: TapDelegate {
         currentRouteCalculationTask = routingEngine.calculateRoute(with: [Waypoint(coordinates: startGeoCoordinates!),
                                             plannedChargingStopWaypoint,
                                             Waypoint(coordinates: destinationGeoCoordinates!)],
-                                     evCarOptions: getEVCarOptions()) { (routingError, routes) in
+                                     options: getEVRoutingOptions()) { (routingError, routes) in
 
             if let error = routingError {
                 self.showDialog(title: "Error while calculating a route:", message: "\(error)")
@@ -163,7 +201,7 @@ class EVRoutingExample: TapDelegate {
         // Add a user-defined charging stop.
         //
         // Note: To specify a ChargingStop, you must also set totalCapacityInKilowattHours,
-        // initialChargeInKilowattHours, and chargingCurve using BatterySpecification in EVCarOptions.
+        // initialChargeInKilowattHours, and chargingCurve using BatterySpecifications in ElectricVehicleOptions.
         // If any of these values are missing, the route calculation will fail with an invalid parameter error.
         let plannedChargingStop = ChargingStop(
             powerInKilowatts: powerInKilowatts,
@@ -179,7 +217,7 @@ class EVRoutingExample: TapDelegate {
         return plannedChargingStopWaypoint
     }
     
-    private func applyEMSPPreferences(evCarOptions: inout EVCarOptions) {
+    private func applyEMSPPreferences(evOptions: inout ElectricVehicleOptions) {
         // You can get a list of all E-Mobility Service Providers and their partner IDs by using the request described here:
         // https://www.here.com/docs/bundle/ev-charge-points-api-developer-guide/page/topics/example-charging-station.html.
         // No more than 10 E-Mobility Service Providers should be specified.
@@ -196,49 +234,63 @@ class EVRoutingExample: TapDelegate {
         // Example code for an alternative provider.
         let alternativeProviders: [String] = ["12345678-0000-abcd-0000-000123456789"]
 
-        evCarOptions.evMobilityServiceProviderPreferences = EVMobilityServiceProviderPreferences()
-        evCarOptions.evMobilityServiceProviderPreferences.high = preferredProviders;
-        evCarOptions.evMobilityServiceProviderPreferences.low = leastPreferredProviders;
-        evCarOptions.evMobilityServiceProviderPreferences.medium = alternativeProviders;
+        evOptions.evMobilityServiceProviderPreferences = EVMobilityServiceProviderPreferences()
+        evOptions.evMobilityServiceProviderPreferences.high = preferredProviders;
+        evOptions.evMobilityServiceProviderPreferences.low = leastPreferredProviders;
+        evOptions.evMobilityServiceProviderPreferences.medium = alternativeProviders;
     }
     
-    private func getEVCarOptions() -> EVCarOptions {
-        var evCarOptions = EVCarOptions()
+    private func getEVRoutingOptions() -> RoutingOptions {
+        var routingOptions = RoutingOptions()
 
+        // Configure a data-driven EV energy consumption model that combines empirically
+        // derived vehicle parameters with speed and elevation characteristics.
+        var empiricalConsumptionModel = EmpiricalConsumptionModel()
         // The below three options are the minimum you must specify or routing will result in an error.
-        evCarOptions.consumptionModel.ascentConsumptionInWattHoursPerMeter = 9
-        evCarOptions.consumptionModel.descentRecoveryInWattHoursPerMeter = 4.3
-        evCarOptions.consumptionModel.freeFlowSpeedTable = [0: 0.239,
+        empiricalConsumptionModel.ascentConsumptionInWattHoursPerMeter = 9
+        empiricalConsumptionModel.descentRecoveryInWattHoursPerMeter = 4.3
+        empiricalConsumptionModel.freeFlowSpeedTable = [0: 0.239,
                                                             27: 0.239,
                                                             60: 0.196,
                                                             90: 0.238]
 
+        var evOptions = ElectricVehicleOptions()
+
+        // Set the empirical consumption model so the EV routing
+        // can estimate energy usage based on speed and elevation.
+        evOptions.empiricalConsumptionModel = empiricalConsumptionModel
+
         // Must be 0 for isoline calculation.
-        evCarOptions.routeOptions.alternatives = 0
+        routingOptions.routeOptions.alternatives = 0
 
         // Ensure that the vehicle does not run out of energy along the way
         // and charging stations are added as additional waypoints.
-        evCarOptions.ensureReachability = true
+        evOptions.ensureReachability = true
 
         // The below options are required when setting the ensureReachability option to true
         // (AvoidanceOptions need to be empty).
-        evCarOptions.avoidanceOptions = AvoidanceOptions()
-        evCarOptions.routeOptions.speedCapInMetersPerSecond = nil
-        evCarOptions.routeOptions.optimizationMode = .fastest
-        evCarOptions.batterySpecifications.connectorTypes = [.tesla, .iec62196Type1Combo, .iec62196Type2Combo]
-        evCarOptions.batterySpecifications.totalCapacityInKilowattHours = 80.0
-        evCarOptions.batterySpecifications.initialChargeInKilowattHours = 10.0
-        evCarOptions.batterySpecifications.targetChargeInKilowattHours = 72.0
-        evCarOptions.batterySpecifications.chargingCurve = [0: 239.0,
+        routingOptions.avoidanceOptions = AvoidanceOptions()
+        routingOptions.routeOptions.speedCapInMetersPerSecond = nil
+        routingOptions.routeOptions.optimizationMode = .fastest
+
+        var batterySpecifications = BatterySpecifications()
+        batterySpecifications.connectorTypes = [.tesla, .iec62196Type1Combo, .iec62196Type2Combo]
+        batterySpecifications.totalCapacityInKilowattHours = 80.0
+        batterySpecifications.initialChargeInKilowattHours = 10.0
+        batterySpecifications.targetChargeInKilowattHours = 72.0
+        batterySpecifications.chargingCurve = [0: 239.0,
                                                             64: 111.0,
                                                             72: 1.0]
+        evOptions.batterySpecifications = batterySpecifications
 
         // Apply EV mobility service provider preferences (eMSP).
-        applyEMSPPreferences(evCarOptions: &evCarOptions)
+        applyEMSPPreferences(evOptions: &evOptions)
+
+        routingOptions.evOptions = evOptions
 
         // Note: More EV options are available, the above shows only the minimum viable options.
 
-        return evCarOptions
+        return routingOptions
     }
 
     private func logEVDetails(route: Route) {
@@ -343,21 +395,47 @@ class EVRoutingExample: TapDelegate {
 
     // Perform a search for charging stations along the found route.
     private func searchAlongARoute(route: Route) {
-        // We specify here that we only want to include results
-        // within a max distance of xx meters from any point of the route.
         let routeCorridor = GeoCorridor(polyline: route.geometry.vertices,
                                         halfWidthInMeters: Int32(200))
         let queryArea = CategoryQuery.Area(inCorridor: routeCorridor, near: mapView.camera.state.targetCoordinates)
         let placeCategory = PlaceCategory(id: PlaceCategory.businessAndServicesEvChargingStation)
         let categoryQuery = CategoryQuery(placeCategory, area: queryArea)
-
-        let searchOptions = SearchOptions(languageCode: LanguageCode.enUs,
-                                          maxItems: 30)
+        let searchOptions = SearchOptions(languageCode: LanguageCode.enUs, maxItems: 30)
         enableEVChargingStationDetails()
-        
-        searchEngine.searchByCategory(categoryQuery,
-                            options: searchOptions,
-                            completion: onSearchCompleted)
+        searchEngine.searchByCategory(categoryQuery, options: searchOptions) { [weak self] searchError, items in
+            guard let self = self else { return }
+            if let searchError = searchError {
+                print("No charging stations found along the route. Error: \(searchError)")
+                return
+            }
+            guard let items = items else { return }
+            print("Search along route found \(items.count) charging stations:")
+            for place in items {
+                let details = place.details
+                let metadata: Metadata
+                if self.isEVCP3 {
+                    metadata = self.getMetadataForEVChargingLocation(details)
+                } else {
+                    metadata = self.getMetadataForEVChargingPools(details)
+                }
+                var foundExistingChargingStation = false
+                for mapMarker in self.mapMarkers {
+                    if let markerMetadata = mapMarker.metadata,
+                       let id = markerMetadata.getString(key: self.requiredChargingMetadataKey),
+                       id.caseInsensitiveCompare(place.id) == .orderedSame {
+                        print("Insert metadata to existing charging station: This charging station was already required to reach the destination (see red charging icon).")
+                        mapMarker.metadata = metadata
+                        foundExistingChargingStation = true
+                        break
+                    }
+                }
+                if !foundExistingChargingStation {
+                    if let geoCoordinates = place.geoCoordinates {
+                        self.addMapMarker(geoCoordinates: geoCoordinates, imageName: "charging.png", metadata: metadata)
+                    }
+                }
+            }
+        }
     }
     
     // Enable fetching online availability details for EV charging stations.
@@ -436,35 +514,46 @@ class EVRoutingExample: TapDelegate {
             showPickedChargingStationResults(topmostMapMarker)
         }
     }
-    
+
+    private func appendMetadataValue(_ details: inout [String], label: String, value: String?) {
+        if let value = value, !value.isEmpty {
+            details.append("\(label): \(value)")
+        }
+    }
+
     func showPickedChargingStationResults(_ mapMarker: MapMarker) {
         guard let metadata = mapMarker.metadata else {
             print("No metadata found for the picked marker.")
             return
         }
-
         var details: [String] = []
-
-        if let supplierName = metadata.getString(key: supplierNameMetadataKey) {
-            details.append("Name: \(supplierName)")
-        }
-        if let connectorCount = metadata.getString(key: connectorCountMetadataKey) {
-            details.append("Connector Count: \(connectorCount)")
-        }
-        if let availableConnectors = metadata.getString(key: availableConnectorsMetadataKey) {
-            details.append("Available Connectors: \(availableConnectors)")
-        }
-        if let occupiedConnectors = metadata.getString(key: occupiedConnectorsMetadataKey) {
-            details.append("Occupied Connectors: \(occupiedConnectors)")
-        }
-        if let outOfServiceConnectors = metadata.getString(key: outOfServiceConnectorsMetadataKey) {
-            details.append("Out of Service Connectors: \(outOfServiceConnectors)")
-        }
-        if let reservedConnectors = metadata.getString(key: reservedConnectorsMetadataKey) {
-            details.append("Reserved Connectors: \(reservedConnectors)")
-        }
-        if let lastUpdated = metadata.getString(key: lastUpdatedMetadataKey) {
-            details.append("Last Updated: \(lastUpdated)")
+        if isEVCP3 {
+            appendMetadataValue(&details, label: "Name", value: metadata.getString(key: nameMetadataKey))
+            appendMetadataValue(&details, label: "CPO ID", value: metadata.getString(key: cpoIdMetadataKey))
+            appendMetadataValue(&details, label: "Operator", value: metadata.getString(key: supplierNameMetadataKey))
+            appendMetadataValue(&details, label: "Sub-Operator", value: metadata.getString(key: subOperatorNameMetadataKey))
+            appendMetadataValue(&details, label: "eMSPs", value: metadata.getString(key: emspNamesMetadataKey))
+            appendMetadataValue(&details, label: "Facility Types", value: metadata.getString(key: facilityTypesMetadataKey))
+            appendMetadataValue(&details, label: "Parking Type", value: metadata.getString(key: parkingTypeMetadataKey))
+            appendMetadataValue(&details, label: "Energy Mix", value: metadata.getString(key: energyMixMetadataKey))
+            appendMetadataValue(&details, label: "Connector Count", value: metadata.getString(key: connectorCountMetadataKey))
+            appendMetadataValue(&details, label: "Tariff Count", value: metadata.getString(key: tariffCountMetadataKey))
+            appendMetadataValue(&details, label: "Connector Group Count", value: metadata.getString(key: connectorGroupCountMetadataKey))
+            appendMetadataValue(&details, label: "Supported Vehicle Count", value: metadata.getString(key: supportedVehicleCountMetadataKey))
+            appendMetadataValue(&details, label: "Truck Restrictions", value: metadata.getString(key: truckRestrictionsMetadataKey))
+            appendMetadataValue(&details, label: "Opening Hours", value: metadata.getString(key: openingHoursMetadataKey))
+            appendMetadataValue(&details, label: "Last Updated", value: metadata.getString(key: lastUpdatedMetadataKey))
+            appendMetadataValue(&details, label: "Restriction Count", value: metadata.getString(key: restrictionCountMetadataKey))
+            appendMetadataValue(&details, label: "Support Phone Number", value: metadata.getString(key: supportPhoneNumberMetadataKey))
+            appendMetadataValue(&details, label: "Time Zone", value: metadata.getString(key: timeZoneMetadataKey))
+        } else {
+            appendMetadataValue(&details, label: "Electronic Charging Pool Name", value: metadata.getString(key: supplierNameMetadataKey))
+            appendMetadataValue(&details, label: "Connector Count", value: metadata.getString(key: connectorCountMetadataKey))
+            appendMetadataValue(&details, label: "Available Connectors", value: metadata.getString(key: availableConnectorsMetadataKey))
+            appendMetadataValue(&details, label: "Occupied Connectors", value: metadata.getString(key: occupiedConnectorsMetadataKey))
+            appendMetadataValue(&details, label: "Out of Service Connectors", value: metadata.getString(key: outOfServiceConnectorsMetadataKey))
+            appendMetadataValue(&details, label: "Reserved Connectors", value: metadata.getString(key: reservedConnectorsMetadataKey))
+            appendMetadataValue(&details, label: "Last Updated", value: metadata.getString(key: lastUpdatedMetadataKey))
         }
 
         if !details.isEmpty {
@@ -506,6 +595,79 @@ class EVRoutingExample: TapDelegate {
         return metadata
     }
 
+    // Returns metadata for an EVChargingLocation, mapping all relevant fields to metadata keys.
+    // This is a Swift adaptation of the provided Java/Kotlin logic.
+    private func getMetadataForEVChargingLocation(_ details: Details) -> Metadata {
+        let metadata = Metadata()
+        guard let evChargingLocation = details.evChargingLocation else {
+            return metadata
+        }
+        // Name
+        if let name = evChargingLocation.name {
+            metadata.setString(key: nameMetadataKey, value: name)
+        }
+        // CPO ID (if available)
+        if let cpoId = evChargingLocation.cpoID {
+            metadata.setString(key: cpoIdMetadataKey, value: cpoId)
+        }
+        // Supplier/Operator Name
+        if let operatorName = evChargingLocation.evChargingOperator?.name {
+            metadata.setString(key: supplierNameMetadataKey, value: operatorName)
+        }
+        // Sub Operator Name
+        if let subOperatorName = evChargingLocation.evChargingSubOperator?.name {
+            metadata.setString(key: subOperatorNameMetadataKey, value: subOperatorName)
+        }
+        // eMSPs
+        let emsps = evChargingLocation.eMobilityServiceProviders
+        if !emsps.isEmpty {
+            let emspNames = emsps.compactMap { $0.name }.joined(separator: ", ")
+            metadata.setString(key: emspNamesMetadataKey, value: emspNames)
+        }
+        // Facility Types
+        let facilityTypes = evChargingLocation.facilityTypes
+        if !facilityTypes.isEmpty {
+            metadata.setString(key: facilityTypesMetadataKey, value: String(describing: facilityTypes))
+        }
+        // Parking Type
+        if let parkingType = evChargingLocation.parkingType {
+            metadata.setString(key: parkingTypeMetadataKey, value: String(describing: parkingType))
+        }
+        // Energy Mix
+        if let energyMix = evChargingLocation.energyMix {
+            metadata.setString(key: energyMixMetadataKey, value: String(describing: energyMix))
+        }
+        // Tariffs
+        let tariffs = evChargingLocation.tariffs
+        metadata.setString(key: tariffCountMetadataKey, value: String(tariffs.count))
+        // Connector Groups
+        let connectorGroups = evChargingLocation.connectorGroups
+        metadata.setString(key: connectorGroupCountMetadataKey, value: String(connectorGroups.count))
+        // Supported Vehicles
+        let supportedVehicles = evChargingLocation.supportedVehicles
+        metadata.setString(key: supportedVehicleCountMetadataKey, value: String(supportedVehicles.count))
+        // Truck Restrictions
+        if let truckRestrictions = evChargingLocation.truckRestrictions {
+            metadata.setString(key: truckRestrictionsMetadataKey, value: String(describing: truckRestrictions))
+        }
+        // Opening Hours
+        if let openingHours = evChargingLocation.openingHours {
+            metadata.setString(key: openingHoursMetadataKey, value: String(describing: openingHours))
+        }
+        // Restrictions
+        let restrictions = evChargingLocation.restrictions
+        metadata.setString(key: restrictionCountMetadataKey, value: String(restrictions.count))
+        // Support Phone Number
+        if let supportPhoneNumber = evChargingLocation.supportPhoneNumber {
+            metadata.setString(key: supportPhoneNumberMetadataKey, value: supportPhoneNumber)
+        }
+        // Time Zone
+        if let timeZone = evChargingLocation.timeZone {
+            metadata.setString(key: timeZoneMetadataKey, value: timeZone)
+        }
+        return metadata
+    }
+
     // Shows the reachable area for this electric vehicle from the current start coordinates and EV car options when the goal is
     // to consume 400 Wh or less (see options below).
     func showReachableArea() {
@@ -520,10 +682,10 @@ class EVRoutingExample: TapDelegate {
 
         // This finds the area that an electric vehicle can reach by consuming 400 Wh or less,
         // while trying to take the fastest possible route into any possible straight direction from start.
-        // Note: We have specified evCarOptions.routeOptions.optimizationMode = .fastest for EV car options above.
+        // Note: We have specified routingOptions.evOptions.ensureReachability and routingOptions.routeOptions.optimizationMode = .fastest for EV options above.
         let calculationOptions = IsolineOptions.Calculation(rangeType: .consumptionInWattHours, rangeValues: [400])
         let isolineOptions = IsolineOptions(calculationOptions: calculationOptions,
-                                            evCarOptions: getEVCarOptions())
+                                            routingOptions: getEVRoutingOptions())
 
         isolineRoutingEngine.calculateIsoline(center: Waypoint(coordinates: startGeoCoordinates),
                                        isolineOptions: isolineOptions) { (routingError, isolines) in
@@ -578,19 +740,36 @@ class EVRoutingExample: TapDelegate {
     }
 
     private func createRandomGeoCoordinatesInViewport() -> GeoCoordinates {
-        let geoBox = mapView.camera.boundingBox
-        let northEast = geoBox?.northEastCorner
-        let southWest = geoBox?.southWestCorner
+        let geoBox = getMapViewGeoBox()
+        let northEast = geoBox.northEastCorner
+        let southWest = geoBox.southWestCorner
 
-        guard let minLat = southWest?.latitude else { return mapView.camera.state.targetCoordinates }
-        guard let maxLat = northEast?.latitude else { return mapView.camera.state.targetCoordinates }
+        let minLat = southWest.latitude
+        let maxLat = northEast.latitude
         let lat = getRandom(min: minLat, max: maxLat)
 
-        guard let minLon = southWest?.longitude else { return mapView.camera.state.targetCoordinates }
-        guard let maxLon = northEast?.longitude else { return mapView.camera.state.targetCoordinates }
+        let minLon = southWest.longitude
+        let maxLon = northEast.longitude
         let lon = getRandom(min: minLon, max: maxLon)
 
         return GeoCoordinates(latitude: lat, longitude: lon)
+    }
+
+    private func getMapViewGeoBox() -> GeoBox {
+        if let cameraBoundingBox = camera.boundingBox {
+            return cameraBoundingBox
+        }
+
+        // Happens when map does not fully cover the viewport, e.g. due to tilt.
+        let center = getMapViewCenter()
+        let delta = 0.08
+        let southWestCorner = GeoCoordinates(latitude: center.latitude - delta, longitude: center.longitude - delta)
+        let northEastCorner = GeoCoordinates(latitude: center.latitude + delta, longitude: center.longitude + delta)
+        return GeoBox(southWestCorner: southWestCorner, northEastCorner: northEastCorner)
+    }
+
+    private func getMapViewCenter() -> GeoCoordinates {
+        return mapView.camera.state.targetCoordinates
     }
 
     private func getRandom(min: Double, max: Double) -> Double {

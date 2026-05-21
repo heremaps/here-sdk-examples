@@ -534,8 +534,8 @@ class NavigationWarners : BorderCrossingWarningDelegate,
         }
     }
 
-    // Conform to the RoadShieldsWarningDelegate.
-    // Notifies on road shields as they appear along the road.
+    // Conform to the RoadSignWarningDelegate.
+    // Notifies on road signs as they appear along the road.
     func onRoadSignWarningUpdated(_ roadSignWarning: RoadSignWarning) {
         let roadSignType: RoadSignType = roadSignWarning.type
         if (roadSignWarning.distanceType == DistanceType.ahead) {
@@ -768,7 +768,7 @@ class NavigationWarners : BorderCrossingWarningDelegate,
 
     private func setupRoadSignWarnings() {
         var roadSignWarningOptions = RoadSignWarningOptions()
-        // Set a filter to get only shields relevant for trucks and heavyTrucks.
+        // Set a filter to get only road signs relevant for trucks and heavyTrucks.
         roadSignWarningOptions.vehicleTypesFilter = [RoadSignVehicleType.trucks, RoadSignVehicleType.heavyTrucks]
         // Get notification distances for road sign alerts from visual navigator.
         var warningNotificationDistances = visualNavigator.getWarningNotificationDistances(warningType: WarningType.roadSign)

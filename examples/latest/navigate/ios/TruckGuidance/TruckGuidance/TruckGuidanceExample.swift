@@ -629,7 +629,7 @@ class TruckGuidanceExample: TapDelegate,
     func onShowRouteClicked() {
         // Calculate a truck route with the current waypoints and truck options
         routingEngine.calculateRoute(with: getCurrentWaypoints(),
-                                     truckOptions: createTruckOptions()) { (routingError, routes) in
+                                     options: createTruckRoutingOptions()) { (routingError, routes) in
             self.handleTruckRouteResults(routingError, routes)
         }
     }
@@ -742,9 +742,9 @@ class TruckGuidanceExample: TapDelegate,
         showRouteOnMap(route: lastCalculatedTruckRoute!, color: UIColor(red: 0, green: 0.6, blue: 1, alpha: 1), widthInPixels: 30)
     }
 
-    private func createTruckOptions() -> TruckOptions {
-        var truckOptions = TruckOptions()
-        truckOptions.routeOptions.enableTolls = true
+    private func createTruckRoutingOptions() -> RoutingOptions {
+        var routingOptions = RoutingOptions()
+        routingOptions.routeOptions.enableTolls = true
 
         var avoidanceOptions = AvoidanceOptions()
         avoidanceOptions.roadFeatures = [
@@ -756,10 +756,32 @@ class TruckGuidanceExample: TapDelegate,
         ]
         // Exclude emission zones to not pollute the air in sensitive inner city areas.
         avoidanceOptions.zoneCategories = [.environmental]
-        truckOptions.avoidanceOptions = avoidanceOptions
-        truckOptions.truckSpecifications = createTruckSpecifications()
+        routingOptions.avoidanceOptions = avoidanceOptions
 
-        return truckOptions
+        // Build the vehicle specification for a truck using the builder pattern.
+        let vehicleSpecBuilder = VehicleSpecification.TruckBuilder()
+            .withGrossWeightInKilograms(MyTruckSpecs.grossWeightInKilograms)
+            .withHeightInCentimeters(MyTruckSpecs.heightInCentimeters)
+            .withWidthInCentimeters(MyTruckSpecs.widthInCentimeters)
+            .withLengthInCentimeters(MyTruckSpecs.lengthInCentimeters)
+            .withTruckCategory(MyTruckSpecs.truckCategory)
+        if let weightPerAxle = MyTruckSpecs.weightPerAxleInKilograms {
+            vehicleSpecBuilder.withWeightPerAxleInKilograms(weightPerAxle)
+        }
+        if let axleCount = MyTruckSpecs.axleCount {
+            vehicleSpecBuilder.withAxleCount(axleCount)
+        }
+        if let trailerCount = MyTruckSpecs.trailerCount {
+            vehicleSpecBuilder.withTrailerCount(trailerCount)
+        }
+
+        // Use TransportSpecification.TruckBuilder to set the transport mode to truck
+        // and attach the vehicle specification.
+        routingOptions.transportSpecification = TransportSpecification.TruckBuilder()
+            .withVehicleSpecification(vehicleSpecBuilder.build())
+            .build()
+
+        return routingOptions
     }
 
     private func logRouteViolations(_ route: Route) {
@@ -782,7 +804,7 @@ class TruckGuidanceExample: TapDelegate,
                     let timeDependent = violatedRestriction.timeDependent
                     print("timeDependent: \(timeDependent)")
                     if let details = violatedRestriction.details {
-                        // The provided TruckSpecifications or TruckOptions are violated by the below values.
+                        // The provided VehicleSpecification or RoutingOptions are violated by the below values.
                         if let maxWeightInKilograms = details.maxWeight {
                             print("Section \(sectionNr): Exceeded maxWeightInKilograms: \(maxWeightInKilograms)")
                         }

@@ -37,11 +37,11 @@ class RouteCalculator {
                         calculateRouteCompletionHandler: @escaping CalculateRouteCompletionHandler) {
         
         // A route handle is required for the DynamicRoutingEngine to get updates on traffic-optimized routes.
-        var carOptions = CarOptions()
-        carOptions.routeOptions.enableRouteHandle = true
+        var routingOptions = RoutingOptions()
+        routingOptions.routeOptions.enableRouteHandle = true
         
         routingEngine.calculateRoute(with: [start, destination],
-                                     carOptions: carOptions,
+                                     options: routingOptions,
                                      completion: calculateRouteCompletionHandler)
     }
     

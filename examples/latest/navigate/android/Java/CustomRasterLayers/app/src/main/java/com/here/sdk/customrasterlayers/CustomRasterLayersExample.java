@@ -1,4 +1,4 @@
- /*
+/*
   * Copyright (C) 2019-2026 HERE Europe B.V.
   *
   * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,7 +21,7 @@
 
  import android.content.Context;
 
-import com.here.sdk.mapview.MapCameraLimits;
+ import com.here.sdk.mapview.MapCameraLimits;
  import com.here.sdk.core.Anchor2D;
  import com.here.sdk.core.GeoCoordinates;
  import com.here.sdk.mapview.MapCamera;
@@ -49,49 +49,75 @@ import com.here.sdk.mapview.MapCameraLimits;
      private static final float DEFAULT_DISTANCE_TO_EARTH_IN_METERS = 60 * 1000;
 
      private MapView mapView;
-     private MapLayer rasterMapLayerStyle;
-     private RasterDataSource rasterDataSourceStyle;
      private Context context;
 
-     public void onMapSceneLoaded(MapView mapView, Context context) {
+     private MapLayer outdoorLayer;
+     private RasterDataSource outdoorDataSource;
+     private MapLayer transportLayer;
+     private RasterDataSource transportDataSource;
+
+     public CustomRasterLayersExample(MapView mapView, Context context) {
          this.mapView = mapView;
          this.context = context;
+
+         initializeRasterLayers();
 
          MapCamera camera = mapView.getCamera();
          MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, DEFAULT_DISTANCE_TO_EARTH_IN_METERS);
          camera.lookAt(new GeoCoordinates(52.530932, 13.384915), mapMeasureZoom);
 
-         String dataSourceName = "myRasterDataSourceStyle";
-         rasterDataSourceStyle = createRasterDataSource(dataSourceName);
-         rasterMapLayerStyle = createMapLayer(dataSourceName);
-
-         // We want to start with the default map style.
-         rasterMapLayerStyle.setEnabled(false);
-
-         // Add a POI marker
+         // Add a POI marker at the camera location to demonstrate marker rendering above custom raster layers.
          addPOIMapMarker(new GeoCoordinates(52.530932, 13.384915));
      }
 
-     public void enableButtonClicked() {
-         rasterMapLayerStyle.setEnabled(true);
-     }
-
-     public void disableButtonClicked() {
-         rasterMapLayerStyle.setEnabled(false);
-     }
-
-     private RasterDataSource createRasterDataSource(String dataSourceName) {
-         // Note: As an example, below is an URL template of an outdoor layer from thunderforest.com.
+     private void initializeRasterLayers() {
+         // Note: As an example, below are URL templates of an outdoor and a transport layer from thunderforest.com.
          // On their web page you can register a key. Without setting a valid API key, the tiles will
          // show a watermark.
          // More details on the terms of usage can be found here: https://www.thunderforest.com/terms/
          // For example, your application must have working links to https://www.thunderforest.com
          // and https://www.osm.org/copyright.
-         // For the below template URL, please pay attention to the following attribution:
+         // For the below URL templates, please pay attention to the following attribution:
          // Maps © www.thunderforest.com, Data © www.osm.org/copyright.
          // Alternatively, choose another tile provider or use the (customizable) map styles provided by HERE.
-         String templateUrl = "https://tile.thunderforest.com/outdoors/{z}/{x}/{y}.png";
+         String templateUrlOutdoors = "https://tile.thunderforest.com/outdoors/{z}/{x}/{y}.png";
+         String templateUrlTransport = "https://tile.thunderforest.com/transport/{z}/{x}/{y}.png";
 
+         String outdoorDataSourceName = "myRasterDataSourceStyleOutdoors";
+         outdoorDataSource = createRasterDataSourceWithTemplate(
+                 outdoorDataSourceName,
+                 templateUrlOutdoors);
+         outdoorLayer = createMapLayer(outdoorDataSourceName);
+         outdoorLayer.setEnabled(false);
+
+         String transportDataSourceName = "myRasterDataSourceStyleTransport";
+         transportDataSource = createRasterDataSourceWithTemplate(
+                 transportDataSourceName,
+                 templateUrlTransport);
+         transportLayer = createMapLayer(transportDataSourceName);
+         transportLayer.setEnabled(false);
+     }
+
+     public void enableOutdoorLayer() {
+         outdoorLayer.setEnabled(true);
+     }
+
+     public void enableTransportLayer() {
+         transportLayer.setEnabled(true);
+     }
+
+     // Explicitly disable only the Outdoors layer.
+     public void disableOutdoorLayer() {
+         outdoorLayer.setEnabled(false);
+     }
+
+     // Explicitly disable only the Transport layer.
+     public void disableTransportLayer() {
+         transportLayer.setEnabled(false);
+     }
+
+     // Generic helper to create a raster data source for a given name and tile URL template.
+     private RasterDataSource createRasterDataSourceWithTemplate(String dataSourceName, String templateUrl) {
          // The storage levels available for this data source. Supported range [0, 31].
          List<Integer> storageLevels = Arrays.asList(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
          RasterDataSourceConfiguration.Provider rasterProviderConfig = new RasterDataSourceConfiguration.Provider(
@@ -102,9 +128,10 @@ import com.here.sdk.mapview.MapCameraLimits;
          // If you want to add transparent layers then set this to true.
          rasterProviderConfig.hasAlphaChannel = false;
 
-         // Raster tiles are stored in a separate cache on the device.
-         String path = "cache/raster/mycustomlayer";
-         long maxDiskSizeInBytes = 1024 * 1024 * 128; // 128
+         // Use a dedicated cache path per data source to keep layers separated on disk.
+         // Raster tiles are stored in a separate cache, independent from the map cache used for vector data.
+         String path = "cache/raster/" + dataSourceName;
+         long maxDiskSizeInBytes = 1024 * 1024 * 128; // 128 MB
          RasterDataSourceConfiguration.Cache cacheConfig = new RasterDataSourceConfiguration.Cache(path, maxDiskSizeInBytes);
 
          // Note that this will make the raster source already known to the passed map view.
@@ -136,8 +163,18 @@ import com.here.sdk.mapview.MapCameraLimits;
      }
 
      public void onDestroy() {
-         rasterMapLayerStyle.destroy();
-         rasterDataSourceStyle.destroy();
+         if (outdoorLayer != null) {
+             outdoorLayer.destroy();
+         }
+         if (outdoorDataSource != null) {
+             outdoorDataSource.destroy();
+         }
+         if (transportLayer != null) {
+             transportLayer.destroy();
+         }
+         if (transportDataSource != null) {
+             transportDataSource.destroy();
+         }
      }
 
      private void addPOIMapMarker(GeoCoordinates geoCoordinates) {

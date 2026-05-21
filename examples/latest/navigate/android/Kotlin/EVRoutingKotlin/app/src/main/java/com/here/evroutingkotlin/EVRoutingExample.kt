@@ -31,6 +31,7 @@ import com.here.sdk.core.Point2D
 import com.here.sdk.core.Rectangle2D
 import com.here.sdk.core.Size2D
 import com.here.sdk.core.errors.InstantiationErrorException
+import com.here.sdk.core.threading.TaskHandle
 import com.here.sdk.gestures.TapListener
 import com.here.sdk.mapview.LineCap
 import com.here.sdk.mapview.MapImageFactory
@@ -67,6 +68,8 @@ import com.here.sdk.routing.RoutingOptions
 import com.here.sdk.routing.Waypoint
 import com.here.sdk.search.CategoryQuery
 import com.here.sdk.search.Details
+import com.here.sdk.search.EVChargingLocation
+import com.here.sdk.search.EVSearchEngine
 import com.here.sdk.search.PlaceCategory
 import com.here.sdk.search.SearchCallback
 import com.here.sdk.search.SearchEngine
@@ -98,6 +101,35 @@ class EVRoutingExample(private val context: Context, private val mapView: MapVie
     private val LAST_UPDATED_METADATA_KEY = "last_updated"
     private val REQUIRED_CHARGING_METADATA_KEY = "required_charging"
 
+    // Metadata keys for EVCP 3.0 data (used when isEVCP3 is true)
+    private val NAME_METADATA_KEY = "name"
+    private val CPO_ID_METADATA_KEY = "cpo_id"
+    private val SUB_OPERATOR_NAME_METADATA_KEY = "sub_operator_name"
+    private val EMSP_NAMES_METADATA_KEY = "emsp_names"
+    private val FACILITY_TYPES_METADATA_KEY = "facility_types"
+    private val PARKING_TYPE_METADATA_KEY = "parking_type"
+    private val ENERGY_MIX_METADATA_KEY = "energy_mix"
+    private val TARIFF_COUNT_METADATA_KEY = "tariff_count"
+    private val CONNECTOR_GROUP_COUNT_METADATA_KEY = "connector_group_count"
+    private val SUPPORTED_VEHICLE_COUNT_METADATA_KEY = "supported_vehicle_count"
+    private val TRUCK_RESTRICTIONS_METADATA_KEY = "truck_restrictions"
+    private val RESTRICTION_COUNT_METADATA_KEY = "restriction_count"
+    private val SUPPORT_PHONE_NUMBER_METADATA_KEY = "support_phone_number"
+    private val TIME_ZONE_METADATA_KEY = "time_zone"
+    private val OPENING_HOURS_METADATA_KEY = "opening_hours"
+
+    private lateinit var evSearchExample: EVSearchExample
+
+    // This flag enables the use of the EVSearchEngine.
+    // This engine will look online for enhanced data for EV charging stations.
+    // Internally, the engine accesses the Electric Vehicle Charging Point (EVCP) 3.0 backend.
+    // Find more info here: https://www.here.com/docs/bundle/ev-charge-points-api-v3-developer-guide/page/README.html
+    // ATTENTION: This new API requires a separate license; find info more in the linked document.
+    private var isEVCP3 = false
+
+    // TaskHandle to track calculation progress and prevent concurrent route calculations.
+    private var currentRouteCalculationTask: TaskHandle? = null
+
     init {
         val camera = mapView.camera
         val distanceInMeters = (1000 * 10).toDouble()
@@ -125,6 +157,15 @@ class EVRoutingExample(private val context: Context, private val mapView: MapVie
             throw RuntimeException("Initialization of SearchEngine failed: " + e.error.name)
         }
 
+        // Create an instance of EVSearchExample to enable EVSearchEngine for enriching search results with EVCP 3.0 data.
+        evSearchExample = EVSearchExample()
+        // Attach EVSearchEngine to SearchEngine for EV enrichment
+        // Place results will contain additional data such as operator, sub-operator and eMSPs info, facility types, parking type, energy mix.
+        val evSearchEngine: EVSearchEngine? = evSearchExample.evSearchEngine
+        if (evSearchEngine != null && isEVCP3) {
+            searchEngine.setEVInterface(evSearchEngine)
+        }
+
         setTapGestureHandler()
     }
 
@@ -132,6 +173,10 @@ class EVRoutingExample(private val context: Context, private val mapView: MapVie
     // Includes a user waypoint to add an intermediate charging stop along the route,
     // in addition to charging stops that are added by the engine.
     fun addEVRouteButtonClicked() {
+        if (isRouteCalculationRunning()) {
+            Log.d("EVRoutingExample", "Previous route calculation still in progress.")
+            return
+        }
         chargingStationsIDs.clear()
 
         startGeoCoordinates = createRandomGeoCoordinatesInViewport()
@@ -145,7 +190,7 @@ class EVRoutingExample(private val context: Context, private val mapView: MapVie
             destinationWaypoint
         )
 
-        routingEngine.calculateRoute(
+        currentRouteCalculationTask = routingEngine.calculateRoute(
             waypoints, evRoutingOptions,
             CalculateRouteCallback { routingError, list ->
                 if (routingError != null) {
@@ -460,11 +505,17 @@ class EVRoutingExample(private val context: Context, private val mapView: MapVie
                 Log.d("Search", "Search along route found " + items!!.size + " charging stations:")
                 for (place in items) {
                     val details = place.details
-                    val metadata = getMetadataForEVChargingPools(details)
+                    val metadata: Metadata?
+                    if (isEVCP3) {
+                        metadata = getMetadataForEVChargingLocation(details)
+                    } else {
+                        metadata = getMetadataForEVChargingPools(details)
+                    }
                     var foundExistingChargingStation = false
                     for (mapMarker in mapMarkers) {
                         if (mapMarker.metadata != null) {
-                            val id = mapMarker.metadata!!.getString(REQUIRED_CHARGING_METADATA_KEY)
+                            val id =
+                                mapMarker.metadata!!.getString(REQUIRED_CHARGING_METADATA_KEY)
                             if (id != null && id.equals(place.id, ignoreCase = true)) {
                                 Log.d(
                                     "Search",
@@ -476,7 +527,6 @@ class EVRoutingExample(private val context: Context, private val mapView: MapVie
                             }
                         }
                     }
-
                     if (!foundExistingChargingStation) {
                         addMapMarker(place.geoCoordinates!!, R.drawable.charging, metadata)
                     }
@@ -540,39 +590,122 @@ class EVRoutingExample(private val context: Context, private val mapView: MapVie
         }
 
         val messageBuilder = StringBuilder()
-
-        appendMetadataValue(messageBuilder, "Name", metadata.getString(SUPPLIER_NAME_METADATA_KEY))
-        appendMetadataValue(
-            messageBuilder,
-            "Connector Count",
-            metadata.getString(CONNECTOR_COUNT_METADATA_KEY)
-        )
-        appendMetadataValue(
-            messageBuilder,
-            "Available Connectors",
-            metadata.getString(AVAILABLE_CONNECTORS_METADATA_KEY)
-        )
-        appendMetadataValue(
-            messageBuilder,
-            "Occupied Connectors",
-            metadata.getString(OCCUPIED_CONNECTORS_METADATA_KEY)
-        )
-        appendMetadataValue(
-            messageBuilder,
-            "Out of Service Connectors",
-            metadata.getString(OUT_OF_SERVICE_CONNECTORS_METADATA_KEY)
-        )
-        appendMetadataValue(
-            messageBuilder,
-            "Reserved Connectors",
-            metadata.getString(RESERVED_CONNECTORS_METADATA_KEY)
-        )
-        appendMetadataValue(
-            messageBuilder,
-            "Last Updated",
-            metadata.getString(LAST_UPDATED_METADATA_KEY)
-        )
-
+        if (isEVCP3) {
+            // Show all EVCP3 metadata fields
+            appendMetadataValue(messageBuilder, "Name", metadata.getString(NAME_METADATA_KEY))
+            appendMetadataValue(messageBuilder, "CPO ID", metadata.getString(CPO_ID_METADATA_KEY))
+            appendMetadataValue(
+                messageBuilder,
+                "Operator",
+                metadata.getString(SUPPLIER_NAME_METADATA_KEY)
+            )
+            appendMetadataValue(
+                messageBuilder,
+                "Sub-Operator",
+                metadata.getString(SUB_OPERATOR_NAME_METADATA_KEY)
+            )
+            appendMetadataValue(
+                messageBuilder,
+                "eMSPs",
+                metadata.getString(EMSP_NAMES_METADATA_KEY)
+            )
+            appendMetadataValue(
+                messageBuilder,
+                "Facility Types",
+                metadata.getString(FACILITY_TYPES_METADATA_KEY)
+            )
+            appendMetadataValue(
+                messageBuilder,
+                "Parking Type",
+                metadata.getString(PARKING_TYPE_METADATA_KEY)
+            )
+            appendMetadataValue(
+                messageBuilder,
+                "Energy Mix",
+                metadata.getString(ENERGY_MIX_METADATA_KEY)
+            )
+            appendMetadataValue(
+                messageBuilder,
+                "Connector Count",
+                metadata.getString(CONNECTOR_COUNT_METADATA_KEY)
+            )
+            appendMetadataValue(
+                messageBuilder,
+                "Tariff Count",
+                metadata.getString(TARIFF_COUNT_METADATA_KEY)
+            )
+            appendMetadataValue(
+                messageBuilder,
+                "Connector Group Count",
+                metadata.getString(CONNECTOR_GROUP_COUNT_METADATA_KEY)
+            )
+            appendMetadataValue(
+                messageBuilder,
+                "Supported Vehicle Count",
+                metadata.getString(SUPPORTED_VEHICLE_COUNT_METADATA_KEY)
+            )
+            appendMetadataValue(
+                messageBuilder,
+                "Truck Restrictions",
+                metadata.getString(TRUCK_RESTRICTIONS_METADATA_KEY)
+            )
+            appendMetadataValue(
+                messageBuilder,
+                "Opening Hours",
+                metadata.getString(OPENING_HOURS_METADATA_KEY)
+            )
+            appendMetadataValue(
+                messageBuilder,
+                "Restriction Count",
+                metadata.getString(RESTRICTION_COUNT_METADATA_KEY)
+            )
+            appendMetadataValue(
+                messageBuilder,
+                "Support Phone Number",
+                metadata.getString(SUPPORT_PHONE_NUMBER_METADATA_KEY)
+            )
+            appendMetadataValue(
+                messageBuilder,
+                "Time Zone",
+                metadata.getString(TIME_ZONE_METADATA_KEY)
+            )
+        } else {
+            appendMetadataValue(
+                messageBuilder,
+                "Electronic Charging Pool Name",
+                metadata.getString(SUPPLIER_NAME_METADATA_KEY)
+            )
+            appendMetadataValue(
+                messageBuilder,
+                "Connector Count",
+                metadata.getString(CONNECTOR_COUNT_METADATA_KEY)
+            )
+            appendMetadataValue(
+                messageBuilder,
+                "Available Connectors",
+                metadata.getString(AVAILABLE_CONNECTORS_METADATA_KEY)
+            )
+            appendMetadataValue(
+                messageBuilder,
+                "Occupied Connectors",
+                metadata.getString(OCCUPIED_CONNECTORS_METADATA_KEY)
+            )
+            appendMetadataValue(
+                messageBuilder,
+                "Out of Service Connectors",
+                metadata.getString(OUT_OF_SERVICE_CONNECTORS_METADATA_KEY)
+            )
+            appendMetadataValue(
+                messageBuilder,
+                "Reserved Connectors",
+                metadata.getString(RESERVED_CONNECTORS_METADATA_KEY)
+            )
+            appendMetadataValue(
+                messageBuilder,
+                "Last Updated",
+                metadata.getString(LAST_UPDATED_METADATA_KEY)
+            )
+        }
         if (messageBuilder.isNotEmpty()) {
             messageBuilder.append("\n\nFor a full list of attributes please refer to the API Reference.")
             showDialog("Charging station details", messageBuilder.toString())
@@ -631,6 +764,103 @@ class EVRoutingExample(private val context: Context, private val mapView: MapVie
         }
         return metadata
     }
+
+    // Helper to extract metadata from evChargingLocation (EVCP3)
+    private fun getMetadataForEVChargingLocation(details: Details?): Metadata {
+        val metadata = Metadata()
+        if (details != null && details.evChargingLocation != null) {
+            val evChargingLocation: EVChargingLocation = details.evChargingLocation!!
+
+            if (evChargingLocation.name != null) {
+                metadata.setString(NAME_METADATA_KEY, evChargingLocation.name!!)
+            }
+            if (evChargingLocation.cpoID != null) {
+                metadata.setString(CPO_ID_METADATA_KEY, evChargingLocation.cpoID!!)
+            }
+            if (evChargingLocation.evChargingOperator != null) {
+                metadata.setString(
+                    SUPPLIER_NAME_METADATA_KEY,
+                    evChargingLocation.evChargingOperator!!.name
+                )
+            }
+            if (evChargingLocation.evChargingSubOperator != null) {
+                metadata.setString(
+                    SUB_OPERATOR_NAME_METADATA_KEY,
+                    evChargingLocation.evChargingSubOperator!!.name
+                )
+            }
+            // eMSPs
+            val emsps = evChargingLocation.eMobilityServiceProviders
+            if (!emsps.isEmpty()) {
+                val emspNames = java.lang.StringBuilder()
+                for (emsp in emsps) {
+                    if (emsp != null) {
+                        if (emspNames.isNotEmpty()) emspNames.append(", ")
+                        emspNames.append(emsp.name)
+                    }
+                }
+                metadata.setString(EMSP_NAMES_METADATA_KEY, emspNames.toString())
+            }
+            // Facility Types
+            val facilityTypes = evChargingLocation.facilityTypes
+            if (!facilityTypes.isEmpty()) {
+                metadata.setString(FACILITY_TYPES_METADATA_KEY, facilityTypes.toString())
+            }
+            if (evChargingLocation.parkingType != null) {
+                metadata.setString(
+                    PARKING_TYPE_METADATA_KEY,
+                    evChargingLocation.parkingType.toString()
+                )
+            }
+            if (evChargingLocation.energyMix != null) {
+                metadata.setString(
+                    ENERGY_MIX_METADATA_KEY,
+                    evChargingLocation.energyMix.toString()
+                )
+            }
+            // Tariffs
+            val tariffs = evChargingLocation.tariffs
+            metadata.setString(TARIFF_COUNT_METADATA_KEY, tariffs.size.toString())
+            // Connector Groups
+            val connectorGroups = evChargingLocation.connectorGroups
+            metadata.setString(
+                CONNECTOR_GROUP_COUNT_METADATA_KEY,
+                connectorGroups.size.toString()
+            )
+            // Supported Vehicles
+            val supportedVehicles = evChargingLocation.supportedVehicles
+            metadata.setString(
+                SUPPORTED_VEHICLE_COUNT_METADATA_KEY,
+                supportedVehicles.size.toString()
+            )
+            if (evChargingLocation.truckRestrictions != null) {
+                metadata.setString(
+                    TRUCK_RESTRICTIONS_METADATA_KEY,
+                    evChargingLocation.truckRestrictions.toString()
+                )
+            }
+            if (evChargingLocation.openingHours != null) {
+                metadata.setString(
+                    OPENING_HOURS_METADATA_KEY,
+                    evChargingLocation.openingHours.toString()
+                )
+            }
+            // Restrictions
+            val restrictions = evChargingLocation.restrictions
+            metadata.setString(RESTRICTION_COUNT_METADATA_KEY, restrictions.size.toString())
+            if (evChargingLocation.supportPhoneNumber != null) {
+                metadata.setString(
+                    SUPPORT_PHONE_NUMBER_METADATA_KEY,
+                    evChargingLocation.supportPhoneNumber!!
+                )
+            }
+            if (evChargingLocation.timeZone != null) {
+                metadata.setString(TIME_ZONE_METADATA_KEY, evChargingLocation.timeZone!!)
+            }
+        }
+        return metadata
+    }
+
 
     // Shows the reachable area for this electric vehicle from the current start coordinates and EV car options when the goal is
     // to consume 400 Wh or less (see options below).
@@ -758,5 +988,9 @@ class EVRoutingExample(private val context: Context, private val mapView: MapVie
     // and shut it down for proper resource cleanup.
     fun dispose() {
         routingEngine.dispose()
+    }
+
+    private fun isRouteCalculationRunning(): Boolean {
+        return currentRouteCalculationTask != null && currentRouteCalculationTask?.isFinished == false
     }
 }

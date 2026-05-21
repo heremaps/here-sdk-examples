@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+    <EditText
+        android:id="@+id/spaceSearchBar"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="5dp"
+        android:background="@drawable/searchbar_background"
+        android:drawableStart="@drawable/search"
+        android:drawablePadding="10dp"
+        android:elevation="5dp"
+        android:hint="@string/indoor_routing_space_selection_hint"
+        android:textSize="16sp"
+        android:paddingEnd="30dp"
+        android:paddingStart="15dp"
+        />
+        <ImageView
+            android:id="@+id/clearIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/cross_mark"
+            android:elevation="10dp"
+            android:layout_marginTop="23dp"
+            android:layout_marginEnd="23dp"
+            android:layout_gravity="end"
+            android:visibility="visible"
+            />
+    </FrameLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/spaceListView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="5dp"
+        android:visibility="visible" />
+
+
+</LinearLayout>

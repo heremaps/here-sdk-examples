@@ -157,28 +157,30 @@ class TruckGuidanceExample {
     vehicleProfile.lengthInCentimeters = MyTruckSpecs.lengthInCentimeters;
     vehicleProfile.widthInCentimeters = MyTruckSpecs.widthInCentimeters;
     vehicleProfile.truckCategory = MyTruckSpecs.truckCategory;
-    vehicleProfile.trailerCount = MyTruckSpecs.trailerCount == null ? 0 : MyTruckSpecs.trailerCount;
+    vehicleProfile.trailerCount = MyTruckSpecs.trailerCount;
     vehicleProfile.axleCount = MyTruckSpecs.axleCount;
     vehicleProfile.weightPerAxleInKilograms = MyTruckSpecs.weightPerAxleInKilograms;
     return vehicleProfile;
   }
 
-  // Used for route calculation.
-  TruckSpecifications _createTruckSpecifications() {
-    TruckSpecifications truckSpecifications = new TruckSpecifications();
+  // Used for vehicle restriction filter and route calculation configuration.
+  // Note: Callers like _configureVehicleRestrictionFilter() may add additional
+  // properties (e.g. tunnelCategory, hazardousMaterials) to the returned object.
+  VehicleSpecification _createVehicleSpecification() {
+    VehicleSpecification vehicleSpecification = VehicleSpecification();
     // When weight is not set, possible weight restrictions will not be taken into consideration
     // for route calculation. By default, weight is not set.
     // Specify the weight including trailers and shipped goods (if any).
-    truckSpecifications.grossWeightInKilograms = MyTruckSpecs.grossWeightInKilograms;
-    truckSpecifications.heightInCentimeters = MyTruckSpecs.heightInCentimeters;
-    truckSpecifications.widthInCentimeters = MyTruckSpecs.widthInCentimeters;
+    vehicleSpecification.grossWeightInKilograms = MyTruckSpecs.grossWeightInKilograms;
+    vehicleSpecification.heightInCentimeters = MyTruckSpecs.heightInCentimeters;
+    vehicleSpecification.widthInCentimeters = MyTruckSpecs.widthInCentimeters;
     // The total length including all trailers (if any).
-    truckSpecifications.lengthInCentimeters = MyTruckSpecs.lengthInCentimeters;
-    truckSpecifications.weightPerAxleInKilograms = MyTruckSpecs.weightPerAxleInKilograms;
-    truckSpecifications.axleCount = MyTruckSpecs.axleCount;
-    truckSpecifications.trailerCount = MyTruckSpecs.trailerCount;
-    truckSpecifications.truckType = MyTruckSpecs.truckType;
-    return truckSpecifications;
+    vehicleSpecification.lengthInCentimeters = MyTruckSpecs.lengthInCentimeters;
+    vehicleSpecification.truckCategory = MyTruckSpecs.truckCategory;
+    vehicleSpecification.weightPerAxleInKilograms = MyTruckSpecs.weightPerAxleInKilograms;
+    vehicleSpecification.axleCount = MyTruckSpecs.axleCount;
+    vehicleSpecification.trailerCount = MyTruckSpecs.trailerCount;
+    return vehicleSpecification;
   }
 
   // Configure the displayed vehicle restrictions.
@@ -189,35 +191,16 @@ class TruckGuidanceExample {
   // based on their safety features and the potential danger posed by the goods
   // transported through them.
   void _configureVehicleRestrictionFilter() {
-    final truckSpecifications = _createTruckSpecifications();
-
-    final vehicleSpecification = VehicleSpecification();
-    vehicleSpecification.grossWeightInKilograms = truckSpecifications.grossWeightInKilograms;
-    vehicleSpecification.heightInCentimeters = truckSpecifications.heightInCentimeters;
-    vehicleSpecification.widthInCentimeters = truckSpecifications.widthInCentimeters;
-    vehicleSpecification.lengthInCentimeters = truckSpecifications.lengthInCentimeters;
-    vehicleSpecification.truckCategory = MyTruckSpecs.truckCategory;
+    final vehicleSpecification = _createVehicleSpecification();
     vehicleSpecification.tunnelCategory = TunnelCategory.b;
     vehicleSpecification.hazardousMaterials = [
       HazardousMaterial.explosive,
       HazardousMaterial.flammable,
     ];
 
-    if (truckSpecifications.weightPerAxleInKilograms != null) {
-      vehicleSpecification.weightPerAxleInKilograms = truckSpecifications.weightPerAxleInKilograms;
-    }
-
-    if (truckSpecifications.axleCount != null) {
-      vehicleSpecification.axleCount = truckSpecifications.axleCount;
-    }
-
-    if (truckSpecifications.trailerCount != null) {
-      vehicleSpecification.trailerCount = truckSpecifications.trailerCount;
-    }
-
     final transportSpecification = TransportSpecification();
-    transportSpecification.transportMode=TransportMode.truck;
-    transportSpecification.vehicleSpecification= vehicleSpecification;
+    transportSpecification.transportMode = TransportMode.truck;
+    transportSpecification.vehicleSpecification = vehicleSpecification;
     MapContentSettings.configureVehicleRestrictionFilterWithTransportSpecification(transportSpecification);
   }
 
@@ -596,7 +579,7 @@ class TruckGuidanceExample {
   }
 
   void onShowRouteButtonClicked() {
-    _routingEngine?.calculateTruckRoute(_getCurrentWaypoints(), _createTruckOptions(), (routingError, routes) {
+    _routingEngine?.calculateRouteWithRoutingOptions(_getCurrentWaypoints(), _createTruckRoutingOptions(), (routingError, routes) {
       _handleTruckRouteResults(routingError, routes!);
     });
   }
@@ -696,10 +679,10 @@ class TruckGuidanceExample {
     }
   }
 
-  // Returns a TruckOptions instance configured for truck routing.
-  TruckOptions _createTruckOptions() {
-    TruckOptions truckOptions = TruckOptions();
-    truckOptions.routeOptions.enableTolls = true;
+  // Returns a RoutingOptions instance configured for truck routing.
+  RoutingOptions _createTruckRoutingOptions() {
+    RoutingOptions routingOptions = RoutingOptions();
+    routingOptions.routeOptions.enableTolls = true;
 
     AvoidanceOptions avoidanceOptions = AvoidanceOptions();
     avoidanceOptions.roadFeatures = [
@@ -711,10 +694,15 @@ class TruckGuidanceExample {
     ];
     // Exclude emission zones to not pollute the air in sensitive inner city areas.
     avoidanceOptions.zoneCategories = [ZoneCategory.environmental];
-    truckOptions.avoidanceOptions = avoidanceOptions;
-    truckOptions.truckSpecifications = _createTruckSpecifications();
+    routingOptions.avoidanceOptions = avoidanceOptions;
 
-    return truckOptions;
+    // Set the transport mode to truck and attach the vehicle specification.
+    TransportSpecification transportSpecification = TransportSpecification();
+    transportSpecification.transportMode = TransportMode.truck;
+    transportSpecification.vehicleSpecification = _createVehicleSpecification();
+    routingOptions.transportSpecification = transportSpecification;
+
+    return routingOptions;
   }
 
   // A route may contain several warnings, for example, when a certain route option could not be fulfilled.
@@ -981,9 +969,8 @@ class MyTruckSpecs {
   static final int widthInCentimeters = 4 * 100; // 4 meters
   // The total length including all trailers (if any).
   static final int lengthInCentimeters = 8 * 100; // 8 meters
-  static const int weightPerAxleInKilograms = 2 * 1000; // 2kilograms
+  static final int weightPerAxleInKilograms = 2 * 1000; // 2 tons
   static final int axleCount = 4;
   static final int trailerCount = 2;
-  static final TruckType truckType = TruckType.straight;
   static final TruckCategory truckCategory = TruckCategory.straight;
 }

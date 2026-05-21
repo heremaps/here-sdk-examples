@@ -425,19 +425,16 @@ public class SearchExample {
     }
 
     private GeoBox getMapViewGeoBox() {
-        int mapViewWidthInPixels = mapView.getWidth();
-        int mapViewHeightInPixels = mapView.getHeight();
-        Point2D bottomLeftPoint2D = new Point2D(0, mapViewHeightInPixels);
-        Point2D topRightPoint2D = new Point2D(mapViewWidthInPixels, 0);
-
-        GeoCoordinates southWestCorner = mapView.viewToGeoCoordinates(bottomLeftPoint2D);
-        GeoCoordinates northEastCorner = mapView.viewToGeoCoordinates(topRightPoint2D);
-
-        if (southWestCorner == null || northEastCorner == null) {
-            throw new RuntimeException("GeoBox creation failed, corners are null.");
+        GeoBox cameraBoundingBox = camera.getBoundingBox();
+        if (cameraBoundingBox != null) {
+            return cameraBoundingBox;
         }
 
-        // Note: This algorithm assumes an unrotated map view.
+        // Happens when map does not fully cover the viewport, e.g. due to tilt.
+        GeoCoordinates center = getMapViewCenter();
+        double delta = 0.08;
+        GeoCoordinates southWestCorner = new GeoCoordinates(center.latitude - delta, center.longitude - delta);
+        GeoCoordinates northEastCorner = new GeoCoordinates(center.latitude + delta, center.longitude + delta);
         return new GeoBox(southWestCorner, northEastCorner);
     }
 
@@ -472,3 +469,4 @@ public class SearchExample {
         builder.show();
     }
 }
+

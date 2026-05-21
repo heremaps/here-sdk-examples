@@ -143,6 +143,8 @@ public class NavigationWarnersExample {
     private LocationSimulator locationSimulator;
     private boolean isGuidanceRunning = false;
     private RouteProgress currentRouteProgress;
+    private final WarnerEngineExample warnerEngineExample = new WarnerEngineExample();
+    private boolean useWarnerEngine = false;
 
     public NavigationWarnersExample(Context context, MapView mapView) {
         this.context = context;
@@ -163,6 +165,14 @@ public class NavigationWarnersExample {
 
     public boolean isGuidanceRunning() {
         return isGuidanceRunning;
+    }
+
+    public void setUseWarnerEngine(boolean useWarnerEngine) {
+        this.useWarnerEngine = useWarnerEngine;
+    }
+
+    public boolean isUsingWarnerEngine() {
+        return useWarnerEngine;
     }
 
     public void startGuidance(GeoCoordinates startGeoCoordinates,
@@ -188,13 +198,24 @@ public class NavigationWarnersExample {
             locationSimulator = null;
         }
 
+        if (useWarnerEngine) {
+            warnerEngineExample.stopWarnerEngine();
+        }
         visualNavigator.setRoute(null);
         visualNavigator.stopRendering();
         isGuidanceRunning = false;
     }
 
     private void startGuidanceWithRoute(Route route) {
-        setupListeners(visualNavigator);
+        if (useWarnerEngine) {
+            // Use the unified WarnerEngine approach (beta).
+            warnerEngineExample.setupWarnerEngine(visualNavigator);
+            Log.d(TAG, "Using WarnerEngine (beta) for unified warning handling.");
+        } else {
+            // Use the previous per-type listener approach.
+            setupListeners(visualNavigator);
+            Log.d(TAG, "Using per-type listeners for warning handling.");
+        }
         visualNavigator.startRendering(mapView);
         visualNavigator.setRoute(route);
         setupLocationSource(route);
@@ -527,7 +548,7 @@ public class NavigationWarnersExample {
         });
 
         RoadSignWarningOptions roadSignWarningOptions = new RoadSignWarningOptions();
-        // Set a filter to get only shields relevant for TRUCKS and HEAVY_TRUCKS.
+        // Set a filter to get only road signs relevant for TRUCKS and HEAVY_TRUCKS.
         roadSignWarningOptions.vehicleTypesFilter = Arrays.asList(RoadSignVehicleType.TRUCKS, RoadSignVehicleType.HEAVY_TRUCKS);
 
         // Get notification distances for road sign alerts from visual navigator.
@@ -543,7 +564,7 @@ public class NavigationWarnersExample {
         visualNavigator.setWarningNotificationDistances(WarningType.ROAD_SIGN, warningNotificationDistances);
         visualNavigator.setRoadSignWarningOptions(roadSignWarningOptions);
 
-        // Notifies on road shields as they appear along the road.
+        // Notifies on road signs as they appear along the road.
         visualNavigator.setRoadSignWarningListener(new RoadSignWarningListener() {
             @Override
             public void onRoadSignWarningUpdated(@NonNull RoadSignWarning roadSignWarning) {

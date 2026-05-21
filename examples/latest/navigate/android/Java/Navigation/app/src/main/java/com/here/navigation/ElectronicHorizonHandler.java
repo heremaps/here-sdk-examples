@@ -164,6 +164,9 @@ public class ElectronicHorizonHandler {
                 // Use the ElectronicHorizonDataLoaderStatusListener to get notified when new data is arriving.
                 if (electronicHorizonUpdate.electronicHorizon != null) {
                     lastElectronicHorizon = electronicHorizonUpdate.electronicHorizon;
+                }
+                // Load segment changes if present.
+                if (electronicHorizonUpdate.segmentChanges != null) {
                     electronicHorizonDataLoader.loadData(electronicHorizonUpdate);
                 }
             }
@@ -179,6 +182,10 @@ public class ElectronicHorizonHandler {
             public void onElectronicHorizonDataLoaderStatusUpdated(@NonNull Map<Integer, ElectronicHorizonDataLoadedStatus> statusMap) {
                 Log.d(LOG_TAG, "ElectronicHorizonDataLoaderStatus updated.");
 
+                // Use stored lastElectronicHorizon to iterate paths, skip if null.
+                if (lastElectronicHorizon == null) {
+                    return;
+                }
                 // Access the segments that were part of the last requested electronic horizon update.
                 // Newly added segments were requested to be loaded in the call to electronicHorizonDataLoader.loadData().
                 // Internally, the data loader keeps track of which segments were requested and keeps updating

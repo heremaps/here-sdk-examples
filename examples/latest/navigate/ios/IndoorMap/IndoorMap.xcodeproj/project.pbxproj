@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		426320622ECDC87A006F0329 /* IndoorRoutingUIController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 426320612ECDC867006F0329 /* IndoorRoutingUIController.swift */; };
+		42F613382EE85D1200903BD8 /* IndoorRoutingHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42F613372EE85D1200903BD8 /* IndoorRoutingHandler.swift */; };
 		83E589CE2CF0DD3F004E83D3 /* heresdk.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 83E589CD2CF0DD3F004E83D3 /* heresdk.xcframework */; };
 		83E589CF2CF0DD3F004E83D3 /* heresdk.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 83E589CD2CF0DD3F004E83D3 /* heresdk.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AC8E71EC2A8CF2A6004C3538 /* CustomCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC8E71EA2A8CF2A6004C3538 /* CustomCell.swift */; };
@@ -48,6 +50,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		426320612ECDC867006F0329 /* IndoorRoutingUIController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndoorRoutingUIController.swift; sourceTree = "<group>"; };
+		42F613372EE85D1200903BD8 /* IndoorRoutingHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndoorRoutingHandler.swift; sourceTree = "<group>"; };
 		83E589CD2CF0DD3F004E83D3 /* heresdk.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = heresdk.xcframework; sourceTree = "<group>"; };
 		AC8E71EA2A8CF2A6004C3538 /* CustomCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomCell.swift; sourceTree = "<group>"; };
 		AC8E71EB2A8CF2A6004C3538 /* CustomCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CustomCell.xib; sourceTree = "<group>"; };
@@ -106,6 +110,8 @@
 		C865242320B7E70F00392D48 /* IndoorMap */ = {
 			isa = PBXGroup;
 			children = (
+				426320612ECDC867006F0329 /* IndoorRoutingUIController.swift */,
+				42F613372EE85D1200903BD8 /* IndoorRoutingHandler.swift */,
 				B02A919224B62C7700571C9D /* VenueTableViewCell.xib */,
 				B0479B9624B5D16600EDEEEA /* VenueSearch.xib */,
 				B0479B9324B5D0C500EDEEEA /* VenueSearch.swift */,
@@ -223,11 +229,13 @@
 				B058833D2469623700DEF143 /* LevelSwitcher.swift in Sources */,
 				AC8E71EC2A8CF2A6004C3538 /* CustomCell.swift in Sources */,
 				B058833A2469623700DEF143 /* DrawingSwitcher.swift in Sources */,
+				426320622ECDC87A006F0329 /* IndoorRoutingUIController.swift in Sources */,
 				B02A919624B70C0400571C9D /* VenueTableViewCell.swift in Sources */,
 				B058833B2469623700DEF143 /* LevelSwitcherDelegate.swift in Sources */,
 				C865242520B7E70F00392D48 /* AppDelegate.swift in Sources */,
 				B058833C2469623700DEF143 /* VenueTapHandler.swift in Sources */,
 				B0479B9524B5D0C500EDEEEA /* VenueSearch.swift in Sources */,
+				42F613382EE85D1200903BD8 /* IndoorRoutingHandler.swift in Sources */,
 				B058833E2469623700DEF143 /* DrawingSwitcherDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

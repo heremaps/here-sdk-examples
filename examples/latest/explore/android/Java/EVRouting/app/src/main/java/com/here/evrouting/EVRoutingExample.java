@@ -27,7 +27,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 
 import com.here.sdk.core.Color;
-import com. here.sdk.core.Metadata;
+import com.here.sdk.core.Metadata;
 import com.here.sdk.core.GeoBox;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.core.GeoCorridor;
@@ -83,7 +83,15 @@ import com.here.sdk.routing.Span;
 import com.here.sdk.routing.Waypoint;
 import com.here.sdk.search.CategoryQuery;
 import com.here.sdk.search.Details;
+import com.here.sdk.search.EVAccessRestrictionReason;
+import com.here.sdk.search.EVChargingConnectorGroup;
+import com.here.sdk.search.EVChargingLocation;
+import com.here.sdk.search.EVChargingOperator;
 import com.here.sdk.search.EVChargingStation;
+import com.here.sdk.search.EVChargingTariff;
+import com.here.sdk.search.EVChargingVehicleCategory;
+import com.here.sdk.search.EVSearchEngine;
+import com.here.sdk.search.FacilityType;
 import com.here.sdk.search.Place;
 import com.here.sdk.search.PlaceCategory;
 import com.here.sdk.search.SearchCallback;
@@ -108,6 +116,7 @@ public class EVRoutingExample {
 
     private final Context context;
     private final MapView mapView;
+    private final MapCamera camera;
     private final List<MapMarker> mapMarkers = new ArrayList<>();
     private final List<MapPolyline> mapPolylines = new ArrayList<>();
     private final List<MapPolygon> mapPolygons = new ArrayList<>();
@@ -129,14 +138,39 @@ public class EVRoutingExample {
     private final String LAST_UPDATED_METADATA_KEY = "last_updated";
     private final String REQUIRED_CHARGING_METADATA_KEY = "required_charging";
 
+    // Metadata keys for EVCP 3.0 data (used when isEVCP3 is true).
+    private final String NAME_METADATA_KEY = "name";
+    private final String CPO_ID_METADATA_KEY = "cpo_id";
+    private final String SUB_OPERATOR_NAME_METADATA_KEY = "sub_operator_name";
+    private final String EMSP_NAMES_METADATA_KEY = "emsp_names";
+    private final String FACILITY_TYPES_METADATA_KEY = "facility_types";
+    private final String PARKING_TYPE_METADATA_KEY = "parking_type";
+    private final String ENERGY_MIX_METADATA_KEY = "energy_mix";
+    private final String TARIFF_COUNT_METADATA_KEY = "tariff_count";
+    private final String CONNECTOR_GROUP_COUNT_METADATA_KEY = "connector_group_count";
+    private final String SUPPORTED_VEHICLE_COUNT_METADATA_KEY = "supported_vehicle_count";
+    private final String TRUCK_RESTRICTIONS_METADATA_KEY = "truck_restrictions";
+    private final String RESTRICTION_COUNT_METADATA_KEY = "restriction_count";
+    private final String SUPPORT_PHONE_NUMBER_METADATA_KEY = "support_phone_number";
+    private final String TIME_ZONE_METADATA_KEY = "time_zone";
+    private final String OPENING_HOURS_METADATA_KEY = "opening_hours";
     // Store the user-defined charging stop to verify whether it was
     // included or modified in the calculated route, based on reachability.
     private Waypoint lastPlannedChargingStopWaypoint = null;
 
+    private EVSearchExample evSearchExample;
+
+    // This flag enables the use of the EVSearchEngine. 
+    // This engine will look online for enhanced data for EV charging stations.
+    // Internally, the engine accesses the Electric Vehicle Charging Point (EVCP) 3.0 backend.
+    // Find more info here: https://www.here.com/docs/bundle/ev-charge-points-api-v3-developer-guide/page/README.html
+    // ATTENTION: This new API requires a separate license; find info more in the linked document.
+    private boolean isEVCP3 = false;
+
     public EVRoutingExample(Context context, MapView mapView) {
         this.context = context;
         this.mapView = mapView;
-        MapCamera camera = mapView.getCamera();
+        camera = mapView.getCamera();
         double distanceInMeters = 1000 * 10;
         MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, distanceInMeters);
         camera.lookAt(new GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
@@ -160,6 +194,15 @@ public class EVRoutingExample {
             searchEngine = new SearchEngine();
         } catch (InstantiationErrorException e) {
             throw new RuntimeException("Initialization of SearchEngine failed: " + e.error.name());
+        }
+
+        // Create an instance of EVSearchExample to enable EVSearchEngine for enriching search results with EVCP 3.0 data.
+        evSearchExample = new EVSearchExample();
+        // Attach EVSearchEngine to SearchEngine for EV enrichment.
+        // Place results will contain additional data such as operator, sub-operator and eMSPs info, facility types, parking type, energy mix.
+        EVSearchEngine evSearchEngine = evSearchExample.getEvSearchEngine();
+        if (evSearchEngine != null && isEVCP3) {
+            searchEngine.setEVInterface(evSearchEngine);
         }
 
         setTapGestureHandler();
@@ -213,7 +256,7 @@ public class EVRoutingExample {
     }
 
     // Simulate a user planned stop based on random coordinates.
-    private  Waypoint createUserPlannedChargingStopWaypoint() {
+    private Waypoint createUserPlannedChargingStopWaypoint() {
         // The rated power of the connector, in kilowatts (kW).
         double powerInKilowatts = 350.0;
 
@@ -328,7 +371,7 @@ public class EVRoutingExample {
             // Each additional waypoint splits the route into two sections.
             Log.d("EVDetails", "Number of required stops at charging stations: " + additionalSectionCount);
         } else {
-            Log.d("EVDetails","Based on the provided options, the destination can be reached without a stop at a charging station.");
+            Log.d("EVDetails", "Based on the provided options, the destination can be reached without a stop at a charging station.");
         }
 
         int sectionIndex = 0;
@@ -338,15 +381,16 @@ public class EVRoutingExample {
             for (PostAction postAction : section.getPostActions()) {
                 switch (postAction.action) {
                     case CHARGING_SETUP:
-                    Log.d("EVDetails", "At the end of this section you need to setup charging for " + postAction.duration.getSeconds() + " s.");
+                        Log.d("EVDetails", "At the end of this section you need to setup charging for " + postAction.duration.getSeconds() + " s.");
                         break;
                     case CHARGING:
-                    Log.d("EVDetails", "At the end of this section you need to charge for " + postAction.duration.getSeconds() + " s.");
+                        Log.d("EVDetails", "At the end of this section you need to charge for " + postAction.duration.getSeconds() + " s.");
                         break;
                     case WAIT:
-                    Log.d("EVDetails", "At the end of this section you need to wait for " + postAction.duration.getSeconds() + " s.");
+                        Log.d("EVDetails", "At the end of this section you need to wait for " + postAction.duration.getSeconds() + " s.");
                         break;
-                    default: throw new RuntimeException("Unknown post action type.");
+                    default:
+                        throw new RuntimeException("Unknown post action type.");
                 }
             }
 
@@ -355,7 +399,7 @@ public class EVRoutingExample {
 
             // Only charging stations that are needed to reach the destination are listed below.
             ChargingStation depStation = section.getDeparturePlace().chargingStation;
-            if (depStation != null  && depStation.id != null && !chargingStationsIDs.contains(depStation.id)) {
+            if (depStation != null && depStation.id != null && !chargingStationsIDs.contains(depStation.id)) {
                 Log.d("EVDetails", "Section " + sectionIndex + ", name of charging station: " + depStation.name);
                 chargingStationsIDs.add(depStation.id);
                 Metadata metadata = new Metadata();
@@ -580,11 +624,15 @@ public class EVRoutingExample {
                     Log.d("Search", "No charging stations found along the route. Error: " + searchError);
                     return;
                 }
-                // If error is nil, it is guaranteed that the items will not be nil.
-                Log.d("Search","Search along route found " + items.size() + " charging stations:");
+                Log.d("Search", "Search along route found " + items.size() + " charging stations:");
                 for (Place place : items) {
                     Details details = place.getDetails();
-                    Metadata metadata = getMetadataForEVChargingPools(details);
+                    Metadata metadata;
+                    if (isEVCP3) {
+                        metadata = getMetadataForEVChargingLocation(details);
+                    } else {
+                        metadata = getMetadataForEVChargingPools(details);
+                    }
                     boolean foundExistingChargingStation = false;
                     for (MapMarker mapMarker : mapMarkers) {
                         if (mapMarker.getMetadata() != null) {
@@ -597,7 +645,6 @@ public class EVRoutingExample {
                             }
                         }
                     }
-
                     if (!foundExistingChargingStation) {
                         addMapMarker(place.getGeoCoordinates(), R.drawable.charging, metadata);
                     }
@@ -629,9 +676,9 @@ public class EVRoutingExample {
         });
     }
 
-     // This method is used to pick a map marker when a user taps on a charging station icon on the map.
-     // When performing a search for charging stations along the route, clicking on a charging station icon
-     // will display its details, including the supplier name, connector count, availability status, last update time, etc.
+    // This method is used to pick a map marker when a user taps on a charging station icon on the map.
+    // When performing a search for charging stations along the route, clicking on a charging station icon
+    // will display its details, including the supplier name, connector count, availability status, last update time, etc.
     private void pickMapMarker(final Point2D touchPoint) {
         Point2D originInPixels = new Point2D(touchPoint.x, touchPoint.y);
         Size2D sizeInPixels = new Size2D(1, 1);
@@ -664,17 +711,36 @@ public class EVRoutingExample {
             Log.d("MapPick", "No metadata found for picked marker.");
             return;
         }
-
         StringBuilder messageBuilder = new StringBuilder();
-
-        appendMetadataValue(messageBuilder, "Name", metadata.getString(SUPPLIER_NAME_METADATA_KEY));
-        appendMetadataValue(messageBuilder, "Connector Count", metadata.getString(CONNECTOR_COUNT_METADATA_KEY));
-        appendMetadataValue(messageBuilder, "Available Connectors", metadata.getString(AVAILABLE_CONNECTORS_METADATA_KEY));
-        appendMetadataValue(messageBuilder, "Occupied Connectors", metadata.getString(OCCUPIED_CONNECTORS_METADATA_KEY));
-        appendMetadataValue(messageBuilder, "Out of Service Connectors", metadata.getString(OUT_OF_SERVICE_CONNECTORS_METADATA_KEY));
-        appendMetadataValue(messageBuilder, "Reserved Connectors", metadata.getString(RESERVED_CONNECTORS_METADATA_KEY));
-        appendMetadataValue(messageBuilder, "Last Updated", metadata.getString(LAST_UPDATED_METADATA_KEY));
-
+        if (isEVCP3) {
+            // Show all EVCP3 metadata fields
+            appendMetadataValue(messageBuilder, "Name", metadata.getString(NAME_METADATA_KEY));
+            appendMetadataValue(messageBuilder, "CPO ID", metadata.getString(CPO_ID_METADATA_KEY));
+            appendMetadataValue(messageBuilder, "Operator", metadata.getString(SUPPLIER_NAME_METADATA_KEY));
+            appendMetadataValue(messageBuilder, "Sub-Operator", metadata.getString(SUB_OPERATOR_NAME_METADATA_KEY));
+            appendMetadataValue(messageBuilder, "eMSPs", metadata.getString(EMSP_NAMES_METADATA_KEY));
+            appendMetadataValue(messageBuilder, "Facility Types", metadata.getString(FACILITY_TYPES_METADATA_KEY));
+            appendMetadataValue(messageBuilder, "Parking Type", metadata.getString(PARKING_TYPE_METADATA_KEY));
+            appendMetadataValue(messageBuilder, "Energy Mix", metadata.getString(ENERGY_MIX_METADATA_KEY));
+            appendMetadataValue(messageBuilder, "Connector Count", metadata.getString(CONNECTOR_COUNT_METADATA_KEY));
+            appendMetadataValue(messageBuilder, "Tariff Count", metadata.getString(TARIFF_COUNT_METADATA_KEY));
+            appendMetadataValue(messageBuilder, "Connector Group Count", metadata.getString(CONNECTOR_GROUP_COUNT_METADATA_KEY));
+            appendMetadataValue(messageBuilder, "Supported Vehicle Count", metadata.getString(SUPPORTED_VEHICLE_COUNT_METADATA_KEY));
+            appendMetadataValue(messageBuilder, "Truck Restrictions", metadata.getString(TRUCK_RESTRICTIONS_METADATA_KEY));
+            appendMetadataValue(messageBuilder, "Opening Hours", metadata.getString(OPENING_HOURS_METADATA_KEY));
+            appendMetadataValue(messageBuilder, "Restriction Count", metadata.getString(RESTRICTION_COUNT_METADATA_KEY));
+            appendMetadataValue(messageBuilder, "Support Phone Number", metadata.getString(SUPPORT_PHONE_NUMBER_METADATA_KEY));
+            appendMetadataValue(messageBuilder, "Time Zone", metadata.getString(TIME_ZONE_METADATA_KEY));
+        } else {
+            // Show electronic pool metadata
+            appendMetadataValue(messageBuilder, "Electronic Charging Pool Name", metadata.getString(SUPPLIER_NAME_METADATA_KEY));
+            appendMetadataValue(messageBuilder, "Connector Count", metadata.getString(CONNECTOR_COUNT_METADATA_KEY));
+            appendMetadataValue(messageBuilder, "Available Connectors", metadata.getString(AVAILABLE_CONNECTORS_METADATA_KEY));
+            appendMetadataValue(messageBuilder, "Occupied Connectors", metadata.getString(OCCUPIED_CONNECTORS_METADATA_KEY));
+            appendMetadataValue(messageBuilder, "Out of Service Connectors", metadata.getString(OUT_OF_SERVICE_CONNECTORS_METADATA_KEY));
+            appendMetadataValue(messageBuilder, "Reserved Connectors", metadata.getString(RESERVED_CONNECTORS_METADATA_KEY));
+            appendMetadataValue(messageBuilder, "Last Updated", metadata.getString(LAST_UPDATED_METADATA_KEY));
+        }
         if (messageBuilder.length() > 0) {
             messageBuilder.append("\n\nFor a full list of attributes please refer to the API Reference.");
             showDialog("Charging station details", messageBuilder.toString());
@@ -719,6 +785,75 @@ public class EVRoutingExample {
         return metadata;
     }
 
+    // Helper to extract metadata from evChargingLocation (EVCP3)
+    private Metadata getMetadataForEVChargingLocation(Details details) {
+        Metadata metadata = new Metadata();
+        if (details != null && details.evChargingLocation != null) {
+            EVChargingLocation evChargingLocation = details.evChargingLocation;
+
+            if (evChargingLocation.getName() != null) {
+                metadata.setString(NAME_METADATA_KEY, evChargingLocation.getName());
+            }
+            if (evChargingLocation.getCpoID() != null) {
+                metadata.setString(CPO_ID_METADATA_KEY, evChargingLocation.getCpoID());
+            }
+            if (evChargingLocation.getEvChargingOperator() != null) {
+                metadata.setString(SUPPLIER_NAME_METADATA_KEY, evChargingLocation.getEvChargingOperator().name);
+            }
+            if (evChargingLocation.getEvChargingSubOperator() != null) {
+                metadata.setString(SUB_OPERATOR_NAME_METADATA_KEY, evChargingLocation.getEvChargingSubOperator().name);
+            }
+            // eMSPs
+            List<EVChargingOperator> emsps = evChargingLocation.getEMobilityServiceProviders();
+            if (!emsps.isEmpty()) {
+                StringBuilder emspNames = new StringBuilder();
+                for (EVChargingOperator emsp : emsps) {
+                    if (emsp != null) {
+                        if (emspNames.length() > 0) emspNames.append(", ");
+                        emspNames.append(emsp.name);
+                    }
+                }
+                metadata.setString(EMSP_NAMES_METADATA_KEY, emspNames.toString());
+            }
+            // Facility Types
+            List<FacilityType> facilityTypes = evChargingLocation.getFacilityTypes();
+            if (!facilityTypes.isEmpty()) {
+                metadata.setString(FACILITY_TYPES_METADATA_KEY, facilityTypes.toString());
+            }
+            if (evChargingLocation.getParkingType() != null) {
+                metadata.setString(PARKING_TYPE_METADATA_KEY, evChargingLocation.getParkingType().toString());
+            }
+            if (evChargingLocation.getEnergyMix() != null) {
+                metadata.setString(ENERGY_MIX_METADATA_KEY, evChargingLocation.getEnergyMix().toString());
+            }
+            // Tariffs
+            List<EVChargingTariff> tariffs = evChargingLocation.getTariffs();
+            metadata.setString(TARIFF_COUNT_METADATA_KEY, String.valueOf(tariffs.size()));
+            // Connector Groups
+            List<EVChargingConnectorGroup> connectorGroups = evChargingLocation.getConnectorGroups();
+            metadata.setString(CONNECTOR_GROUP_COUNT_METADATA_KEY, String.valueOf(connectorGroups.size()));
+            // Supported Vehicles
+            List<EVChargingVehicleCategory> supportedVehicles = evChargingLocation.getSupportedVehicles();
+            metadata.setString(SUPPORTED_VEHICLE_COUNT_METADATA_KEY, String.valueOf(supportedVehicles.size()));
+            if (evChargingLocation.getTruckRestrictions() != null) {
+                metadata.setString(TRUCK_RESTRICTIONS_METADATA_KEY, evChargingLocation.getTruckRestrictions().toString());
+            }
+            if (evChargingLocation.getOpeningHours() != null) {
+                metadata.setString(OPENING_HOURS_METADATA_KEY, evChargingLocation.getOpeningHours().toString());
+            }
+            // Restrictions
+            List<EVAccessRestrictionReason> restrictions = evChargingLocation.getRestrictions();
+            metadata.setString(RESTRICTION_COUNT_METADATA_KEY, String.valueOf(restrictions.size()));
+            if (evChargingLocation.getSupportPhoneNumber() != null) {
+                metadata.setString(SUPPORT_PHONE_NUMBER_METADATA_KEY, evChargingLocation.getSupportPhoneNumber());
+            }
+            if (evChargingLocation.getTimeZone() != null) {
+                metadata.setString(TIME_ZONE_METADATA_KEY, evChargingLocation.getTimeZone());
+            }
+        }
+        return metadata;
+    }
+
     // Shows the reachable area for this electric vehicle from the current start coordinates and EV car options when the goal is
     // to consume 400 Wh or less (see options below).
     public void onReachableAreaButtonClicked() {
@@ -756,7 +891,7 @@ public class EVRoutingExample {
                 // can only be reached by a ferry.
                 for (GeoPolygon geoPolygon : isoline.getPolygons()) {
                     // Show polygon on map.
-                      Color fillColor = Color.valueOf(0, 0.56f, 0.54f, 0.5f); // RGBA
+                    Color fillColor = Color.valueOf(0, 0.56f, 0.54f, 0.5f); // RGBA
                     MapPolygon mapPolygon = new MapPolygon(geoPolygon, fillColor);
                     mapView.getMapScene().addMapPolygon(mapPolygon);
                     mapPolygons.add(mapPolygon);
@@ -792,12 +927,8 @@ public class EVRoutingExample {
         mapPolygons.clear();
     }
 
-    private GeoCoordinates createRandomGeoCoordinatesInViewport()  {
-        GeoBox geoBox = mapView.getCamera().getBoundingBox();
-        if (geoBox == null) {
-            showDialog("Error", "No valid bbox.");
-            return new GeoCoordinates(0, 0);
-        }
+    private GeoCoordinates createRandomGeoCoordinatesInViewport() {
+        GeoBox geoBox = getMapViewGeoBox();
 
         GeoCoordinates northEast = geoBox.northEastCorner;
         GeoCoordinates southWest = geoBox.southWestCorner;
@@ -811,6 +942,24 @@ public class EVRoutingExample {
         double lon = getRandom(minLon, maxLon);
 
         return new GeoCoordinates(lat, lon);
+    }
+
+    private GeoBox getMapViewGeoBox() {
+        GeoBox cameraBoundingBox = camera.getBoundingBox();
+        if (cameraBoundingBox != null) {
+            return cameraBoundingBox;
+        }
+
+        // Happens when map does not fully cover the viewport, e.g. due to tilt.
+        GeoCoordinates center = getMapViewCenter();
+        double delta = 0.08;
+        GeoCoordinates southWestCorner = new GeoCoordinates(center.latitude - delta, center.longitude - delta);
+        GeoCoordinates northEastCorner = new GeoCoordinates(center.latitude + delta, center.longitude + delta);
+        return new GeoBox(southWestCorner, northEastCorner);
+    }
+
+    private GeoCoordinates getMapViewCenter() {
+        return mapView.getCamera().getState().targetCoordinates;
     }
 
     private double getRandom(double min, double max) {

@@ -17,6 +17,8 @@
  * License-Filename: LICENSE
  */
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/core.engine.dart';
@@ -57,6 +59,12 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   CameraExample? _cameraExample;
   late final AppLifecycleListener _appLifecycleListener;
 
+  // UI overlay state for the principal point (red dot).
+  double? _targetDotX;
+  double? _targetDotY;
+  StreamSubscription? _principalPointSub;
+  StreamSubscription? _messageSub;
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -65,7 +73,29 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
         body: Stack(
           children: [
             HereMap(onMapCreated: _onMapCreated),
-            Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [button('Move', _moveButtonClicked)]),
+
+            // Red target dot overlay (Java: cameraTargetView).
+            if (_targetDotX != null && _targetDotY != null)
+              Positioned(
+                left: _targetDotX!,
+                top: _targetDotY!,
+                child: IgnorePointer(
+                  child: Container(
+                    width: 16,
+                    height: 16,
+                    decoration: BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                  ),
+                ),
+              ),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                button('Move', _moveButtonClicked),
+                button('Rotate', _rotateButtonClicked),
+                button('Tilt', _tiltButtonClicked),
+              ],
+            ),
           ],
         ),
       ),
@@ -75,7 +105,29 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   void _onMapCreated(HereMapController hereMapController) {
     hereMapController.mapScene.loadSceneForMapScheme(MapScheme.normalDay, (MapError? error) {
       if (error == null) {
+        // Dispose old subscriptions if hot reloaded / recreated.
+        _principalPointSub?.cancel();
+        _messageSub?.cancel();
+        _cameraExample?.dispose();
+
         _cameraExample = CameraExample(hereMapController);
+
+        // Listen for principal point updates and move the dot.
+        _principalPointSub = _cameraExample!.principalPointStream.listen((p) {
+          // Center the 16x16 dot on the tapped pixel.
+          setState(() {
+            _targetDotX = p.x - 8.0;
+            _targetDotY = p.y - 8.0;
+          });
+        });
+
+        // Listen for messages.
+        _messageSub = _cameraExample!.messageStream.listen((msg) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(SnackBar(content: Text(msg), duration: Duration(seconds: 2)));
+        });
       } else {
         print("Map scene not loaded. MapError: " + error.toString());
       }
@@ -83,7 +135,15 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   }
 
   void _moveButtonClicked() {
-    _cameraExample?.move();
+    _cameraExample?.moveButtonClicked();
+  }
+
+  void _rotateButtonClicked() {
+    _cameraExample?.rotateButtonClicked();
+  }
+
+  void _tiltButtonClicked() {
+    _cameraExample?.tiltButtonClicked();
   }
 
   @override
@@ -101,6 +161,9 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    _principalPointSub?.cancel();
+    _messageSub?.cancel();
+    _cameraExample?.dispose();
     _disposeHERESDK();
     super.dispose();
   }

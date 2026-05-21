@@ -375,16 +375,16 @@ class SearchHybridExample: TapDelegate,
     }
 
     private func getMapViewGeoBox() -> GeoBox {
-        let scaleFactor = UIScreen.main.scale
-        let mapViewWidthInPixels = Double(mapView.bounds.width * scaleFactor)
-        let mapViewHeightInPixels = Double(mapView.bounds.height * scaleFactor)
-        let bottomLeftPoint2D = Point2D(x: 0, y: mapViewHeightInPixels)
-        let topRightPoint2D = Point2D(x: mapViewWidthInPixels, y: 0)
+        if let cameraBoundingBox = mapView.camera.boundingBox {
+            return cameraBoundingBox
+        }
 
-        let southWestCorner = mapView.viewToGeoCoordinates(viewCoordinates: bottomLeftPoint2D)!
-        let northEastCorner = mapView.viewToGeoCoordinates(viewCoordinates: topRightPoint2D)!
+        // Happens when map does not fully cover the viewport, e.g. due to tilt.
+        let center = getMapViewCenter()
+        let delta = 0.08
+        let southWestCorner = GeoCoordinates(latitude: center.latitude - delta, longitude: center.longitude - delta)
+        let northEastCorner = GeoCoordinates(latitude: center.latitude + delta, longitude: center.longitude + delta)
 
-        // Note: This algorithm assumes an unrotated map view.
         return GeoBox(southWestCorner: southWestCorner, northEastCorner: northEastCorner)
     }
 

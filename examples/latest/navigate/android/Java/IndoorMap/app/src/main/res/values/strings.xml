@@ -29,4 +29,8 @@
     <string name="indoor_routing_ui">Indoor Routing UI</string>
     <string name="tap_for_destination_point">Tap for a destination point</string>
     <string name="tap_for_start_point">Long press for a start point</string>
+    <string name="indoor_routing_destination_hint">Choose ending point</string>
+    <string name="indoor_routing_source_hint">Choose a starting point</string>
+    <string name="indoor_routing_space_selection_hint">Choose a location</string>
+    <string name="indoor_routing_direction_btn">Directions</string>
 </resources>

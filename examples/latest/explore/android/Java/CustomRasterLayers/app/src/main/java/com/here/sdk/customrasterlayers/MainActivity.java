@@ -66,9 +66,9 @@ public class MainActivity extends AppCompatActivity {
 
         handleAndroidPermissions();
 
-        String message = "For this example app, an outdoor layer from thunderforest.com is used. " +
+        String message = "For this example app, outdoor and transport layers from thunderforest.com are used. " +
                 "Without setting a valid API key, these raster tiles will show a watermark (terms of usage: https://www.thunderforest.com/terms/)." +
-                "\n Attribution for the outdoor layer: \n Maps © www.thunderforest.com, \n Data © www.osm.org/copyright.";
+                "\n Attribution for the outdoor and transport layers: \n Maps © www.thunderforest.com, \n Data © www.osm.org/copyright.";
 
         showDialog("Note", message);
     }
@@ -109,8 +109,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onLoadScene(@Nullable MapError mapError) {
                 if (mapError == null) {
-                    customRasterLayersExample = new CustomRasterLayersExample();
-                    customRasterLayersExample.onMapSceneLoaded(mapView, MainActivity.this);
+                    customRasterLayersExample = new CustomRasterLayersExample(mapView, MainActivity.this);
                 } else {
                     Log.d(TAG, "onLoadScene failed: " + mapError.toString());
                 }
@@ -118,12 +117,27 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void enableButtonClicked(View view) {
-        customRasterLayersExample.enableButtonClicked();
+    public void outdoorsButtonClicked(View view) {
+        if (customRasterLayersExample != null) {
+            // Disable the transport layer to avoid overlapping of the layers.
+            customRasterLayersExample.disableTransportLayer();
+            customRasterLayersExample.enableOutdoorLayer();
+        }
+    }
+
+    public void transportButtonClicked(View view) {
+        if (customRasterLayersExample != null) {
+            // Disable the outdoor layer to avoid overlapping of the layers.
+            customRasterLayersExample.disableOutdoorLayer();
+            customRasterLayersExample.enableTransportLayer();
+        }
     }
 
     public void disableButtonClicked(View view) {
-        customRasterLayersExample.disableButtonClicked();
+        if (customRasterLayersExample != null) {
+            customRasterLayersExample.disableOutdoorLayer();
+            customRasterLayersExample.disableTransportLayer();
+        }
     }
 
     private void showDialog(String title, String message) {

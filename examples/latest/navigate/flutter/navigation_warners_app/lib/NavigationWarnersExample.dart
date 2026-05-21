@@ -28,6 +28,8 @@ import 'package:here_sdk/navigation.dart';
 import 'package:here_sdk/routing.dart' as HERE;
 import 'package:here_sdk/routing.dart';
 
+import 'WarnerEngineExample.dart';
+
 enum RoadType { highway, rural, urban }
 
 // This class combines the various events that can be emitted during turn-by-turn navigation.
@@ -39,6 +41,8 @@ class NavigationWarnersExample {
   LocationSimulator? _locationSimulator;
   bool _isGuidanceRunning = false;
   RouteProgress? currentRouteProgress;
+  final WarnerEngineExample _warnerEngineExample = WarnerEngineExample();
+  bool useWarnerEngine = false;
 
   NavigationWarnersExample(this._hereMapController) {
     try {
@@ -59,9 +63,9 @@ class NavigationWarnersExample {
   }
 
   void startGuidance(GeoCoordinates startGeoCoordinates, GeoCoordinates destinationGeoCoordinates) {
-    _routingEngine.calculateCarRoute(
+    _routingEngine.calculateRouteWithRoutingOptions(
       [HERE.Waypoint(startGeoCoordinates), HERE.Waypoint(destinationGeoCoordinates)],
-      HERE.CarOptions(),
+      HERE.RoutingOptions(),
       (HERE.RoutingError? routingError, List<HERE.Route>? routeList) {
         if (routingError == null && routeList != null && routeList.isNotEmpty) {
           _startGuidanceWithRoute(routeList.first);
@@ -76,6 +80,9 @@ class NavigationWarnersExample {
     _locationSimulator?.stop();
     _locationSimulator = null;
 
+    if (useWarnerEngine) {
+      _warnerEngineExample.stopWarnerEngine();
+    }
     _visualNavigator.route = null;
     _visualNavigator.stopRendering();
     _isGuidanceRunning = false;
@@ -113,7 +120,15 @@ class NavigationWarnersExample {
   }
 
   void _startGuidanceWithRoute(HERE.Route route) {
-    _setupListeners();
+    if (useWarnerEngine) {
+      // Use the unified WarnerEngine approach (beta).
+      _warnerEngineExample.setupWarnerEngine(_visualNavigator);
+      print("Using WarnerEngine (beta) for unified warning handling.");
+    } else {
+      // Use the previous per-type listener approach.
+      _setupListeners();
+      print("Using per-type listeners for warning handling.");
+    }
     _visualNavigator.startRendering(_hereMapController);
     _visualNavigator.route = route;
     _setupLocationSource(route);
@@ -541,7 +556,7 @@ class NavigationWarnersExample {
     });
 
     RoadSignWarningOptions roadSignWarningOptions = new RoadSignWarningOptions();
-    // Set a filter to get only shields relevant for TRUCKS and HEAVY_TRUCKS.
+    // Set a filter to get only road signs relevant for TRUCKS and HEAVY_TRUCKS.
     roadSignWarningOptions.vehicleTypesFilter = [RoadSignVehicleType.trucks, RoadSignVehicleType.heavyTrucks];
     // Get notification distances for road sign alerts from visual navigator.
     WarningNotificationDistances warningNotificationDistances = _visualNavigator.getWarningNotificationDistances(
@@ -559,7 +574,7 @@ class NavigationWarnersExample {
     _visualNavigator.setWarningNotificationDistances(WarningType.roadSign, warningNotificationDistances);
     _visualNavigator.roadSignWarningOptions = roadSignWarningOptions;
 
-    // Notifies on road shields as they appear along the road.
+    // Notifies on road signs as they appear along the road.
     _visualNavigator.roadSignWarningListener = RoadSignWarningListener((RoadSignWarning roadSignWarning) {
       RoadSignType roadSignType = roadSignWarning.type;
       if (roadSignWarning.distanceType == DistanceType.ahead) {

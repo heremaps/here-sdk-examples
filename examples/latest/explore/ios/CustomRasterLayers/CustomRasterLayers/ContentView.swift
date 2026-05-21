@@ -35,12 +35,25 @@ struct ContentView: View {
              
              VStack {
                  HStack {
-                     CustomButton(title: "Enable") {
-                         customRasterLayersExample?.onEnableButtonClicked()
-                     }.padding(.trailing, 20)
+                     CustomButton(title: "Outdoors") {
+                         // Disable the transport layer to avoid overlapping of the layers.
+                         customRasterLayersExample?.disableTransportLayer()
+                         customRasterLayersExample?.enableOutdoorLayer()
+                     }
+                     .padding(.trailing, 10)
+                     
+                     CustomButton(title: "Transport") {
+                         // Disable the outdoor layer to avoid overlapping of the layers.
+                         customRasterLayersExample?.disableOutdoorLayer()
+                         customRasterLayersExample?.enableTransportLayer()
+                     }
+                     .padding(.horizontal, 10)
+                     
                      CustomButton(title: "Disable") {
-                         customRasterLayersExample?.onDisableButtonClicked()
-                     }.padding(.leading, 20)
+                         customRasterLayersExample?.disableOutdoorLayer()
+                         customRasterLayersExample?.disableTransportLayer()
+                     }
+                     .padding(.leading, 10)
                  }
              }
          }
@@ -80,4 +93,3 @@ struct ContentView_Previews: PreviewProvider {
         ContentView()
     }
 }
-

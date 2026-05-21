@@ -28,6 +28,17 @@
             android:text="Start Guidance"
             android:textColor="@android:color/white"
             android:textSize="8sp" />
+
+        <Button
+            android:id="@+id/toggleModeButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:backgroundTint="@android:color/holo_orange_light"
+            android:onClick="onToggleModeClicked"
+            android:text="Mode: Per-Type Listeners"
+            android:textColor="@android:color/white"
+            android:textSize="8sp" />
     </LinearLayout>
 
 

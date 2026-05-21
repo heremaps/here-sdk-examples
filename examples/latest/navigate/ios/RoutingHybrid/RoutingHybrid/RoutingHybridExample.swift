@@ -86,7 +86,7 @@ class RoutingHybridExample {
 
         routingEngine.calculateRoute(with: [Waypoint(coordinates: startGeoCoordinates!),
                                             Waypoint(coordinates: destinationGeoCoordinates!)],
-                                     carOptions: getCarOptions()) { (routingError, routes) in
+                                     options: getRoutingOptions()) { (routingError, routes) in
 
                                         if let error = routingError {
                                             self.showDialog(title: "Error while calculating a route:", message: "\(error)")
@@ -243,7 +243,7 @@ class RoutingHybridExample {
                          Waypoint(coordinates: destinationGeoCoordinates)]
 
         routingEngine.calculateRoute(with: waypoints,
-                                     carOptions: getCarOptions()) { (routingError, routes) in
+                                     options: getRoutingOptions()) { (routingError, routes) in
 
                                         if let error = routingError {
                                             self.showDialog(title: "Error while calculating a route:", message: "\(error)")
@@ -291,14 +291,14 @@ class RoutingHybridExample {
         showDialog(title: "Note", message: "The app uses now the OfflineRoutingEngine.")
     }
     
-    private func getCarOptions() -> CarOptions {
-           var carOptions = CarOptions()
-           
-           // Specifies whether route labels should be included in the route response.
-           carOptions.routeOptions.enableRouteLabels = true;
-        
-           return carOptions
-       }
+    private func getRoutingOptions() -> RoutingOptions {
+        var routingOptions = RoutingOptions()
+
+        // Specifies whether route labels should be included in the route response.
+        routingOptions.routeOptions.enableRouteLabels = true;
+
+        return routingOptions
+    }
     
     private func createRandomGeoCoordinatesAroundMapCenter() -> GeoCoordinates {
         let scaleFactor = UIScreen.main.scale

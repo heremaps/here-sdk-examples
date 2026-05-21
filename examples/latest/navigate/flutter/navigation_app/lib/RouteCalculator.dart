@@ -33,7 +33,7 @@ class RouteCalculator {
     }
   }
 
-  void calculateCarRoute(
+  void calculateRoute(
     Waypoint startWaypoint,
     Waypoint destinationWaypoint,
     CalculateRouteCallback calculateRouteCallback,
@@ -41,10 +41,10 @@ class RouteCalculator {
     List<Waypoint> waypoints = [startWaypoint, destinationWaypoint];
 
     // A route handle is required for the DynamicRoutingEngine to get updates on traffic-optimized routes.
-    var routingOptions = HERE.CarOptions();
+    var routingOptions = HERE.RoutingOptions();
     routingOptions.routeOptions.enableRouteHandle = true;
 
-    _routingEngine.calculateCarRoute(waypoints, routingOptions, calculateRouteCallback);
+    _routingEngine.calculateRouteWithRoutingOptions(waypoints, routingOptions, calculateRouteCallback);
   }
 
   void calculateTrafficOnRoute(
