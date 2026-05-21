@@ -111,6 +111,17 @@ class MainActivity : ComponentActivity() {
         })
     }
 
+    @Suppress("DEPRECATION")
+    @Deprecated("This method has been deprecated and will be updated in a future release.")
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        permissionsRequestor.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
     private fun loadMapScene() {
         val mapViewNonNull = mapView ?: run {
             Log.e(TAG, "mapView is null. Cannot load map scene.")

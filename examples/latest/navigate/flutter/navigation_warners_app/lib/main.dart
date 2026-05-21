@@ -61,8 +61,11 @@ class _MyAppState extends State<MyApp> {
 
   NavigationWarnersExample? navigationWarnersExample;
   bool _isGuidanceRunning = false;
+  bool _useWarnerEngine = false;
   static const String _startGuidanceButtonLabel = 'Start Guidance';
   static const String _stopGuidanceButtonLabel = 'Stop Guidance';
+  static const String _perTypeModeLabel = 'Mode: Per-Type Listeners';
+  static const String _warnerEngineModeLabel = 'Mode: WarnerEngine (Beta)';
 
   // Default coordinated in Berlin, which can be change by long-tapping the map
   HERE.GeoCoordinates _startGeoCoordinates = HERE.GeoCoordinates(52.520798, 13.409408);
@@ -97,6 +100,10 @@ class _MyAppState extends State<MyApp> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [button(_isGuidanceRunning ? _stopGuidanceButtonLabel : _startGuidanceButtonLabel, _startNavigationClicked)],
                 ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [toggleModeButton(_useWarnerEngine ? _warnerEngineModeLabel : _perTypeModeLabel, _toggleModeClicked)],
+                ),
               ],
             ),
           ],
@@ -123,6 +130,24 @@ class _MyAppState extends State<MyApp> {
       setState(() {
         _isGuidanceRunning = true;
       });
+    }
+  }
+
+  void _toggleModeClicked() {
+    final example = navigationWarnersExample;
+    if (example == null) {
+      return;
+    }
+
+    setState(() {
+      _useWarnerEngine = !_useWarnerEngine;
+      example.useWarnerEngine = _useWarnerEngine;
+    });
+
+    // If guidance is running, restart it with the new mode.
+    if (_isGuidanceRunning) {
+      example.stopGuidance();
+      example.startGuidance(_startGeoCoordinates, _destinationGeoCoordinates);
     }
   }
 
@@ -216,6 +241,18 @@ class _MyAppState extends State<MyApp> {
       alignment: Alignment.topCenter,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(foregroundColor: Colors.white, backgroundColor: Colors.lightBlueAccent),
+        onPressed: () => callbackFunction(),
+        child: Text(buttonLabel, style: const TextStyle(fontSize: 15)),
+      ),
+    );
+  }
+
+  // A helper method to add a toggle mode button on top of the HERE map.
+  Align toggleModeButton(String buttonLabel, Function callbackFunction) {
+    return Align(
+      alignment: Alignment.topCenter,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(foregroundColor: Colors.white, backgroundColor: Colors.orange),
         onPressed: () => callbackFunction(),
         child: Text(buttonLabel, style: const TextStyle(fontSize: 15)),
       ),

@@ -161,14 +161,14 @@ class ReroutingExample: LongPressDelegate,
     }
     
     private func calculateRouteForUseWithVisualNavigator() {
-        var carOptions = CarOptions()
+        var routingOptions = RoutingOptions()
         // A route handle is necessary for rerouting.
-        carOptions.routeOptions.enableRouteHandle = true
+        routingOptions.routeOptions.enableRouteHandle = true
 
         let waypoints = getCurrentWaypoints(insertDeviationWaypoints: false)
                 
         routingEngine.calculateRoute(with: waypoints,
-                                     carOptions: carOptions) { (routingError, routes) in
+                                     options: routingOptions) { (routingError, routes) in
             self.handleRouteResults(routingError, routes)
         }
     }
@@ -183,7 +183,7 @@ class ReroutingExample: LongPressDelegate,
         let waypoints = getCurrentWaypoints(insertDeviationWaypoints: true)
 
         routingEngine.calculateRoute(with: waypoints,
-                                     carOptions: CarOptions()) { (routingError, routes) in
+                                     options: RoutingOptions()) { (routingError, routes) in
             self.handleDeviationRouteResults(routingError, routes)
         }
     }

@@ -43,7 +43,7 @@ public class RouteCalculator {
         let destination: Waypoint = Waypoint(coordinates: GeoCoordinates(latitude: 40.7203, longitude: -74.3122))
         
         routingEngine.calculateRoute(with:  [start, destination],
-                                     carOptions: CarOptions(),
+                                     options: RoutingOptions(),
                                      completion: { (routingError, routes) in
             if let error = routingError {
                 print("Error while calculating a route: \(error)")

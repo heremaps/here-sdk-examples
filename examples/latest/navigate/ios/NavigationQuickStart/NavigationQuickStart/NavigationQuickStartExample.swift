@@ -79,7 +79,7 @@ class NavigationQuickStartExample: EventTextDelegate {
         let destinationWaypoint = Waypoint(coordinates: GeoCoordinates(latitude: 52.530905, longitude: 13.385007))
 
         routingEngine.calculateRoute(with: [startWaypoint, destinationWaypoint],
-                                     carOptions: CarOptions()) { (routingError, routes) in
+                                     options: RoutingOptions()) { (routingError, routes) in
             if let error = routingError {
                 print("Error while calculating a route: \(error)")
                 return

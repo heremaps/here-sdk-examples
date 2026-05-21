@@ -123,6 +123,7 @@ public class MainActivity extends AppCompatActivity {
 
     private int initialPeekHeight;
 
+    private IndoorRoutingUIController routingController;
 
     private void initializeHERESDK() {
         // Set your credentials for the HERE SDK.
@@ -184,6 +185,15 @@ public class MainActivity extends AppCompatActivity {
             lastInset[0] = sys;
             v.setPadding(sys.left, 0, sys.right, sys.bottom);
 
+            return WindowInsetsCompat.CONSUMED;
+        });
+
+
+        // apply insets to progressBar and after that this inset should not go
+        // to child UI.
+        ViewCompat.setOnApplyWindowInsetsListener(progressBar, (v, insets) -> {
+            Insets sys = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(sys.left, 0, sys.right, 0);
             return WindowInsetsCompat.CONSUMED;
         });
 
@@ -267,6 +277,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if(mapLoadDone) {
+                    routingController.onBackButtonClickOnVenue();
                     removeVenue();
                 }
             }
@@ -289,13 +300,17 @@ public class MainActivity extends AppCompatActivity {
         sheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
-                if(newState == BottomSheetBehavior.STATE_EXPANDED){
+                if (newState == BottomSheetBehavior.STATE_EXPANDED) {
                     // when sheet is expanded, no need of drag handle
                     dragHandle.setVisibility(View.GONE);
                     recyclerView.setAlpha(1f);
+                    // show cursor in venue_search.
+                    venue_search.setCursorVisible(true);
                 } else {
                     // when sheet is collapsed, make drag handle visible
                     dragHandle.setVisibility(View.VISIBLE);
+                    // hide cursor in venue_search.
+                    venue_search.setCursorVisible(false);
                     // fade recycler view when sheet is collapsed in case of Venue list
                     if (recyclerView.getAdapter() instanceof VenueAdapter) {
                         recyclerView.setAlpha(0f);
@@ -395,7 +410,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        permissionsRequestor.onRequestPermissionsResult(requestCode, grantResults);
+        permissionsRequestor.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     private void loadMapScene() {
@@ -411,6 +426,7 @@ public class MainActivity extends AppCompatActivity {
                 // Hide the extruded building layer, so that it does not overlap with the venues.
                 List<String> mapFeatures = new ArrayList<>();
                 mapFeatures.add(MapFeatures.EXTRUDED_BUILDINGS);
+                mapFeatures.add(MapFeatures.LANDMARKS);
                 mapView.getMapScene().disableFeatures(mapFeatures);
 
                 // Create a venue engine object. Once the initialization is done, a callback
@@ -451,8 +467,12 @@ public class MainActivity extends AppCompatActivity {
         venueMap.add(venueSelectionListener);
         venueMap.add(venueInfoListListener);
 
+        routingController = new IndoorRoutingUIController(venueEngine, mapView, this);
+        routingController.setVenueMap(venueMap);
+
         // Create a venue tap controller and connect VenueMap to it.
         venueTapController = new VenueTapController(venueEngine, mapView, this, sheetBehavior, recyclerView);
+        venueTapController.setRoutingController(routingController);
         venueTapController.setVenueMap(venueMap);
 
         // Set a tap listener.
@@ -653,8 +673,13 @@ public class MainActivity extends AppCompatActivity {
 
     // Tap listener for MapView
     private final TapListener tapListener = origin -> {
+        // If routing menu in bottom sheet is active, then redirect to it.
+        if (routingController.isRoutingMenuActiveInBottomSheet()) {
+            routingController.onTap(origin);
+        } else {
             // Redirect the event to the venue tap controller.
             venueTapController.onTap(origin);
+        }
     };
 
     @Override
@@ -741,6 +766,7 @@ public class MainActivity extends AppCompatActivity {
                 // Hide the extruded building layer, so that it does not overlap with the venues.
                 List<String> mapFeatures = new ArrayList<>();
                 mapFeatures.add(MapFeatures.EXTRUDED_BUILDINGS);
+                mapFeatures.add(MapFeatures.LANDMARKS);
                 mapView.getMapScene().disableFeatures(mapFeatures);
             } else {
                 Log.d(TAG, "Loading map failed: mapError: " + mapError.name());
@@ -750,13 +776,15 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if(sheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
+        if (routingController.handleBackPressed()) {
+            return;
+        }
+
+        if (sheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
             sheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-        }
-        else if(mapLoadDone == true) {
+        } else if (mapLoadDone) {
             removeVenue();
-        }
-        else {
+        } else {
             super.onBackPressed();
         }
     }
@@ -771,7 +799,7 @@ public class MainActivity extends AppCompatActivity {
             hideKeyboard();
             if (selectedVenue == null || !selectedVenue.getVenueModel().getIdentifier().equals(venueIdentifier)) {
                 // Select a venue by id.
-                venueMap.selectVenueAsync(venueIdentifier, this ::onVenueLoadError);
+                venueMap.selectVenueAsync(venueIdentifier, this::onVenueLoadError);
             }
             if(sheetBehavior.getState() != BottomSheetBehavior.STATE_COLLAPSED)
                 sheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
@@ -789,5 +817,23 @@ public class MainActivity extends AppCompatActivity {
 
     public int getInitialPeekHeight() {
         return initialPeekHeight;
+    }
+
+    public void setVenueBottomSheetToHide(boolean val) {
+        sheetBehavior.setHideable(val);
+        sheetBehavior.setState(val ? BottomSheetBehavior.STATE_HIDDEN : BottomSheetBehavior.STATE_COLLAPSED);
+    }
+
+    public void showProgressBarOnMap(boolean val) {
+        progressBar.setVisibility(val ? View.VISIBLE : View.GONE);
+    }
+
+    public void hideTopologyButtonOnMap(boolean val) {
+        if (topologyButton.isChecked() && val) {
+            venueEngine.getVenueMap().getSelectedVenue().setTopologyVisible(false);
+            venueTapController.deselectTopolgy();
+            topologyButton.setChecked(false);
+        }
+        topologyButton.setVisibility(val ? View.GONE : View.VISIBLE);
     }
 }

@@ -58,6 +58,7 @@ import com.here.sdk.mapview.MapMeasure;
 import com.here.sdk.mapview.MapScene;
 import com.here.sdk.mapview.MapScheme;
 import com.here.sdk.mapview.MapView;
+import com.here.sdk.units.core.utils.PermissionsRequestor;
 import com.here.sdk.units.mapswitcher.MapSwitcherUnit;
 import com.here.sdk.units.mapswitcher.MapSwitcherView;
 

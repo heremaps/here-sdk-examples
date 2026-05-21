@@ -29,6 +29,8 @@ import 'package:here_sdk/routing.dart';
 import 'package:here_sdk/routing.dart' as here;
 import 'package:here_sdk/search.dart';
 
+import 'EVSearchExample.dart';
+
 // A callback to notify the hosting widget.
 typedef ShowDialogFunction = void Function(String title, String message);
 
@@ -38,6 +40,7 @@ typedef ShowDialogFunction = void Function(String title, String message);
 // (isoline routing).
 class EVRoutingExample {
   final HereMapController _hereMapController;
+  late MapCamera _camera;
   List<MapMarker> _mapMarkers = [];
   List<MapPolyline> _mapPolylines = [];
   List<MapPolygon> _mapPolygons = [];
@@ -61,12 +64,39 @@ class EVRoutingExample {
   final String lastUpdatedMetadataKey = "lastUpdated";
   final String requiredChargingMetadataKey = "requiredCharging";
 
+  // Metadata keys for EVCP 3.0 data (used when isEVCP3 is true).
+  final String nameMetadataKey = "name";
+  final String cpoIdMetadataKey = "cpo_id";
+  final String subOperatorNameMetadataKey = "sub_operator_name";
+  final String emspNamesMetadataKey = "emsp_names";
+  final String facilityTypesMetadataKey = "facility_types";
+  final String parkingTypeMetadataKey = "parking_type";
+  final String energyMixMetadataKey = "energy_mix";
+  final String tariffCountMetadataKey = "tariff_count";
+  final String connectorGroupCountMetadataKey = "connector_group_count";
+  final String supportedVehicleCountMetadataKey = "supported_vehicle_count";
+  final String truckRestrictionsMetadataKey = "truck_restrictions";
+  final String restrictionCountMetadataKey = "restriction_count";
+  final String supportPhoneNumberMetadataKey = "support_phone_number";
+  final String timeZoneMetadataKey = "time_zone";
+  final String openingHoursMetadataKey = "opening_hours";
+
+  late EVSearchExample _evSearchExample;
+
+  // This flag enables the use of the EVSearchEngine.
+  // This engine will look online for enhanced data for EV charging stations.
+  // Internally, the engine accesses the Electric Vehicle Charging Point (EVCP) 3.0 backend.
+  // Find more info here: https://www.here.com/docs/bundle/ev-charge-points-api-v3-developer-guide/page/README.html
+  // ATTENTION: This new API requires a separate license; find info more in the linked document.
+  bool _isEVCP3 = false;
+
   EVRoutingExample(ShowDialogFunction showDialogCallback, HereMapController hereMapController)
     : _showDialog = showDialogCallback,
       _hereMapController = hereMapController {
+    _camera = _hereMapController.camera;
     double distanceToEarthInMeters = 10000;
     MapMeasure mapMeasureZoom = MapMeasure(MapMeasureKind.distanceInMeters, distanceToEarthInMeters);
-    _hereMapController.camera.lookAtPointWithMeasure(GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
+    _camera.lookAtPointWithMeasure(GeoCoordinates(52.520798, 13.409408), mapMeasureZoom);
 
     // Setting a tap handler to pick markers from map.
     _setTapGestureHandler();
@@ -91,6 +121,16 @@ class EVRoutingExample {
     } on InstantiationException {
       throw ("Initialization of SearchEngine failed.");
     }
+
+    // Create an instance of EVSearchExample to enable EVSearchEngine for enriching search results with EVCP 3.0 data.
+    _evSearchExample=EVSearchExample();
+    // Attach EVSearchEngine to SearchEngine for EV enrichment.
+    // Place results will contain additional data such as operator, sub-operator and eMSPs info, facility types, parking type, energy mix.
+    EVSearchEngine? _evSearchEngine = _evSearchExample.evSearchEngine;
+    if (_evSearchExample.evSearchEngine != null && _isEVCP3) {
+      _searchEngine.setEVInterface(_evSearchEngine!);
+    }
+
   }
 
   // Calculates an EV car route based on random start / destination coordinates near viewport center.
@@ -114,7 +154,7 @@ class EVRoutingExample {
     _lastPlannedChargingWaypoint = plannedChargingStopWaypoint;
     List<Waypoint> waypoints = [startWaypoint, plannedChargingStopWaypoint, destinationWaypoint];
 
-    _currentRouteCalculationTask = _routingEngine.calculateEVCarRoute(waypoints, _getEVCarOptions(), (
+    _currentRouteCalculationTask = _routingEngine.calculateRouteWithRoutingOptions(waypoints, _getEVRoutingOptions(), (
       RoutingError? routingError,
       List<here.Route>? routeList,
     ) {
@@ -159,7 +199,7 @@ class EVRoutingExample {
     // Add a user-defined charging stop.
     //
     // Note: To specify a ChargingStop, you must also set totalCapacityInKilowattHours,
-    // initialChargeInKilowattHours, and chargingCurve using BatterySpecification in EVCarOptions.
+    // initialChargeInKilowattHours, and chargingCurve using BatterySpecifications in ElectricVehicleOptions.
     // If any of these values are missing, the route calculation will fail with an invalid parameter error.
     ChargingStop plannedChargingStop = ChargingStop(
       powerInKilowatts,
@@ -175,7 +215,7 @@ class EVRoutingExample {
     return plannedChargingStopWaypoint;
   }
 
-  void _applyEMSPPreferences(EVCarOptions evCarOptions) {
+  void _applyEMSPPreferences(ElectricVehicleOptions evOptions) {
     // You can get a list of all E-Mobility Service Providers and their partner IDs by using the request described here:
     // https://www.here.com/docs/bundle/ev-charge-points-api-developer-guide/page/topics/example-charging-station.html.
     // No more than 10 E-Mobility Service Providers should be specified.
@@ -192,47 +232,61 @@ class EVRoutingExample {
     // Example code for an alternative provider.
     List<String> alternativeProviders = ["12345678-0000-abcd-0000-000123456789"];
 
-    evCarOptions.evMobilityServiceProviderPreferences = EVMobilityServiceProviderPreferences();
-    evCarOptions.evMobilityServiceProviderPreferences.high = preferredProviders;
-    evCarOptions.evMobilityServiceProviderPreferences.low = leastPreferredProviders;
-    evCarOptions.evMobilityServiceProviderPreferences.medium = alternativeProviders;
+    evOptions.evMobilityServiceProviderPreferences = EVMobilityServiceProviderPreferences();
+    evOptions.evMobilityServiceProviderPreferences.high = preferredProviders;
+    evOptions.evMobilityServiceProviderPreferences.low = leastPreferredProviders;
+    evOptions.evMobilityServiceProviderPreferences.medium = alternativeProviders;
   }
 
-  EVCarOptions _getEVCarOptions() {
-    EVCarOptions evCarOptions = EVCarOptions();
+  RoutingOptions _getEVRoutingOptions() {
+    RoutingOptions routingOptions = RoutingOptions();
 
+    // Configure a data-driven EV energy consumption model that combines empirically
+    // derived vehicle parameters with speed and elevation characteristics.
+    EmpiricalConsumptionModel empiricalConsumptionModel = EmpiricalConsumptionModel();
     // The below three options are the minimum you must specify or routing will result in an error.
-    evCarOptions.consumptionModel.ascentConsumptionInWattHoursPerMeter = 9;
-    evCarOptions.consumptionModel.descentRecoveryInWattHoursPerMeter = 4.3;
-    evCarOptions.consumptionModel.freeFlowSpeedTable = {0: 0.239, 27: 0.239, 60: 0.196, 90: 0.238};
+    empiricalConsumptionModel.ascentConsumptionInWattHoursPerMeter = 9;
+    empiricalConsumptionModel.descentRecoveryInWattHoursPerMeter = 4.3;
+    empiricalConsumptionModel.freeFlowSpeedTable = {0: 0.239, 27: 0.239, 60: 0.196, 90: 0.238};
+
+    ElectricVehicleOptions evOptions = ElectricVehicleOptions();
+
+    // Set the empirical consumption model so the EV routing
+    // can estimate energy usage based on speed and elevation.
+    evOptions.empiricalConsumptionModel = empiricalConsumptionModel;
 
     // Must be 0 for isoline calculation.
-    evCarOptions.routeOptions.alternatives = 0;
+    routingOptions.routeOptions.alternatives = 0;
 
     // Ensure that the vehicle does not run out of energy along the way
     // and charging stations are added as additional waypoints.
-    evCarOptions.ensureReachability = true;
+    evOptions.ensureReachability = true;
 
     // The below options are required when setting the ensureReachability option to true
     // (AvoidanceOptions need to be empty).
-    evCarOptions.avoidanceOptions = AvoidanceOptions();
-    evCarOptions.routeOptions.speedCapInMetersPerSecond = null;
-    evCarOptions.routeOptions.optimizationMode = OptimizationMode.fastest;
-    evCarOptions.batterySpecifications.connectorTypes = [
+    routingOptions.avoidanceOptions = AvoidanceOptions();
+    routingOptions.routeOptions.speedCapInMetersPerSecond = null;
+    routingOptions.routeOptions.optimizationMode = OptimizationMode.fastest;
+
+    BatterySpecifications batterySpecifications = BatterySpecifications();
+    batterySpecifications.connectorTypes = [
       ChargingConnectorType.tesla,
       ChargingConnectorType.iec62196Type1Combo,
       ChargingConnectorType.iec62196Type2Combo,
     ];
-    evCarOptions.batterySpecifications.totalCapacityInKilowattHours = 80.0;
-    evCarOptions.batterySpecifications.initialChargeInKilowattHours = 10.0;
-    evCarOptions.batterySpecifications.targetChargeInKilowattHours = 72.0;
-    evCarOptions.batterySpecifications.chargingCurve = {0.0: 239.0, 64.0: 111.0, 72.0: 1.0};
+    batterySpecifications.totalCapacityInKilowattHours = 80.0;
+    batterySpecifications.initialChargeInKilowattHours = 10.0;
+    batterySpecifications.targetChargeInKilowattHours = 72.0;
+    batterySpecifications.chargingCurve = {0.0: 239.0, 64.0: 111.0, 72.0: 1.0};
+    evOptions.batterySpecifications = batterySpecifications;
 
     // Apply EV mobility service provider preferences (eMSP).
-    _applyEMSPPreferences(evCarOptions);
+    _applyEMSPPreferences(evOptions);
+
+    routingOptions.evOptions = evOptions;
 
     // Note: More EV options are available, the above shows only the minimum viable options.
-    return evCarOptions;
+    return routingOptions;
   }
 
   void _logEVDetails(here.Route route) {
@@ -463,27 +517,28 @@ class EVRoutingExample {
         print("Search: No charging stations found along the route. Error: $searchError");
         return;
       }
-
-      // If error is nil, it is guaranteed that the items will not be nil.
-      print("Search: Search along route found ${items!.length} charging stations:");
+      print("Search: Search along route found \\${items!.length} charging stations:");
+      List<String> placeIds = [];
       for (Place place in items) {
         Details details = place.details;
-        Metadata metadata = getMetadataForEVChargingPools(details);
+        Metadata metadata;
+        if (_isEVCP3) {
+          metadata = getMetadataForEVChargingLocation(details);
+        } else {
+          metadata = getMetadataForEVChargingPools(details);
+        }
         bool foundExistingChargingStation = false;
         for (MapMarker mapMarker in _mapMarkers) {
           if (mapMarker.metadata != null) {
             String? id = mapMarker.metadata!.getString(requiredChargingMetadataKey);
             if (id != null && id.toLowerCase() == place.id.toLowerCase()) {
-              print(
-                "Search: Skipping: This charging station was already required to reach the destination (see red charging icon).",
-              );
+              print("Search: Insert metadata to existing charging station: This charging station was already required to reach the destination (see red charging icon).");
               mapMarker.metadata = metadata;
               foundExistingChargingStation = true;
               break;
             }
           }
         }
-
         if (!foundExistingChargingStation) {
           _addMapMarker(place.geoCoordinates!, "assets/charging.png", metadata);
         }
@@ -540,31 +595,46 @@ class EVRoutingExample {
   void _showPickedChargingStationResults(MapMarker mapMarker) {
     Metadata? metadata = mapMarker.metadata;
     if (metadata == null) {
-      print("No metadata found for the picked marker.");
+      print("MapPick: No metadata found for picked marker.");
       return;
     }
-
     List<String> details = [];
-
-    // Fetch metadata values and build message
     void addDetail(String key, String label) {
       String? value = metadata.getString(key);
-      if (value != null) details.add("$label: $value");
+      if (value != null && value.isNotEmpty) details.add("$label: $value");
     }
-
-    addDetail(supplierNameMetadataKey, "Name");
-    addDetail(connectorCountMetadataKey, "Connector Count");
-    addDetail(availableConnectorsMetadataKey, "Available Connectors");
-    addDetail(occupiedConnectorsMetadataKey, "Occupied Connectors");
-    addDetail(outOfServiceConnectorsMetadataKey, "Out of Service Connectors");
-    addDetail(reservedConnectorsMetadataKey, "Reserved Connectors");
-    addDetail(lastUpdatedMetadataKey, "Last Updated");
-
+    if (_isEVCP3) {
+      addDetail(nameMetadataKey, "Name");
+      addDetail(cpoIdMetadataKey, "CPO ID");
+      addDetail(supplierNameMetadataKey, "Operator");
+      addDetail(subOperatorNameMetadataKey, "Sub-Operator");
+      addDetail(emspNamesMetadataKey, "eMSPs");
+      addDetail(facilityTypesMetadataKey, "Facility Types");
+      addDetail(parkingTypeMetadataKey, "Parking Type");
+      addDetail(energyMixMetadataKey, "Energy Mix");
+      addDetail(connectorCountMetadataKey, "Connector Count");
+      addDetail(tariffCountMetadataKey, "Tariff Count");
+      addDetail(connectorGroupCountMetadataKey, "Connector Group Count");
+      addDetail(supportedVehicleCountMetadataKey, "Supported Vehicle Count");
+      addDetail(truckRestrictionsMetadataKey, "Truck Restrictions");
+      addDetail(openingHoursMetadataKey, "Opening Hours");
+      addDetail(restrictionCountMetadataKey, "Restriction Count");
+      addDetail(supportPhoneNumberMetadataKey, "Support Phone Number");
+      addDetail(timeZoneMetadataKey, "Time Zone");
+    } else {
+      addDetail(supplierNameMetadataKey, "Electronic Charging Pool Name");
+      addDetail(connectorCountMetadataKey, "Connector Count");
+      addDetail(availableConnectorsMetadataKey, "Available Connectors");
+      addDetail(occupiedConnectorsMetadataKey, "Occupied Connectors");
+      addDetail(outOfServiceConnectorsMetadataKey, "Out of Service Connectors");
+      addDetail(reservedConnectorsMetadataKey, "Reserved Connectors");
+      addDetail(lastUpdatedMetadataKey, "Last Updated");
+    }
     if (details.isNotEmpty) {
       details.add("\n\nFor a full list of attributes please refer to the API Reference.");
       _showDialog("Charging station details", details.join("\n"));
     } else {
-      print("No relevant metadata available for charging station.");
+      print("MapPick: No relevant metadata available for charging station.");
     }
   }
 
@@ -598,6 +668,86 @@ class EVRoutingExample {
     return metadata;
   }
 
+  // Returns metadata for an EVChargingLocation using both original and camelCase keys.
+  Metadata getMetadataForEVChargingLocation(Details details) {
+    Metadata metadata = Metadata();
+    final evChargingLocation = details.evChargingLocation;
+    if (evChargingLocation != null) {
+      // Name
+      if (evChargingLocation.name != null) {
+        metadata.setString(nameMetadataKey, evChargingLocation.name!);
+        metadata.setString("name_metadata_key", evChargingLocation.name!);
+      }
+      // CPO ID (if available)
+      final cpoId = evChargingLocation.cpoID;
+      if (cpoId != null) {
+        metadata.setString(cpoIdMetadataKey, cpoId);
+        metadata.setString("cpo_id_metadata_key", cpoId);
+      }
+      // Supplier/Operator Name
+      if (evChargingLocation.evChargingOperator?.name != null) {
+        metadata.setString(supplierNameMetadataKey, evChargingLocation.evChargingOperator!.name!);
+      }
+      // Sub Operator Name
+      if (evChargingLocation.evChargingSubOperator?.name != null) {
+        metadata.setString(subOperatorNameMetadataKey, evChargingLocation.evChargingSubOperator!.name!);
+        metadata.setString("sub_operator_name_metadata_key", evChargingLocation.evChargingSubOperator!.name!);
+      }
+      // eMSPs
+      final emsps = evChargingLocation.eMobilityServiceProviders;
+      if (emsps.isNotEmpty) {
+        final emspNames = emsps.map((emsp) => emsp.name).whereType<String>().join(", ");
+        metadata.setString(emspNamesMetadataKey, emspNames);
+        metadata.setString("emsp_names_metadata_key", emspNames);
+      }
+      // Facility Types
+      final facilityTypes = evChargingLocation.facilityTypes;
+      if (facilityTypes.isNotEmpty) {
+        metadata.setString(facilityTypesMetadataKey, facilityTypes.toString());
+        metadata.setString("facility_types_metadata_key", facilityTypes.toString());
+      }
+      // Parking Type
+      if (evChargingLocation.parkingType != null) {
+        metadata.setString(parkingTypeMetadataKey, evChargingLocation.parkingType.toString());
+        metadata.setString("parking_type_metadata_key", evChargingLocation.parkingType.toString());
+      }
+      // Energy Mix
+      if (evChargingLocation.energyMix != null) {
+        metadata.setString(energyMixMetadataKey, evChargingLocation.energyMix.toString());
+        metadata.setString("energy_mix_metadata_key", evChargingLocation.energyMix.toString());
+      }
+      // Tariffs
+      final tariffs = evChargingLocation.tariffs;
+      metadata.setString(tariffCountMetadataKey, tariffs.length.toString());
+      // Connector Groups
+      final connectorGroups = evChargingLocation.connectorGroups;
+      metadata.setString(connectorGroupCountMetadataKey, connectorGroups.length.toString());
+      // Supported Vehicles
+      final supportedVehicles = evChargingLocation.supportedVehicles;
+      metadata.setString(supportedVehicleCountMetadataKey, supportedVehicles.length.toString());
+      // Truck Restrictions
+      if (evChargingLocation.truckRestrictions != null) {
+        metadata.setString(truckRestrictionsMetadataKey, evChargingLocation.truckRestrictions.toString());
+      }
+      // Opening Hours (mapped to lastUpdatedMetadataKey for parity)
+      if (evChargingLocation.openingHours != null) {
+        metadata.setString(openingHoursMetadataKey, evChargingLocation.openingHours.toString());
+      }
+      // Restrictions
+      final restrictions = evChargingLocation.restrictions;
+      metadata.setString(restrictionCountMetadataKey, restrictions.length.toString());
+      // Support Phone Number
+      if (evChargingLocation.supportPhoneNumber != null) {
+        metadata.setString(supportPhoneNumberMetadataKey, evChargingLocation.supportPhoneNumber!);
+      }
+      // Time Zone
+      if (evChargingLocation.timeZone != null) {
+        metadata.setString(timeZoneMetadataKey, evChargingLocation.timeZone!);
+      }
+    }
+    return metadata;
+  }
+
   // Shows the reachable area for this electric vehicle from the current start coordinates and EV car options when the goal is
   // to consume 400 Wh or less (see options below).
   void showReachableArea() {
@@ -611,7 +761,7 @@ class EVRoutingExample {
 
     // This finds the area that an electric vehicle can reach by consuming 400 Wh or less,
     // while trying to take the fastest possible route into any possible straight direction from start.
-    // Note: We have specified evCarOptions.routeOptions.optimizationMode = OptimizationMode.FASTEST for EV car options above.
+    // Note: We have specified routingOptions.evOptions.ensureReachability = true and routingOptions.routeOptions.optimizationMode = OptimizationMode.fastest for EV options above.
     List<int> rangeValues = [400];
 
     // With null we choose the default option for the resulting polygon shape.
@@ -623,7 +773,7 @@ class EVRoutingExample {
       maxPoints,
       RoutePlaceDirection.departure,
     );
-    IsolineOptions isolineOptions = IsolineOptions.withEVCarOptions(calculationOptions, _getEVCarOptions());
+    IsolineOptions isolineOptions = IsolineOptions.withRoutingOptions(calculationOptions, _getEVRoutingOptions());
 
     _isolineRoutingEngine.calculateIsoline(Waypoint(_startGeoCoordinates!), isolineOptions, (
       RoutingError? routingError,
@@ -735,11 +885,7 @@ class EVRoutingExample {
   }
 
   GeoCoordinates _createRandomGeoCoordinatesInViewport() {
-    GeoBox? geoBox = _hereMapController.camera.boundingBox;
-    if (geoBox == null) {
-      // Happens only when map is not fully covering the viewport.
-      return GeoCoordinates(52.530932, 13.384915);
-    }
+    GeoBox geoBox = _getMapViewGeoBox();
 
     GeoCoordinates northEast = geoBox.northEastCorner;
     GeoCoordinates southWest = geoBox.southWestCorner;
@@ -753,6 +899,24 @@ class EVRoutingExample {
     double lon = _getRandom(minLon, maxLon);
 
     return GeoCoordinates(lat, lon);
+  }
+
+  GeoBox _getMapViewGeoBox() {
+    GeoBox? cameraBoundingBox = _camera.boundingBox;
+    if (cameraBoundingBox != null) {
+      return cameraBoundingBox;
+    }
+
+    // Happens when map does not fully cover the viewport, e.g. due to tilt.
+    GeoCoordinates center = _getMapViewCenter();
+    double delta = 0.08;
+    GeoCoordinates southWestCorner = GeoCoordinates(center.latitude - delta, center.longitude - delta);
+    GeoCoordinates northEastCorner = GeoCoordinates(center.latitude + delta, center.longitude + delta);
+    return GeoBox(southWestCorner, northEastCorner);
+  }
+
+  GeoCoordinates _getMapViewCenter() {
+    return _hereMapController.camera.state.targetCoordinates;
   }
 
   double _getRandom(double min, double max) {

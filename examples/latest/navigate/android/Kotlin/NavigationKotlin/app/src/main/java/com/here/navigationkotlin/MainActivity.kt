@@ -304,7 +304,7 @@ class MainActivity: ComponentActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        permissionsRequestor!!.onRequestPermissionsResult(requestCode, grantResults)
+        permissionsRequestor.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
     private fun loadMapScene() {

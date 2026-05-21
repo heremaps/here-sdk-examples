@@ -34,8 +34,6 @@ import 'events.dart';
 
 enum TopologyDirectionality { toStart, fromStart, bidirectional, undefined }
 
-enum VenueTransportMode { auto, taxi, motorcycle, emergencyVehicle, pedestrian }
-
 class VenueTapController {
   final HereMapController? hereMapController;
   final VenueMap venueMap;
@@ -150,17 +148,14 @@ class VenueTapController {
       String imageName = '';
 
       switch (mode.name) {
-        case 'auto':
+        case 'car':
           imageName = 'img_car';
           break;
         case 'taxi':
           imageName = 'img_taxi';
           break;
-        case 'motorcycle':
+        case 'scooter':
           imageName = 'img_bike';
-          break;
-        case 'emergencyVehicle':
-          imageName = 'img_ambulance';
           break;
         case 'pedestrian':
           imageName = 'img_pedestrian';

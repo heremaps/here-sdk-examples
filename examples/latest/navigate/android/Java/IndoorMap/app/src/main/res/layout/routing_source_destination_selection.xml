@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/bottomSheetRoutingUi">
+
+        <ImageView
+            android:id="@+id/routingCancelBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="10dp"
+            android:src="@drawable/cross_mark"
+            android:layout_alignTop="@id/sourceId"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <EditText
+            android:id="@+id/sourceId"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="25dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="1dp"
+            android:hint="@string/indoor_routing_source_hint"
+            android:textSize="13sp"
+            android:elevation="0dp"
+            android:background="@drawable/routing_edit_text_background"
+            android:drawableStart="@drawable/current_location_icon_edit_text"
+            android:drawablePadding="5dp"
+            android:paddingStart="5dp"
+            android:paddingEnd="5dp"
+            android:layout_alignParentStart="true"
+            android:layout_toStartOf="@+id/routingCancelBtn"
+            android:focusable="false"
+            android:cursorVisible="false"
+            android:inputType="none"
+            android:textColor="#53D9D0"
+            android:textColorHint="#53D9D0"
+            />
+
+        <View
+            android:layout_below="@+id/sourceId"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#CCCCCC"
+            android:layout_marginStart="35dp"
+            android:layout_marginEnd="70dp"
+            />
+
+        <EditText
+            android:id="@+id/destinationId"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="25dp"
+            android:layout_marginTop="1dp"
+            android:layout_marginBottom="5dp"
+            android:layout_below="@id/sourceId"
+            android:layout_alignParentStart="true"
+            android:layout_toStartOf="@id/routingCancelBtn"
+            android:hint="@string/indoor_routing_destination_hint"
+            android:textSize="13sp"
+            android:elevation="0dp"
+            android:background="@drawable/routing_edit_text_background"
+            android:drawableStart="@drawable/destination_icon_edit_text"
+            android:drawablePadding="5dp"
+            android:paddingStart="5dp"
+            android:paddingEnd="5dp"
+            android:focusable="false"
+            android:cursorVisible="false"
+            android:inputType="none"
+            />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <androidx.recyclerview.widget.RecyclerView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/RoutingListView"
+            android:layout_marginTop="5dp"
+            android:visibility="gone" />
+    </RelativeLayout>
+
+
+</LinearLayout>

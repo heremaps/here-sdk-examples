@@ -20,15 +20,20 @@ package com.here.navigationkotlin
 
 import android.content.Context
 import android.util.Log
+import com.here.sdk.core.GeoCircle
 import com.here.sdk.core.GeoCoordinates
+import com.here.sdk.core.GeoPolygon
 import com.here.sdk.core.Location
 import com.here.sdk.core.engine.*
 import com.here.sdk.core.errors.InstantiationErrorException
 import com.here.sdk.location.LocationAccuracy
+import com.here.sdk.maploader.MapLoaderError
 import com.here.sdk.mapview.MapView
 import com.here.sdk.navigation.DynamicCameraBehavior
 import com.here.sdk.navigation.SpeedBasedCameraBehavior
 import com.here.sdk.navigation.VisualNavigator
+import com.here.sdk.prefetcher.PolygonPrefetcher
+import com.here.sdk.prefetcher.PrefetchStatusListener
 import com.here.sdk.prefetcher.RoutePrefetcher
 import com.here.sdk.routing.Route
 import com.here.sdk.routing.RoutingError
@@ -52,6 +57,7 @@ class NavigationExample(
     private val herePositioningSimulator: HEREPositioningSimulator
     private var dynamicRoutingEngine: DynamicRoutingEngine? = null
     private val routePrefetcher: RoutePrefetcher
+    private val polygonPrefetcher: PolygonPrefetcher
     private val navigationHandler: NavigationHandler
     private val electronicHorizonHandler: ElectronicHorizonHandler
 
@@ -63,6 +69,7 @@ class NavigationExample(
         // The RoutePrefetcher downloads map data in advance into the map cache.
         // This is not mandatory, but can help to improve the guidance experience.
         routePrefetcher = RoutePrefetcher(SDKNativeEngine.getSharedInstance()!!)
+        polygonPrefetcher = PolygonPrefetcher(SDKNativeEngine.getSharedInstance()!!)
 
         try {
             // Without a route set, this starts tracking mode.
@@ -100,9 +107,23 @@ class NavigationExample(
 
     private fun prefetchMapData(currentGeoCoordinates: GeoCoordinates) {
         // Prefetches map data around the provided location with a radius of 2 km into the map cache.
-        // For the best experience, prefetchAroundLocationWithRadius() should be called as early as possible.
+        // For the best experience, prefetch should be called as early as possible.
         val radiusInMeters = 2000.0
-        routePrefetcher.prefetchAroundLocationWithRadius(currentGeoCoordinates, radiusInMeters)
+
+        val geoPolygon = GeoPolygon(GeoCircle(currentGeoCoordinates, radiusInMeters))
+        polygonPrefetcher.prefetch(geoPolygon, object : PrefetchStatusListener {
+            override fun onProgress(progress: Int) {
+                Log.d(TAG, "Polygon prefetch progress: $progress %")
+            }
+            override fun onComplete(error: MapLoaderError?) {
+                if (error == null) {
+                    Log.d(TAG, "Polygon prefetch completed successfully")
+                } else {
+                    Log.d(TAG, "Polygon prefetch failed: ${error.name}")
+                }
+            }
+        })
+
         // Prefetches map data within a corridor along the route that is currently set to the provided Navigator instance.
         // This happens continuously in discrete intervals.
         // If no route is set, no data will be prefetched.

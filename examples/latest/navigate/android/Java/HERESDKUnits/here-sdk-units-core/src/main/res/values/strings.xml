@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="here_sdk_units_background_access_dialog_title">Enable background location</string>
+    <string name="here_sdk_units_background_access_dialog_text">Please enable \'(%1$s)\' location access.</string>
+    <string name="here_sdk_units_background_access_button_settings">Settings</string>
+</resources>

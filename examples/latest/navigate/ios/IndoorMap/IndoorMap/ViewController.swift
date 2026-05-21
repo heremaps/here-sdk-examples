@@ -20,7 +20,7 @@
 import heresdk
 import UIKit
 
-class SearchBar: UISearchBar {
+public class SearchBar: UISearchBar {
     override init(frame: CGRect) {
         super.init(frame: frame)
         commonSetup()
@@ -71,7 +71,7 @@ class SearchBar: UISearchBar {
         }
     }
 
-    override var intrinsicContentSize: CGSize {
+    public override var intrinsicContentSize: CGSize {
         return CGSize(width: UIView.noIntrinsicMetric,  height: 80)
     }
 }
@@ -127,7 +127,10 @@ class BannerViewController: UIViewController {
     }
 
     @objc private func closeBanner() {
-        bannerView.removeFromSuperview()
+        // Remove the view controller from its parent and its view from the superview
+        self.willMove(toParent: nil)
+        self.view.removeFromSuperview()
+        self.removeFromParent()
     }
 
     func showErrorBanner(withMessage message: String) {
@@ -247,9 +250,12 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, VenueInfoLi
     @IBOutlet weak var topPannelTopology: UIImageView!
     private let bannerViewController = BannerViewController()
     @IBOutlet weak var spinnerImg: UIImageView!
-    @IBOutlet weak var spinnerView: UIView!
+    @IBOutlet public weak var spinnerView: UIView!
     @IBOutlet weak var handleView: UIView!
     private let customSearchBar = SearchBar()
+    private weak var indoorBottomSheet: UIViewController?
+    public let indoorRoutingBottomSheet: UIViewController = (UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "IndoorRoutingBottomSheet") as? IndoorRoutingUIController)!
+    public var indoorRoutingHandler = IndoorRoutingHandler()
 
     var mapView: MapView!
     var mapScheme: MapScheme = .normalDay
@@ -276,6 +282,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, VenueInfoLi
 
     //Label text preference as per user choice
     var labelPref = ["OCCUPANT_NAMES", "SPACE_NAME", "INTERNAL_ADDRESS"]
+    
 
     // Set value for hrn with your platform catalog HRN value if you want to load non default collection.
     var hrn: String = "YOUR_CATALOG_HRN"
@@ -456,7 +463,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, VenueInfoLi
         }
     }
 
-    func toggleRotation() {
+    public func toggleRotation() {
         if isRotating {
             stopRotation()
         } else {
@@ -464,12 +471,12 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, VenueInfoLi
         }
     }
 
-    func startRotation() {
+    public func startRotation() {
         isRotating = true
         rotateView()
     }
 
-    func stopRotation() {
+    public func stopRotation() {
         isRotating = false
     }
 
@@ -515,6 +522,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, VenueInfoLi
 
         let venueMap = venueEngine.venueMap
         venueMap.removeVenue(venue: venueMap.selectedVenue!)
+        indoorRoutingHandler.stopRouting()
+        hideBottomSheet()
     }
 
     func loadStructure(_ structureName: String) {
@@ -631,7 +640,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, VenueInfoLi
         let camera = mapView.camera
         camera.lookAt(point: GeoCoordinates(latitude: 52.553013, longitude: 13.292189, altitude: 500.0))
         // Hide the extruded building layer, so that it does not overlap with the venues.
-        mapView.mapScene.disableFeatures([MapFeatures.extrudedBuildings])
+        mapView.mapScene.disableFeatures([MapFeatures.extrudedBuildings, MapFeatures.landmarks])
 
         // Create a venue engine object. Once the initialization is done, a completion handler
         // will be called.
@@ -663,6 +672,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, VenueInfoLi
                                           mapView: mapView,
                                           geometryLabel: geometryNameLabel)
         venueSearch.setup(venueMap, tapHandler: venueTapHandler)
+        indoorRoutingHandler.setup(venueEngine, mapView: mapView)
+        indoorRoutingHandler.viewController = self
         mapView.gestures.tapDelegate = self
         
         venueService.loadTopologies()
@@ -776,6 +787,38 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, VenueInfoLi
         super.didReceiveMemoryWarning()
         mapView.handleLowMemory()
     }
+    
+    func showBottomSheet(height: CGFloat) {
+        
+        if let indoorSheet = indoorRoutingBottomSheet as? IndoorRoutingUIController {
+            if indoorSheet.parent == nil {
+                self.addChild(indoorSheet)
+                self.view.addSubview(indoorSheet.view)
+                indoorSheet.didMove(toParent: self)
+            }
+            indoorSheet.selectedVenue =  venueTapHandler?.selectedVenue
+            indoorSheet.mapview = mapView
+            indoorSheet.venueTapHandler = venueTapHandler
+            indoorSheet.showBottomSheet(height: height)
+        }
+    }
+    
+    func hideBottomSheet() {
+        UIView.animate(withDuration: 0.3, animations: {
+            self.indoorRoutingBottomSheet.view.frame.origin.y = self.view.frame.height
+        }) { _ in
+            self.indoorRoutingBottomSheet.view.removeFromSuperview()
+            self.indoorRoutingBottomSheet.removeFromParent()
+        }
+        let indoorSheet = indoorRoutingBottomSheet as? IndoorRoutingUIController
+        indoorSheet?.currentState = .ROUTING_CLOSED
+        topPannelTopology.isHidden = false
+    }
+    
+    public func hideTopology() {
+        venueEngine.venueMap.selectedVenue?.isTopologyVisible = false
+        topPannelTopology.isHidden = true
+    }
 }
 
 // Tap delegate for MapView
@@ -785,7 +828,38 @@ extension ViewController: TapDelegate {
         venueTapHandler?.onTap(origin: origin)
         
         if ((venueTapHandler?.isGeometryTapped) != false) {
-            bottomDrawerHeightConstraint.constant = 180
+            if let geometry = venueTapHandler?.selectedGeometry {
+                if venueTapHandler?.selectedVenue?.venueModel.topologies.isEmpty == true {
+                    bottomDrawerHeightConstraint.constant = 180
+                }
+                else {
+                    if let indoorSheet = indoorRoutingBottomSheet as? IndoorRoutingUIController {
+                        if indoorSheet.currentState == .ROUTING_UI {
+                            indoorSheet.selectedDepartureGeometry = geometry
+                            indoorSheet.spaceSelectionState = .SELECTING_DEPARTURE_SPACE
+                            let name = geometry.name
+                            if(!name.isEmpty) {
+                                indoorSheet.departureLable.text = name + ", " + geometry.level.name
+                            } else {
+                                let center = geometry.center
+                                let lat = String(format: "%.5f", center.latitude)
+                                let lon = String(format: "%.5f", center.longitude)
+                                indoorSheet.departureLable.text = "Lat: \(lat), Lon: \(lon)" + ", " + geometry.level.name
+                            }
+                            venueTapHandler?.deselectGeometry()
+                            indoorRoutingHandler.startRouting(source: indoorSheet.selectedDepartureGeometry!, destination: indoorSheet.selectedArrivalGeometry!)
+                        } else {
+                            indoorSheet.selectedArrivalGeometry = geometry
+                            indoorSheet.spaceSelectionState = .SELECTING_ARRIVAL_SPACE
+                            indoorSheet.indoorRoutingHandler = indoorRoutingHandler
+                            indoorSheet.topologyButton = topPannelTopology
+                            indoorSheet.topologyVisibility = topologyVisibility
+                            indoorSheet.modalPresentationStyle = .overCurrentContext
+                            showBottomSheet(height: 150)
+                        }
+                    }
+                }
+            }
         }
         else {
             bottomDrawerHeightConstraint.constant = 105
@@ -880,7 +954,11 @@ extension ViewController: VenueSelectionDelegate {
 extension ViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if ((venueTapHandler?.isGeometryTapped) != false) {
-            return 1;
+            if venueTapHandler?.selectedVenue?.venueModel.topologies.isEmpty == true {
+                return 1;
+            } else {
+                return searchResult.count;
+            }
         } else {
             if venueLoaded {
                 return searchResult.count
@@ -895,60 +973,117 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        if ((venueTapHandler?.isGeometryTapped) != false) {
-            return 64
-        } else {
-            return 64
-        }
+        return 64
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if ((venueTapHandler?.isGeometryTapped) != false) {
             let cell = tableView.dequeueReusableCell(withIdentifier: "customCell") as! CustomCell
-            cell.indoor.image = UIImage(named: displaydata[2])
-            
-            if let geometry = venueTapHandler?.selectedGeometry {
-                let name = geometry.name
+            if (venueMap?.selectedVenue?.venueModel.topologies.isEmpty == true){
+                cell.indoor.image = UIImage(named: displaydata[2])
+                 
+                 if let geometry = venueTapHandler?.selectedGeometry {
+                 let name = geometry.name
+                 let attributedText = NSMutableAttributedString()
+                 let nameAttributes: [NSAttributedString.Key: Any] = [
+                 .font: UIFont.systemFont(ofSize: 20),
+                 .foregroundColor: UIColor(red: 0, green: 0.039, blue: 0.098, alpha: 0.8)
+                 ]
+                 
+                 let nameAttributedString = NSAttributedString(string: name, attributes: nameAttributes)
+                 attributedText.append(nameAttributedString)
+                 
+                 if let address = geometry.internalAddress?.address, !address.isEmpty {
+                 if attributedText.length > 0 {
+                 attributedText.append(NSAttributedString(string: "\n"))
+                 }
+                 let addressAttributes: [NSAttributedString.Key: Any] = [
+                 .font: UIFont.systemFont(ofSize: 14),
+                 .foregroundColor: UIColor(red: 0.031, green: 0.09, blue: 0.204, alpha: 0.6)
+                 ]
+                 let addressAttributedString = NSAttributedString(string: address, attributes: addressAttributes)
+                 attributedText.append(addressAttributedString)
+                 }
+                 cell.venueLbl.attributedText = attributedText
+                 } else {
+                 cell.venueLbl.text = ""
+                 }
+                 
+                 // Assuming you have a UIImageView named "indoor"
+                 let imageView = cell.indoor
+                 
+                 // Set the desired width and height
+                 let newWidth: CGFloat = 21 // Specify your desired width
+                 let newHeight: CGFloat = 31 // Specify your desired height
+                 
+                 // Update the frame of the image view
+                 imageView?.frame = CGRect(x: imageView!.frame.origin.x, y: (imageView?.frame.origin.y)!, width: newWidth, height: newHeight)
+                 
+                 // Load the image and assign it to the image view
+                 if let image = UIImage(named: displaydata[2]) {
+                 imageView?.image = image
+                 }
+                 cell.rightaccessory.isHidden = true
+            } else {
+                cell.indoor.image = UIImage(named: displaydata[2])
+                
+                let geometry = searchResult[indexPath.row]
+                let name = geometry.name + ", " + geometry.level.name
+                let address = geometry.internalAddress?.address
+                
+                // Create an attributed string for the label text
                 let attributedText = NSMutableAttributedString()
                 let nameAttributes: [NSAttributedString.Key: Any] = [
-                    .font: UIFont.systemFont(ofSize: 20),
+                    .font: UIFont.systemFont(ofSize: 16),
                     .foregroundColor: UIColor(red: 0, green: 0.039, blue: 0.098, alpha: 0.8)
                 ]
-                
                 let nameAttributedString = NSAttributedString(string: name, attributes: nameAttributes)
                 attributedText.append(nameAttributedString)
                 
-                if let address = geometry.internalAddress?.address, !address.isEmpty {
-                    if attributedText.length > 0 {
-                        attributedText.append(NSAttributedString(string: "\n"))
-                    }
+                if let address = address, !address.isEmpty {
+                    attributedText.append(NSAttributedString(string: "\n"))
+                    // Add the address with a smaller font size
                     let addressAttributes: [NSAttributedString.Key: Any] = [
                         .font: UIFont.systemFont(ofSize: 14),
-                        .foregroundColor: UIColor(red: 0.031, green: 0.09, blue: 0.204, alpha: 0.6)
+                        .foregroundColor: UIColor(red: 0, green: 0.039, blue: 0.098, alpha: 0.8)
                     ]
                     let addressAttributedString = NSAttributedString(string: address, attributes: addressAttributes)
                     attributedText.append(addressAttributedString)
                 }
+                
+                // Set the attributed text to your label
                 cell.venueLbl.attributedText = attributedText
-            } else {
-                cell.venueLbl.text = ""
+                
+                // Assuming you have a UIImageView named "indoor"
+                let imageView = cell.indoor
+                
+                // Set the desired width and height
+                let newWidth: CGFloat = 21 // Specify your desired width
+                let newHeight: CGFloat = 31 // Specify your desired height
+                
+                // Update the frame of the image view
+                imageView?.frame = CGRect(x: imageView!.frame.origin.x, y: (imageView?.frame.origin.y)!, width: newWidth, height: newHeight)
+                
+                // Load the image and assign it to the image view
+                if let image = UIImage(named: displaydata[2]) {
+                    imageView?.image = image
+                }
+                
+                // Assuming you have a UIImageView named "rightaccessory"
+                let imageView1 = cell.rightaccessory
+                
+                // Set the desired width and height
+                let newWidth1: CGFloat = 21 // Specify your desired width
+                let newHeight1: CGFloat = 31 // Specify your desired height
+                
+                // Update the frame of the image view
+                imageView1?.frame = CGRect(x: imageView1!.frame.origin.x, y: (imageView1?.frame.origin.y)!, width: newWidth1, height: newHeight1)
+                
+                // Load the image and assign it to the image view
+                if let image1 = UIImage(named: displaydata[3]) {
+                    imageView1?.image = image1
+                }
             }
-            
-            // Assuming you have a UIImageView named "indoor"
-            let imageView = cell.indoor
-            
-            // Set the desired width and height
-            let newWidth: CGFloat = 21 // Specify your desired width
-            let newHeight: CGFloat = 31 // Specify your desired height
-            
-            // Update the frame of the image view
-            imageView?.frame = CGRect(x: imageView!.frame.origin.x, y: (imageView?.frame.origin.y)!, width: newWidth, height: newHeight)
-            
-            // Load the image and assign it to the image view
-            if let image = UIImage(named: displaydata[2]) {
-                imageView?.image = image
-            }
-            cell.rightaccessory.isHidden = true
             return cell;
             
         } else {
@@ -1071,8 +1206,17 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
                 let geometry = searchResult[indexPath.row]
                 venueTapHandler?.selectGeometry(venue: venue!, geometry: geometry, center: true)
                 customSearchBar.resignFirstResponder()
-                bottomDrawerHeightConstraint.constant = 105
-                customSearchBar.placeholder = "Search for spaces"
+                if venueTapHandler?.selectedVenue?.venueModel.topologies.isEmpty == false {
+                    if let indoorSheet = indoorRoutingBottomSheet as? IndoorRoutingUIController {
+                        indoorSheet.selectedArrivalGeometry = geometry
+                        indoorSheet.spaceSelectionState = .SELECTING_ARRIVAL_SPACE
+                        indoorSheet.indoorRoutingHandler = indoorRoutingHandler
+                        indoorSheet.topologyButton = topPannelTopology
+                        indoorSheet.topologyVisibility = topologyVisibility
+                        indoorSheet.modalPresentationStyle = .overCurrentContext
+                        showBottomSheet(height: 150)
+                    }
+                }
             } else {
                 if searching {
                     if let index = venueNamesList.firstIndex(of: searchName[indexPath.row]) {

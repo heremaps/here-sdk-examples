@@ -59,6 +59,7 @@ class RouteCalculator(private val mapView: MapView) {
             CalculateRouteCallback { routingError: RoutingError?, routes: List<Route>? ->
                 if (routingError == null) {
                     routes?.let {
+                        testRoute = routes[0]
                         showRouteOnMap(routes[0])
                     }
                 } else {

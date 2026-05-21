@@ -157,13 +157,16 @@ class ElectronicHorizonHandler {
                     return
                 }
                 Log.d(LOG_TAG, "ElectronicHorizonUpdate received.")
-                // Asynchronously start to load required data for the new segments.
-                // Use the ElectronicHorizonDataLoaderStatusListener to get notified when new data is arriving.
+
+                // Store last known ElectronicHorizon if present.
                 if (electronicHorizonUpdate?.electronicHorizon != null) {
                     lastElectronicHorizon = electronicHorizonUpdate.electronicHorizon
+                }
+                //Asynchronously start to load required data for the new segments.
+                // Use the ElectronicHorizonDataLoaderStatusListener to get notified when new data is arriving.
+                if (electronicHorizonUpdate?.segmentChanges != null) {
                     electronicHorizonDataLoader.loadData(electronicHorizonUpdate)
                 }
-
             }
         }
     }

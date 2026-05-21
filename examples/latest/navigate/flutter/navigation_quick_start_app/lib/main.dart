@@ -119,7 +119,7 @@ class _MyAppState extends State<MyApp> {
     HERE.Waypoint startWaypoint = HERE.Waypoint(HERE.GeoCoordinates(52.520798, 13.409408));
     HERE.Waypoint destinationWaypoint = HERE.Waypoint(HERE.GeoCoordinates(52.530905, 13.385007));
 
-    _routingEngine!.calculateCarRoute([startWaypoint, destinationWaypoint], HERE.CarOptions(), (
+    _routingEngine!.calculateRouteWithRoutingOptions([startWaypoint, destinationWaypoint], HERE.RoutingOptions(), (
       HERE.RoutingError? routingError,
       List<HERE.Route>? routeList,
     ) async {

@@ -105,7 +105,7 @@ class _MainPageState extends State<MainPage> {
 
     // Hide the extruded building layer, so that it does not overlap
     // with the venues.
-    _hereMapController.mapScene.disableFeatures([MapFeatures.extrudedBuildings]);
+    _hereMapController.mapScene.disableFeatures([MapFeatures.extrudedBuildings, MapFeatures.landmarks]);
   }
 
   @override
@@ -710,7 +710,7 @@ class _MainPageState extends State<MainPage> {
 
       // Hide the extruded building layer, so that it does not overlap
       // with the venues.
-      hereMapController.mapScene.disableFeatures([MapFeatures.extrudedBuildings]);
+      hereMapController.mapScene.disableFeatures([MapFeatures.extrudedBuildings, MapFeatures.landmarks]);
 
       // Create a venue engine object. Once the initialization is done,
       // a callback will be called.

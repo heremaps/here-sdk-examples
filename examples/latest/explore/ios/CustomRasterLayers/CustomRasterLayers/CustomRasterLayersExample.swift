@@ -23,8 +23,11 @@ import SwiftUI
 class CustomRasterLayersExample {
 
     private let mapView: MapView
-    private var rasterMapLayerStyle: MapLayer!
-    private var rasterDataSourceStyle: RasterDataSource!
+    
+    private var outdoorLayer: MapLayer?
+    private var outdoorDataSource: RasterDataSource?
+    private var transportLayer: MapLayer?
+    private var transportDataSource: RasterDataSource?
 
     init(_ mapView: MapView) {
         self.mapView = mapView
@@ -34,24 +37,48 @@ class CustomRasterLayersExample {
         let distanceInMeters = MapMeasure(kind: .distanceInMeters, value: 60 * 1000)
         camera.lookAt(point: GeoCoordinates(latitude: 52.518043, longitude: 13.405991),
                       zoom: distanceInMeters)
+
+        initializeRasterLayers()
         
-        // Load the map scene using a map scheme to render the map with.
         mapView.mapScene.loadScene(mapScheme: MapScheme.normalDay, completion: onLoadScene)
-        
-        let message = "For this example app, an outdoor layer from thunderforest.com is used. Without setting a valid API key, these raster tiles will show a watermark (terms of usage: https://www.thunderforest.com/terms/).\n Attribution for the outdoor layer: \n Maps © www.thunderforest.com, \n Data © www.osm.org/copyright."
+
+        let message = "For this example app, outdoor and transport layers from thunderforest.com are used. Without setting a valid API key, these raster tiles will show a watermark (terms of usage: https://www.thunderforest.com/terms/).\n Attribution for the outdoor and transport layers: \n Maps © www.thunderforest.com, \n Data © www.osm.org/copyright."
         showDialog(title: "Note", message: message)
 
-        let dataSourceName = "myRasterDataSourceStyle"
-        rasterDataSourceStyle = createRasterDataSource(dataSourceName: dataSourceName)
-        rasterMapLayerStyle = createMapLayer(dataSourceName: dataSourceName)
-
-        // We want to start with the default map style.
-        rasterMapLayerStyle.setEnabled(false)
-
-        // Add a POI marker
+        // Add a POI marker at the camera location to demonstrate marker rendering above custom raster layers
         addPOIMapMarker(geoCoordinates: GeoCoordinates(latitude: 52.530932, longitude: 13.384915))
     }
     
+    private func initializeRasterLayers() {
+        // Note: As an example, below are URL templates of an outdoor and a transport layer from thunderforest.com.
+        // On their web page you can register a key. Without setting a valid API key, the tiles will
+        // show a watermark.
+        // More details on the terms of usage can be found here: https://www.thunderforest.com/terms/
+        // For example, your application must have working links to https://www.thunderforest.com
+        // and https://www.osm.org/copyright.
+        // For the below URL templates, please pay attention to the following attribution:
+        // Maps © www.thunderforest.com, Data © www.osm.org/copyright.
+        // Alternatively, choose another tile provider or use the (customizable) map styles provided by HERE.
+        let templateUrlOutdoors = "https://tile.thunderforest.com/outdoors/{z}/{x}/{y}.png"
+        let templateUrlTransport = "https://tile.thunderforest.com/transport/{z}/{x}/{y}.png"
+
+        let outdoorDataSourceName = "myRasterDataSourceStyleOutdoors"
+        outdoorDataSource = createRasterDataSourceWithTemplate(
+            dataSourceName: outdoorDataSourceName,
+            templateUrl: templateUrlOutdoors
+        )
+        outdoorLayer = createMapLayer(dataSourceName: outdoorDataSourceName)
+        outdoorLayer?.setEnabled(false)
+
+        let transportDataSourceName = "myRasterDataSourceStyleTransport"
+        transportDataSource = createRasterDataSourceWithTemplate(
+            dataSourceName: transportDataSourceName,
+            templateUrl: templateUrlTransport
+        )
+        transportLayer = createMapLayer(dataSourceName: transportDataSourceName)
+        transportLayer?.setEnabled(false)
+    }
+
     // Completion handler for loadScene().
     private func onLoadScene(mapError: MapError?) {
         if let mapError = mapError {
@@ -59,26 +86,25 @@ class CustomRasterLayersExample {
         }
     }
 
-    func onEnableButtonClicked() {
-        rasterMapLayerStyle.setEnabled(true)
+    func enableOutdoorLayer() {
+        outdoorLayer?.setEnabled(true)
     }
 
-    func onDisableButtonClicked() {
-        rasterMapLayerStyle.setEnabled(false)
+    func enableTransportLayer() {
+        transportLayer?.setEnabled(true)
     }
 
-    private func createRasterDataSource(dataSourceName: String) -> RasterDataSource {
-        // Note: As an example, below is an URL template of an outdoor layer from thunderforest.com.
-        // On their web page you can register a key. Without setting a valid API key, the tiles will
-        // show a watermark.
-        // More details on the terms of usage can be found here: https://www.thunderforest.com/terms/
-        // For example, your application must have working links to https://www.thunderforest.com
-        // and https://www.osm.org/copyright.
-        // For the below template URL, please pay attention to the following attribution:
-        // Maps © www.thunderforest.com, Data © www.osm.org/copyright.
-        // Alternatively, choose another tile provider or use the (customizable) map styles provided by HERE.
-        let templateUrl = "https://tile.thunderforest.com/outdoors/{z}/{x}/{y}.png"
+    // Explicitly disable only the Outdoors layer.
+    func disableOutdoorLayer() {
+        outdoorLayer?.setEnabled(false)
+    }
 
+    // Explicitly disable only the Transport layer.
+    func disableTransportLayer() {
+        transportLayer?.setEnabled(false)
+    }
+
+    private func createRasterDataSourceWithTemplate(dataSourceName: String, templateUrl: String) -> RasterDataSource {
         // The storage levels available for this data source. Supported range [0, 31].
         let storageLevels: [Int32] = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
         var rasterProviderConfig = RasterDataSourceConfiguration.Provider(
@@ -89,8 +115,9 @@ class CustomRasterLayersExample {
         // If you want to add transparent layers then set this to true.
         rasterProviderConfig.hasAlphaChannel = false
 
-        // Raster tiles are stored in a separate cache on the device.
-        let path = "cache/raster/mycustomlayer"
+        // Use a dedicated cache path per data source to keep layers separated on disk.
+        // Raster tiles are stored in a separate cache, independent from the map cache used for vector data.
+        let path = "cache/raster/" + dataSourceName
         let maxDiskSizeInBytes: Int64 = 1024 * 1024 * 128 // 128 MB
         let cacheConfig = RasterDataSourceConfiguration.Cache(path: path,
                                                               diskSize: maxDiskSizeInBytes)

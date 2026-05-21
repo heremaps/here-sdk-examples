@@ -141,7 +141,7 @@ class TrafficExample : TapDelegate {
         } else {
             print("Picked at least one incident.")
             let firstIncident = trafficIncidents.first!
-            showDialog(title: "Traffic incident picked:", message: "Type: \(firstIncident.type.rawValue)")
+            showDialog(title: "Traffic incident picked:", message: "Type: \(firstIncident.type)")
 
             // Find more details by looking up the ID via TrafficEngine.
             findIncidentByID(firstIncident.originalId)

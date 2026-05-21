@@ -63,7 +63,6 @@ public class MainActivity extends AppCompatActivity {
     private static final String START_GUIDANCE_BUTTON_LABEL = "Start Guidance";
     private static final String STOP_GUIDANCE_BUTTON_LABEL = "Stop Guidance";
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -139,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        permissionsRequestor.onRequestPermissionsResult(requestCode, grantResults);
+        permissionsRequestor.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     private void loadMapScene() {
@@ -198,6 +197,25 @@ public class MainActivity extends AppCompatActivity {
         } else {
             navigationWarnersExample.startGuidance(startGeoCoordinates, destinationGeoCoordinates);
             guidanceButton.setText(STOP_GUIDANCE_BUTTON_LABEL);
+        }
+    }
+
+    public void onToggleModeClicked(View view) {
+        Button toggleButton = (Button) view;
+        boolean useWarnerEngine = !navigationWarnersExample.isUsingWarnerEngine();
+        navigationWarnersExample.setUseWarnerEngine(useWarnerEngine);
+
+        if (useWarnerEngine) {
+            toggleButton.setText("Mode: WarnerEngine (Beta)");
+        } else {
+            toggleButton.setText("Mode: Per-Type Listeners");
+        }
+
+        // If guidance is running, restart it with the new mode.
+        if (navigationWarnersExample.isGuidanceRunning()) {
+            stopGuidance();
+            navigationWarnersExample.startGuidance(startGeoCoordinates, destinationGeoCoordinates);
+            // Keep the guidance button label as "Stop Guidance".
         }
     }
 

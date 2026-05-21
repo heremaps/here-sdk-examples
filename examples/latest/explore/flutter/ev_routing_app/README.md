@@ -1,5 +1,7 @@
 The EVRouting example app shows how the HERE SDK can be used to calculate routes for electric vehicles and how to calculate the area of reach with isoline routing.
 
+> **Note:** The `EVSearchExample` class demonstrates how to use the HERE SDK's EVSearchEngine to query detailed EV charging location information (EVCP3). This feature requires an additional EVCP3 license, which is not included with the standard Navigation license.
+
 Build instructions:
 -------------------
 

@@ -140,17 +140,14 @@ class TopologySelectionAdapter extends RecyclerView.Adapter<TopologySelectionHol
         for(int i = 0; i < modes.size(); i++) {
             ImageView imageView = new ImageView(context);
             switch (modes.get(i)) {
-                case AUTO:
+                case CAR:
                     imageView.setImageResource(R.drawable.car);
                     break;
                 case TAXI:
                     imageView.setImageResource(R.drawable.taxi);
                     break;
-                case MOTORCYCLE:
+                case SCOOTER:
                     imageView.setImageResource(R.drawable.bike);
-                    break;
-                case EMERGENCY_VEHICLE:
-                    imageView.setImageResource(R.drawable.ambulance);
                     break;
                 case PEDESTRIAN:
                     imageView.setImageResource(R.drawable.pedestrian);
@@ -199,6 +196,8 @@ public class VenueTapController {
             new VenueGeometryStyle(SELECTED_COLOR, SELECTED_TOPOLOGY_COLOR, 4);
     private Context context;
     private List<VenueGeometry> geometryList;
+
+    private IndoorRoutingUIController routingController;
 
     VenueTapController(VenueEngine venueEngine, MapView mapView, AppCompatActivity activity, BottomSheetBehavior sheetBehav, RecyclerView RvView) {
         this.venueEngine = venueEngine;
@@ -258,23 +257,28 @@ public class VenueTapController {
         selectedVenue.setSelectedLevel(geometry.getLevel());
         selectedGeometry = geometry;
 
-        if (geometry.getLookupType() == VenueGeometry.LookupType.ICON) {
+        if (selectedVenue.getVenueModel().getTopologies().isEmpty()) {
             // Put a marker on top of geometry.
             marker = new MapMarker(position, markerImage, new Anchor2D(0.5f, 1f));
             mapView.getMapScene().addMapMarker(marker);
+
+            if (!geometry.getName().isEmpty()) {
+                recyclerView.setAdapter(new SpaceSelectionAdapter(context, geometry));
+
+                // Estimated height of SpaceContent layout(space_selection.xml):
+                // - ImageView: 40dp height + 10dp top margin = 50dp
+                // - Vertical LinearLayout: wrap_content with 2 TextViews (approx. 24dp + 20dp) + 10dp margin = ~54dp
+                // Final estimated height ≈ max(50dp, 54dp) ≈ 60dp, (using max as height is set to wrap_content)
+                // Converted to pixels using device density:
+                int dp = 60;
+                float density = context.getResources().getDisplayMetrics().density;
+                int spaceContentHeight = Math.round(dp * density);
+                sheetBehavior.setPeekHeight(((MainActivity) context).getInitialPeekHeight() + spaceContentHeight);
+            }
+        } else {
+            // Highlight the selected space for routing.
+            routingController.showSelectedSpace(geometry, position);
         }
-
-        recyclerView.setAdapter(new SpaceSelectionAdapter(context, geometry));
-
-        // Estimated height of SpaceContent layout(space_selection.xml):
-        // - ImageView: 40dp height + 10dp top margin = 50dp
-        // - Vertical LinearLayout: wrap_content with 2 TextViews (approx. 24dp + 20dp) + 10dp margin = ~54dp
-        // Final estimated height ≈ max(50dp, 54dp) ≈ 60dp, (using max as height is set to wrap_content)
-        // Converted to pixels using device density:
-        int dp = 60;
-        float density = context.getResources().getDisplayMetrics().density;
-        int spaceContentHeight = Math.round(dp * density);
-        sheetBehavior.setPeekHeight(((MainActivity)context).getInitialPeekHeight() + spaceContentHeight);
 
         // Set a selected style for the geometry.
         ArrayList<VenueGeometry> geometries =
@@ -337,6 +341,7 @@ public class VenueTapController {
     }
 
     private void deselectGeometry() {
+        routingController.removeRoutingBottomSheetFromMap();
         // restore initial peek height of bottom sheet
         sheetBehavior.setPeekHeight(((MainActivity)context).getInitialPeekHeight());
 
@@ -415,13 +420,23 @@ public class VenueTapController {
     }
 
     private void onLevelChanged(Venue venue) {
-        if (venue == selectedVenue && selectedGeometry != null
-        && venue.getSelectedLevel() == selectedGeometry.getLevel()) {
-            return;
+        if (routingController.isRoutingMenuActiveInBottomSheet() ||
+                routingController.isRoutingSpaceSelectedActiveInBottomSheet()) {
+            routingController.handleDstMarkerInMapOnLevelChange();
+        } else {
+            if (venue == selectedVenue && selectedGeometry != null
+                    && venue.getSelectedLevel() == selectedGeometry.getLevel()) {
+                return;
+            }
+            // If routing menu is not visible, deselect the geometry in case of a selection of a
+            // venue, a drawing or a level,
+            deselectGeometry();
+            deselectTopolgy();
         }
-        // Deselect the geometry in case of a selection of a venue, a drawing or a level.
-        deselectGeometry();
-        deselectTopolgy();
+    }
+
+    public void setRoutingController(IndoorRoutingUIController routingController){
+        this.routingController = routingController;
     }
 
     private final VenueSelectionListener venueSelectionListener =

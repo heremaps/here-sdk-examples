@@ -66,7 +66,7 @@ class RoutingExample {
 
     var waypoints = [startWaypoint, destinationWaypoint];
 
-    _routingEngine.calculateCarRoute(waypoints, CarOptions(), (routingError, routes) {
+    _routingEngine.calculateRouteWithRoutingOptions(waypoints, RoutingOptions(), (routingError, routes) {
       if (routingError == null && routes != null && routes.isNotEmpty) {
         here.Route route = routes.first;
         _showRouteOnMap(route);
@@ -104,9 +104,6 @@ class RoutingExample {
       print("MapMeasureDependentRenderSizeInstantiationException:" + e.error.name);
       return;
     }
-
-    _hereMapController.mapScene.addMapPolyline(routeMapPolyline);
-    _mapPolylines.add(routeMapPolyline);
 
     if (route.lengthInMeters / 1000 > 5000) {
       _showDialog("Note", "Skipped showing traffic-on-route for longer routes.");
@@ -169,7 +166,7 @@ class RoutingExample {
 
     double widthInPixels = 10;
 
-    MapPolyline trafficSpanMapPolyline;
+    MapPolyline? trafficSpanMapPolyline;
     try {
       trafficSpanMapPolyline = MapPolyline.withRepresentation(
         geoPolyline,
@@ -179,15 +176,13 @@ class RoutingExample {
           LineCap.round,
         ),
       );
-      _hereMapController.mapScene.addMapPolyline(trafficSpanMapPolyline);
-      _mapPolylines.add(trafficSpanMapPolyline);
     } on MapPolylineRepresentationInstantiationException catch (e) {
       print("MapPolylineRepresentationInstantiationException:" + e.error.name);
-      return;
     } on MapMeasureDependentRenderSizeInstantiationException catch (e) {
       print("MapMeasureDependentRenderSizeInstantiationException:" + e.error.name);
-      return;
     }
+
+    if (trafficSpanMapPolyline == null) return;
 
     _hereMapController.mapScene.addMapPolyline(trafficSpanMapPolyline);
     _mapPolylines.add(trafficSpanMapPolyline);

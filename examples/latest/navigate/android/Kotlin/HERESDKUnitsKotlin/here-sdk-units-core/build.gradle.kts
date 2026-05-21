@@ -4,6 +4,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+val unitVersion = "1.1"
+
 android {
     namespace = "com.here.sdk.units.core"
     compileSdk {
@@ -15,6 +17,14 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
+    }
+
+    // Append the version when assembling the artifact.
+    libraryVariants.configureEach {
+        outputs.configureEach {
+            (this as com.android.build.gradle.internal.api.BaseVariantOutputImpl)
+                .outputFileName = "${project.name}-${name}-kotlin-v${unitVersion}.aar"
+        }
     }
 
     buildTypes {

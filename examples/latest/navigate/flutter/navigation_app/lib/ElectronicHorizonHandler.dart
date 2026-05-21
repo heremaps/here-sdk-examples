@@ -136,14 +136,18 @@ class ElectronicHorizonHandler {
   ElectronicHorizonListener _createElectronicHorizonListener() {
     return ElectronicHorizonListener((ElectronicHorizonErrorCode? errorCode, ElectronicHorizonUpdate? electronicHorizonUpdate) {
       if (errorCode != null) {
-        print('$_logTag: ElectronicHorizonUpdate error: ${errorCode.name}');
+        print('$_logTag: ElectronicHorizonUpdate error: {errorCode.name}');
         return;
       }
       print('$_logTag: ElectronicHorizonUpdate received.');
-      // Asynchronously start to load required data for the new segments.
-      // Use the ElectronicHorizonDataLoaderStatusListener to get notified when new data is arriving.
+
+      // Store last known horizon if present.
       if (electronicHorizonUpdate?.electronicHorizon != null) {
         _lastElectronicHorizon = electronicHorizonUpdate?.electronicHorizon;
+      }
+      // Asynchronously start to load required data for the new segments.
+      // Use the ElectronicHorizonDataLoaderStatusListener to get notified when new data is arriving.
+      if (electronicHorizonUpdate?.segmentChanges != null) {
         _electronicHorizonDataLoader.loadData(electronicHorizonUpdate!);
       }
     });

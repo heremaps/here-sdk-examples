@@ -127,7 +127,7 @@ class AppLogic {
       return;
     }
 
-    _routeCalculator.calculateCarRoute(_startWaypoint!, _destinationWaypoint!, (
+    _routeCalculator.calculateRoute(_startWaypoint!, _destinationWaypoint!, (
       HERE.RoutingError? routingError,
       List<HERE.Route>? routeList,
     ) async {

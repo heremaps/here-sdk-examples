@@ -88,10 +88,10 @@ class MainActivity : ComponentActivity() {
         }
 
         val message =
-            """For this example app, an outdoor layer from thunderforest.com is used. Without setting a valid API key, these raster tiles will show a watermark (terms of usage: https://www.thunderforest.com/terms/).
- Attribution for the outdoor layer:
- Maps © www.thunderforest.com,
- Data © www.osm.org/copyright."""
+            """For this example app, outdoor and transport layers from thunderforest.com are used. Without setting a valid API key, these raster tiles will show a watermark (terms of usage: https://www.thunderforest.com/terms/).
+            |Attribution for the outdoor and transport layers:
+            |Maps © www.thunderforest.com,
+            |Data © www.osm.org/copyright.""".trimMargin()
 
         showDialog("Note", message)
     }
@@ -126,12 +126,29 @@ class MainActivity : ComponentActivity() {
                 horizontalArrangement = Arrangement.Center
             ) {
                 CustomButton(
-                    onClick = { customRasterLayersExample?.enableButtonClicked() },
-                    text = "Enable"
+                    onClick = {
+                        // Disable the transport layer to avoid overlapping of the layers.
+                        customRasterLayersExample?.disableTransportLayer()
+                        customRasterLayersExample?.enableOutdoorLayer()
+                    },
+                    text = "Outdoors"
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 CustomButton(
-                    onClick = { customRasterLayersExample?.disableButtonClicked() },
+                    onClick = {
+                        // Disable the outdoor layer to avoid overlapping of the layers.
+                        customRasterLayersExample?.disableOutdoorLayer()
+                        customRasterLayersExample?.enableTransportLayer()
+                    },
+                    text = "Transport"
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                CustomButton(
+                    onClick = {
+                        // Disable both custom raster layers.
+                        customRasterLayersExample?.disableOutdoorLayer()
+                        customRasterLayersExample?.disableTransportLayer()
+                    },
                     text = "Disable"
                 )
             }
@@ -190,8 +207,7 @@ class MainActivity : ComponentActivity() {
                 Log.d(TAG, "onLoadScene failed: $mapError")
                 return@loadScene
             }
-            customRasterLayersExample = CustomRasterLayersExample()
-            customRasterLayersExample!!.onMapSceneLoaded(mapView!!, this@MainActivity)
+            customRasterLayersExample = CustomRasterLayersExample(mapViewNonNull, this@MainActivity)
         }
     }
 

@@ -119,6 +119,8 @@ class NavigationWarnersExample(
     private var locationSimulator: LocationSimulator? = null
     private var isGuidanceRunning = false
     private lateinit var currentRouteProgress: RouteProgress
+    private val warnerEngineExample = WarnerEngineExample()
+    var useWarnerEngine = false
 
     init {
         try {
@@ -155,6 +157,9 @@ class NavigationWarnersExample(
         locationSimulator?.stop()
         locationSimulator = null
 
+        if (useWarnerEngine) {
+            warnerEngineExample.stopWarnerEngine()
+        }
         visualNavigator.route = null
         visualNavigator.stopRendering()
         isGuidanceRunning = false
@@ -185,7 +190,15 @@ class NavigationWarnersExample(
     }
 
     private fun startGuidanceWithRoute(route: Route) {
-        setupListeners(visualNavigator)
+        if (useWarnerEngine) {
+            // Use the unified WarnerEngine approach (beta).
+            warnerEngineExample.setupWarnerEngine(visualNavigator)
+            Log.d(TAG, "Using WarnerEngine (beta) for unified warning handling.")
+        } else {
+            // Use the previous per-type listener approach.
+            setupListeners(visualNavigator)
+            Log.d(TAG, "Using per-type listeners for warning handling.")
+        }
         visualNavigator.startRendering(mapView)
         visualNavigator.route = route
         setupLocationSource(route)
@@ -528,7 +541,7 @@ class NavigationWarnersExample(
             }
 
         val roadSignWarningOptions = RoadSignWarningOptions()
-        // Set a filter to get only shields relevant for TRUCKS and HEAVY_TRUCKS.
+        // Set a filter to get only road signs relevant for TRUCKS and HEAVY_TRUCKS.
         roadSignWarningOptions.vehicleTypesFilter = listOf(RoadSignVehicleType.TRUCKS, RoadSignVehicleType.HEAVY_TRUCKS)
 
         // Get notification distances for road sign alerts from visual navigator.
@@ -547,7 +560,7 @@ class NavigationWarnersExample(
         )
         visualNavigator.roadSignWarningOptions = roadSignWarningOptions
 
-        // Notifies on road shields as they appear along the road.
+        // Notifies on road signs as they appear along the road.
         visualNavigator.roadSignWarningListener =
             RoadSignWarningListener { roadSignWarning: RoadSignWarning ->
                 val roadSignType: RoadSignType = roadSignWarning.type

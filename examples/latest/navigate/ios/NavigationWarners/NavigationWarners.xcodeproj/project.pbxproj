@@ -3,11 +3,12 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		450EF2492E33AA5300FC2624 /* NavigationWarnersExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 450EF2482E33AA5300FC2624 /* NavigationWarnersExample.swift */; };
+		457EAD402F8643C60074BF61 /* WarnerEngineExample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 457EAD3F2F8643C60074BF61 /* WarnerEngineExample.swift */; };
 		83C837BC2C207F340004F54E /* NavigationWarnersApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C837BB2C207F340004F54E /* NavigationWarnersApp.swift */; };
 		83C837BE2C207F340004F54E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C837BD2C207F340004F54E /* ContentView.swift */; };
 		83C837C02C207F360004F54E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 83C837BF2C207F360004F54E /* Assets.xcassets */; };
@@ -33,6 +34,7 @@
 
 /* Begin PBXFileReference section */
 		450EF2482E33AA5300FC2624 /* NavigationWarnersExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationWarnersExample.swift; sourceTree = "<group>"; };
+		457EAD3F2F8643C60074BF61 /* WarnerEngineExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarnerEngineExample.swift; sourceTree = "<group>"; };
 		83C837B82C207F340004F54E /* NavigationWarners.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NavigationWarners.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		83C837BB2C207F340004F54E /* NavigationWarnersApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationWarnersApp.swift; sourceTree = "<group>"; };
 		83C837BD2C207F340004F54E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -78,6 +80,7 @@
 				83C837BD2C207F340004F54E /* ContentView.swift */,
 				450EF2482E33AA5300FC2624 /* NavigationWarnersExample.swift */,
 				83C837D02C20EFA70004F54E /* NavigationWarners.swift */,
+				457EAD3F2F8643C60074BF61 /* WarnerEngineExample.swift */,
 				83C837BF2C207F360004F54E /* Assets.xcassets */,
 				83C837C12C207F360004F54E /* Preview Content */,
 			);
@@ -174,6 +177,7 @@
 				83C837BE2C207F340004F54E /* ContentView.swift in Sources */,
 				450EF2492E33AA5300FC2624 /* NavigationWarnersExample.swift in Sources */,
 				83C837BC2C207F340004F54E /* NavigationWarnersApp.swift in Sources */,
+				457EAD402F8643C60074BF61 /* WarnerEngineExample.swift in Sources */,
 				83C837D12C20EFA70004F54E /* NavigationWarners.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

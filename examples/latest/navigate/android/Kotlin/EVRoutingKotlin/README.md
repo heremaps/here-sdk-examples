@@ -4,6 +4,8 @@ The EVRouting example app shows how the HERE SDK can be used to calculate routes
 
 This example uses **HERE SDK Units** to support functionality such as permission handling or buttons that are not essential to the code snippets shown in this app, as the focus is on demonstrating how to use the APIs provided by the HERE SDK. The HERE SDK Units are included as AARs in the app’s `libs` folder. For more details, see the "HERESDKUnitsKotlin" app to customize or create your own unit libraries. Note that this app is intended exclusively for the HERE SDK (Navigate). You can find it in the `navigate` folder. However, it can be easily adapted for the HERE SDK (Explore) by removing any code that is not supported there. At present, most components are compatible and will compile without issues.
 
+> **Note:** The `EVSearchExample` class demonstrates how to use the HERE SDK's EVSearchEngine to query detailed EV charging location information (EVCP3). This feature requires an additional EVCP3 license, which is not included with the standard Navigation license.
+
 Build instructions:
 -------------------
 
