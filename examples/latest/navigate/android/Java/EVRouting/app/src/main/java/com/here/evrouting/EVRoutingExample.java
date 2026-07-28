@@ -399,23 +399,25 @@ public class EVRoutingExample {
 
             // Only charging stations that are needed to reach the destination are listed below.
             ChargingStation depStation = section.getDeparturePlace().chargingStation;
-            if (depStation != null && depStation.id != null && !chargingStationsIDs.contains(depStation.id)) {
+            String depStationId = depStation != null && depStation.id != null ? depStation.id : "-1";
+            if (depStation != null && !chargingStationsIDs.contains(depStationId)) {
                 Log.d("EVDetails", "Section " + sectionIndex + ", name of charging station: " + depStation.name);
-                chargingStationsIDs.add(depStation.id);
+                chargingStationsIDs.add(depStationId);
                 Metadata metadata = new Metadata();
-                metadata.setString(REQUIRED_CHARGING_METADATA_KEY, depStation.id);
-                metadata.setString(SUPPLIER_NAME_METADATA_KEY, depStation.name);
+                metadata.setString(REQUIRED_CHARGING_METADATA_KEY, depStationId);
+                metadata.setString(SUPPLIER_NAME_METADATA_KEY, depStation.name != null ? depStation.name : "NA");
                 addMapMarker(section.getDeparturePlace().mapMatchedCoordinates, R.drawable.required_charging, metadata);
             }
 
 
-            ChargingStation arrStation = section.getDeparturePlace().chargingStation;
-            if (arrStation != null && arrStation.id != null && !chargingStationsIDs.contains(arrStation.id)) {
+            ChargingStation arrStation = section.getArrivalPlace().chargingStation;
+            String arrStationId = arrStation != null && arrStation.id != null ? arrStation.id : "-1";
+            if (arrStation != null && !chargingStationsIDs.contains(arrStationId)) {
                 Log.d("EVDetails", "Section " + sectionIndex + ", name of charging station: " + arrStation.name);
-                chargingStationsIDs.add(arrStation.id);
+                chargingStationsIDs.add(arrStationId);
                 Metadata metadata = new Metadata();
-                metadata.setString(REQUIRED_CHARGING_METADATA_KEY, arrStation.id);
-                metadata.setString(SUPPLIER_NAME_METADATA_KEY, depStation.name);
+                metadata.setString(REQUIRED_CHARGING_METADATA_KEY, arrStationId);
+                metadata.setString(SUPPLIER_NAME_METADATA_KEY, arrStation.name != null ? arrStation.name : "NA");
                 addMapMarker(section.getArrivalPlace().mapMatchedCoordinates, R.drawable.required_charging, metadata);
             }
 

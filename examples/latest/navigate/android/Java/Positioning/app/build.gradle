@@ -4,7 +4,7 @@ android {
     compileSdk 35
 
     defaultConfig {
-        applicationId "com.here.examples.positioning"
+        applicationId "com.here.sdk.examples.positioning"
         minSdkVersion 24
         targetSdkVersion 35
         versionCode 1
@@ -24,7 +24,7 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    namespace 'com.here.examples.positioning'
+    namespace 'com.here.sdk.examples.positioning'
 }
 
 dependencies {

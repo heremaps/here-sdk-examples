@@ -1,5 +1,7 @@
 The MultiDisplays example app shows how a HERE SDK map can be shown on two separate displays using Android's [Multi-Display API](https://source.android.com/devices/tech/display/multi_display/).
 
+![Map on the primary display with a button to add a marker on the second display](images/multi_displays.png)
+
 Note that this app requires **Android API 26 or higher**.
 
 You can test this app with the emulator. In emulator options, select "Displays": You can then add up to two more displays. For this app, we only show content on two displays at the same time. Both displays show a map view instance, that can be used independently.

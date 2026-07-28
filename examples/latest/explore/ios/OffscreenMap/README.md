@@ -1,4 +1,6 @@
 The OffscreenMap example app shows how the HERE SDK can be used to render an image of the map
+
+![Four offscreen-rendered map images in different map schemes](images/offscreen_map.png)
 without adding a `MapView` to view hierarchy.
 
 The app displays four image views and every time a `Refresh` button is pressed,

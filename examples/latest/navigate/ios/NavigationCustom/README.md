@@ -1,4 +1,6 @@
 This example app shows how the HERE SDK can be set up to navigate to a location with a custom `LocationIndicator`. It shows usage of the default pedestrian / navigate `LocationIndicator`
+
+![Simulated guidance with a custom location indicator and accuracy halo](images/navigation_custom.png)
 assets. On top, the app shows how to customize the guidance view by setting custom zoom level and tilt.
 
 Build instructions:

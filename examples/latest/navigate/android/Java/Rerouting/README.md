@@ -1,5 +1,7 @@
 The _Rerouting_ example app shows how the HERE SDK can be used to how to handle rerouting during guidance.
 
+![Turn-by-turn guidance with a maneuver banner during navigation](images/rerouting.png)
+
 - Rerouting is done automatically using the return-to-route feature of the `RoutingEngine`.
 - This app is meant for in-house testing and therefore it uses simulated location events.
 - The location events are taken from a route that can be the same as the main route shown in blue. Or it can be an alternative route based on the original route with inserted stopover waypoints.

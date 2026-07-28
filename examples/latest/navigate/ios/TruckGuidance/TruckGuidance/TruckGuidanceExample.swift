@@ -25,9 +25,7 @@ import SwiftUI
 // Note that this example does not show all truck features the HERE SDK has to offer.
 class TruckGuidanceExample: TapDelegate,
                             LongPressDelegate,
-                            NavigableLocationDelegate,
-                            TruckRestrictionsWarningDelegate,
-                            EnvironmentalZoneWarningDelegate {
+                            NavigableLocationDelegate {
 
     private let mapView: MapView
     private var mapMarkers: [MapMarker] = []
@@ -44,6 +42,8 @@ class TruckGuidanceExample: TapDelegate,
     private let navigator: Navigator
     private var visualNavigatorDelegate: VisualNavigatorSpeedLimitDelegate?
     private var navigatorDelegate: NavigatorSpeedLimitDelegate?
+    private var environmentalZoneWarnerDelegate: EnvironmentalZoneWarnerDelegate?
+    private var truckRestrictionWarnerDelegate: TruckRestrictionWarnerDelegate?
     private var activeTruckRestrictionWarnings: [String] = []
     private let herePositioningSimulator: HEREPositioningSimulator
     private var simulationSpeedFactor: Double = 1
@@ -355,10 +355,26 @@ class TruckGuidanceExample: TapDelegate,
         navigator.speedLimitDelegate = navigatorDelegate
 
         visualNavigator.navigableLocationDelegate = self
-        visualNavigator.truckRestrictionsWarningDelegate = self
-        visualNavigator.environmentalZoneWarningListenerDelegate = self
-
+        
+        // Notifies truck drivers on road restrictions ahead. Called whenever there is a change.
+        // For example, there can be a bridge ahead not high enough to pass a big truck
+        // or there can be a road ahead where the weight of the truck is beyond its permissible weight.
+        // Note: The WarnerEngine delivers truck restriction events regardless of the currently set transport type.
+        // This means warnings are also sent when the transport type is set to a non-truck type.
+        // The given restrictions are based on the HERE map database of the road network ahead.
         // For more warners and events during guidance, please check the Navigation example app, available on GitHub.
+        setupWarnerEngineForWarnings()
+    }
+
+    private func setupWarnerEngineForWarnings() {
+        let warnerEngine = visualNavigator.warnerEngine
+        warnerEngine.setEnabledWarnings(warningTypes: [.environmentalZone, .truckRestriction])
+
+        environmentalZoneWarnerDelegate = EnvironmentalZoneWarnerDelegate(self)
+        warnerEngine.addWarningDelegate(environmentalZoneWarnerDelegate!)
+
+        truckRestrictionWarnerDelegate = TruckRestrictionWarnerDelegate(self)
+        warnerEngine.addWarningDelegate(truckRestrictionWarnerDelegate!)
     }
 
     // Receive speed limits for trucks.
@@ -429,90 +445,109 @@ class TruckGuidanceExample: TapDelegate,
         }
     }
 
-    // Conform to TruckRestrictionsWarningDelegate.
-    // Notifies truck drivers on road restrictions ahead. Called whenever there is a change.
-    // For example, there can be a bridge ahead not high enough to pass a big truck
-    // or there can be a road ahead where the weight of the truck is beyond it's permissible weight.
-    // This event notifies on truck restrictions in general,
-    // so it will also deliver events, when the transport type was set to a non-truck transport type.
-    // The given restrictions are based on the HERE database of the road network ahead.
-    func onTruckRestrictionsWarningUpdated(_ restrictions: [heresdk.TruckRestrictionWarning]) {
-        // The list is guaranteed to be non-empty.
-        for truckRestrictionWarning in restrictions {
-            if let timeRule = truckRestrictionWarning.timeRule,
-               !timeRule.appliesTo(dateTime: Date()) {
-                // For example, during a specific time period of a day, some truck restriction warnings do not apply.
-                // If truckRestrictionWarning.timeRule is nil, the warning applies at anytime.
-                // Note: For this example, we do not skip any restriction.
-                // continue
-                print("Note that this truck restriction warning currently does not apply.")
-            }
+    private func handleTruckRestrictionWarning(_ warningUpdate: WarningUpdate, warningsRegistry: WarningsRegistry) {
+        guard let truckRestrictionWarning = warningsRegistry.getTruckRestrictionWarning(warning: warningUpdate.warning) else {
+            print("TruckRestrictionWarning: No detailed data available.")
+            return
+        }
 
-            // The trailer count for which the current restriction applies.
-            // If the field is 'nil', then the current restriction is valid regardless of trailer count.
-            if let trailerCount = truckRestrictionWarning.trailerCount,
-               let myTruckTrailerCount = MyTruckSpecs.trailerCount {
-                let min: Int32 = trailerCount.min
-                let max: Int32? = trailerCount.max // If not set, maximum is unbounded.
-                if min > myTruckTrailerCount || (max != nil && max! < myTruckTrailerCount) {
-                    // The restriction is not valid for this truck.
-                    // Note: For this example, we do not skip any restriction.
-                    // continue
+        if let timeRule = truckRestrictionWarning.timeRule,
+           !timeRule.appliesTo(dateTime: Date()) {
+            print("Note that this truck restriction warning currently does not apply.")
+        }
+
+        if let trailerCount = truckRestrictionWarning.trailerCount,
+           let myTruckTrailerCount = MyTruckSpecs.trailerCount {
+            let min: Int32 = trailerCount.min
+            let max: Int32? = trailerCount.max
+            if min > myTruckTrailerCount || (max != nil && max! < myTruckTrailerCount) {
+                // The restriction is not valid for this truck.
+            }
+        }
+
+        let warningStatus = warningUpdate.warningStatus
+        if warningStatus == .ahead || warningStatus == .approaching {
+            print("A TruckRestriction ahead in: \(warningUpdate.distanceTillStartInMeters) meters.")
+        } else if warningStatus == .reached || warningStatus == .inside {
+            print("A TruckRestriction has been reached.")
+        } else if warningStatus == .passed {
+            print("A TruckRestriction just passed.")
+        }
+
+        if let weightRestriction = truckRestrictionWarning.weightRestriction {
+            handleWeightTruckWarning(weightRestriction: weightRestriction, warningStatus: warningStatus)
+        } else if let dimensionRestriction = truckRestrictionWarning.dimensionRestriction {
+            handleDimensionTruckWarning(dimensionRestriction: dimensionRestriction, warningStatus: warningStatus)
+        } else {
+            handleTruckRestrictions("No Trucks.", warningStatus)
+            print("TruckRestriction: General restriction - no trucks allowed.")
+        }
+    }
+
+    private func handleEnvironmentalZoneWarning(_ warningUpdate: WarningUpdate, warningsRegistry: WarningsRegistry) {
+        guard let environmentalZoneWarning = warningsRegistry.getEnvironmentalZoneWarning(warning: warningUpdate.warning) else {
+            print("EnvironmentalZoneWarning: No detailed data available.")
+            return
+        }
+
+        switch warningUpdate.warningStatus {
+        case .ahead, .approaching:
+            print("An EnvironmentalZone ahead in: \(warningUpdate.distanceTillStartInMeters) meters.")
+        case .reached, .inside:
+            print("An EnvironmentalZone has been reached.")
+        case .passed:
+            print("An EnvironmentalZone just passed.")
+        default:
+            break
+        }
+
+        // The official name of the environmental zone (example: "Zone basse émission Bruxelles").
+        let name = environmentalZoneWarning.name
+        // The description of the environmental zone for the default language.
+        let description = environmentalZoneWarning.description.defaultValue
+        // The environmental zone ID - uniquely identifies the zone in the HERE map data.
+        let zoneID = environmentalZoneWarning.zoneId
+        // The website of the environmental zone, if available - nil otherwise.
+        let websiteUrl = environmentalZoneWarning.websiteUrl
+        print("environmentalZoneWarning: description: \(String(describing: description))")
+        print("environmentalZoneWarning: name: \(name)")
+        print("environmentalZoneWarning: zoneID: \(zoneID)")
+        print("environmentalZoneWarning: websiteUrl: \(websiteUrl ?? "N/A")")
+    }
+
+    class EnvironmentalZoneWarnerDelegate: WarningDelegate {
+        private let truckGuidanceExample: TruckGuidanceExample
+
+        init(_ truckGuidanceExample: TruckGuidanceExample) {
+            self.truckGuidanceExample = truckGuidanceExample
+        }
+
+        func onWarnings(warnings: [WarningUpdate], warningsRegistry: WarningsRegistry) {
+            for warningUpdate in warnings {
+                if warningUpdate.warning.warningType == .environmentalZone {
+                    truckGuidanceExample.handleEnvironmentalZoneWarning(warningUpdate, warningsRegistry: warningsRegistry)
                 }
             }
+        }
+    }
 
-            let distanceType = truckRestrictionWarning.distanceType
-            if distanceType == .ahead {
-                print("A TruckRestriction ahead in: \(truckRestrictionWarning.distanceInMeters) meters.")
-            } else if distanceType == .reached {
-                print("A TruckRestriction has been reached.")
-            } else if distanceType == .passed {
-                // If not preceded by a "reached" notification, this restriction was valid only for the passed location.
-                print("A TruckRestriction just passed.")
-            }
+    class TruckRestrictionWarnerDelegate: WarningDelegate {
+        private let truckGuidanceExample: TruckGuidanceExample
 
-            // One of the following restrictions applies; if more restrictions apply at the same time,
-            // they are part of another TruckRestrictionWarning element contained in the list.
-            if let weightRestriction = truckRestrictionWarning.weightRestriction {
-                handleWeightTruckWarning(weightRestriction: weightRestriction, distanceType: distanceType)
-            } else if let dimensionRestriction = truckRestrictionWarning.dimensionRestriction {
-                handleDimensionTruckWarning(dimensionRestriction: dimensionRestriction, distanceType: distanceType)
-            } else {
-                handleTruckRestrictions("No Trucks.", distanceType)
-                print("TruckRestriction: General restriction - no trucks allowed.")
+        init(_ truckGuidanceExample: TruckGuidanceExample) {
+            self.truckGuidanceExample = truckGuidanceExample
+        }
+
+        func onWarnings(warnings: [WarningUpdate], warningsRegistry: WarningsRegistry) {
+            for warningUpdate in warnings {
+                if warningUpdate.warning.warningType == .truckRestriction {
+                    truckGuidanceExample.handleTruckRestrictionWarning(warningUpdate, warningsRegistry: warningsRegistry)
+                }
             }
         }
     }
 
-    // Conform to EnvironmentalZoneWarningDelegate.
-    func onEnvironmentalZoneWarningsUpdated(_ environmentalZonesWarnings: [heresdk.EnvironmentalZoneWarning]) {
-        // The list is guaranteed to be non-empty.
-        for environmentalZoneWarning in environmentalZonesWarnings {
-            let distanceType = environmentalZoneWarning.distanceType
-            if distanceType == .ahead {
-                print("An EnvironmentalZone ahead in: \(environmentalZoneWarning.distanceInMeters) meters.")
-            } else if distanceType == .reached {
-                print("An EnvironmentalZone has been reached.")
-            } else if distanceType == .passed {
-                print("An EnvironmentalZone just passed.")
-            }
-
-            // The official name of the environmental zone (example: "Zone basse émission Bruxelles").
-            let name = environmentalZoneWarning.name
-            // The description of the environmental zone for the default language.
-            let description = environmentalZoneWarning.description.defaultValue
-            // The environmental zone ID - uniquely identifies the zone in the HERE map data.
-            let zoneID = environmentalZoneWarning.zoneId
-            // The website of the environmental zone, if available - nil otherwise.
-            let websiteUrl = environmentalZoneWarning.websiteUrl
-            print("environmentalZoneWarning: description: \(String(describing: description))")
-            print("environmentalZoneWarning: name: \(name)")
-            print("environmentalZoneWarning: zoneID: \(zoneID)")
-            print("environmentalZoneWarning: websiteUrl: \(websiteUrl ?? "N/A")")
-        }
-    }
-
-    private func handleWeightTruckWarning(weightRestriction: WeightRestriction, distanceType: DistanceType) {
+    private func handleWeightTruckWarning(weightRestriction: WeightRestriction, warningStatus: WarningStatus) {
         let type = weightRestriction.type
         let value = weightRestriction.valueInKilograms
         print("TruckRestriction for weight (kg): \(type.rawValue): \(value)")
@@ -526,10 +561,10 @@ class TruckGuidanceExample: TapDelegate,
         }
         let weightValue = "\(getTons(Int(value)))t"
         let description = "\(weightType): \(weightValue)"
-        handleTruckRestrictions(description, distanceType)
+        handleTruckRestrictions(description, warningStatus)
     }
 
-    private func handleDimensionTruckWarning(dimensionRestriction: DimensionRestriction, distanceType: DistanceType) {
+    private func handleDimensionTruckWarning(dimensionRestriction: DimensionRestriction, warningStatus: WarningStatus) {
         // Can be either a length, width, or height restriction for a truck. For example, a height
         // restriction can apply for a tunnel.
         let type = dimensionRestriction.type
@@ -548,14 +583,14 @@ class TruckGuidanceExample: TapDelegate,
         }
         let dimValue = "\(getMeters(Int(value)))m"
         let description = "\(dimType): \(dimValue)"
-        handleTruckRestrictions(description, distanceType)
+        handleTruckRestrictions(description, warningStatus)
     }
 
     // For this example, we always show only the next restriction ahead.
     // In case there are multiple restrictions ahead,
     // the nearest one will be shown after the current one has passed by.
-    private func handleTruckRestrictions(_ newDescription: String, _ distanceType: DistanceType) {
-        switch distanceType {
+    private func handleTruckRestrictions(_ newDescription: String, _ warningStatus: WarningStatus) {
+        switch warningStatus {
         case .passed:
             if !activeTruckRestrictionWarnings.isEmpty {
                 // Remove the oldest entry from the list that equals the description.
@@ -574,10 +609,10 @@ class TruckGuidanceExample: TapDelegate,
                     onTruckRestrictionWarning(description: activeTruckRestrictionWarnings[0])
                 }
             }
-        case .reached:
+        case .reached, .inside:
             // We reached a restriction which is already shown, so nothing to do here.
             break
-        case .ahead:
+        case .ahead, .approaching:
             if activeTruckRestrictionWarnings.isEmpty {
                 // Show the first restriction.
                 onTruckRestrictionWarning(description: newDescription)
@@ -588,7 +623,7 @@ class TruckGuidanceExample: TapDelegate,
                 activeTruckRestrictionWarnings.append(newDescription)
             }
         default:
-            print("Unknown distance type.")
+            print("Unknown warning status.")
         }
     }
 

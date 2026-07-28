@@ -66,6 +66,7 @@ import com.here.sdk.venue.routing.IndoorRouteOptions;
 import com.here.sdk.venue.routing.IndoorRouteStyle;
 import com.here.sdk.venue.routing.IndoorRoutingController;
 import com.here.sdk.venue.routing.IndoorRoutingEngine;
+import com.here.sdk.venue.routing.IndoorRouteNotice;
 import com.here.sdk.venue.routing.IndoorRoutingError;
 import com.here.sdk.venue.routing.IndoorWaypoint;
 
@@ -561,10 +562,12 @@ public class IndoorRoutingUIController {
      *                     contain the error why route was not found.
      * @param routeList If valid route is found between source and destination, then this will be
      *                  inside routeList and same can be fetched and rendered on Indoor Venue.
+     * @param routeNotices If route notices are returned by the service, they will be listed here.
      */
     private void showRouteInMap(
             final IndoorRoutingError routingError,
-            final List<Route> routeList) {
+            final List<Route> routeList,
+            final List<IndoorRouteNotice> routeNotices) {
         ((MainActivity)context).showProgressBarOnMap(false);
         controller.hideRoute();
 
@@ -573,30 +576,35 @@ public class IndoorRoutingUIController {
             return;
         }
 
-        if (routingError == null && routeList != null) {
-            Route route = routeList.get(0);
-            // check If length came as 0 it means same source and destination
-            Log.d(TAG, "Route Calculated with total Length: " + route.getLengthInMeters());
-            if (route.getLengthInMeters() <= 0) {
-                String errorMsg = "Selected Source and Destination are same. Please select different"
-                        + " source and destination points.";
-                showAlertOnRouteCalculationError(errorMsg);
-                return;
+        if (routingError == null) {
+            if (routeList != null && !routeList.isEmpty()) {
+                Route route = routeList.get(0);
+                // check If length came as 0 it means same source and destination
+                Log.d(TAG, "Route Calculated with total Length: " + route.getLengthInMeters());
+                if (route.getLengthInMeters() <= 0) {
+                    String errorMsg = "Selected Source and Destination are same. Please select different"
+                            + " source and destination points.";
+                    showAlertOnRouteCalculationError(errorMsg);
+                    return;
+                }
+
+                controller.showRoute(route, routeStyle);
+
+                // change current level on venue to source geometry level.
+                if (selectedVenue.getSelectedLevel() != selectedSourceGeometry.getLevel()) {
+                    selectedVenue.setSelectedLevel(selectedSourceGeometry.getLevel());
+                }
+
+                // Move the camera to source position.
+                mapView.getCamera().lookAt(srcPosition);
+                // remove marker from map once route is rendered.
+                removeMarkerImageFromMap();
+                isRouteRenderedOnMap = true;
+            } else {
+                isRouteRenderedOnMap = false;
+                showAlertOnRouteCalculationError("No route found.");
             }
-
-            controller.showRoute(route, routeStyle);
-
-            // change current level on venue to source geometry level.
-            if (selectedVenue.getSelectedLevel() != selectedSourceGeometry.getLevel()) {
-                selectedVenue.setSelectedLevel(selectedSourceGeometry.getLevel());
-            }
-
-            // Move the camera to source position.
-            mapView.getCamera().lookAt(srcPosition);
-            // remove marker from map once route is rendered.
-            removeMarkerImageFromMap();
-            isRouteRenderedOnMap = true;
-        } else {
+        } else if (routingError != null) {
             isRouteRenderedOnMap = false;
             String errorMsg;
             switch (routingError) {
@@ -627,15 +635,6 @@ public class IndoorRoutingUIController {
                 case SERVICE_UNAVAILABLE:
                     errorMsg = "Routing service is currently unavailable";
                     break;
-                case NO_ROUTE_FOUND:
-                    errorMsg = "No route found between selected waypoints";
-                    break;
-                case COULD_NOT_MATCH_ORIGIN:
-                    errorMsg = "Origin could not be matched";
-                    break;
-                case COULD_NOT_MATCH_DESTINATION:
-                    errorMsg = "Destination could not be matched";
-                    break;
                 case MAP_NOT_FOUND:
                     errorMsg = "Requested map not found";
                     break;
@@ -650,6 +649,18 @@ public class IndoorRoutingUIController {
             }
             Log.d(TAG, "Route Calculation Error Msg: " + errorMsg);
             showAlertOnRouteCalculationError(errorMsg);
+        }
+        if (routeNotices != null && !routeNotices.isEmpty()) {
+            isRouteRenderedOnMap = false;
+            StringBuilder noticeMessages = new StringBuilder();
+            for (int i = 0; i < routeNotices.size(); i++) {
+                if (i > 0) {
+                    noticeMessages.append("\n");
+                }
+                noticeMessages.append(routeNotices.get(i).title);
+            }
+            Log.d(TAG, "Route Notices: " + noticeMessages);
+            showAlertOnRouteCalculationError(noticeMessages.toString());
         }
     }
 

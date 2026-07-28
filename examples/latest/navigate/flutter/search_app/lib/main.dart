@@ -70,7 +70,7 @@ class _MyAppState extends State<MyApp> {
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [button('Search', _searchButtonClicked), button('Geocoding', _geocodeAnAddressButtonClicked)],
+                children: [button('Search', _searchButtonClicked), button('Geocode', _geocodeAnAddressButtonClicked)],
               ),
             ],
           ),

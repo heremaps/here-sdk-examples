@@ -93,23 +93,22 @@ class BannerViewController: UIViewController {
         let topConstraint = bannerView.topAnchor.constraint(equalTo: view.topAnchor, constant: 60)
         let leftConstraint = bannerView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10)
         let rightConstraint = bannerView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10)
-        let widthConstraint = bannerView.widthAnchor.constraint(equalToConstant: 359)
-        let heightConstraint = bannerView.heightAnchor.constraint(equalToConstant: 56)
+        let minHeightConstraint = bannerView.heightAnchor.constraint(greaterThanOrEqualToConstant: 56)
 
-        NSLayoutConstraint.activate([topConstraint, leftConstraint, rightConstraint, widthConstraint, heightConstraint])
+        NSLayoutConstraint.activate([topConstraint, leftConstraint, rightConstraint, minHeightConstraint])
 
         bannerLabel.textColor = UIColor(red: 1, green: 1, blue: 1, alpha: 1)
         bannerLabel.textAlignment = .left
         bannerLabel.font = UIFont.systemFont(ofSize: 14)
+        bannerLabel.numberOfLines = 0
+        bannerLabel.lineBreakMode = .byWordWrapping
         bannerLabel.translatesAutoresizingMaskIntoConstraints = false
         bannerView.addSubview(bannerLabel)
 
-        let leftMarginConstraint = bannerLabel.leadingAnchor.constraint(equalTo: bannerView.leadingAnchor, constant: 15)
-        leftMarginConstraint.isActive = true
-
-        bannerLabel.trailingAnchor.constraint(equalTo: bannerView.trailingAnchor).isActive = true
-        bannerLabel.topAnchor.constraint(equalTo: bannerView.topAnchor).isActive = true
-        bannerLabel.bottomAnchor.constraint(equalTo: bannerView.bottomAnchor).isActive = true
+        bannerLabel.leadingAnchor.constraint(equalTo: bannerView.leadingAnchor, constant: 15).isActive = true
+        bannerLabel.trailingAnchor.constraint(equalTo: bannerView.trailingAnchor, constant: -45).isActive = true
+        bannerLabel.topAnchor.constraint(equalTo: bannerView.topAnchor, constant: 10).isActive = true
+        bannerLabel.bottomAnchor.constraint(equalTo: bannerView.bottomAnchor, constant: -10).isActive = true
 
         closeButtonImageView.image = UIImage(named: "closeButtonImage")
         closeButtonImageView.contentMode = .scaleAspectFit
@@ -680,9 +679,28 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, VenueInfoLi
         // Start VenueEngine. Once authentication is done, the authentication completion handler
         // will be triggered. Afterwards, VenueEngine will start VenueService. Once VenueService
         // is initialized, VenueServiceListener.onInitializationCompleted method will be called.
-        venueEngine.start(callback: {
-            error, data in if let error = error {
-                print("Failed to authenticate, reason: " + error.localizedDescription)
+        venueEngine.start(callback: { [weak self] error, data in
+            if let error = error {
+                let reason: String
+                switch error {
+                case .invalidParameter:
+                    reason = "Invalid parameter received"
+                case .authenticationFailed:
+                    reason = "Authentication failed. Check your credentials."
+                case .noConnection:
+                    reason = "No network connection"
+                case .operationAfterDispose:
+                    reason = "Operation invoked after SDK engine was disposed"
+                @unknown default:
+                    reason = "Unknown authentication error"
+                }
+                DispatchQueue.main.async {
+                    self?.stopRotation()
+                    self?.spinnerView.isHidden = true
+                    let alert = UIAlertController(title: "Authentication Error", message: reason, preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: .default))
+                    self?.present(alert, animated: true)
+                }
             }
         })
         if ((hrn != "") && (hrn != "YOUR_CATALOG_HRN"))

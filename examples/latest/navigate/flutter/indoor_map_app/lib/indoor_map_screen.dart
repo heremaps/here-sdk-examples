@@ -150,10 +150,10 @@ class _IndoorMapScreenState extends State<IndoorMapScreen> {
         mapController: _mapController!,
         providerInterface: _venueDataProvider,
         routingDataProviderInterface: _routingDataProvider,
-        onAuthErrorCallback: (AuthenticationError? err) {
-          if (err != null) {
-            _showErrorDialog('Venue engine error', 'Venue Engine authentication failed: $err');
-          }
+        onAuthErrorCallback: (String reason) {
+            _venueDataProvider.isAuthenticationFailed = true;
+            _venueDataProvider.notifyListeners();
+            _showErrorDialog('Authentication Error', reason);
         },
       );
       _indoorVenueEngine.createVenueEngine();
@@ -292,6 +292,9 @@ class _IndoorMapScreenState extends State<IndoorMapScreen> {
     final bool isVenueListAvailable = context.select<VenueDataProvider, bool>(
       (VenueDataProvider p) => p.isVenueListAvailable,
     );
+    final bool isAuthenticationFailed = context.select<VenueDataProvider, bool>(
+      (VenueDataProvider p) => p.isAuthenticationFailed,
+    );
     final bool isTopologyPresent = context.select<VenueDataProvider, bool>(
       (VenueDataProvider p) => p.isTopologyPresent,
     );
@@ -390,7 +393,7 @@ class _IndoorMapScreenState extends State<IndoorMapScreen> {
               HereMap(onMapCreated: _onMapCreated, mode: NativeViewMode.hybridComposition),
 
               // Loading overlay (while venue list loads or venue is being placed)
-              if (isVenueLoading || (!isVenueListAvailable) || isRouteCalculating)
+              if ((isVenueLoading || (!isVenueListAvailable) || isRouteCalculating) && !isAuthenticationFailed)
                 const Center(child: CircularProgressIndicator(color: Colors.blueAccent)),
 
               if (_mapController != null) ...<Widget>[

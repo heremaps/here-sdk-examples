@@ -353,26 +353,28 @@ class EVRoutingExample {
 
       // Only charging stations that are needed to reach the destination are listed below.
       ChargingStation? depStation = section.departurePlace.chargingStation;
-      if (depStation != null && depStation.id != null && !chargingStationsIDs.contains(depStation.id)) {
+      String depStationId = depStation?.id ?? "-1";
+      if (depStation != null && !chargingStationsIDs.contains(depStationId)) {
         print(
           "EVDetails: Section " + sectionIndex.toString() + ", name of charging station: " + depStation.name.toString(),
         );
-        chargingStationsIDs.add(depStation.id.toString());
+        chargingStationsIDs.add(depStationId);
         Metadata metadata = Metadata();
-        metadata.setString(requiredChargingMetadataKey, depStation.id!);
-        metadata.setString(supplierNameMetadataKey, depStation.name!);
+        metadata.setString(requiredChargingMetadataKey, depStationId);
+        metadata.setString(supplierNameMetadataKey, depStation.name ?? "NA");
         _addMapMarker(section.departurePlace.mapMatchedCoordinates, "assets/required_charging.png", metadata);
       }
 
-      ChargingStation? arrStation = section.departurePlace.chargingStation;
-      if (arrStation != null && arrStation.id != null && !chargingStationsIDs.contains(arrStation.id)) {
+      ChargingStation? arrStation = section.arrivalPlace.chargingStation;
+      String arrStationId = arrStation?.id ?? "-1";
+      if (arrStation != null && !chargingStationsIDs.contains(arrStationId)) {
         print(
           "EVDetails: Section " + sectionIndex.toString() + ", name of charging station: " + arrStation.name.toString(),
         );
-        chargingStationsIDs.add(arrStation.id.toString());
+        chargingStationsIDs.add(arrStationId);
         Metadata metadata = Metadata();
-        metadata.setString(requiredChargingMetadataKey, arrStation.id!);
-        metadata.setString(supplierNameMetadataKey, arrStation.name!);
+        metadata.setString(requiredChargingMetadataKey, arrStationId);
+        metadata.setString(supplierNameMetadataKey, arrStation.name ?? "NA");
         _addMapMarker(section.arrivalPlace.mapMatchedCoordinates, "assets/required_charging.png", metadata);
       }
 

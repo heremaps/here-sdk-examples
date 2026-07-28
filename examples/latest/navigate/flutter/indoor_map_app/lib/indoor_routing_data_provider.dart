@@ -301,7 +301,7 @@ class IndoorRoutingDataProvider extends ChangeNotifier implements IndoorRoutingD
       return;
     }
     showProgressBarOnMap(true);
-    routingEngine.calculateRoute(srcWayPoint!, dstWayPoint!, routeOptions, _showRouteInMap);
+    routingEngine.calculateRouteWithRouteNotices(srcWayPoint!, dstWayPoint!, routeOptions, _showRouteInMap);
     debugPrint(
       '$_tag: Route calculation called with Source[levelId: ${srcWayPoint?.levelId}, levelName: '
       '${selectedSource?.level.shortName}, latitude: ${srcWayPoint?.coordinates.latitude}, longitude: '
@@ -315,35 +315,45 @@ class IndoorRoutingDataProvider extends ChangeNotifier implements IndoorRoutingD
     notifyListeners();
   }
 
-  void _showRouteInMap(IndoorRoutingError? indoorRoutingError, List<routing.Route>? routeList) {
+  void _showRouteInMap(IndoorRoutingError? indoorRoutingError, List<routing.Route>? routeList, List<IndoorRouteNotice>? routeNotices) {
     showProgressBarOnMap(false);
     controller.hideRoute();
     if (currentState == RoutingUIState.hidden || currentState == RoutingUIState.spacePreview) {
       return;
     }
-    if (indoorRoutingError == null && routeList != null && routeList.isNotEmpty) {
-      final routing.Route route = routeList.first;
-      if (route.lengthInMeters <= 0) {
-        setRoutingWarningMsg('Source and destination are the same');
-        return;
-      }
-      controller.showRoute(route, routeStyle);
+    if (indoorRoutingError == null) {
+      if (routeList != null && routeList.isNotEmpty) {
+        final routing.Route route = routeList.first;
+        if (route.lengthInMeters <= 0) {
+          setRoutingWarningMsg('Source and destination are the same');
+          return;
+        }
+        controller.showRoute(route, routeStyle);
 
-      if (selectedVenue?.selectedLevel != selectedSource?.level) {
-        selectedVenue?.selectedLevel = selectedSource!.level;
-        _venueDataProviderInterface.onLevelChangeAfterGeometrySelection(
-          selectedVenue!.selectedDrawing.levels.length - 1 - selectedVenue!.selectedLevelIndex,
-        );
+        if (selectedVenue?.selectedLevel != selectedSource?.level) {
+          selectedVenue?.selectedLevel = selectedSource!.level;
+          _venueDataProviderInterface.onLevelChangeAfterGeometrySelection(
+            selectedVenue!.selectedDrawing.levels.length - 1 - selectedVenue!.selectedLevelIndex,
+          );
+        }
+        _mapController.camera.lookAtPoint(srcPosition!);
+        _removeDstMarker();
+        isRouteRenderedOnMap = true;
+        currentState = RoutingUIState.mainRoutingMenu;
+        notifyListeners();
+      } else {
+        isRouteRenderedOnMap = false;
+        setRoutingWarningMsg('No route found.');
       }
-      _mapController.camera.lookAtPoint(srcPosition!);
-      _removeDstMarker();
-      isRouteRenderedOnMap = true;
-      currentState = RoutingUIState.mainRoutingMenu;
-      notifyListeners();
-    } else {
+    } else if (indoorRoutingError != null) {
       isRouteRenderedOnMap = false;
       final String errorMsg = _routingErrorToString(indoorRoutingError);
       setRoutingWarningMsg('Route calculation failed: $errorMsg');
+    }
+    if (routeNotices != null && routeNotices.isNotEmpty) {
+      isRouteRenderedOnMap = false;
+      final String noticeMessages = routeNotices.map((notice) => notice.title).join('\n');
+      setRoutingWarningMsg('Route notices: $noticeMessages');
     }
   }
 
@@ -367,12 +377,6 @@ class IndoorRoutingDataProvider extends ChangeNotifier implements IndoorRoutingD
         return 'Bad gateway';
       case IndoorRoutingError.serviceUnavailable:
         return 'Service unavailable';
-      case IndoorRoutingError.noRouteFound:
-        return 'No route found';
-      case IndoorRoutingError.couldNotMatchOrigin:
-        return 'Could not match origin';
-      case IndoorRoutingError.couldNotMatchDestination:
-        return 'Could not match destination';
       case IndoorRoutingError.mapNotFound:
         return 'Map not found';
       case IndoorRoutingError.parsingError:

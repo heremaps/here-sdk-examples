@@ -73,7 +73,6 @@ class MainActivity : ComponentActivity() {
     private var startMapMarker: MapMarker? = null
     private var destinationMapMarker: MapMarker? = null
     private var guidanceButtonLabel by mutableStateOf(START_GUIDANCE_BUTTON_LABEL)
-    private var modeButtonLabel by mutableStateOf(PER_TYPE_MODE_LABEL)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -100,7 +99,6 @@ class MainActivity : ComponentActivity() {
                         HereMapView(savedInstanceState)
                         Column {
                             StartGuidanceButton()
-                            ToggleModeButton()
                         }
                     }
                 }
@@ -189,25 +187,6 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun ToggleModeButton() {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.Bottom,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            CustomButton(
-                onClick = {
-                    onToggleModeClicked()
-                },
-                text = modeButtonLabel,
-                containerColor = Color(0xFFFF9800)
-            )
-        }
-    }
-
-    @Composable
     fun CustomButton(onClick: () -> Unit, text: String, containerColor: Color = Color(0xFF005CB9)) {
         Button(
             onClick = onClick,
@@ -288,23 +267,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun onToggleModeClicked() {
-        val warnersExample = navigationWarnersExample ?: return
-        warnersExample.useWarnerEngine = !warnersExample.useWarnerEngine
-
-        modeButtonLabel = if (warnersExample.useWarnerEngine) {
-            WARNER_ENGINE_MODE_LABEL
-        } else {
-            PER_TYPE_MODE_LABEL
-        }
-
-        // If guidance is running, restart it with the new mode.
-        if (warnersExample.isGuidanceRunning()) {
-            warnersExample.stopGuidance()
-            warnersExample.startGuidance(startGeoCoordinates!!, destinationGeoCoordinates!!)
-        }
-    }
-
     override fun onPause() {
         mapView?.onPause()
         super.onPause()
@@ -353,7 +315,5 @@ class MainActivity : ComponentActivity() {
         private val TAG: String = MainActivity::class.java.simpleName
         private const val START_GUIDANCE_BUTTON_LABEL = "Start Guidance"
         private const val STOP_GUIDANCE_BUTTON_LABEL = "Stop Guidance"
-        private const val PER_TYPE_MODE_LABEL = "Mode: Per-Type Listeners"
-        private const val WARNER_ENGINE_MODE_LABEL = "Mode: WarnerEngine (Beta)"
     }
 }

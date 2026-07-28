@@ -1,5 +1,7 @@
 The MapFeatures example app demonstrates how to load and switch between various map schemes, enable specialized map features allowing you to overlay extra content on the map, such as 3D landmarks, onto the map and toggle between Globe and Web Mercator map projections. You can find how this is done in [MapFeaturesExample.swift](MapFeatures/MapFeaturesExample.swift) and [MapSchemesExample.swift](MapFeatures/MapSchemesExample.swift).
 
+![Hybrid Day (satellite) map scheme applied to the map](images/map_features.png)
+
 Build instructions:
 -------------------
 

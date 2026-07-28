@@ -1,4 +1,6 @@
 This app shows how to use positioning to calculate the distance travelled by a user. You can find how this is done in [HikingDiaryExample.swift](HikingDiary/HikingDiaryExample.swift).
+
+![Hiking diary tracking the current location with Start and Stop controls](images/hiking_diary.png)
 You can find a complete [tutorial](https://www.here.com/docs/bundle/sdk-for-ios-navigate-developer-guide/page/topics/hiking-app-tutorial.html) on building this hiking diary app from scratch, featuring detailed explanations of the algorithms and concepts behind location accuracy and location filters used in building this application.
 
 Build instructions:

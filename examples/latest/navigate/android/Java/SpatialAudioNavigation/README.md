@@ -1,5 +1,7 @@
 The Spatial Audio Navigation example app shows how the HERE SDK can be set up to navigate to a location in the most simplest way using spatial audio guidance.
 
+![Turn-by-turn guidance to the HERE office with 3D buildings and a route through Berlin](images/spatial_audio_navigation.png)
+
 The project contains two independent examples:
 1. How to retrieve the spatial audio information provided by HERE SDK.
 2. How to spatialize the audio cues making use of the data provided by HERE SDK and the spatial audio engine named Mach1.

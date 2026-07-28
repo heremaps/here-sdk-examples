@@ -1,5 +1,7 @@
 This example app demonstrates how to use custom map layers, using a custom point tile source, custom raster, line and polygon layers. It enables the display of custom point, raster, line and polygon tiles with clustering features, with data sourced either from the local file system or a custom backend, regardless of the format being unknown to the HERE SDK. However, in this implementation, custom points, raster, line and polygon tiles are provided to the HERE SDK based on the requested `TileKey`, with the geodetic center of each tile added as a custom point and line geometries dynamically generated within the tile's geographical bounds. The code is designed to be flexible, allowing you to load point, raster, and line data sets stored locally or retrieved from a web service. You can find how this is done in [CustomPointTileSourceExample.swift](CustomTileSource/CustomPointTileSourceExample.swift),  [CustomRasterTileSourceExample.swift](CustomTileSource/CustomRasterTileSourceExample.swift), [CustomLineTileSourceExample.swift](CustomTileSource/CustomLineTileSourceExample.swift) and [CustomPolygonTileSourceExample.swift](CustomTileSource/CustomPolygonTileSourceExample.swift).
 
+![Toggles to enable custom point, raster, line and polygon tile sources](images/custom_tile_source.png)
+
 Build instructions:
 -------------------
 

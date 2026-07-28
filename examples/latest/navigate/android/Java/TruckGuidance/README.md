@@ -1,4 +1,7 @@
 The _TruckGuidance_ example app shows how the HERE SDK can be used to calculate routes specific for trucks.
+
+![Truck route with weight and height restrictions along the way](images/truck_guidance.png)
+
 Additional features:
 
 - Start simulated turn-by-turn-guidance with the possibility to switch to tracking mode.

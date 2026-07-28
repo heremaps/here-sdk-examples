@@ -1,5 +1,7 @@
 The CartoPOIPicking example app shows how the HERE SDK can be used to pick embedded POI marker, vehicle restrictions and traffic incidents.
 
+![Pickable vehicle restriction icons and embedded markers on the map](images/carto_poi_picking.png)
+
 Build instructions:
 -------------------
 

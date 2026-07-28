@@ -200,25 +200,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void onToggleModeClicked(View view) {
-        Button toggleButton = (Button) view;
-        boolean useWarnerEngine = !navigationWarnersExample.isUsingWarnerEngine();
-        navigationWarnersExample.setUseWarnerEngine(useWarnerEngine);
-
-        if (useWarnerEngine) {
-            toggleButton.setText("Mode: WarnerEngine (Beta)");
-        } else {
-            toggleButton.setText("Mode: Per-Type Listeners");
-        }
-
-        // If guidance is running, restart it with the new mode.
-        if (navigationWarnersExample.isGuidanceRunning()) {
-            stopGuidance();
-            navigationWarnersExample.startGuidance(startGeoCoordinates, destinationGeoCoordinates);
-            // Keep the guidance button label as "Stop Guidance".
-        }
-    }
-
     @Override
     protected void onPause() {
         mapView.onPause();

@@ -129,14 +129,12 @@ public class IndoorRoutingHandler {
         viewController?.spinnerView.isHidden = false
         viewController?.startRotation()
 
-        routingEngine?.calculateRoute(from: departure!, to: arrival!, routeOptions: routeOptions) { error, routes in
-            if error == nil, let routes = routes {
+        routingEngine?.calculateRoute(from: departure!, to: arrival!, routeOptions: routeOptions) { error, routes, routeNotices in
+            self.viewController?.spinnerView.isHidden = true
+            self.viewController?.stopRotation()
+            if error == nil && ((routes?.isEmpty) == false), let routes = routes {
                 self.routingController?.showRoute(route: routes[0], style: self.routeStyle)
-                self.viewController?.spinnerView.isHidden = true
-                self.viewController?.stopRotation()
-            } else {
-                self.viewController?.spinnerView.isHidden = true
-                self.viewController?.stopRotation()
+            } else if let error = error {
                 self.routingController?.hideRoute()
                 var errorMessage: String
                 switch error {
@@ -158,12 +156,6 @@ public class IndoorRoutingHandler {
                     errorMessage = "Bad gateway"
                 case .serviceUnavailable:
                     errorMessage = "Routing service is currently unavailable"
-                case .noRouteFound:
-                    errorMessage = "No route found between selected waypoints"
-                case .couldNotMatchOrigin:
-                    errorMessage = "Origin could not be matched"
-                case .couldNotMatchDestination:
-                    errorMessage = "Destination could not be matched"
                 case .mapNotFound:
                     errorMessage = "Requested map not found"
                 case .parsingError:
@@ -177,6 +169,21 @@ public class IndoorRoutingHandler {
                 // Ensure errorBanner is initialized only once
                 if self.errorBanner.parent == nil {
                     self.errorBanner.showErrorBanner(withMessage: errorMessage)
+                    self.showBannerView()
+                }
+            } else if let routeNotices = routeNotices, !routeNotices.isEmpty {
+                self.routingController?.hideRoute()
+                let noticeMessages = routeNotices.map { $0.title }.joined(separator: "\n")
+                // Ensure errorBanner is initialized only once
+                if self.errorBanner.parent == nil {
+                    self.errorBanner.showErrorBanner(withMessage: noticeMessages)
+                    self.showBannerView()
+                }
+            } else {
+                self.routingController?.hideRoute()
+                // Ensure errorBanner is initialized only once
+                if self.errorBanner.parent == nil {
+                    self.errorBanner.showErrorBanner(withMessage: "No route found.")
                     self.showBannerView()
                 }
             }

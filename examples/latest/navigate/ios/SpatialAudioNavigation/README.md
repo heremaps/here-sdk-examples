@@ -1,5 +1,7 @@
 The SpatialAudioNavigation example app shows how initialize spatial audio guidance after calculating a route from A to B visualized on the map.
 
+![Guidance with spatial audio following a route with 3D buildings](images/spatial_audio_navigation.png)
+
 Build instructions:
 -------------------
 

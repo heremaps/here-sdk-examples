@@ -1,5 +1,7 @@
 This example app shows how to load custom polygon layers. You can find how this is done in [CustomPolygonLayersExample.swift](CustomPolygonLayers/CustomPolygonLayersExample.swift).
 
+![Many colorful custom polygons rendered across the map](images/custom_polygon_layers.png)
+
 Build instructions:
 -------------------
 

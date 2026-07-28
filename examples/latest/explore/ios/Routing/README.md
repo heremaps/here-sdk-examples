@@ -1,5 +1,7 @@
 The Routing example app shows how to calculate a route from A to B with a number of waypoints in between that is visualized on the map. You can find how this is done in [RoutingExample.swift](Routing/RoutingExample.swift).
 
+![Calculated route from start to destination with traffic-aware segments](images/routing.png)
+
 Build instructions:
 -------------------
 

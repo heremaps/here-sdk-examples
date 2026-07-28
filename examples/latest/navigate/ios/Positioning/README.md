@@ -1,5 +1,7 @@
 The Positioning example app shows how to use the location engine to visualize your current location on a map. You can find how this is done in [PositioningExample.swift](Positioning/PositioningExample.swift).
 
+![Current location shown with a position indicator on the map](images/positioning.png)
+
 Build instructions:
 -------------------
 

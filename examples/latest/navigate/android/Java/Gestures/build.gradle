@@ -1,5 +1,4 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
-
 buildscript {
 
     repositories {
@@ -10,25 +9,41 @@ buildscript {
         classpath 'com.android.tools.build:gradle:8.13.2'
         classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.20'
 
-
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
 }
 
+// Valid values: LOCAL_BUNDLE (default), BUNDLE_FROM_ARTIFACTORY
+// Pass -PHERESDKBuildType=BUNDLE_FROM_ARTIFACTORY to build with the AAR fetched from Artifactory.
+ext.HERESDKBuildConfig = project.findProperty('HERESDKBuildType') ?: "LOCAL_BUNDLE"
+
 allprojects {
     repositories {
         google()
         mavenCentral()
+
+        if (rootProject.ext.HERESDKBuildConfig == "BUNDLE_FROM_ARTIFACTORY") {
+            maven {
+                name = 'HERE_SDK_Artifactory_Repository'
+                url = "https://repo.platform.here.com/artifactory/here-sdk-android"
+                credentials {
+                    // Use the username and token created on https://platform.here.com/access/access-tokens.
+                    username = project.findProperty('HERESDKArtifactoryUsername') ?: "YOUR_USER_NAME"
+                    password = project.findProperty('HERESDKArtifactoryPassword') ?: "YOUR_ACCESS_TOKEN"
+                }
+                content {
+                    includeGroup "com.here.here-sdk.java.bundles"
+                }
+            }
+        }
     }
 
-    gradle.projectsEvaluated {
-        tasks.withType(JavaCompile) {
-            options.deprecation = true
-        }
+    tasks.withType(JavaCompile).configureEach {
+        options.deprecation = true
     }
 }
 
-task clean(type: Delete) {
+tasks.register('clean', Delete) {
     delete rootProject.buildDir
 }

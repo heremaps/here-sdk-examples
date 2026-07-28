@@ -49,7 +49,7 @@ class IndoorVenueEngine {
     _routingDataProviderInterface = routingDataProviderInterface;
   }
 
-  final void Function(AuthenticationError? authenticationError)? onAuthErrorCallback;
+  final void Function(String reason)? onAuthErrorCallback;
 
   VenueEngine? venueEngine;
   late VenueDataProviderInterface _providerInterface;
@@ -85,8 +85,26 @@ class IndoorVenueEngine {
   void _onAuthCallback(AuthenticationError? error, AuthenticationData? data) {
     debugPrint('Venue Engine auth callback hit.');
     if (error != null) {
-      debugPrint('Failed to authenticate the venue engine: $error');
-      onAuthErrorCallback?.call(error);
+      String reason;
+      switch (error) {
+        case AuthenticationError.invalidParameter:
+          reason = 'Invalid parameter received';
+          break;
+        case AuthenticationError.authenticationFailed:
+          reason = 'Authentication failed. Check your credentials.';
+          break;
+        case AuthenticationError.noConnection:
+          reason = 'No network connection';
+          break;
+        case AuthenticationError.operationAfterDispose:
+          reason = 'Operation invoked after SDK engine was disposed';
+          break;
+        default:
+          reason = 'Unknown authentication error';
+          break;
+      }
+      debugPrint('Failed to authenticate the venue engine: $reason');
+      onAuthErrorCallback?.call(reason);
     }
     if (!_venueEngineInitialized.isCompleted) {
       _venueEngineInitialized.complete();

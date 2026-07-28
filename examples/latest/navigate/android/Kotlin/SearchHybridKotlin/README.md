@@ -1,5 +1,7 @@
 The SearchHybrid example app shows how to search for places including autosuggestions, for the address that belongs to certain geographic coordinates (_reverse geocoding_) and for the geographic coordinates that belong to an address (_geocoding_). You can find how this is done in [SearchExample.kt](app/src/main/java/com/here/searchhybridkotlin/SearchExample.kt).
 
+![Map with search result markers for a category search](images/search_hybrid.png)
+
 Map storage in this app relies only on cache, and offline maps are not loaded. Offline maps could also be implemented here, but offline search is out of scope for this app. To learn how to implement it, see the OfflineMapsKotlin example app and [OfflineMapsExample.kt](../OfflineMapsKotlin/app/src/main/java/com/here/offlinemapskotlin/OfflineMapsExample.kt).
 
 **Note**: This is the same app as the "**SearchHybrid**" app, but implemented in Kotlin instead of Java.

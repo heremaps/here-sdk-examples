@@ -97,6 +97,7 @@ public class RoutingWithAvoidanceOptionExample {
     private final MapView mapView;
     private final List<MapPolyline> mapPolylines = new ArrayList<>();
     private final List<MapPolyline> segmentPolyLines = new ArrayList<>();
+    private final List<MapMarker> mapMatchedMarkers = new ArrayList<>();
     private final RoutingEngine routingEngine;
     // A route in Berlin - can be changed via longtap.
     private GeoCoordinates startGeoCoordinates = new GeoCoordinates(52.49047222554655, 13.296884483959285);
@@ -312,6 +313,7 @@ public class RoutingWithAvoidanceOptionExample {
 
             // Show the map-matched location on the map.
             MapMarker mapMatchedMapMarker = addMapMarker(mapMatchedLocation.coordinates, R.drawable.map_matched_location_dot);
+            mapMatchedMarkers.add(mapMatchedMapMarker);
 
             // Fetch IDs from mapMatchedLocation and convert them into OCMSegmentID required by loadSegmentData method.
             OCMSegmentId mapMatchedSegmentId = new OCMSegmentId();
@@ -494,6 +496,9 @@ public class RoutingWithAvoidanceOptionExample {
 
     public void clearMap() {
         clearRoute();
+        clearSegmentPolylines();
+        clearMapMatchedMarkers();
+        resetAvoidanceState();
     }
 
     private void clearRoute() {
@@ -501,6 +506,25 @@ public class RoutingWithAvoidanceOptionExample {
             mapView.getMapScene().removeMapPolyline(mapPolyline);
         }
         mapPolylines.clear();
+    }
+
+    private void clearSegmentPolylines() {
+        for (MapPolyline segmentPolyline : segmentPolyLines) {
+            mapView.getMapScene().removeMapPolyline(segmentPolyline);
+        }
+        segmentPolyLines.clear();
+    }
+
+    private void clearMapMatchedMarkers() {
+        for (MapMarker mapMatchedMarker : mapMatchedMarkers) {
+            mapView.getMapScene().removeMapMarker(mapMatchedMarker);
+        }
+        mapMatchedMarkers.clear();
+    }
+
+    private void resetAvoidanceState() {
+        segmentAvoidanceList.clear();
+        segmentsAvoidanceViolated = false;
     }
 
     private MapMarker addMapMarker(GeoCoordinates geoCoordinates, int resourceId) {

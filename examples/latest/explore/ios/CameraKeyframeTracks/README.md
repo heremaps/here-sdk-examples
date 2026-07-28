@@ -1,5 +1,7 @@
 The CameraKeyframeTracks example app shows how to use multiple keyframe tracks for map camera animations and how to animate to a route. You can find how this is done in [CameraKeyframeTracksExample.swift](CameraKeyframeTracksExample.swift).
 
+![Camera animated along keyframe tracks to a highlighted route](images/camera_keyframe_tracks.png)
+
 Build instructions:
 -------------------
 

@@ -13,7 +13,6 @@
 		83C837BC2C207F340004F54E /* NavigationWarnersApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C837BB2C207F340004F54E /* NavigationWarnersApp.swift */; };
 		83C837BE2C207F340004F54E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C837BD2C207F340004F54E /* ContentView.swift */; };
 		83C837C02C207F360004F54E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 83C837BF2C207F360004F54E /* Assets.xcassets */; };
-		83C837C32C207F360004F54E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 83C837C22C207F360004F54E /* Preview Assets.xcassets */; };
 		83C837D12C20EFA70004F54E /* NavigationWarners.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C837D02C20EFA70004F54E /* NavigationWarners.swift */; };
 		E0C82A852FE53821003FCC53 /* heresdk.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 83C837CA2C20AAE50004F54E /* heresdk.xcframework */; };
 		E0C82A862FE53821003FCC53 /* heresdk.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 83C837CA2C20AAE50004F54E /* heresdk.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -41,7 +40,6 @@
 		83C837BB2C207F340004F54E /* NavigationWarnersApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationWarnersApp.swift; sourceTree = "<group>"; };
 		83C837BD2C207F340004F54E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		83C837BF2C207F360004F54E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		83C837C22C207F360004F54E /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		83C837CA2C20AAE50004F54E /* heresdk.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = heresdk.xcframework; sourceTree = "<group>"; };
 		83C837D02C20EFA70004F54E /* NavigationWarners.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationWarners.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -93,7 +91,6 @@
 		83C837C12C207F360004F54E /* Preview Content */ = {
 			isa = PBXGroup;
 			children = (
-				83C837C22C207F360004F54E /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
 			sourceTree = "<group>";
@@ -165,7 +162,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				83C837C32C207F360004F54E /* Preview Assets.xcassets in Resources */,
 				83C837C02C207F360004F54E /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

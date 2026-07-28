@@ -1,4 +1,6 @@
 The RoutingWithAvoidanceOptions example app shows how to calculate routes with `AvoidanceOptions` and how to use the `SegmentDataLoader` to retrieve data from the map.
+
+![Route calculated between two points with avoidance options](images/routing_with_avoidance_options.png)
 It also allows to pick segments from the map to avoid certain areas or roads. You can find how this is done in  [RoutingWithAvoidanceOptionsExample.swift](RoutingWithAvoidanceOptions/RoutingWithAvoidanceOptionsExample.swift).
 
 Build instructions:

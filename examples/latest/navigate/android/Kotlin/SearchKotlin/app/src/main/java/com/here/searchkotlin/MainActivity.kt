@@ -124,7 +124,7 @@ class MainActivity : ComponentActivity() {
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 CustomButton(onClick = { searchExample?.onGeocodeButtonClicked() },
-                    text = "GEOCODING"
+                    text = "GEOCODE"
                 )
             }
         }

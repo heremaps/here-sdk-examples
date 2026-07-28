@@ -40,14 +40,9 @@ import com.here.sdk.warner.WarningsRegistry
 import java.util.Date
 
 // This class shows how to use the unified WarnerEngine to receive all navigation warnings
-// through a single WarningListener, instead of setting individual per-type listeners on the
-// VisualNavigator. The WarnerEngine is obtained from the VisualNavigator and provides a centralized
-// way to configure warning options, set notification distances, and handle all warning events.
-//
-// For comparison, see the NavigationWarnersExample class which uses per-type listeners directly.
-//
-// Note: This is a beta release of this feature, so there could be a few bugs and unexpected
-// behaviors. Related APIs may change for new releases without a deprecation process.
+// through a single WarningListener. The WarnerEngine is obtained from the VisualNavigator and
+// provides a centralized way to configure warning options, set notification distances, and
+// handle all warning events.
 class WarnerEngineExample {
 
     private lateinit var warnerEngine: WarnerEngine

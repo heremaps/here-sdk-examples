@@ -24,15 +24,9 @@ import 'package:here_sdk/warner.dart';
 import 'SpeedBumpWarningProvider.dart';
 
 /// This class shows how to use the unified WarnerEngine to receive all navigation warnings
-/// through a single [WarningListener], instead of setting individual per-type listeners on the
-/// [VisualNavigator]. The WarnerEngine is obtained from the [VisualNavigator] and provides a
-/// centralized way to configure warning options, set notification distances, and handle all
-/// warning events.
-///
-/// For comparison, see the NavigationWarnersExample class which uses per-type listeners directly.
-///
-/// Note: This is a beta release of this feature, so there could be a few bugs and unexpected
-/// behaviors. Related APIs may change for new releases without a deprecation process.
+/// through a single [WarningListener]. The WarnerEngine is obtained from the [VisualNavigator]
+/// and provides a centralized way to configure warning options, set notification distances,
+/// and handle all warning events.
 class WarnerEngineExample {
   late WarnerEngine _warnerEngine;
   bool _isSetUp = false;
@@ -243,6 +237,9 @@ class WarnerEngineExample {
   /// Handles truck restriction warnings.
   /// These alert truck drivers to upcoming road restrictions such as bridges with limited height
   /// or roads with weight limits that may prevent passage.
+  /// This event notifies on truck restrictions in general,
+  /// so it will also deliver events when the transport type was set to a non-truck transport type.
+  /// The given restrictions are based on the HERE database of the road network ahead.
   void _handleTruckRestrictionWarning(WarningUpdate warningUpdate, WarningsRegistry warningsRegistry) {
     TruckRestrictionWarning? truckRestrictionWarning = warningsRegistry.getTruckRestrictionWarning(warningUpdate.warning);
     if (truckRestrictionWarning == null) {

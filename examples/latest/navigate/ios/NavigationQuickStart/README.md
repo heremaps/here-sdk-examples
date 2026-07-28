@@ -1,5 +1,7 @@
 The Navigation Quick Start example app shows how the HERE SDK can be set up to navigate to a location in the most simplest way. You can find how this is done in [NavigationQuickStartExample.swift](NavigationQuickStart/NavigationQuickStartExample.swift).
 
+![Turn-by-turn guidance following a route through Berlin](images/navigation_quick_start.png)
+
 Build instructions:
 -------------------
 

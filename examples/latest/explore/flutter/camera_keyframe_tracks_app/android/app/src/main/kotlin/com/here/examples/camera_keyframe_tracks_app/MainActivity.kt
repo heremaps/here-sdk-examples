@@ -1,4 +1,4 @@
-package com.here.examples.camera_keyframe_tracks_app
+package com.here.sdk.examples.camera_keyframe_tracks_app
 
 import io.flutter.embedding.android.FlutterActivity
 

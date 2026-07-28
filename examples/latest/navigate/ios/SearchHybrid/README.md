@@ -1,5 +1,7 @@
 The SearchHybrid example app shows how to search for places including autosuggestions, for the address that belongs to certain geographic coordinates (_reverse geocoding_) and for the geographic coordinates that belong to an address (_geocoding_). You can find how this is done in [SearchHybridExample.swift](SearchHybrid/SearchHybridExample.swift).
 
+![Search results shown as pins with online and offline search controls](images/search_hybrid.png)
+
 Map storage in this app relies only on cache, and offline maps are not loaded. Offline maps could also be implemented here, but offline search is out of scope for this app. To learn how to implement it, see the OfflineMaps example app and [OfflineMapsExample.swift](../OfflineMaps/OfflineMaps/OfflineMapsExample.swift).
 
 Build instructions:

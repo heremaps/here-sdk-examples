@@ -32,7 +32,7 @@
         </activity>
 
         <service
-            android:name="com.here.examples.positioningwithbackgroundupdates.HEREBackgroundPositioningService"
+            android:name="com.here.sdk.examples.positioningwithbackgroundupdates.HEREBackgroundPositioningService"
             android:enabled="true"
             android:exported="true"
             android:foregroundServiceType="location"/>

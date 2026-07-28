@@ -24,6 +24,7 @@ struct ContentView: View {
     
     @State private var mapView = MapView()
     @State private var spatialAudioNavigationExample: SpatialAudioNavigationExample?
+    @State private var showingAlert = true
     
     var body: some View {
          // Show the views on top of each other.
@@ -32,6 +33,13 @@ struct ContentView: View {
              // The map view should fill the entire screen.
              WrappedMapView(mapView: $mapView)
                  .edgesIgnoringSafeArea(.all)
+         }
+         .alert("Spatial Audio Navigation", isPresented: $showingAlert) {
+             Button("OK") {
+                 showingAlert = false
+             }
+         } message: {
+             Text("This app routes to the HERE office in Berlin using spatial audio guidance. See logs for guidance information.")
          }
          .onAppear {
              // ContentView appeared, now we init the example.
