@@ -2,6 +2,8 @@
 
 HERE SDK Units are small, reusable building blocks packaged as Android libraries (AARs). They demonstrate ways to modularize your UI and use the HERE SDK - for example, for switching map schemes or showing simple overlays.
 
+![Map with reusable UI units: menu buttons, scale bar, compass and a speed limit widget](images/here_sdk_units.png)
+
 HERE SDK Units help you add functionality with minimal effort and keep your app code lean. They are intended as examples and starting points, not drop-in production components. Adapt the code to your needs and test any unit you plan to use in a production app.
 
 In this repository, units primarily extract boilerplate so that the HERE SDK example apps can focus on core HERE SDK features. For example, a unit might provide a simple menu or a map scheme switcher, while the main app demonstrates routing or rendering.

@@ -25,6 +25,7 @@ class RoutingWithAvoidanceOptionsExample : LongPressDelegate, TapDelegate {
     private let mapView: MapView
     private var mapPolylines: [MapPolyline] = []
     private var segmentPolylines: [MapPolyline] = []
+    private var mapMatchedMarkers: [MapMarker] = []
     private let routingEngine: RoutingEngine
     
     // A route in Berlin - can be changed via long press.
@@ -34,7 +35,6 @@ class RoutingWithAvoidanceOptionsExample : LongPressDelegate, TapDelegate {
     
     private var startMapMarker: MapMarker?
     private var destinationMapMarker: MapMarker?
-    private var mapMatcherMapMarker: MapMarker?
     
     private var currentlySelectedSegmentReference: SegmentReference?
     private let segmentDataLoader: SegmentDataLoader
@@ -220,7 +220,7 @@ class RoutingWithAvoidanceOptionsExample : LongPressDelegate, TapDelegate {
             
             // Show the map-matched location on the map.
             if let marker = addMapMarker(geoCoordinates: matchedLocation.coordinates, imageName: "map_matched_location_dot.png") {
-                mapMatcherMapMarker = marker
+                mapMatchedMarkers.append(marker)
             }
             
             // Fetch IDs from mapMatchedLocation and convert them into OCMSegmentID required by loadSegmentData method.
@@ -444,6 +444,9 @@ class RoutingWithAvoidanceOptionsExample : LongPressDelegate, TapDelegate {
     
     func clearMap() {
         clearRoute()
+        clearSegmentPolylines()
+        clearMapMatchedMarkers()
+        resetAvoidanceState()
     }
     
     private func clearRoute() {
@@ -451,6 +454,25 @@ class RoutingWithAvoidanceOptionsExample : LongPressDelegate, TapDelegate {
             mapView.mapScene.removeMapPolyline(mapPolyline)
         }
         mapPolylines.removeAll()
+    }
+
+    private func clearSegmentPolylines() {
+        for segmentPolyline in segmentPolylines {
+            mapView.mapScene.removeMapPolyline(segmentPolyline)
+        }
+        segmentPolylines.removeAll()
+    }
+
+    private func clearMapMatchedMarkers() {
+        for mapMatchedMarker in mapMatchedMarkers {
+            mapView.mapScene.removeMapMarker(mapMatchedMarker)
+        }
+        mapMatchedMarkers.removeAll()
+    }
+
+    private func resetAvoidanceState() {
+        segmentAvoidanceList.removeAll()
+        segmentsAvoidanceViolated = false
     }
     
     private func addMapMarker(geoCoordinates: GeoCoordinates, imageName: String) -> MapMarker? {

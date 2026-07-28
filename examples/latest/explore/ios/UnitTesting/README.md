@@ -1,5 +1,7 @@
 The UnitTesting example app shows how the HERE SDK can be mocked in unit tests.
 
+![Map view backing the example app that is covered by mocked unit tests](images/unit_testing.png)
+
 Build instructions:
 -------------------
 

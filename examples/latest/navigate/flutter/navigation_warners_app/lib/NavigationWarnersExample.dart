@@ -20,7 +20,6 @@
 import 'dart:async';
 
 import 'package:here_sdk/animation.dart' as HERE;
-import 'package:flutter/services.dart';
 import 'package:here_sdk/core.dart';
 import 'package:here_sdk/core.errors.dart';
 import 'package:here_sdk/mapview.dart';
@@ -42,7 +41,6 @@ class NavigationWarnersExample {
   bool _isGuidanceRunning = false;
   RouteProgress? currentRouteProgress;
   final WarnerEngineExample _warnerEngineExample = WarnerEngineExample();
-  bool useWarnerEngine = false;
 
   NavigationWarnersExample(this._hereMapController) {
     try {
@@ -80,9 +78,7 @@ class NavigationWarnersExample {
     _locationSimulator?.stop();
     _locationSimulator = null;
 
-    if (useWarnerEngine) {
-      _warnerEngineExample.stopWarnerEngine();
-    }
+    _warnerEngineExample.stopWarnerEngine();
     _visualNavigator.route = null;
     _visualNavigator.stopRendering();
     _isGuidanceRunning = false;
@@ -120,15 +116,9 @@ class NavigationWarnersExample {
   }
 
   void _startGuidanceWithRoute(HERE.Route route) {
-    if (useWarnerEngine) {
-      // Use the unified WarnerEngine approach (beta).
-      _warnerEngineExample.setupWarnerEngine(_visualNavigator);
-      print("Using WarnerEngine (beta) for unified warning handling.");
-    } else {
-      // Use the previous per-type listener approach.
-      _setupListeners();
-      print("Using per-type listeners for warning handling.");
-    }
+    _warnerEngineExample.setupWarnerEngine(_visualNavigator);
+    print("Using WarnerEngine for warning handling.");
+    _setupListeners();
     _visualNavigator.startRendering(_hereMapController);
     _visualNavigator.route = route;
     _setupLocationSource(route);
@@ -147,8 +137,6 @@ class NavigationWarnersExample {
   }
 
   void _setupListeners() {
-    _setupSpeedWarnings();
-    _setupSafetyCameraWarningOptions();
     _setupManeuverNotificationOptions();
 
     // Notifies on the progress along the route including maneuver instructions.
@@ -239,183 +227,6 @@ class NavigationWarnersExample {
       } else if (milestone.waypointIndex == null && milestoneStatus == MilestoneStatus.missed) {
         // For example, when transport mode changes due to a ferry a system-defined waypoint may have been added.
         print("A system-defined waypoint was missed at: " + milestone.mapMatchedCoordinates.toString());
-      }
-    });
-
-    // Notifies on the current speed limit valid on the current road.
-    _visualNavigator.speedLimitListener = SpeedLimitListener((SpeedLimit speedLimit) {
-      // Handle results from onSpeedLimitUpdated().
-      double? currentSpeedLimit = _getCurrentSpeedLimit(speedLimit);
-
-      if (currentSpeedLimit == null) {
-        print("Warning: Speed limits unknown, data could not be retrieved.");
-      } else if (currentSpeedLimit == 0) {
-        print("No speed limits on this road! Drive as fast as you feel safe ...");
-      } else {
-        print("Current speed limit (m/s): $currentSpeedLimit");
-      }
-    });
-
-    // Notifies on school zones ahead.
-    _visualNavigator.schoolZoneWarningListener = SchoolZoneWarningListener((List<SchoolZoneWarning> list) {
-      // The list is guaranteed to be non-empty.
-      for (SchoolZoneWarning schoolZoneWarning in list) {
-        if (schoolZoneWarning.distanceType == DistanceType.ahead) {
-          print("A school zone ahead in: ${schoolZoneWarning.distanceToSchoolZoneInMeters} meters.");
-          // Note that this will be the same speed limit as indicated by SpeedLimitListener, unless
-          // already a lower speed limit applies, for example, because of a heavy truck load.
-          print("Speed limit restriction for this school zone: ${schoolZoneWarning.speedLimitInMetersPerSecond} m/s.");
-          if (schoolZoneWarning.timeRule != null && !schoolZoneWarning.timeRule!.appliesTo(DateTime.now())) {
-            // For example, during night sometimes a school zone warning does not apply.
-            // If schoolZoneWarning.timeRule is null, the warning applies at anytime.
-            print("Note that this school zone warning currently does not apply.");
-          }
-        } else if (schoolZoneWarning.distanceType == DistanceType.reached) {
-          print("A school zone has been reached.");
-        } else if (schoolZoneWarning.distanceType == DistanceType.passed) {
-          print("A school zone has been passed.");
-        }
-      }
-    });
-
-    SchoolZoneWarningOptions schoolZoneWarningOptions = SchoolZoneWarningOptions();
-    schoolZoneWarningOptions.filterOutInactiveTimeDependentWarnings = true;
-    schoolZoneWarningOptions.warningDistanceInMeters = 150;
-    _visualNavigator.schoolZoneWarningOptions = schoolZoneWarningOptions;
-
-    // Notifies whenever a border is crossed of a country and optionally, by default, also when a state
-    // border of a country is crossed.
-    _visualNavigator.borderCrossingWarningListener = BorderCrossingWarningListener((
-      BorderCrossingWarning borderCrossingWarning,
-    ) {
-      // Since the border crossing warning is given relative to a single location,
-      // the DistanceType.reached will never be given for this warning.
-      if (borderCrossingWarning.distanceType == DistanceType.ahead) {
-        print(
-          "BorderCrossing: A border is ahead in: ${borderCrossingWarning.distanceToBorderCrossingInMeters} meters.",
-        );
-        print("BorderCrossing: Type (such as country or state): ${borderCrossingWarning.type.name}");
-        print("BorderCrossing: Country code: ${borderCrossingWarning.administrativeRules.countryCode.name}");
-
-        // The state code after the border crossing. It represents the state / province code.
-        // It is a 1 to 3 upper-case characters string that follows the ISO 3166-2 standard,
-        // but without the preceding country code (e.g., for Texas, the state code will be TX).
-        // It will be null for countries without states or countries in which the states have very
-        // similar regulations (e.g., for Germany, there will be no state borders).
-        if (borderCrossingWarning.administrativeRules.stateCode != null) {
-          print("BorderCrossing: State code: ${borderCrossingWarning.administrativeRules.stateCode}");
-        }
-
-        // The general speed limits that apply in the country / state after border crossing.
-        var generalVehicleSpeedLimits = borderCrossingWarning.administrativeRules.speedLimits;
-        print(
-          "BorderCrossing: Speed limit in cities (m/s): ${generalVehicleSpeedLimits.maxSpeedUrbanInMetersPerSecond}",
-        );
-        print(
-          "BorderCrossing: Speed limit outside cities (m/s): ${generalVehicleSpeedLimits.maxSpeedRuralInMetersPerSecond}",
-        );
-        print(
-          "BorderCrossing: Speed limit on highways (m/s): ${generalVehicleSpeedLimits.maxSpeedHighwaysInMetersPerSecond}",
-        );
-      } else if (borderCrossingWarning.distanceType == DistanceType.passed) {
-        print("BorderCrossing: A border has been passed.");
-      }
-    });
-
-    BorderCrossingWarningOptions borderCrossingWarningOptions = BorderCrossingWarningOptions();
-    // If set to true, all the state border crossing notifications will not be given.
-    // If the value is false, all border crossing notifications will be given for both
-    // country borders and state borders. Defaults to false.
-    borderCrossingWarningOptions.filterOutStateBorderWarnings = true;
-    _visualNavigator.borderCrossingWarningOptions = borderCrossingWarningOptions;
-
-    // Notifies on danger zones.
-    // A danger zone refers to areas where there is an increased risk of traffic incidents.
-    // These zones are designated to alert drivers to potential hazards and encourage safer driving behaviors.
-    // The HERE SDK warns when approaching the danger zone, as well as when leaving such a zone.
-    // A danger zone may or may not have one or more speed cameras in it. The exact location of such speed cameras
-    // is not provided. Note that danger zones are only available in selected countries, such as France.
-    _visualNavigator.dangerZoneWarningListener = DangerZoneWarningListener((DangerZoneWarning dangerZoneWarning) {
-      if (dangerZoneWarning.distanceType == DistanceType.ahead) {
-        print("A danger zone ahead in: " + dangerZoneWarning.distanceInMeters.toString() + " meters.");
-        // isZoneStart indicates if we enter the danger zone from the start.
-        // It is false, when the danger zone is entered from a side street.
-        // Based on the route path, the HERE SDK anticipates from where the danger zone will be entered.
-        // In tracking mode, the most probable path will be used to anticipate from where
-        // the danger zone is entered.
-        print("isZoneStart: " + dangerZoneWarning.isZoneStart.toString());
-      } else if (dangerZoneWarning.distanceType == DistanceType.reached) {
-        print("A danger zone has been reached. isZoneStart: " + dangerZoneWarning.isZoneStart.toString());
-      } else if (dangerZoneWarning.distanceType == DistanceType.passed) {
-        print("A danger zone has been passed.");
-      }
-    });
-
-    // Notifies on low speed zones ahead - as indicated also on the map when
-    // MapFeatures.lowSpeedZones is set.
-    _visualNavigator.lowSpeedZoneWarningListener = LowSpeedZoneWarningListener((
-      LowSpeedZoneWarning lowSpeedZoneWarning,
-    ) {
-      if (lowSpeedZoneWarning.distanceType == DistanceType.ahead) {
-        print(
-          "A low speed zone ahead in: " + lowSpeedZoneWarning.distanceToLowSpeedZoneInMeters.toString() + " meters.",
-        );
-        print("Speed limit in low speed zone (m/s): " + lowSpeedZoneWarning.speedLimitInMetersPerSecond.toString());
-      } else if (lowSpeedZoneWarning.distanceType == DistanceType.reached) {
-        print("A low speed zone has been reached.");
-        print("Speed limit in low speed zone (m/s): " + lowSpeedZoneWarning.speedLimitInMetersPerSecond.toString());
-      } else if (lowSpeedZoneWarning.distanceType == DistanceType.passed) {
-        print("A low speed zone has been passed.");
-      }
-    });
-
-    // Notifies when the current speed limit is exceeded.
-    _visualNavigator.speedWarningListener = SpeedWarningListener((SpeedWarningStatus speedWarningStatus) {
-      // Handle results from onSpeedWarningStatusChanged().
-      if (speedWarningStatus == SpeedWarningStatus.speedLimitExceeded) {
-        // Driver is faster than current speed limit (plus an optional offset, see setupSpeedWarnings()).
-        // Play a click sound to indicate this to the driver.
-        // As Flutter itself does not provide support for sounds,
-        // alternatively use a 3rd party plugin to play an alert sound of your choice.
-        // Note that this may not include temporary special speed limits, see SpeedLimitListener.
-        SystemSound.play(SystemSoundType.click);
-        print("Speed limit exceeded.");
-      }
-
-      if (speedWarningStatus == SpeedWarningStatus.speedLimitRestored) {
-        print("Driver is again slower than current speed limit (plus an optional offset.)");
-      }
-    });
-
-    // Notifies about merging traffic to the current road.
-    _visualNavigator.trafficMergeWarningListener = TrafficMergeWarningListener((
-      TrafficMergeWarning trafficMergeWarning,
-    ) {
-      if (trafficMergeWarning.distanceType == DistanceType.ahead) {
-        print(
-          "There is a merging " +
-              trafficMergeWarning.roadType.name +
-              " ahead in: " +
-              trafficMergeWarning.distanceToTrafficMergeInMeters.toString() +
-              "meters, merging from the " +
-              trafficMergeWarning.side.name +
-              "side, with lanes =" +
-              trafficMergeWarning.laneCount.toString(),
-        );
-      } else if (trafficMergeWarning.distanceType == DistanceType.passed) {
-        print(
-          "A merging " +
-              trafficMergeWarning.roadType.name +
-              " passed: " +
-              trafficMergeWarning.distanceToTrafficMergeInMeters.toString() +
-              "meters, merging from the " +
-              trafficMergeWarning.side.name +
-              "side, with lanes =" +
-              trafficMergeWarning.laneCount.toString(),
-        );
-      } else if (trafficMergeWarning.distanceType == DistanceType.reached) {
-        // Since the traffic merge warning is given relative to a single position on the route,
-        // DistanceType.reached will never be given for this warning.
       }
     });
 
@@ -555,228 +366,11 @@ class NavigationWarnersExample {
       }
     });
 
-    RoadSignWarningOptions roadSignWarningOptions = new RoadSignWarningOptions();
-    // Set a filter to get only road signs relevant for TRUCKS and HEAVY_TRUCKS.
-    roadSignWarningOptions.vehicleTypesFilter = [RoadSignVehicleType.trucks, RoadSignVehicleType.heavyTrucks];
-    // Get notification distances for road sign alerts from visual navigator.
-    WarningNotificationDistances warningNotificationDistances = _visualNavigator.getWarningNotificationDistances(
-      WarningType.roadSign,
-    );
-
-    // The distance in meters for emitting warnings when the speed limit or current speed is fast. Defaults to 1500.
-    warningNotificationDistances.fastSpeedDistanceInMeters = 1600;
-    // The distance in meters for emitting warnings when the speed limit or current speed is regular. Defaults to 750.
-    warningNotificationDistances.regularSpeedDistanceInMeters = 800;
-    // The distance in meters for emitting warnings when the speed limit or current speed is slow. Defaults to 500.
-    warningNotificationDistances.slowSpeedDistanceInMeters = 600;
-
-    // Set the warning distances for road signs.
-    _visualNavigator.setWarningNotificationDistances(WarningType.roadSign, warningNotificationDistances);
-    _visualNavigator.roadSignWarningOptions = roadSignWarningOptions;
-
-    // Notifies on road signs as they appear along the road.
-    _visualNavigator.roadSignWarningListener = RoadSignWarningListener((RoadSignWarning roadSignWarning) {
-      RoadSignType roadSignType = roadSignWarning.type;
-      if (roadSignWarning.distanceType == DistanceType.ahead) {
-        print(
-          "A RoadSignWarning of road sign type: " +
-              roadSignType.name +
-              " ahead in (m): " +
-              roadSignWarning.distanceToRoadSignInMeters.toString(),
-        );
-      } else if (roadSignWarning.distanceType == DistanceType.passed) {
-        print("A RoadSignWarning of road sign type: " + roadSignType.name + " just passed.");
-      }
-
-      if (roadSignWarning.signValue != null) {
-        // Optional text as it is printed on the local road sign.
-        print("Road sign text: ${roadSignWarning.signValue!.text}");
-      }
-
-      // For more road sign attributes, please check the API Reference.
-    });
-
-    // Notifies on safety camera warnings as they appear along the road.
-    _visualNavigator.safetyCameraWarningListener = SafetyCameraWarningListener((
-      SafetyCameraWarning safetyCameraWarning,
-    ) {
-      final currentRoute = _visualNavigator.route;
-
-      final safetyCameraGeoCoordinates = getGeocoordinatesForRemainingDistance(
-        currentRouteProgress!,
-        safetyCameraWarning.distanceToCameraInMeters,
-        currentRoute!,
-      );
-
-      if (safetyCameraWarning.distanceType == DistanceType.ahead) {
-        print(
-          'Safety camera warning ${safetyCameraWarning.type.name} ahead in: '
-              '${safetyCameraWarning.distanceToCameraInMeters} m '
-              'with speed limit = ${safetyCameraWarning.speedLimitInMetersPerSecond} m/s '
-              'at geo-coordinates: ${geoCoordinatesToString(safetyCameraGeoCoordinates)}',
-        );
-      } else if (safetyCameraWarning.distanceType == DistanceType.passed) {
-        print(
-          "Safety camera warning " +
-              safetyCameraWarning.type.name +
-              " passed: " +
-              safetyCameraWarning.distanceToCameraInMeters.toString() +
-              "with speed limit =" +
-              safetyCameraWarning.speedLimitInMetersPerSecond.toString() +
-              "m/s",
-        );
-      } else if (safetyCameraWarning.distanceType == DistanceType.reached) {
-        print(
-          "Safety camera warning " +
-              safetyCameraWarning.type.name +
-              " reached at: " +
-              safetyCameraWarning.distanceToCameraInMeters.toString() +
-              "with speed limit =" +
-              safetyCameraWarning.speedLimitInMetersPerSecond.toString() +
-              "m/s",
-        );
-      }
-    });
-
-    // Notifies truck drivers on road restrictions ahead. Called whenever there is a change.
-    // For example, there can be a bridge ahead not high enough to pass a big truck
-    // or there can be a road ahead where the weight of the truck is beyond it's permissible weight.
-    // This event notifies on truck restrictions in general,
-    // so it will also deliver events, when the transport type was set to a non-truck transport type.
-    // The given restrictions are based on the HERE database of the road network ahead.
-    _visualNavigator.truckRestrictionsWarningListener = TruckRestrictionsWarningListener((
-      List<TruckRestrictionWarning> list,
-    ) {
-      // The list is guaranteed to be non-empty.
-      for (TruckRestrictionWarning truckRestrictionWarning in list) {
-        if (truckRestrictionWarning.distanceType == DistanceType.ahead) {
-          print("TruckRestrictionWarning ahead in: ${truckRestrictionWarning.distanceInMeters} meters.");
-          if (truckRestrictionWarning.timeRule != null &&
-              !truckRestrictionWarning.timeRule!.appliesTo(DateTime.now())) {
-            // For example, during a specific time period of a day, some truck restriction warnings do not apply.
-            // If truckRestrictionWarning.timeRule is null, the warning applies at anytime.
-            print("Note that this truck restriction warning currently does not apply.");
-          }
-        } else if (truckRestrictionWarning.distanceType == DistanceType.reached) {
-          print("A restriction has been reached.");
-        } else if (truckRestrictionWarning.distanceType == DistanceType.passed) {
-          // If not preceded by a "reached"-notification, this restriction was valid only for the passed location.
-          print("A restriction just passed.");
-        }
-
-        // One of the following restrictions applies ahead, if more restrictions apply at the same time,
-        // they are part of another TruckRestrictionWarning element contained in the list.
-        if (truckRestrictionWarning.weightRestriction != null) {
-          WeightRestrictionType type = truckRestrictionWarning.weightRestriction!.type;
-          int value = truckRestrictionWarning.weightRestriction!.valueInKilograms;
-          print("TruckRestriction for weight (kg): ${type.toString()}: $value");
-        } else if (truckRestrictionWarning.dimensionRestriction != null) {
-          // Can be either a length, width or height restriction of the truck. For example, a height
-          // restriction can apply for a tunnel. Other possible restrictions are delivered in
-          // separate TruckRestrictionWarning objects contained in the list, if any.
-          DimensionRestrictionType type = truckRestrictionWarning.dimensionRestriction!.type;
-          int value = truckRestrictionWarning.dimensionRestriction!.valueInCentimeters;
-          print("TruckRestriction for dimension: ${type.toString()}: $value");
-        } else {
-          print("TruckRestriction: General restriction - no trucks allowed.");
-        }
-      }
-    });
-
     // Notifies whenever any textual attribute of the current road changes, i.e., the current road texts differ
     // from the previous one. This can be useful during tracking mode, when no maneuver information is provided.
     _visualNavigator.roadTextsListener = RoadTextsListener((RoadTexts roadTexts) {
       // See _getRoadName() in the "rerouting_app" example app to learn how to get the current road name from the provided RoadTexts.
     });
-
-    // Notifies on signposts together with complex junction views.
-    // Signposts are shown as they appear along a road on a shield to indicate the upcoming directions and
-    // destinations, such as cities or road names.
-    // Junction views appear as a 3D visualization (as a static image) to help the driver to orientate.
-    //
-    // Optionally, you can use a feature-configuration to preload the assets as part of a Region.
-    //
-    // The event matches the notification for complex junctions, see JunctionViewLaneAssistance.
-    // Note that the SVG data for junction view is composed out of several 3D elements,
-    // a horizon and the actual junction geometry.
-    _visualNavigator.realisticViewWarningListener = RealisticViewWarningListener((
-      RealisticViewWarning realisticViewWarning,
-    ) {
-      double distance = realisticViewWarning.distanceToRealisticViewInMeters;
-      DistanceType distanceType = realisticViewWarning.distanceType;
-
-      // Note that DistanceType.reached is not used for Signposts and junction views
-      // as a junction is identified through a location instead of an area.
-      if (distanceType == DistanceType.ahead) {
-        print("A RealisticView ahead in: " + distance.toString() + " meters.");
-      } else if (distanceType == DistanceType.passed) {
-        print("A RealisticView just passed.");
-      }
-
-      RealisticViewVectorImage? realisticView = realisticViewWarning.realisticViewVectorImage;
-      if (realisticView == null) {
-        print("A RealisticView just passed. No SVG content delivered.");
-        return;
-      }
-
-      String signpostSvgImageContent = realisticView.signpostSvgImageContent;
-      String junctionViewSvgImageContent = realisticView.junctionViewSvgImageContent;
-      // The resolution-independent SVG data can now be used in an application to visualize the image.
-      // Use a SVG library of your choice to create an SVG image out of the SVG string.
-      // Both SVGs contain the same dimension and the signpostSvgImageContent should be shown on top of
-      // the junctionViewSvgImageContent.
-      // The images can be quite detailed, therefore it is recommended to show them on a secondary display
-      // in full size.
-      print("signpostSvgImage: " + signpostSvgImageContent);
-      print("junctionViewSvgImage: " + junctionViewSvgImageContent);
-    });
-
-    // Notifies on upcoming toll stops. Uses the same notification
-    // thresholds as other warners and provides events with or without a route to follow.
-    _visualNavigator.tollStopWarningListener = TollStopWarningListener((TollStop tollStop) {
-      List<TollBoothLane> lanes = tollStop.lanes;
-
-      // The lane at index 0 is the leftmost lane adjacent to the middle of the road.
-      // The lane at the last index is the rightmost lane.
-      int laneNumber = 0;
-      for (TollBoothLane tollBoothLane in lanes) {
-        // Log which vehicles types are allowed on this lane that leads to the toll booth.
-        _logLaneAccess("ToolBoothLane: ", laneNumber, tollBoothLane.access);
-        TollBooth tollBooth = tollBoothLane.booth;
-        List<TollCollectionMethod> tollCollectionMethods = tollBooth.tollCollectionMethods;
-        List<PaymentMethod> paymentMethods = tollBooth.paymentMethods;
-        // The supported collection methods like ticket or automatic / electronic.
-        for (TollCollectionMethod collectionMethod in tollCollectionMethods) {
-          print("This toll stop supports collection via: " + collectionMethod.name);
-        }
-        // The supported payment methods like cash or credit card.
-        for (PaymentMethod paymentMethod in paymentMethods) {
-          print("This toll stop supports payment via: " + paymentMethod.name);
-        }
-        laneNumber++;
-      }
-    });
-  }
-
-  void _setupSafetyCameraWarningOptions() {
-    SafetyCameraWarningOptions safetyCameraWarningOptions = SafetyCameraWarningOptions();
-
-    // Enable text notifications for safety camera warnings, that can be used with TTS engines.
-    // Example notification text: "A safety camera is ahead in 500 meters."
-    // The text can be localized via ManeuverNotificationOptions.
-    // To receive text notifications, you must also set up an EventTextListener.
-    // See the "Navigation" example app for a usage example.
-    safetyCameraWarningOptions.enableTextNotification = true;
-    _visualNavigator.safetyCameraWarningOptions = safetyCameraWarningOptions;
-  }
-
-  void _setupSpeedWarnings() {
-    SpeedLimitOffset speedLimitOffset = SpeedLimitOffset();
-    speedLimitOffset.lowSpeedOffsetInMetersPerSecond = 2;
-    speedLimitOffset.highSpeedOffsetInMetersPerSecond = 4;
-    speedLimitOffset.highSpeedBoundaryInMetersPerSecond = 25;
-
-    _visualNavigator.speedWarningOptions = SpeedWarningOptions(speedLimitOffset);
   }
 
   void _setupManeuverNotificationOptions() {
@@ -907,39 +501,6 @@ class NavigationWarnersExample {
     LaneDirection laneDirection,
   ) {
     return currentSituationLaneView.directionsOnRoute.contains(laneDirection);
-  }
-
-  double? _getCurrentSpeedLimit(SpeedLimit speedLimit) {
-    // Note that all speedLimit properties can be null if no data is available.
-
-    // The regular speed limit if available. In case of unbounded speed limit, the value is zero.
-    print("speedLimitInMetersPerSecond: " + speedLimit.speedLimitInMetersPerSecond.toString());
-
-    // A conditional school zone speed limit as indicated on the local road signs.
-    print("schoolZoneSpeedLimitInMetersPerSecond: " + speedLimit.schoolZoneSpeedLimitInMetersPerSecond.toString());
-
-    // A conditional time-dependent speed limit as indicated on the local road signs.
-    // It is in effect considering the current local time provided by the device's clock.
-    print(
-      "timeDependentSpeedLimitInMetersPerSecond: " + speedLimit.timeDependentSpeedLimitInMetersPerSecond.toString(),
-    );
-
-    // A conditional non-legal speed limit that recommends a lower speed,
-    // for example, due to bad road conditions.
-    print("advisorySpeedLimitInMetersPerSecond: " + speedLimit.advisorySpeedLimitInMetersPerSecond.toString());
-
-    // A weather-dependent speed limit as indicated on the local road signs.
-    // The HERE SDK cannot detect the current weather condition, so a driver must decide
-    // based on the situation if this speed limit applies.
-    print("fogSpeedLimitInMetersPerSecond: " + speedLimit.fogSpeedLimitInMetersPerSecond.toString());
-    print("rainSpeedLimitInMetersPerSecond: " + speedLimit.rainSpeedLimitInMetersPerSecond.toString());
-    print("snowSpeedLimitInMetersPerSecond: " + speedLimit.snowSpeedLimitInMetersPerSecond.toString());
-
-    // For convenience, this returns the effective (lowest) speed limit between
-    // - speedLimitInMetersPerSecond
-    // - schoolZoneSpeedLimitInMetersPerSecond
-    // - timeDependentSpeedLimitInMetersPerSecond
-    return speedLimit.effectiveSpeedLimitInMetersPerSecond();
   }
 
   // Returns the GeoCoordinates for an object located at the end of the remaining distance.

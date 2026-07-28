@@ -1,5 +1,7 @@
 The HelloMapCarPlay example app shows how [CarPlay](https://www.apple.com/de/ios/carplay/) can be integrated into your project to display a map on an in-car's head unit display.
 
+![Companion phone app showing the map with zoom controls](images/hello_map_carplay.png)
+
 Build instructions:
 -------------------
 

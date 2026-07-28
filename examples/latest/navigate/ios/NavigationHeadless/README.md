@@ -1,5 +1,7 @@
 The Navigation Headless example app shows how the HERE SDK can be set up to navigate without following a route in the simplest way - and without showing a map view. The app uses the `Navigator` class. It loads a hardcoded GPX trace in Berlin area to start tracking along that trace using the `LocationSimulator`. It does _not_ include Positioning and does _no_ route calculation.
 
+![Headless tracking showing the live speed limit and road name without a map view](images/navigation_headless.png)
+
 Build instructions:
 -------------------
 

@@ -1,5 +1,7 @@
 The Camera example app shows how to change the target anchor point and how to move to another location using animations. You can find how this is done in [CameraExample.swift](Camera/CameraExample.swift).
 
+![Camera controls (Rotate, Tilt, Move) with a transform-center marker on the map](images/camera.png)
+
 Build instructions:
 -------------------
 

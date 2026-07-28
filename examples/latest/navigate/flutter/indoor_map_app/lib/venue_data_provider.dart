@@ -52,6 +52,7 @@ class VenueDataProvider extends ChangeNotifier implements VenueDataProviderInter
   List<String> geometryList = <String>[];
   List<String?> geometryInternalAddressList = <String?>[];
   bool isVenueListAvailable = false;
+  bool isAuthenticationFailed = false;
   List<VenueGeometry> venueGeometryList = <VenueGeometry>[];
 
   // Tap controller reference.
@@ -81,6 +82,7 @@ class VenueDataProvider extends ChangeNotifier implements VenueDataProviderInter
     maxLevelIndex = -1;
     venueDrawingList = null;
     isVenueListAvailable = false;
+    isAuthenticationFailed = false;
     geometryList = <String>[];
     geometryInternalAddressList = <String?>[];
     venueGeometryList = <VenueGeometry>[];

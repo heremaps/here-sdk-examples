@@ -1,5 +1,7 @@
 The Public Transit example app shows how to calculate a public transport route from A to B that is visualized on the map. You can find how this is done in [PublicTransitExample.swift](PublicTransit/PublicTransitExample.swift).
 
+![Public transport route between a start and destination marker](images/public_transit.png)
+
 Build instructions:
 -------------------
 

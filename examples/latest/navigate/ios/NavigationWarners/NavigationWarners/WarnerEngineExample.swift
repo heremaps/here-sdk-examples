@@ -21,14 +21,9 @@ import heresdk
 import Foundation
 
 // This class shows how to use the unified WarnerEngine to receive all navigation warnings
-// through a single WarningDelegate, instead of setting individual per-type delegates on the
-// VisualNavigator. The WarnerEngine is obtained from the VisualNavigator and provides a centralized
-// way to configure warning options, set notification distances, and handle all warning events.
-//
-// For comparison, see the NavigationWarners class which uses per-type delegates directly.
-//
-// Note: This is a beta release of this feature, so there could be a few bugs and unexpected
-// behaviors. Related APIs may change for new releases without a deprecation process.
+// through a single WarningDelegate. The WarnerEngine is obtained from the VisualNavigator and
+// provides a centralized way to configure warning options, set notification distances, and
+// handle all warning events.
 class WarnerEngineExample: WarningDelegate {
 
     private var warnerEngine: WarnerEngine!
@@ -227,6 +222,9 @@ class WarnerEngineExample: WarningDelegate {
     // Handles truck restriction warnings.
     // These alert truck drivers to upcoming road restrictions such as bridges with limited height
     // or roads with weight limits that may prevent passage.
+    // This event notifies on truck restrictions in general,
+    // so it will also deliver events when the transport type was set to a non-truck transport type.
+    // The given restrictions are based on the HERE database of the road network ahead.
     private func handleTruckRestrictionWarning(_ warningUpdate: WarningUpdate, warningsRegistry: WarningsRegistry) {
         guard let truckRestrictionWarning = warningsRegistry.getTruckRestrictionWarning(warning: warningUpdate.warning) else {
             print("TruckRestrictionWarning: No detailed data available.")

@@ -103,7 +103,7 @@ class CameraKeyframeTracksExample: AnimationDelegate {
 
         do {
             geoCoordinatesMapCameraKeyframeTrack = try MapCameraKeyframeTrack.lookAtTarget(keyframes: geoCoordinatesKeyframes, easing: Easing(EasingFunction.linear), interpolationMode: KeyframeInterpolationMode.linear)
-            scalarMapCameraKeyframeTrack = try MapCameraKeyframeTrack.lookAtDistance(keyframes: scalarKeyframes, easing: Easing(EasingFunction.linear), interpolationMode: KeyframeInterpolationMode.linear)
+            scalarMapCameraKeyframeTrack = try MapCameraKeyframeTrack.lookAtDistance(ofKind: .distanceInMeters, keyframes: scalarKeyframes, easing: Easing(EasingFunction.linear), interpolationMode: KeyframeInterpolationMode.linear)
             geoOrientationMapCameraKeyframeTrack = try MapCameraKeyframeTrack.lookAtOrientation(keyframes: geoOrientationKeyframes, easing: Easing(EasingFunction.linear), interpolationMode: KeyframeInterpolationMode.linear)
         } catch let mapCameraKeyframeTrackException {
         // Throws an error if keyframes are empty or the duration of keyframes is invalid.

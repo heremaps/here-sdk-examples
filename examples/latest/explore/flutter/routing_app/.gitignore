@@ -7,7 +7,6 @@
 .atom/
 .build/
 .buildlog/
-/coverage/
 .history
 .svn/
 .cxx/
@@ -34,6 +33,7 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+/coverage/
 
 # Symbolication related
 app.*.symbols

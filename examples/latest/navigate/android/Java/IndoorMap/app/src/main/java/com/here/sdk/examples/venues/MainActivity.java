@@ -488,7 +488,32 @@ public class MainActivity extends AppCompatActivity {
         // is initialized, VenueServiceListener.onInitializationCompleted method will be called.
         venueEngine.start((authenticationError, authenticationData) -> {
             if (authenticationError != null) {
-                Log.e(TAG, "Failed to authenticate, reason: " + authenticationError.value);
+                String reason;
+                switch (authenticationError) {
+                case INVALID_PARAMETER:
+                    reason = "Invalid parameter received";
+                    break;
+                case AUTHENTICATION_FAILED:
+                    reason = "Authentication failed. Check your credentials.";
+                    break;
+                case NO_CONNECTION:
+                    reason = "No network connection";
+                    break;
+                case OPERATION_AFTER_DISPOSE:
+                    reason = "Operation invoked after SDK engine was disposed";
+                    break;
+                default:
+                    reason = "Unknown authentication error";
+                    break;
+                }
+                Log.e(TAG, "Failed to authenticate, reason: " + reason);
+                runOnUiThread(() -> {
+                    progressBarBottom.setVisibility(View.GONE);
+                    AlertHandler alert = new AlertHandler(this, reason);
+                    alert.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                    alert.getWindow().setGravity(Gravity.TOP);
+                    alert.show();
+                });
             }
         });
 

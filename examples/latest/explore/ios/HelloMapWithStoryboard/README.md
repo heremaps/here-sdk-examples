@@ -1,5 +1,7 @@
 The HelloMapWithStoryboard example app shows how to build your UI from Xcode’s Interface builder using a storyboard. You can find how this is done in [ViewController.swift](HelloMapWithStoryboard/ViewController.swift).
 
+![Map rendered from a storyboard-based UI](images/hello_map_with_storyboard.png)
+
 Build instructions:
 -------------------
 

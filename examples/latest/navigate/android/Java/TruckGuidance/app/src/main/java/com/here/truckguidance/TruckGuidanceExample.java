@@ -63,15 +63,13 @@ import com.here.sdk.mapview.PickMapContentResult;
 import com.here.sdk.mapview.RenderSize;
 import com.here.sdk.navigation.DimensionRestriction;
 import com.here.sdk.navigation.DimensionRestrictionType;
-import com.here.sdk.navigation.DistanceType;
 import com.here.sdk.navigation.EnvironmentalZoneWarning;
-import com.here.sdk.navigation.EnvironmentalZoneWarningListener;
 import com.here.sdk.navigation.NavigableLocation;
 import com.here.sdk.navigation.NavigableLocationListener;
 import com.here.sdk.navigation.Navigator;
 import com.here.sdk.navigation.TruckRestrictionWarning;
-import com.here.sdk.navigation.TruckRestrictionsWarningListener;
 import com.here.sdk.navigation.VisualNavigator;
+import com.here.sdk.navigation.WarningType;
 import com.here.sdk.navigation.WeightRestriction;
 import com.here.sdk.navigation.WeightRestrictionType;
 import com.here.sdk.routing.AvoidanceOptions;
@@ -101,6 +99,10 @@ import com.here.sdk.transport.TransportSpecification;
 import com.here.sdk.transport.TruckCategory;
 import com.here.sdk.transport.TunnelCategory;
 import com.here.sdk.transport.VehicleSpecification;
+import com.here.sdk.warner.WarningListener;
+import com.here.sdk.warner.WarningStatus;
+import com.here.sdk.warner.WarningUpdate;
+import com.here.sdk.warner.WarningsRegistry;
 import com.here.time.Duration;
 
 import java.util.ArrayList;
@@ -436,93 +438,100 @@ public class TruckGuidanceExample {
 
         // Notifies truck drivers on road restrictions ahead. Called whenever there is a change.
         // For example, there can be a bridge ahead not high enough to pass a big truck
-        // or there can be a road ahead where the weight of the truck is beyond it's permissible weight.
-        // This event notifies on truck restrictions in general,
-        // so it will also deliver events, when the transport type was set to a non-truck transport type.
-        // The given restrictions are based on the HERE database of the road network ahead.
-        visualNavigator.setTruckRestrictionsWarningListener(new TruckRestrictionsWarningListener() {
-            @Override
-            public void onTruckRestrictionsWarningUpdated(@NonNull List<TruckRestrictionWarning> list) {
-                // The list is guaranteed to be non-empty.
-                for (TruckRestrictionWarning truckRestrictionWarning : list) {
-                    if (truckRestrictionWarning.timeRule != null && !truckRestrictionWarning.timeRule.appliesTo(new Date())) {
-                        // For example, during a specific time period of a day, some truck restriction warnings do not apply.
-                        // If truckRestrictionWarning.timeRule is null, the warning applies at anytime.
-                        // Note: For this example, we do not skip any restriction.
-                        // continue;
-                        Log.d(TAG, "Note that this truck restriction warning currently does not apply.");
-                    }
-
-                    // The trailer count for which the current restriction applies.
-                    // If the field is 'null' then the current restriction is valid regardless of trailer count.
-                    if (truckRestrictionWarning.trailerCount != null && MyTruckSpecs.trailerCount != null) {
-                        int min = truckRestrictionWarning.trailerCount.min;
-                        Integer max = truckRestrictionWarning.trailerCount.max; // If not set, maximum is unbounded.
-                        if (min > MyTruckSpecs.trailerCount || (max != null && max < MyTruckSpecs.trailerCount)) {
-                            // The restriction is not valid for this truck.
-                            // Note: For this example, we do not skip any restriction.
-                            // continue;
-                        }
-                    }
-
-                    DistanceType distanceType = truckRestrictionWarning.distanceType;
-                    if (distanceType == DistanceType.AHEAD) {
-                        Log.d(TAG, "A TruckRestriction ahead in: " + truckRestrictionWarning.distanceInMeters + " meters.");
-                    } else if (distanceType == DistanceType.REACHED) {
-                        Log.d(TAG, "A TruckRestriction has been reached.");
-                    } else if (distanceType == DistanceType.PASSED) {
-                        // If not preceded by a "REACHED"-notification, this restriction was valid only for the passed location.
-                        Log.d(TAG, "A TruckRestriction just passed.");
-                    }
-
-                    // One of the following restrictions applies, if more restrictions apply at the same time,
-                    // they are part of another TruckRestrictionWarning element contained in the list.
-                    if (truckRestrictionWarning.weightRestriction != null) {
-                        handleWeightTruckWarning(truckRestrictionWarning.weightRestriction, distanceType);
-                    } else if (truckRestrictionWarning.dimensionRestriction != null) {
-                        handleDimensionTruckWarning(truckRestrictionWarning.dimensionRestriction, distanceType);
-                    } else {
-                        handleTruckRestrictions("No Trucks.", distanceType);
-                        Log.d(TAG, "TruckRestriction: General restriction - no trucks allowed.");
-                    }
-                }
-            }
-        });
-
-        visualNavigator.setEnvironmentalZoneWarningListener(new EnvironmentalZoneWarningListener() {
-            @Override
-            public void onEnvironmentalZoneWarningsUpdated(@NonNull List<EnvironmentalZoneWarning> list) {
-                // The list is guaranteed to be non-empty.
-                for (EnvironmentalZoneWarning environmentalZoneWarning : list) {
-                    DistanceType distanceType = environmentalZoneWarning.distanceType;
-                    if (distanceType == DistanceType.AHEAD) {
-                        Log.d(TAG, "A EnvironmentalZone ahead in: " + environmentalZoneWarning.distanceInMeters + " meters.");
-                    } else if (distanceType == DistanceType.REACHED) {
-                        Log.d(TAG, "A EnvironmentalZone has been reached.");
-                    } else if (distanceType == DistanceType.PASSED) {
-                        Log.d(TAG, "A EnvironmentalZone just passed.");
-                    }
-
-                    // The official name of the environmental zone (example: "Zone basse émission Bruxelles").
-                    String name = environmentalZoneWarning.name;
-                    // The description of the environmental zone for the default language.
-                    String description = environmentalZoneWarning.description.getDefaultValue();
-                    // The environmental zone ID - uniquely identifies the zone in the HERE map data.
-                    String zoneID = environmentalZoneWarning.zoneId;
-                    // The website of the environmental zone, if available - null otherwise.
-                    String websiteUrl = environmentalZoneWarning.websiteUrl;
-                    Log.d(TAG, "environmentalZoneWarning: description: " + description);
-                    Log.d(TAG, "environmentalZoneWarning: name: " + name);
-                    Log.d(TAG, "environmentalZoneWarning: zoneID: " + zoneID);
-                    Log.d(TAG, "environmentalZoneWarning: websiteUrl: " + websiteUrl);
-                }
-            }
-        });
-
+        // or there can be a road ahead where the weight of the truck is beyond its permissible weight.
+        // Note: The WarnerEngine delivers truck restriction events regardless of the currently set transport type.
+        // This means warnings are also sent when the transport type is set to a non-truck type.
+        // The given restrictions are based on the HERE map database of the road network ahead.
         // For more warners and events during guidance, please check the Navigation example app, available on GitHub.
+        setupWarnerEngineForWarnings();
     }
 
-    private void handleWeightTruckWarning(WeightRestriction weightRestriction, DistanceType distanceType) {
+    private void setupWarnerEngineForWarnings() {
+        com.here.sdk.warner.WarnerEngine warnerEngine = visualNavigator.getWarnerEngine();
+        warnerEngine.setEnabledWarnings(Arrays.asList(WarningType.ENVIRONMENTAL_ZONE, WarningType.TRUCK_RESTRICTION));
+        warnerEngine.addWarningListener(new WarningListener() {
+            @Override
+            public void onWarnings(@NonNull List<WarningUpdate> warnings, @NonNull WarningsRegistry warningsRegistry) {
+                for (WarningUpdate warningUpdate : warnings) {
+                    if (warningUpdate.warning.warningType == WarningType.ENVIRONMENTAL_ZONE) {
+                        handleEnvironmentalZoneWarning(warningUpdate, warningsRegistry);
+                    } else if (warningUpdate.warning.warningType == WarningType.TRUCK_RESTRICTION) {
+                        handleTruckRestrictionWarning(warningUpdate, warningsRegistry);
+                    }
+                }
+            }
+        });
+    }
+
+    private void handleTruckRestrictionWarning(WarningUpdate warningUpdate, WarningsRegistry warningsRegistry) {
+        TruckRestrictionWarning truckRestrictionWarning = warningsRegistry.getTruckRestrictionWarning(warningUpdate.warning);
+        if (truckRestrictionWarning == null) {
+            Log.d(TAG, "TruckRestrictionWarning: No detailed data available.");
+            return;
+        }
+
+        if (truckRestrictionWarning.timeRule != null && !truckRestrictionWarning.timeRule.appliesTo(new Date())) {
+            Log.d(TAG, "Note that this truck restriction warning currently does not apply.");
+        }
+
+        if (truckRestrictionWarning.trailerCount != null && MyTruckSpecs.trailerCount != null) {
+            int min = truckRestrictionWarning.trailerCount.min;
+            Integer max = truckRestrictionWarning.trailerCount.max;
+            if (min > MyTruckSpecs.trailerCount || (max != null && max < MyTruckSpecs.trailerCount)) {
+                // The restriction is not valid for this truck.
+            }
+        }
+
+        WarningStatus warningStatus = warningUpdate.warningStatus;
+        if (warningStatus == WarningStatus.AHEAD || warningStatus == WarningStatus.APPROACHING) {
+            Log.d(TAG, "A TruckRestriction ahead in: " + warningUpdate.distanceTillStartInMeters + " meters.");
+        } else if (warningStatus == WarningStatus.REACHED || warningStatus == WarningStatus.INSIDE) {
+            Log.d(TAG, "A TruckRestriction has been reached.");
+        } else if (warningStatus == WarningStatus.PASSED) {
+            Log.d(TAG, "A TruckRestriction just passed.");
+        }
+
+        if (truckRestrictionWarning.weightRestriction != null) {
+            handleWeightTruckWarning(truckRestrictionWarning.weightRestriction, warningStatus);
+        } else if (truckRestrictionWarning.dimensionRestriction != null) {
+            handleDimensionTruckWarning(truckRestrictionWarning.dimensionRestriction, warningStatus);
+        } else {
+            handleTruckRestrictions("No Trucks.", warningStatus);
+            Log.d(TAG, "TruckRestriction: General restriction - no trucks allowed.");
+        }
+    }
+
+    private void handleEnvironmentalZoneWarning(WarningUpdate warningUpdate, WarningsRegistry warningsRegistry) {
+        EnvironmentalZoneWarning environmentalZoneWarning = warningsRegistry.getEnvironmentalZoneWarning(warningUpdate.warning);
+        if (environmentalZoneWarning == null) {
+            Log.d(TAG, "EnvironmentalZoneWarning: No detailed data available.");
+            return;
+        }
+
+        WarningStatus warningStatus = warningUpdate.warningStatus;
+        if (warningStatus == WarningStatus.AHEAD || warningStatus == WarningStatus.APPROACHING) {
+            Log.d(TAG, "A EnvironmentalZone ahead in: " + warningUpdate.distanceTillStartInMeters + " meters.");
+        } else if (warningStatus == WarningStatus.REACHED || warningStatus == WarningStatus.INSIDE) {
+            Log.d(TAG, "A EnvironmentalZone has been reached.");
+        } else if (warningStatus == WarningStatus.PASSED) {
+            Log.d(TAG, "A EnvironmentalZone just passed.");
+        }
+
+        // The official name of the environmental zone (example: "Zone basse émission Bruxelles").
+        String name = environmentalZoneWarning.name;
+        // The description of the environmental zone for the default language.
+        String description = environmentalZoneWarning.description.getDefaultValue();
+        // The environmental zone ID - uniquely identifies the zone in the HERE map data.
+        String zoneID = environmentalZoneWarning.zoneId;
+        // The website of the environmental zone, if available - null otherwise.
+        String websiteUrl = environmentalZoneWarning.websiteUrl;
+        Log.d(TAG, "environmentalZoneWarning: description: " + description);
+        Log.d(TAG, "environmentalZoneWarning: name: " + name);
+        Log.d(TAG, "environmentalZoneWarning: zoneID: " + zoneID);
+        Log.d(TAG, "environmentalZoneWarning: websiteUrl: " + websiteUrl);
+    }
+
+    private void handleWeightTruckWarning(WeightRestriction weightRestriction, WarningStatus warningStatus) {
         WeightRestrictionType type = weightRestriction.type;
         int value = weightRestriction.valueInKilograms;
         Log.d(TAG, "TruckRestriction for weight (kg): " + type.name() + ": " + value);
@@ -536,10 +545,10 @@ public class TruckGuidanceExample {
         }
         String weightValue = "" + getTons(value) + "t";
         String description = weightType + ": " + weightValue;
-        handleTruckRestrictions(description, distanceType);
+        handleTruckRestrictions(description, warningStatus);
     }
 
-    private void handleDimensionTruckWarning(DimensionRestriction dimensionRestriction, DistanceType distanceType) {
+    private void handleDimensionTruckWarning(DimensionRestriction dimensionRestriction, WarningStatus warningStatus) {
         // Can be either a length, width or height restriction for a truck. For example, a height
         // restriction can apply for a tunnel.
         DimensionRestrictionType type = dimensionRestriction.type;
@@ -558,14 +567,14 @@ public class TruckGuidanceExample {
         }
         String dimValue = "" + getMeters(value) + "m";
         String description = dimType + ": " + dimValue;
-        handleTruckRestrictions(description, distanceType);
+        handleTruckRestrictions(description, warningStatus);
     }
 
     // For this example, we always show only the next restriction ahead.
     // In case there are multiple restrictions ahead,
     // the nearest one will be shown after the current one has passed by.
-    private void handleTruckRestrictions(String newDescription, DistanceType distanceType) {
-        if (distanceType == DistanceType.PASSED) {
+    private void handleTruckRestrictions(String newDescription, WarningStatus warningStatus) {
+        if (warningStatus == WarningStatus.PASSED) {
             if (activeTruckRestrictionWarnings.size() > 0) {
                 // Remove the oldest entry from the list that equals the description.
                 activeTruckRestrictionWarnings.remove(newDescription);
@@ -585,12 +594,12 @@ public class TruckGuidanceExample {
             }
         }
 
-        if (distanceType == DistanceType.REACHED) {
+        if (warningStatus == WarningStatus.REACHED || warningStatus == WarningStatus.INSIDE) {
             // We reached a restriction which is already shown, so nothing to do here.
             return;
         }
 
-        if (distanceType == DistanceType.AHEAD) {
+        if (warningStatus == WarningStatus.AHEAD || warningStatus == WarningStatus.APPROACHING) {
             if (activeTruckRestrictionWarnings.isEmpty()) {
                 // Show the first restriction.
                 uiCallback.onTruckRestrictionWarning(newDescription);
@@ -603,7 +612,7 @@ public class TruckGuidanceExample {
             return;
         }
 
-        Log.e(TAG, "Unknown distance type.");
+        Log.e(TAG, "Unknown warning status.");
     }
 
     private int getTons(int valueInKilograms) {

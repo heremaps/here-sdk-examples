@@ -1,5 +1,7 @@
 The HelloMapAndroidAuto example app shows how [Android Auto](https://www.android.com/auto/) can be integrated into your app using the HERE SDK to display a map view on Android's DHU.
 
+![Hello Map Android Auto Kotlin view](images/hello_map_android_auto.png)
+
 Android Auto is only compatible with phones running Android 6.0 (API level 23) or higher.
 
 **Note**: This is the same app as the "**HelloMapAndroidAuto**" app, but implemented in Kotlin instead of Java.

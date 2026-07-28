@@ -30,7 +30,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Geocoding"
+            android:text="Geocode"
             android:onClick="geocodeAnAddressButtonClicked" />
     </LinearLayout>
 
@@ -51,7 +51,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="W3W Geocoding"
+            android:text="W3W Geocode"
             android:onClick="onW3WGeocodingButtonClicked" />
     </LinearLayout>
 

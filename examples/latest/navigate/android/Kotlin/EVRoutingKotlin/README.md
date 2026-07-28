@@ -1,5 +1,7 @@
 The EVRouting example app shows how the HERE SDK can be used to calculate routes for electric vehicles and how to calculate the area of reach with isoline routing.
 
+![EV Routing Kotlin view](images/ev_routing.png)
+
 **Note**: This is the same app as the "**EVRouting**" app, but implemented in Kotlin instead of Java.
 
 This example uses **HERE SDK Units** to support functionality such as permission handling or buttons that are not essential to the code snippets shown in this app, as the focus is on demonstrating how to use the APIs provided by the HERE SDK. The HERE SDK Units are included as AARs in the app’s `libs` folder. For more details, see the "HERESDKUnitsKotlin" app to customize or create your own unit libraries. Note that this app is intended exclusively for the HERE SDK (Navigate). You can find it in the `navigate` folder. However, it can be easily adapted for the HERE SDK (Explore) by removing any code that is not supported there. At present, most components are compatible and will compile without issues.

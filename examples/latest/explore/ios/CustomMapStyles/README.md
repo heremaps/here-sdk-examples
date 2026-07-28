@@ -1,5 +1,7 @@
 This example app shows how to load custom maps that have been made with the [HERE Style Editor](https://platform.here.com/style-editor/). Note that this requires HERE SDK 4.12.1.0 or higher. You can find how this is done in [CustomMapStylesExample.swift](CustomMapStylesExample/CustomMapStylesExample.swift).
 
+![Custom dark map style with highlighted roads loaded from the HERE Style Editor](images/custom_map_styles.png)
+
 Build instructions:
 -------------------
 

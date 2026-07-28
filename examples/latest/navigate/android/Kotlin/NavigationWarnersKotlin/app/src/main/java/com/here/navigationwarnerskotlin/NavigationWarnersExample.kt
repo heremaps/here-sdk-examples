@@ -37,14 +37,9 @@ import com.here.sdk.mapview.MapCameraUpdateFactory
 import com.here.sdk.mapview.MapMeasure
 import com.here.sdk.mapview.MapView
 import com.here.sdk.navigation.AspectRatio
-import com.here.sdk.navigation.BorderCrossingWarning
-import com.here.sdk.navigation.BorderCrossingWarningListener
-import com.here.sdk.navigation.BorderCrossingWarningOptions
 import com.here.sdk.navigation.CurrentSituationLaneAssistanceView
 import com.here.sdk.navigation.CurrentSituationLaneAssistanceViewListener
 import com.here.sdk.navigation.CurrentSituationLaneView
-import com.here.sdk.navigation.DangerZoneWarning
-import com.here.sdk.navigation.DangerZoneWarningListener
 import com.here.sdk.navigation.DestinationReachedListener
 import com.here.sdk.navigation.DistanceType
 import com.here.sdk.navigation.JunctionViewLaneAssistance
@@ -56,46 +51,18 @@ import com.here.sdk.navigation.LaneMarkings
 import com.here.sdk.navigation.LaneRecommendationState
 import com.here.sdk.navigation.LocationSimulator
 import com.here.sdk.navigation.LocationSimulatorOptions
-import com.here.sdk.navigation.LowSpeedZoneWarning
-import com.here.sdk.navigation.LowSpeedZoneWarningListener
 import com.here.sdk.navigation.ManeuverViewLaneAssistance
 import com.here.sdk.navigation.ManeuverViewLaneAssistanceListener
 import com.here.sdk.navigation.Milestone
 import com.here.sdk.navigation.MilestoneStatus
 import com.here.sdk.navigation.MilestoneStatusListener
-import com.here.sdk.navigation.RealisticViewWarning
-import com.here.sdk.navigation.RealisticViewWarningListener
-import com.here.sdk.navigation.RealisticViewWarningOptions
 import com.here.sdk.navigation.RoadAttributes
 import com.here.sdk.navigation.RoadAttributesListener
-import com.here.sdk.navigation.RoadSignType
-import com.here.sdk.navigation.RoadSignVehicleType
-import com.here.sdk.navigation.RoadSignWarning
-import com.here.sdk.navigation.RoadSignWarningListener
-import com.here.sdk.navigation.RoadSignWarningOptions
 import com.here.sdk.navigation.RoadTextsListener
 import com.here.sdk.navigation.RouteDeviation
 import com.here.sdk.navigation.RouteDeviationListener
 import com.here.sdk.navigation.RouteProgress
 import com.here.sdk.navigation.RouteProgressListener
-import com.here.sdk.navigation.SafetyCameraWarning
-import com.here.sdk.navigation.SafetyCameraWarningListener
-import com.here.sdk.navigation.SafetyCameraWarningOptions
-import com.here.sdk.navigation.SchoolZoneWarning
-import com.here.sdk.navigation.SchoolZoneWarningListener
-import com.here.sdk.navigation.SchoolZoneWarningOptions
-import com.here.sdk.navigation.SpeedLimit
-import com.here.sdk.navigation.SpeedLimitListener
-import com.here.sdk.navigation.SpeedLimitOffset
-import com.here.sdk.navigation.SpeedWarningListener
-import com.here.sdk.navigation.SpeedWarningOptions
-import com.here.sdk.navigation.SpeedWarningStatus
-import com.here.sdk.navigation.TollStop
-import com.here.sdk.navigation.TollStopWarningListener
-import com.here.sdk.navigation.TrafficMergeWarning
-import com.here.sdk.navigation.TrafficMergeWarningListener
-import com.here.sdk.navigation.TruckRestrictionWarning
-import com.here.sdk.navigation.TruckRestrictionsWarningListener
 import com.here.sdk.navigation.VisualNavigator
 import com.here.sdk.navigation.WarningType
 import com.here.sdk.routing.RoutingOptions
@@ -120,7 +87,6 @@ class NavigationWarnersExample(
     private var isGuidanceRunning = false
     private lateinit var currentRouteProgress: RouteProgress
     private val warnerEngineExample = WarnerEngineExample()
-    var useWarnerEngine = false
 
     init {
         try {
@@ -157,9 +123,7 @@ class NavigationWarnersExample(
         locationSimulator?.stop()
         locationSimulator = null
 
-        if (useWarnerEngine) {
-            warnerEngineExample.stopWarnerEngine()
-        }
+        warnerEngineExample.stopWarnerEngine()
         visualNavigator.route = null
         visualNavigator.stopRendering()
         isGuidanceRunning = false
@@ -190,15 +154,9 @@ class NavigationWarnersExample(
     }
 
     private fun startGuidanceWithRoute(route: Route) {
-        if (useWarnerEngine) {
-            // Use the unified WarnerEngine approach (beta).
-            warnerEngineExample.setupWarnerEngine(visualNavigator)
-            Log.d(TAG, "Using WarnerEngine (beta) for unified warning handling.")
-        } else {
-            // Use the previous per-type listener approach.
-            setupListeners(visualNavigator)
-            Log.d(TAG, "Using per-type listeners for warning handling.")
-        }
+        warnerEngineExample.setupWarnerEngine(visualNavigator)
+        Log.d(TAG, "Using WarnerEngine for warning handling.")
+        setupListeners(visualNavigator)
         visualNavigator.startRendering(mapView)
         visualNavigator.route = route
         setupLocationSource(route)
@@ -219,8 +177,6 @@ class NavigationWarnersExample(
     private fun setupListeners(
         visualNavigator: VisualNavigator,
     ) {
-        setupSpeedWarnings(visualNavigator)
-        setupSafetyCameraWarningOptions(visualNavigator)
 
         // Notifies on the progress along the route including maneuver instructions.
         visualNavigator.routeProgressListener =
@@ -309,98 +265,6 @@ class NavigationWarnersExample(
                     Log.d(TAG, "A system-defined waypoint was missed at: " + milestone.mapMatchedCoordinates)
                 }
             }
-
-        // Notifies on safety camera warnings as they appear along the road.
-        visualNavigator.safetyCameraWarningListener =
-            SafetyCameraWarningListener { safetyCameraWarning: SafetyCameraWarning ->
-                // Safety camera warning geocoordinates can only be fetched in non-tracking mode.
-                val currentRoute = Objects.requireNonNull<Route>(visualNavigator.route)
-                val safetyCameraGeoCoordinates: GeoCoordinates =
-                    getGeocoordinatesForRemainingDistance(
-                        currentRouteProgress,
-                        safetyCameraWarning.distanceToCameraInMeters,
-                        currentRoute
-                    )
-
-                if (safetyCameraWarning.distanceType == DistanceType.AHEAD) {
-                    Log.d(
-                        TAG,
-                        "Safety camera warning ${safetyCameraWarning.type.name} ahead in: " +
-                                "${safetyCameraWarning.distanceToCameraInMeters} m " +
-                                "with speed limit = ${safetyCameraWarning.speedLimitInMetersPerSecond} m/s " +
-                                "at geo-coordinates: ${toString(safetyCameraGeoCoordinates)}"
-                    )
-                } else if (safetyCameraWarning.distanceType == DistanceType.PASSED) {
-                    Log.d(
-                        TAG,
-                        "Safety camera warning ${safetyCameraWarning.type.name} passed: " +
-                                "${safetyCameraWarning.distanceToCameraInMeters} with speed limit = " +
-                                "${safetyCameraWarning.speedLimitInMetersPerSecond} m/s"
-                    )
-                } else if (safetyCameraWarning.distanceType == DistanceType.REACHED) {
-                    Log.d(
-                        TAG,
-                        "Safety camera warning ${safetyCameraWarning.type.name} reached at: " +
-                                "${safetyCameraWarning.distanceToCameraInMeters} with speed limit = " +
-                                "${safetyCameraWarning.speedLimitInMetersPerSecond} m/s"
-                    )
-                }
-            }
-
-        // Notifies when the current speed limit is exceeded.
-        visualNavigator.speedWarningListener =
-            SpeedWarningListener { speedWarningStatus: SpeedWarningStatus ->
-                if (speedWarningStatus == SpeedWarningStatus.SPEED_LIMIT_EXCEEDED) {
-                    // Driver is faster than current speed limit (plus an optional offset).
-                    // Play a notification sound to alert the driver.
-                    // Note that this may not include temporary special speed limits, see SpeedLimitListener.
-                    val ringtoneUri =
-                        RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-                    val ringtone = RingtoneManager.getRingtone(context, ringtoneUri)
-                    ringtone.play()
-                }
-                if (speedWarningStatus == SpeedWarningStatus.SPEED_LIMIT_RESTORED) {
-                    Log.d(
-                        TAG,
-                        "Driver is again slower than current speed limit (plus an optional offset)."
-                    )
-                }
-            }
-
-        // Notifies about merging traffic to the current road.
-        visualNavigator.trafficMergeWarningListener =
-            TrafficMergeWarningListener { trafficMergeWarning: TrafficMergeWarning ->
-                if (trafficMergeWarning.distanceType == DistanceType.AHEAD) {
-                    Log.d(
-                        TAG,
-                        "There is a merging ${trafficMergeWarning.roadType.name} ahead in: " +
-                                "${trafficMergeWarning.distanceToTrafficMergeInMeters} meters, merging from the " +
-                                "${trafficMergeWarning.side.name} side, with lanes = ${trafficMergeWarning.laneCount}"
-                    )
-                } else if (trafficMergeWarning.distanceType == DistanceType.PASSED) {
-                    Log.d(
-                        TAG,
-                        "A merging ${trafficMergeWarning.roadType.name} passed: " +
-                                "${trafficMergeWarning.distanceToTrafficMergeInMeters} meters, merging from " +
-                                "${trafficMergeWarning.side.name} side, with lanes = ${trafficMergeWarning.laneCount}"
-                    )
-                } else if (trafficMergeWarning.distanceType == DistanceType.REACHED) {
-                    // Since the traffic merge warning is given relative to a single position on the route,
-                    // DistanceType.REACHED will never be given for this warning.
-                }
-            }
-
-        // Notifies on the current speed limit valid on the current road.
-        visualNavigator.speedLimitListener = SpeedLimitListener { speedLimit: SpeedLimit ->
-            val currentSpeedLimit = getCurrentSpeedLimit(speedLimit)
-            if (currentSpeedLimit == null) {
-                Log.d(TAG, "Warning: Speed limits unknown, data could not be retrieved.")
-            } else if (currentSpeedLimit == 0.0) {
-                Log.d(TAG, "No speed limits on this road! Drive as fast as you feel safe ...")
-            } else {
-                Log.d(TAG, "Current speed limit (m/s): $currentSpeedLimit")
-            }
-        }
 
         // Notifies on a possible deviation from the route.
         visualNavigator.routeDeviationListener =
@@ -540,363 +404,20 @@ class NavigationWarnersExample(
                 }
             }
 
-        val roadSignWarningOptions = RoadSignWarningOptions()
-        // Set a filter to get only road signs relevant for TRUCKS and HEAVY_TRUCKS.
-        roadSignWarningOptions.vehicleTypesFilter = listOf(RoadSignVehicleType.TRUCKS, RoadSignVehicleType.HEAVY_TRUCKS)
-
-        // Get notification distances for road sign alerts from visual navigator.
-        val warningNotificationDistances = visualNavigator.getWarningNotificationDistances(WarningType.ROAD_SIGN)
-        // The distance in meters for emitting warnings when the speed limit or current speed is fast. Defaults to 1500.
-        warningNotificationDistances.fastSpeedDistanceInMeters = 1600
-        // The distance in meters for emitting warnings when the speed limit or current speed is regular. Defaults to 750.
-        warningNotificationDistances.regularSpeedDistanceInMeters = 800
-        // The distance in meters for emitting warnings when the speed limit or current speed is slow. Defaults to 500.
-        warningNotificationDistances.slowSpeedDistanceInMeters = 600
-
-        // Set the warning distances for road signs.
-        visualNavigator.setWarningNotificationDistances(
-            WarningType.ROAD_SIGN,
-            warningNotificationDistances
-        )
-        visualNavigator.roadSignWarningOptions = roadSignWarningOptions
-
-        // Notifies on road signs as they appear along the road.
-        visualNavigator.roadSignWarningListener =
-            RoadSignWarningListener { roadSignWarning: RoadSignWarning ->
-                val roadSignType: RoadSignType = roadSignWarning.type
-                if (roadSignWarning.distanceType == DistanceType.AHEAD) {
-                    Log.d(TAG, "A RoadSignWarning of road sign type: ${roadSignType.name}" +
-                            " ahead in (m): ${roadSignWarning.distanceToRoadSignInMeters}"
-                    )
-                } else if (roadSignWarning.distanceType == DistanceType.PASSED) {
-                    Log.d(TAG, "A RoadSignWarning of road sign type: ${roadSignType.name} just passed.")
-                }
-
-                if (roadSignWarning.signValue != null) {
-                    // Optional text as it is printed on the local road sign.
-                    Log.d(TAG, "Road sign text: " + roadSignWarning.signValue!!.text)
-                }
-                // For more road sign attributes, please check the API Reference.
-            }
-
         // Notifies truck drivers on road restrictions ahead. Called whenever there is a change.
         // For example, there can be a bridge ahead not high enough to pass a big truck
         // or there can be a road ahead where the weight of the truck is beyond it's permissible weight.
         // This event notifies on truck restrictions in general,
         // so it will also deliver events, when the transport type was set to a non-truck transport type.
         // The given restrictions are based on the HERE database of the road network ahead.
-        visualNavigator.truckRestrictionsWarningListener =
-            TruckRestrictionsWarningListener { list: List<TruckRestrictionWarning> ->
-                // The list is guaranteed to be non-empty.
-                for (truckRestrictionWarning in list) {
-                    if (truckRestrictionWarning.distanceType == DistanceType.AHEAD) {
-                        Log.d(
-                            TAG,
-                            "TruckRestrictionWarning ahead in: " + truckRestrictionWarning.distanceInMeters + " meters."
-                        )
-                        if (truckRestrictionWarning.timeRule != null && !truckRestrictionWarning.timeRule!!.appliesTo(Date())
-                        ) {
-                            // For example, during a specific time period of a day, some truck restriction warnings do not apply.
-                            // If truckRestrictionWarning.timeRule is null, the warning applies at anytime.
-                            Log.d(TAG, "Note that this truck restriction warning currently does not apply.")
-                        }
-                    } else if (truckRestrictionWarning.distanceType == DistanceType.REACHED) {
-                        Log.d(TAG, "A restriction has been reached.")
-                    } else if (truckRestrictionWarning.distanceType == DistanceType.PASSED) {
-                        // If not preceded by a "REACHED"-notification, this restriction was valid only for the passed location.
-                        Log.d(TAG, "A restriction just passed.")
-                    }
-
-                    // One of the following restrictions applies ahead, if more restrictions apply at the same time,
-                    // they are part of another TruckRestrictionWarning element contained in the list.
-                    if (truckRestrictionWarning.weightRestriction != null) {
-                        val type = truckRestrictionWarning.weightRestriction!!.type
-                        val value = truckRestrictionWarning.weightRestriction!!.valueInKilograms
-                        Log.d(TAG, "TruckRestriction for weight (kg): " + type.name + ": " + value)
-                    } else if (truckRestrictionWarning.dimensionRestriction != null) {
-                        // Can be either a length, width or height restriction of the truck. For example, a height
-                        // restriction can apply for a tunnel. Other possible restrictions are delivered in
-                        // separate TruckRestrictionWarning objects contained in the list, if any.
-                        val type = truckRestrictionWarning.dimensionRestriction!!.type
-                        val value = truckRestrictionWarning.dimensionRestriction!!.valueInCentimeters
-                        Log.d(TAG, "TruckRestriction for dimension: " + type.name + ": " + value)
-                    } else {
-                        Log.d(TAG, "TruckRestriction: General restriction - no trucks allowed.")
-                    }
-                }
-            }
-
-        // Notifies on school zones ahead.
-        visualNavigator.schoolZoneWarningListener =
-            SchoolZoneWarningListener { list: List<SchoolZoneWarning> ->
-                // The list is guaranteed to be non-empty.
-                for (schoolZoneWarning in list) {
-                    if (schoolZoneWarning.distanceType == DistanceType.AHEAD) {
-                        Log.d(TAG, "A school zone ahead in: " + schoolZoneWarning.distanceToSchoolZoneInMeters + " meters.")
-                        // Note that this will be the same speed limit as indicated by SpeedLimitListener, unless
-                        // already a lower speed limit applies, for example, because of a heavy truck load.
-                        Log.d(TAG, "Speed limit restriction for this school zone: " + schoolZoneWarning.speedLimitInMetersPerSecond + " m/s.")
-                        if (schoolZoneWarning.timeRule != null && !schoolZoneWarning.timeRule!!.appliesTo(Date())) {
-                            // For example, during night sometimes a school zone warning does not apply.
-                            // If schoolZoneWarning.timeRule is null, the warning applies at anytime.
-                            Log.d(TAG, "Note that this school zone warning currently does not apply.")
-                        }
-                    } else if (schoolZoneWarning.distanceType == DistanceType.REACHED) {
-                        Log.d(TAG, "A school zone has been reached.")
-                    } else if (schoolZoneWarning.distanceType == DistanceType.PASSED) {
-                        Log.d(TAG, "A school zone has been passed.")
-                    }
-                }
-            }
-
-        val schoolZoneWarningOptions = SchoolZoneWarningOptions()
-        schoolZoneWarningOptions.filterOutInactiveTimeDependentWarnings = true
-        schoolZoneWarningOptions.warningDistanceInMeters = 150
-        visualNavigator.schoolZoneWarningOptions = schoolZoneWarningOptions
-
         // Notifies whenever a border is crossed of a country and optionally, by default, also when a state
         // border of a country is crossed.
-        visualNavigator.borderCrossingWarningListener =
-            BorderCrossingWarningListener { borderCrossingWarning: BorderCrossingWarning ->
-                // Since the border crossing warning is given relative to a single location,
-                // the DistanceType.REACHED will never be given for this warning.
-                if (borderCrossingWarning.distanceType == DistanceType.AHEAD) {
-                    Log.d(
-                        TAG,
-                        "BorderCrossing: A border is ahead in: " + borderCrossingWarning.distanceToBorderCrossingInMeters + " meters."
-                    )
-                    Log.d(TAG, "BorderCrossing: Type (such as country or state): " + borderCrossingWarning.type.name)
-                    Log.d(TAG, "BorderCrossing: Country code: " + borderCrossingWarning.administrativeRules.countryCode.name)
-
-                    // The state code after the border crossing. It represents the state / province code.
-                    // It is a 1 to 3 upper-case characters string that follows the ISO 3166-2 standard,
-                    // but without the preceding country code (e.g. for Texas, the state code will be TX).
-                    // It will be null for countries without states or countries in which the states have very
-                    // similar regulations (e.g. for Germany there will be no state borders).
-                    if (borderCrossingWarning.administrativeRules.stateCode != null) {
-                        Log.d(TAG, "BorderCrossing: State code: " + borderCrossingWarning.administrativeRules.stateCode)
-                    }
-
-                    // The general speed limits that apply in the country / state after border crossing.
-                    val generalVehicleSpeedLimits = borderCrossingWarning.administrativeRules.speedLimits
-                    Log.d(
-                        TAG,
-                        "BorderCrossing: Speed limit in cities (m/s): " + generalVehicleSpeedLimits.maxSpeedUrbanInMetersPerSecond
-                    )
-                    Log.d(
-                        TAG,
-                        "BorderCrossing: Speed limit outside cities (m/s): " + generalVehicleSpeedLimits.maxSpeedRuralInMetersPerSecond
-                    )
-                    Log.d(
-                        TAG,
-                        "BorderCrossing: Speed limit on highways (m/s): " + generalVehicleSpeedLimits.maxSpeedHighwaysInMetersPerSecond
-                    )
-                } else if (borderCrossingWarning.distanceType == DistanceType.PASSED) {
-                    Log.d(TAG, "BorderCrossing: A border has been passed.")
-                }
-            }
-
-        val borderCrossingWarningOptions = BorderCrossingWarningOptions()
-        // If set to true, all the state border crossing notifications will not be given.
-        // If the value is false, all border crossing notifications will be given for both
-        // country borders and state borders. Defaults to false.
-        borderCrossingWarningOptions.filterOutStateBorderWarnings = true
-        visualNavigator.borderCrossingWarningOptions = borderCrossingWarningOptions
-
-        // Notifies on danger zones.
-        // A danger zone refers to areas where there is an increased risk of traffic incidents.
-        // These zones are designated to alert drivers to potential hazards and encourage safer driving behaviors.
-        // The HERE SDK warns when approaching the danger zone, as well as when leaving such a zone.
-        // A danger zone may or may not have one or more speed cameras in it. The exact location of such speed cameras
-        // is not provided. Note that danger zones are only available in selected countries, such as France.
-        visualNavigator.dangerZoneWarningListener =
-            DangerZoneWarningListener { dangerZoneWarning: DangerZoneWarning ->
-                if (dangerZoneWarning.distanceType == DistanceType.AHEAD) {
-                    Log.d(TAG, "A danger zone ahead in: ${dangerZoneWarning.distanceInMeters} meters.")
-                    // isZoneStart indicates if we enter the danger zone from the start.
-                    // It is false, when the danger zone is entered from a side street.
-                    // Based on the route path, the HERE SDK anticipates from where the danger zone will be entered.
-                    // In tracking mode, the most probable path will be used to anticipate from where
-                    // the danger zone is entered.
-                    Log.d(TAG, "isZoneStart: ${dangerZoneWarning.isZoneStart}")
-                } else if (dangerZoneWarning.distanceType == DistanceType.REACHED) {
-                    Log.d(
-                        TAG,
-                        "A danger zone has been reached. isZoneStart: ${dangerZoneWarning.isZoneStart}"
-                    )
-                } else if (dangerZoneWarning.distanceType == DistanceType.PASSED) {
-                    Log.d(TAG, "A danger zone has been passed.")
-                }
-            }
-
-        // Notifies on low speed zones ahead - as indicated also on the map when MapFeatures.LOW_SPEED_ZONE is set.
-        visualNavigator.lowSpeedZoneWarningListener =
-            LowSpeedZoneWarningListener { lowSpeedZoneWarning: LowSpeedZoneWarning ->
-                if (lowSpeedZoneWarning.distanceType == DistanceType.AHEAD) {
-                    Log.d(
-                        TAG,
-                        "Low speed zone ahead in meters: ${lowSpeedZoneWarning.distanceToLowSpeedZoneInMeters}"
-                    )
-                    Log.d(
-                        TAG,
-                        "Speed limit in low speed zone (m/s): ${lowSpeedZoneWarning.speedLimitInMetersPerSecond}"
-                    )
-                } else if (lowSpeedZoneWarning.distanceType == DistanceType.REACHED) {
-                    Log.d(TAG, "A low speed zone has been reached.")
-                    Log.d(
-                        TAG,
-                        "Speed limit in low speed zone (m/s): ${lowSpeedZoneWarning.speedLimitInMetersPerSecond}"
-                    )
-                } else if (lowSpeedZoneWarning.distanceType == DistanceType.PASSED) {
-                    Log.d(TAG, "A low speed zone has been passed.")
-                }
-            }
-
         // Notifies whenever any textual attribute of the current road changes, i.e., the current road texts differ
         // from the previous one. This can be useful during tracking mode, when no maneuver information is provided.
         visualNavigator.roadTextsListener = RoadTextsListener {
             // See getRoadName() in the "Rerouting" example app to learn how to get the current road name from the provided RoadTexts.
         }
 
-        val realisticViewWarningOptions = RealisticViewWarningOptions()
-        realisticViewWarningOptions.aspectRatio = AspectRatio.ASPECT_RATIO_3_X_4
-        realisticViewWarningOptions.darkTheme = false
-        visualNavigator.realisticViewWarningOptions = realisticViewWarningOptions
-
-        // Notifies on signposts together with complex junction views.
-        // Signposts are shown as they appear along a road on a shield to indicate the upcoming directions and
-        // destinations, such as cities or road names.
-        // Junction views appear as a 3D visualization (as a static image) to help the driver to orientate.
-        //
-        // Optionally, you can use a feature-configuration to preload the assets as part of a Region.
-        //
-        // The event matches the notification for complex junctions, see JunctionViewLaneAssistance.
-        // Note that the SVG data for junction view is composed out of several 3D elements,
-        // a horizon and the actual junction geometry.
-        visualNavigator.realisticViewWarningListener =
-            RealisticViewWarningListener { realisticViewWarning: RealisticViewWarning ->
-                val distance = realisticViewWarning.distanceToRealisticViewInMeters
-                val distanceType = realisticViewWarning.distanceType
-
-                // Note that DistanceType.REACHED is not used for Signposts and junction views
-                // as a junction is identified through a location instead of an area.
-                if (distanceType == DistanceType.AHEAD) {
-                    Log.d(
-                        TAG,
-                        "A RealisticView ahead in: $distance meters."
-                    )
-                } else if (distanceType == DistanceType.PASSED) {
-                    Log.d(TAG, "A RealisticView just passed.")
-                }
-
-                val realisticView = realisticViewWarning.realisticViewVectorImage
-                if (realisticView == null) {
-                    Log.d(TAG, "A RealisticView just passed. No SVG data delivered.")
-                    return@RealisticViewWarningListener
-                }
-
-                val signpostSvgImageContent = realisticView.signpostSvgImageContent
-                val junctionViewSvgImageContent = realisticView.junctionViewSvgImageContent
-                // The resolution-independent SVG data can now be used in an application to visualize the image.
-                // Use a SVG library of your choice to create an SVG image out of the SVG string.
-                // Both SVGs contain the same dimension and the signpostSvgImageContent should be shown on top of
-                // the junctionViewSvgImageContent.
-                // The images can be quite detailed, therefore it is recommended to show them on a secondary display
-                // in full size.
-                Log.d("signpostSvgImage", signpostSvgImageContent)
-                Log.d("junctionViewSvgImage", junctionViewSvgImageContent)
-            }
-
-        // Notifies on upcoming toll stops. Uses the same notification
-        // thresholds as other warners and provides events with or without a route to follow.
-        visualNavigator.tollStopWarningListener = TollStopWarningListener {
-        tollStop: TollStop ->
-            val lanes = tollStop.lanes
-            // The lane at index 0 is the leftmost lane adjacent to the middle of the road.
-            // The lane at the last index is the rightmost lane.
-            var laneNumber = 0
-            for (tollBoothLane in lanes) {
-                // Log which vehicles types are allowed on this lane that leads to the toll booth.
-                logLaneAccess("ToolBoothLane: ", laneNumber, tollBoothLane.access)
-                val tollBooth = tollBoothLane.booth
-                val tollCollectionMethods = tollBooth.tollCollectionMethods
-                val paymentMethods = tollBooth.paymentMethods
-                // The supported collection methods like ticket or automatic / electronic.
-                for (collectionMethod in tollCollectionMethods) {
-                    Log.d(
-                        TAG,
-                        "This toll stop supports collection via: " + collectionMethod.name
-                    )
-                }
-                // The supported payment methods like cash or credit card.
-                for (paymentMethod in paymentMethods) {
-                    Log.d(TAG, "This toll stop supports payment via: " + paymentMethod.name)
-                }
-                laneNumber++;
-            }
-        }
-    }
-
-    private fun setupSafetyCameraWarningOptions(visualNavigator: VisualNavigator) {
-        val safetyCameraWarningOptions: SafetyCameraWarningOptions = SafetyCameraWarningOptions()
-
-        // Enable text notifications for safety camera warnings, that can be used with TTS engines.
-        // Example notification text: "A safety camera is ahead in 500 meters."
-        // The text can be localized via `ManeuverNotificationOptions`.
-        // To receive text notifications, you must also set up an EventTextListener.
-        // See the "Navigation" example app for a usage example.
-        safetyCameraWarningOptions.enableTextNotification = true
-        visualNavigator.safetyCameraWarningOptions = safetyCameraWarningOptions
-    }
-
-    private fun setupSpeedWarnings(visualNavigator: VisualNavigator) {
-        val speedLimitOffset = SpeedLimitOffset()
-        speedLimitOffset.lowSpeedOffsetInMetersPerSecond = 2.0
-        speedLimitOffset.highSpeedOffsetInMetersPerSecond = 4.0
-        speedLimitOffset.highSpeedBoundaryInMetersPerSecond = 25.0
-
-        visualNavigator.speedWarningOptions = SpeedWarningOptions(speedLimitOffset)
-    }
-
-    private fun getCurrentSpeedLimit(speedLimit: SpeedLimit): Double? {
-        // Note that all values can be null if no data is available.
-
-        // The regular speed limit if available. In case of unbounded speed limit, the value is zero.
-
-        Log.d(TAG, "speedLimitInMetersPerSecond: " + speedLimit.speedLimitInMetersPerSecond)
-
-        // A conditional school zone speed limit as indicated on the local road signs.
-        Log.d(
-            TAG,
-            "schoolZoneSpeedLimitInMetersPerSecond: " + speedLimit.schoolZoneSpeedLimitInMetersPerSecond
-        )
-
-        // A conditional time-dependent speed limit as indicated on the local road signs.
-        // It is in effect considering the current local time provided by the device's clock.
-        Log.d(
-            TAG,
-            "timeDependentSpeedLimitInMetersPerSecond: " + speedLimit.timeDependentSpeedLimitInMetersPerSecond
-        )
-
-        // A conditional non-legal speed limit that recommends a lower speed,
-        // for example, due to bad road conditions.
-        Log.d(
-            TAG,
-            "advisorySpeedLimitInMetersPerSecond: " + speedLimit.advisorySpeedLimitInMetersPerSecond
-        )
-
-        // A weather-dependent speed limit as indicated on the local road signs.
-        // The HERE SDK cannot detect the current weather condition, so a driver must decide
-        // based on the situation if this speed limit applies.
-        Log.d(TAG, "fogSpeedLimitInMetersPerSecond: " + speedLimit.fogSpeedLimitInMetersPerSecond)
-        Log.d(TAG, "rainSpeedLimitInMetersPerSecond: " + speedLimit.rainSpeedLimitInMetersPerSecond)
-        Log.d(TAG, "snowSpeedLimitInMetersPerSecond: " + speedLimit.snowSpeedLimitInMetersPerSecond)
-
-        // For convenience, this returns the effective (lowest) speed limit between
-        // - speedLimitInMetersPerSecond
-        // - schoolZoneSpeedLimitInMetersPerSecond
-        // - timeDependentSpeedLimitInMetersPerSecond
-        return speedLimit.effectiveSpeedLimitInMetersPerSecond()
     }
 
     private fun logLaneRecommendations(lanes: List<Lane>) {

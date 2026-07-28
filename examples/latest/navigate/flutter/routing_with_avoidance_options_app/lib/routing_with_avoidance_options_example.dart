@@ -37,6 +37,7 @@ class RoutingWithAvoidanceOptionsExample {
   final HereMapController _hereMapController;
   final List<MapPolyline> _mapPolylines = [];
   final List<MapPolyline> _segmentPolylines = [];
+  final List<MapMarker> _mapMatchedMarkers = [];
   late RoutingEngine _routingEngine;
   final ShowDialogFunction _showDialog;
   List<Waypoint> waypoints = [];
@@ -237,7 +238,8 @@ class RoutingWithAvoidanceOptionsExample {
       _showDialog("MapMatcher", "Map-matched location is highlighted with red dot on the map. Check logs for more information on matched location.");
 
       // Show the map-matched location on the map.
-      MapMarker mapMatcherMapMarker = _addMapMarker(mapMatchedLocation.coordinates, "assets/map_matched_location_dot.png");
+      final mapMatcherMapMarker = _addMapMarker(mapMatchedLocation.coordinates, "assets/map_matched_location_dot.png");
+      _mapMatchedMarkers.add(mapMatcherMapMarker);
 
       // Fetch IDs from mapMatchedLocation and convert them into OCMSegmentID required by loadSegmentData method.
       OCMSegmentId mapMatchedSegmentId = OCMSegmentId();
@@ -308,7 +310,7 @@ class RoutingWithAvoidanceOptionsExample {
 
   Future<void> addRoute() async {
     // Optionally, clear any previous route.
-    clearMap();
+    _clearRoute();
 
     var startWaypoint = Waypoint.withDefaults(_startGeoCoordinates);
     var destinationWaypoint = Waypoint.withDefaults(_destinationGeoCoordinates);
@@ -376,6 +378,9 @@ class RoutingWithAvoidanceOptionsExample {
 
   void clearMap() {
     _clearRoute();
+    _clearSegmentPolylines();
+    _clearMapMatchedMarkers();
+    _resetAvoidanceState();
   }
 
   void _clearRoute() {
@@ -383,6 +388,25 @@ class RoutingWithAvoidanceOptionsExample {
       _hereMapController.mapScene.removeMapPolyline(mapPolyline);
     }
     _mapPolylines.clear();
+  }
+
+  void _clearSegmentPolylines() {
+    for (final mapPolyline in _segmentPolylines) {
+      _hereMapController.mapScene.removeMapPolyline(mapPolyline);
+    }
+    _segmentPolylines.clear();
+  }
+
+  void _clearMapMatchedMarkers() {
+    for (final mapMarker in _mapMatchedMarkers) {
+      _hereMapController.mapScene.removeMapMarker(mapMarker);
+    }
+    _mapMatchedMarkers.clear();
+  }
+
+  void _resetAvoidanceState() {
+    segmentAvoidanceList.clear();
+    segmentsAvoidanceViolated = false;
   }
 
   void _showRouteDetails(here.Route route) {
@@ -396,7 +420,7 @@ class RoutingWithAvoidanceOptionsExample {
     _showDialog("Route Details", routeDetails);
   }
 
-  _showRouteOnMap(here.Route route) {
+  void _showRouteOnMap(here.Route route) {
     // Show route as polyline.
     GeoPolyline routeGeoPolyline = route.geometry;
     Color polylineColor = const Color.fromARGB(160, 0, 144, 138);

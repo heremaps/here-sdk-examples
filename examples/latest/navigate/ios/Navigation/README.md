@@ -1,5 +1,7 @@
 The Navigation example app shows how to calculate a route from A to B and how to start **turn-by-turn navigation** with voice commands. You can find how this is done in [NavigationExample.swift](Navigation/NavigationExample.swift). It also shows how to set a tracking view when navigation is stopped.
 
+![Turn-by-turn navigation with route, location indicator and maneuver updates](images/navigation.png)
+
 Features demonstrated:
 ----------------------
 

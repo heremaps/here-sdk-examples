@@ -1,5 +1,7 @@
 The EVRouting example app shows how the HERE SDK can be used to calculate routes for electric vehicles and how to calculate the area of reach with isoline routing.
 
+![Electric vehicle route with charging stations along the way](images/ev_routing.png)
+
 Build instructions:
 -------------------
 

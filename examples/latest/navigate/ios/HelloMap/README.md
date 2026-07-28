@@ -1,5 +1,7 @@
 The HelloMap example app shows how the HERE SDK can be integrated into your project and how to display a map using SwiftUI.
 
+![Map rendered on iOS with the HERE SDK](images/hello_map.png)
+
 Build instructions:
 -------------------
 

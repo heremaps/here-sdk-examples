@@ -1,5 +1,7 @@
 The MapItems example app shows how to pin images and 3D objects to mark specific spots on the map. You can find how this is done in [MapItemsExample.swift](MapItems/MapItemsExample.swift). The app also shows how to add polyline, arrows, polygon and circle instances to the map. You can find how this is done in [MapObjectsExample.swift](MapItems/MapObjectsExample.swift). In addition, the app also shows how a convenient way to show native iOS UIView layouts on the map. You can find how this is done in [MapViewPinsExample.swift](MapItems/MapViewPinsExample.swift).
 
+![Clustered map markers placed across the map](images/map_items.png)
+
 Build instructions:
 -------------------
 

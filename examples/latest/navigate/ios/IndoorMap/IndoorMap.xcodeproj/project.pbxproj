@@ -172,8 +172,9 @@
 		C865241920B7E70F00392D48 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				BuildIndependentTargetsInParallel = YES;
 				LastSwiftUpdateCheck = 0930;
-				LastUpgradeCheck = 0930;
+				LastUpgradeCheck = 2650;
 				ORGANIZATIONNAME = HERE;
 				TargetAttributes = {
 					C865242020B7E70F00392D48 = {

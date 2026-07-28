@@ -2,6 +2,8 @@ The _HelloMapSurface_ example app shows how to use the `MapSurface` class to ren
 Note that gestures are not supported, so the shown map view will only show rendered content on top of the mp view, but it cannot be panned, for example.
 The app renders two triangles via OpenGL ES that make up a red square, placed over the map at the bottom center.
 
+![Hello MapSurface view](images/hello_map_surface.png)
+
 **Note:** Check the _HelloMapAndroidAuto_ example app to see how to enable gestures.
 
 By default, with Android Auto you do not get access to the view hierarchy. Instead you get only a `Surface`. Natively, the HERE SDK holds this surface, so it is not possibly to render anything else on top of the map. By exposing the `MapSurface`, the HERE SDK now overcomes this limitation and it is now possible to render custom elements on top of the Android Auto window.  

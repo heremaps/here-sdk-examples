@@ -27,15 +27,14 @@ class NavigationWarnersExample : LongPressDelegate {
     private let routingEngine: RoutingEngine
     private let visualNavigator: VisualNavigator
     private var locationSimulator: LocationSimulator!
-    private var navigationWarners: NavigationWarners
     private var warnerEngineExample = WarnerEngineExample()
+    private var navigationWarners = NavigationWarners()
     private var startGeoCoordinates: GeoCoordinates
     private var destinationGeoCoordinates: GeoCoordinates
     private var changeDestination: Bool
     private var startMapMarker: MapMarker!
     private var destinationMapMarker: MapMarker!
     private var isGuidanceRunning: Bool
-    var useWarnerEngine: Bool = false
     
     init(_ mapView: MapView) {
         self.mapView = mapView
@@ -55,9 +54,6 @@ class NavigationWarnersExample : LongPressDelegate {
         } catch let engineInstantiationError {
             fatalError("Failed to initialize VisualNavigator. Cause: \(engineInstantiationError)")
         }
-        
-        // The class holds several listeners that provide useful information during TBT.
-        navigationWarners = NavigationWarners()
         
         // Configure the map.
         let camera = mapView.camera
@@ -144,16 +140,10 @@ class NavigationWarnersExample : LongPressDelegate {
     private func startTurnByTurnNavigation(route: Route) {
         // This enables a navigation view including a rendered navigation arrow.
         visualNavigator.startRendering(mapView: mapView)
-        
-        if useWarnerEngine {
-            // Use the unified WarnerEngine approach (beta).
-            warnerEngineExample.setupWarnerEngine(visualNavigator)
-            print("Using WarnerEngine (beta) for unified warning handling.")
-        } else {
-            // Use the previous per-type listener approach.
-            navigationWarners.setupDelegates(visualNavigator)
-            print("Using per-type listeners for warning handling.")
-        }
+
+        warnerEngineExample.setupWarnerEngine(visualNavigator)
+        navigationWarners.setupDelegates(visualNavigator)
+        print("Using WarnerEngine for warning handling.")
 
         // Set a route to follow. This leaves tracking mode.
         visualNavigator.route = route
@@ -168,9 +158,7 @@ class NavigationWarnersExample : LongPressDelegate {
         locationSimulator?.stop()
         locationSimulator = nil
 
-        if useWarnerEngine {
-            warnerEngineExample.stopWarnerEngine()
-        }
+        warnerEngineExample.stopWarnerEngine()
         visualNavigator.route = nil
         visualNavigator.stopRendering()
         isGuidanceRunning = false
