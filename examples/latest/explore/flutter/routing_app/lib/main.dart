@@ -192,6 +192,7 @@ class MyAppState extends State<MyApp> {
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
+      barrierColor: Colors.transparent,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(title),

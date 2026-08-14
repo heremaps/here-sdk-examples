@@ -122,15 +122,28 @@ class RoutingExample {
     }
 
     private func showUpdatedETA(trafficOnRoute: TrafficOnRoute) {
-        for section in trafficOnRoute.trafficSections {
-            var updatedETAInSeconds = 0.0;
-            section.trafficSpans.forEach{ updatedETAInSeconds = updatedETAInSeconds + Double($0.duration)}
-            var updatedTrafficDelayInSeconds = 0.0;
-            section.trafficSpans.forEach{ updatedTrafficDelayInSeconds = updatedTrafficDelayInSeconds + Double($0.trafficDelay)}
-            let updatedETAString = String(format: "Updated travel duration %@\nUpdated traffic delay %@",
-                                          timeUtils.formatTime(sec: updatedETAInSeconds),
-                                          timeUtils.formatTime(sec: updatedTrafficDelayInSeconds))
-            showDialog(title: "Updated traffic", message: updatedETAString)
+        showNextTrafficDialog(sections: trafficOnRoute.trafficSections, index: 0)
+    }
+
+    private func showNextTrafficDialog(sections: [TrafficOnSection], index: Int) {
+        guard index < sections.count else {
+            return
+        }
+
+        let section = sections[index]
+        var updatedETAInSeconds = 0.0
+        section.trafficSpans.forEach { updatedETAInSeconds = updatedETAInSeconds + Double($0.duration) }
+        var updatedTrafficDelayInSeconds = 0.0
+        section.trafficSpans.forEach { updatedTrafficDelayInSeconds = updatedTrafficDelayInSeconds + Double($0.trafficDelay) }
+        let updatedETAString = String(format: "Updated travel duration %@\nUpdated traffic delay %@",
+                                      timeUtils.formatTime(sec: updatedETAInSeconds),
+                                      timeUtils.formatTime(sec: updatedTrafficDelayInSeconds))
+
+        showDialog(title: "Updated traffic", message: updatedETAString) {
+            // After the dialog is dismissed, wait and show the next one
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                self.showNextTrafficDialog(sections: sections, index: index + 1)
+            }
         }
     }
 
@@ -558,7 +571,7 @@ class RoutingExample {
         mapMarkers.append(mapMarker)
     }
     
-    private func showDialog(title: String, message: String) {
+    private func showDialog(title: String, message: String, completion: @escaping () -> Void = {}) {
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let rootViewController = windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController {
 
@@ -569,8 +582,7 @@ class RoutingExample {
             )
 
             alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
-                // Handle OK button action.
-                alert.dismiss(animated: true, completion: nil)
+                alert.dismiss(animated: true, completion: completion)
             }))
 
             rootViewController.present(alert, animated: true, completion: nil)

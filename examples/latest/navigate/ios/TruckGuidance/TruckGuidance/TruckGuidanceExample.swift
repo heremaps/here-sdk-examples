@@ -756,7 +756,7 @@ class TruckGuidanceExample: TapDelegate,
     
     private func handleTruckRouteResults(_ routingError: RoutingError?, _ routes: [Route]?) {
         if let routingError = routingError {
-            showDialog(title: "Error while calculating a truck route: ", message: "\(routingError.rawValue)")
+            showDialog(title: "Error while calculating a truck route: ", message: getRoutingErrorMessage(routingError))
             return
         }
 
@@ -775,6 +775,15 @@ class TruckGuidanceExample: TapDelegate,
         }
 
         showRouteOnMap(route: lastCalculatedTruckRoute!, color: UIColor(red: 0, green: 0.6, blue: 1, alpha: 1), widthInPixels: 30)
+    }
+
+    private func getRoutingErrorMessage(_ routingError: RoutingError) -> String {
+        switch routingError {
+        case .offline:
+            return "The device is offline. Route calculation requires an internet connection."
+        default:
+            return "Route calculation failed. Please try again. (Error : \(routingError.rawValue))"
+        }
     }
 
     private func createTruckRoutingOptions() -> RoutingOptions {

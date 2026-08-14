@@ -21,6 +21,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:indoor_map_app/indoor_map_tokens.dart';
 import 'package:indoor_map_app/indoor_routing_data_provider.dart';
+import 'package:indoor_map_app/venue_data_provider.dart';
 import 'package:here_sdk/venue.data.dart';
 
 /// Bottom sheet panel that shows source / destination fields, a transport mode
@@ -29,11 +30,6 @@ import 'package:here_sdk/venue.data.dart';
 class IndoorRoutingMainMenu extends StatelessWidget {
   const IndoorRoutingMainMenu({super.key});
 
-  static String _geometryLabel(VenueGeometry g) {
-    final String name = g.name.isNotEmpty ? g.name : g.identifier;
-    return '$name, ${g.level.name}';
-  }
-
   @override
   Widget build(BuildContext context) {
     final IndoorRoutingDataProvider provider = context.watch<IndoorRoutingDataProvider>();
@@ -41,8 +37,8 @@ class IndoorRoutingMainMenu extends StatelessWidget {
     final VenueGeometry? selectedSource = provider.selectedSource;
     final VenueGeometry? selectedDestination = provider.selectedDestination;
 
-    final String sourceLabel = selectedSource != null ? _geometryLabel(selectedSource) : '';
-    final String destinationLabel = selectedDestination != null ? _geometryLabel(selectedDestination) : '';
+    final String sourceLabel = selectedSource != null ? geometryDisplayTitle(selectedSource) : '';
+    final String destinationLabel = selectedDestination != null ? geometryDisplayTitle(selectedDestination) : '';
 
     return Positioned(
       bottom: 0,

@@ -591,7 +591,7 @@ class TruckGuidanceExample {
 
   void onShowRouteButtonClicked() {
     _routingEngine?.calculateRouteWithRoutingOptions(_getCurrentWaypoints(), _createTruckRoutingOptions(), (routingError, routes) {
-      _handleTruckRouteResults(routingError, routes!);
+      _handleTruckRouteResults(routingError, routes);
     });
   }
 
@@ -625,14 +625,14 @@ class TruckGuidanceExample {
     );
   }
 
-  void _handleTruckRouteResults(RoutingError? routingError, List<Route> routes) {
+  void _handleTruckRouteResults(RoutingError? routingError, List<Route>? routes) {
     if (routingError != null) {
       _showDialog("Error while calculating a truck route: ", routingError.toString());
       return;
     }
 
     // When no error, routes contains at least one route.
-    lastCalculatedTruckRoute = routes.first;
+    lastCalculatedTruckRoute = routes!.first;
 
     // Search along the route for truck amenities.
     _searchAlongARoute(lastCalculatedTruckRoute!);

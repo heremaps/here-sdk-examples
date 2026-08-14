@@ -60,7 +60,7 @@ class VenueTapController {
     });
     venueMap?.addLevelSelectionListener(levelChangeListener);
     venueMap?.addDrawingSelectionListener(drawingChangeListener);
-    markerImage = MapImage.withFilePathAndWidthAndHeight('assets/ic_route_start.png', 100, 100);
+    markerImage = MapImage.withFilePathAndWidthAndHeight('assets/indoor_route_end.svg', 100, 100);
   }
 
   HereMapController? hereMapController;
@@ -75,6 +75,8 @@ class VenueTapController {
   final Anchor2D anchor2D = Anchor2D.withHorizontalAndVertical(0.5, 1.0);
   late VenueLevelSelectionListener levelChangeListener;
   late VenueDrawingSelectionListener drawingChangeListener;
+  // When true, onLevelChanged skips deselect during intentional list selection.
+  bool _isSelectingFromList = false;
 
   static const int _alpha = 255;
 
@@ -126,6 +128,16 @@ class VenueTapController {
         venueMap?.selectedVenue = venue;
       }
     }
+  }
+
+  /// Selects a geometry from the bottom sheet list with a guard to prevent
+  /// the deselect-reselect cycle when level/drawing changes.
+  void selectGeometryFromList(VenueGeometry geometry) {
+    _isSelectingFromList = true;
+    drawingChangeBasedOnGeometrySelection(geometry);
+    levelChangeBasedOnGeometrySelection(geometry);
+    selectGeometry(geometry, geometry.center, true);
+    _isSelectingFromList = false;
   }
 
   void selectGeometry(VenueGeometry geometry, GeoCoordinates position, bool center) {
@@ -228,6 +240,9 @@ class VenueTapController {
   }
 
   void onLevelChanged(Venue venue) {
+    // Skip deselect when selecting from list (level change is intentional).
+    if (_isSelectingFromList) return;
+
     if (routingDataProviderInterface.isRoutingMainMenuUIActiveOnMap() ||
         routingDataProviderInterface.isRoutingSpaceSelectionUIActiveOnMap()) {
       routingDataProviderInterface.handleDestinationMarkerOnMapInLevelChange();
