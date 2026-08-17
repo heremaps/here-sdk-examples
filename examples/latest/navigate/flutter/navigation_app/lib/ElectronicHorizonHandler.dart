@@ -244,8 +244,9 @@ class ElectronicHorizonHandler {
 
                 final result = _electronicHorizonDataLoader.getSegment(directedOCMSegmentId);
                 if (result.errorCode == null && result.segmentData != null) {
-                  if (_isVisualizationEnabled) {
-                    _drawSegmentPolyline(directedOCMSegmentId.id.localId, result.segmentData!.polyline, branchingPath.level);
+                  final polyline = result.segmentData!.polyline;
+                  if (_isVisualizationEnabled && polyline != null) {
+                    _drawSegmentPolyline(directedOCMSegmentId.id.localId, polyline, branchingPath.level);
                   }
                 }
               }
@@ -334,9 +335,11 @@ class ElectronicHorizonHandler {
   void _logRoadSigns(SegmentData segmentData, DirectedOCMSegmentId directedOCMSegmentId) {
     List<RoadSign>? roadSigns = segmentData.roadSigns;
     if (roadSigns == null || roadSigns.isEmpty) return;
+    final polyline = segmentData.polyline;
+    if (polyline == null) return;
     for (RoadSign roadSign in roadSigns) {
       GeoCoordinates roadSignCoordinates = _getGeoCoordinatesFromOffsetInMeters(
-          segmentData.polyline, roadSign.offsetInMeters.toDouble());
+          polyline, roadSign.offsetInMeters.toDouble());
       print('$_logTag: RoadSign: type = ${roadSign.roadSignType.name}, '
           'offsetInMeters = ${roadSign.offsetInMeters}, '
           'lat/lon: ${roadSignCoordinates.latitude}/${roadSignCoordinates.longitude}, '

@@ -121,6 +121,9 @@ class _EVRoutingAppState extends State<EVRoutingApp> {
   }
 
   void _disposeHERESDK() async {
+    _evRoutingExample?.dispose();
+    _evRoutingExample = null;
+
     // Free HERE SDK resources before the application shuts down.
     await SDKNativeEngine.sharedInstance?.dispose();
     SdkContext.release();

@@ -21,6 +21,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:indoor_map_app/indoor_map_tokens.dart';
 import 'package:indoor_map_app/indoor_routing_data_provider.dart';
+import 'package:indoor_map_app/venue_data_provider.dart';
 import 'package:indoor_map_app/widgets/app_list_tile_detailed.dart';
 import 'package:indoor_map_app/widgets/app_search_field.dart';
 import 'package:here_sdk/venue.data.dart';
@@ -97,14 +98,12 @@ class _IndoorRoutingSpaceSelectionListState extends State<IndoorRoutingSpaceSele
                     final VenueGeometry? space = geometryList?[index];
                     if (space == null) return const SizedBox.shrink();
 
-                    final String spaceName = space.name.isNotEmpty
-                        ? '${space.name}, ${space.level.name}'
-                        : '${space.identifier}, ${space.level.name}';
-                    final String address = space.internalAddress?.address ?? '';
+                    final String spaceName = geometryDisplayTitle(space);
+                    final String? address = geometryDisplayDescription(space);
 
                     return AppListTileDetailed(
                       title: spaceName,
-                      subtitle: address.isNotEmpty ? address : null,
+                      subtitle: address,
                       leadingAccessory: Image.asset(
                         'assets/space_icon.png',
                         width: IndoorMapTokens.size32,

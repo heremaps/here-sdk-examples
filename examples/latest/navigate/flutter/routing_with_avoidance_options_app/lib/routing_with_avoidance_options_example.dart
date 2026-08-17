@@ -279,9 +279,15 @@ class RoutingWithAvoidanceOptionsExample {
     metadata.setString(_metadataSegmentIdKey, segmentReference.segmentId);
     metadata.setDouble(_metadataTilePartitionIdKey, segmentReference.tilePartitionId.toDouble());
 
+    final segmentGeoPolyline = segmentData.polyline;
+    if (segmentGeoPolyline == null) {
+      debugPrint('Segment polyline is null for segment ${segmentReference.segmentId}.');
+      return;
+    }
+
     final segmentPolyline = createMapPolyline(
       const Color.fromARGB(255, 255, 0, 0), // Red color
-      segmentData.polyline,
+      segmentGeoPolyline,
     );
 
     if (segmentPolyline == null) {

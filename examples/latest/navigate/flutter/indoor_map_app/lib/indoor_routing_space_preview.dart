@@ -21,6 +21,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:indoor_map_app/indoor_map_tokens.dart';
 import 'package:indoor_map_app/indoor_routing_data_provider.dart';
+import 'package:indoor_map_app/venue_data_provider.dart';
 import 'package:here_sdk/venue.data.dart';
 
 /// Bottom panel shown when a geometry is tapped, displaying its name, address,
@@ -35,9 +36,7 @@ class IndoorRoutingSpacePreview extends StatelessWidget {
     final VenueGeometry? destination = provider.selectedDestination;
     if (destination == null) return const SizedBox.shrink();
 
-    final String name = destination.name.isNotEmpty
-        ? '${destination.name}, ${destination.level.name}'
-        : '${destination.identifier}, ${destination.level.name}';
+    final String name = geometryDisplayTitle(destination);
     final String? address = destination.internalAddress?.address;
 
     return Positioned(

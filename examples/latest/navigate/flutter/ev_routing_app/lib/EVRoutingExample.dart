@@ -17,6 +17,8 @@
  * License-Filename: LICENSE
  */
 
+import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -39,6 +41,10 @@ typedef ShowDialogFunction = void Function(String title, String message);
 // (indicated with green charging icon). You can also visualize the reachable area from your starting point
 // (isoline routing).
 class EVRoutingExample {
+  static const int _evRouteMaxRetries = 4;
+  static const Duration _evRouteRetryDelay = Duration(milliseconds: 750);
+  static const Duration _connectivityLookupTimeout = Duration(milliseconds: 800);
+
   final HereMapController _hereMapController;
   late MapCamera _camera;
   List<MapMarker> _mapMarkers = [];
@@ -52,6 +58,9 @@ class EVRoutingExample {
   final ShowDialogFunction _showDialog;
   List<String> chargingStationsIDs = [];
   TaskHandle? _currentRouteCalculationTask;
+  Timer? _evRouteRetryTimer;
+  bool _isEvRouteRetryInProgress = false;
+  bool _isDisposed = false;
   Waypoint? _lastPlannedChargingWaypoint;
 
   // Metadata keys used when picking a charging station on the map.
@@ -142,6 +151,8 @@ class EVRoutingExample {
       return;
     }
 
+    _isEvRouteRetryInProgress = true;
+
     clearMap();
     chargingStationsIDs.clear();
 
@@ -154,11 +165,20 @@ class EVRoutingExample {
     _lastPlannedChargingWaypoint = plannedChargingStopWaypoint;
     List<Waypoint> waypoints = [startWaypoint, plannedChargingStopWaypoint, destinationWaypoint];
 
+    _calculateEvRouteWithRetry(waypoints, _evRouteMaxRetries);
+  }
+
+  void _calculateEvRouteWithRetry(List<Waypoint> waypoints, int remainingRetries) {
+    if (_isDisposed) {
+      return;
+    }
+
     _currentRouteCalculationTask = _routingEngine.calculateRouteWithRoutingOptions(waypoints, _getEVRoutingOptions(), (
       RoutingError? routingError,
       List<here.Route>? routeList,
     ) {
       if (routingError == null) {
+        _isEvRouteRetryInProgress = false;
         // When error is null, the list is guaranteed to be non empty.
         here.Route route = routeList!.first;
         _showRouteOnMap(route);
@@ -171,13 +191,70 @@ class EVRoutingExample {
 
         _searchAlongARoute(route);
       } else {
-        var error = routingError.toString();
-        _showDialog('Error', 'Error while calculating a route: $error');
+        _handleEvRouteErrorWithRetry(waypoints, remainingRetries, routingError);
       }
     });
   }
 
-  bool get _isRouteCalculationRunning => _currentRouteCalculationTask?.isFinished == false;
+  Future<void> _handleEvRouteErrorWithRetry(
+    List<Waypoint> waypoints,
+    int remainingRetries,
+    RoutingError routingError,
+  ) async {
+    if (_isDisposed) {
+      return;
+    }
+
+    if (remainingRetries > 0 && await _isInternetAvailable()) {
+      if (_isDisposed) {
+        return;
+      }
+      if (!_restartRoutingEngine()) {
+        return;
+      }
+
+      _evRouteRetryTimer?.cancel();
+      _evRouteRetryTimer = Timer(_evRouteRetryDelay, () {
+        _calculateEvRouteWithRetry(waypoints, remainingRetries - 1);
+      });
+      return;
+    }
+
+    _isEvRouteRetryInProgress = false;
+    var error = routingError.toString();
+    _showDialog('Error', 'Error while calculating a route: $error');
+  }
+
+  bool _restartRoutingEngine() {
+    try {
+      _routingEngine = RoutingEngine();
+      return true;
+    } on InstantiationException {
+      _isEvRouteRetryInProgress = false;
+      _showDialog('Error', 'Re-initialization of RoutingEngine failed.');
+      return false;
+    }
+  }
+
+  Future<bool> _isInternetAvailable() async {
+    try {
+      final result = await InternetAddress.lookup('here.com').timeout(_connectivityLookupTimeout);
+      return result.isNotEmpty && result.first.rawAddress.isNotEmpty;
+    } on SocketException {
+      return false;
+    } on TimeoutException {
+      return false;
+    }
+  }
+
+  bool get _isRouteCalculationRunning =>
+      _isEvRouteRetryInProgress || (_currentRouteCalculationTask?.isFinished == false);
+
+  void dispose() {
+    _isDisposed = true;
+    _isEvRouteRetryInProgress = false;
+    _evRouteRetryTimer?.cancel();
+  }
 
   // Simulate a user planned stop based on random coordinates.
   Waypoint createUserPlannedChargingStopWaypoint() {
