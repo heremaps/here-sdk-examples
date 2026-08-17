@@ -250,6 +250,10 @@ class IndoorRoutingDataProvider extends ChangeNotifier implements IndoorRoutingD
     super.dispose();
   }
 
+  void resetRoutingProviderParam() {
+    _resetParams();
+  }
+
   void _resetParams() {
     venueEngine = null;
     selectedVenue = null;
@@ -315,45 +319,58 @@ class IndoorRoutingDataProvider extends ChangeNotifier implements IndoorRoutingD
     notifyListeners();
   }
 
-  void _showRouteInMap(IndoorRoutingError? indoorRoutingError, List<routing.Route>? routeList, List<IndoorRouteNotice>? routeNotices) {
+  void _showRouteInMap(
+    IndoorRoutingError? indoorRoutingError,
+    List<routing.Route>? routeList,
+    List<IndoorRouteNotice>? routeNotices,
+  ) {
+    // Always dismiss loader first — prevents infinite loader in all code paths.
     showProgressBarOnMap(false);
     controller.hideRoute();
+
+    // Discard stale results if user already navigated away.
     if (currentState == RoutingUIState.hidden || currentState == RoutingUIState.spacePreview) {
       return;
     }
-    if (indoorRoutingError == null) {
-      if (routeList != null && routeList.isNotEmpty) {
-        final routing.Route route = routeList.first;
-        if (route.lengthInMeters <= 0) {
-          setRoutingWarningMsg('Source and destination are the same');
-          return;
-        }
-        controller.showRoute(route, routeStyle);
 
-        if (selectedVenue?.selectedLevel != selectedSource?.level) {
-          selectedVenue?.selectedLevel = selectedSource!.level;
-          _venueDataProviderInterface.onLevelChangeAfterGeometrySelection(
-            selectedVenue!.selectedDrawing.levels.length - 1 - selectedVenue!.selectedLevelIndex,
-          );
-        }
-        _mapController.camera.lookAtPoint(srcPosition!);
-        _removeDstMarker();
-        isRouteRenderedOnMap = true;
-        currentState = RoutingUIState.mainRoutingMenu;
-        notifyListeners();
-      } else {
-        isRouteRenderedOnMap = false;
-        setRoutingWarningMsg('No route found.');
-      }
-    } else if (indoorRoutingError != null) {
+    // Show error dialog if routing error is present.
+    if (indoorRoutingError != null) {
       isRouteRenderedOnMap = false;
-      final String errorMsg = _routingErrorToString(indoorRoutingError);
-      setRoutingWarningMsg('Route calculation failed: $errorMsg');
+      setRoutingWarningMsg('Route calculation failed: ${_routingErrorToString(indoorRoutingError)}');
+      return;
     }
+
+    // Show notice dialog if route notices are present.
     if (routeNotices != null && routeNotices.isNotEmpty) {
       isRouteRenderedOnMap = false;
-      final String noticeMessages = routeNotices.map((notice) => notice.title).join('\n');
-      setRoutingWarningMsg('Route notices: $noticeMessages');
+      final String noticeMessages = routeNotices.map((IndoorRouteNotice notice) => notice.title).join('\n');
+      setRoutingWarningMsg('Route notices:\n$noticeMessages');
+      return;
+    }
+
+    // No error, no notices — render the route.
+    if (routeList != null && routeList.isNotEmpty) {
+      final routing.Route route = routeList.first;
+      if (route.lengthInMeters <= 0) {
+        setRoutingWarningMsg('Source and destination are the same');
+        return;
+      }
+      controller.showRoute(route, routeStyle);
+
+      if (selectedVenue?.selectedLevel != selectedSource?.level) {
+        selectedVenue?.selectedLevel = selectedSource!.level;
+        _venueDataProviderInterface.onLevelChangeAfterGeometrySelection(
+          selectedVenue!.selectedDrawing.levels.length - 1 - selectedVenue!.selectedLevelIndex,
+        );
+      }
+      _mapController.camera.lookAtPoint(srcPosition!);
+      _removeDstMarker();
+      isRouteRenderedOnMap = true;
+      currentState = RoutingUIState.mainRoutingMenu;
+      notifyListeners();
+    } else {
+      isRouteRenderedOnMap = false;
+      setRoutingWarningMsg('No route found.');
     }
   }
 

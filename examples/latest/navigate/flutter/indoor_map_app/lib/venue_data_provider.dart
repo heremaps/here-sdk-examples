@@ -18,7 +18,6 @@
  */
 
 import 'package:flutter/cupertino.dart';
-import 'package:indoor_map_app/indoor_bottom_sheet_data_notifier.dart';
 import 'package:indoor_map_app/indoor_events.dart';
 import 'package:indoor_map_app/indoor_topology_info.dart';
 import 'package:indoor_map_app/venue_data_provider_interface.dart';
@@ -30,9 +29,24 @@ import 'package:here_sdk/venue.data.dart';
 import 'package:here_sdk/venue.service.dart';
 import 'package:here_sdk/venue.style.dart';
 
+// Represents which list is currently shown in the venue bottom sheet.
+enum VenueSheetMode { venueList, geometryList }
+
+// Returns a display title for a geometry: "spaceName, levelName".
+String geometryDisplayTitle(VenueGeometry? geometry) {
+  if (geometry == null) return '';
+  final String spaceName = geometry.name.isNotEmpty ? geometry.name : geometry.identifier;
+  return '$spaceName, ${geometry.level.name}';
+}
+
+// Returns internal address string for a geometry, or null if not available.
+String? geometryDisplayDescription(VenueGeometry geometry) {
+  return geometry.internalAddress != null ? 'Address: ${geometry.internalAddress!.address}' : null;
+}
+
 class VenueDataProvider extends ChangeNotifier implements VenueDataProviderInterface {
   VenueEngine? venueEngine;
-  late final VenueMap venueMap;
+  late VenueMap venueMap;
   Venue? selectedVenue;
   bool isVenueLoading = false;
   bool venueLoadedOnMap = false;
@@ -48,7 +62,7 @@ class VenueDataProvider extends ChangeNotifier implements VenueDataProviderInter
   bool showVenueDrawingList = false;
   List<VenueDrawing>? venueDrawingList;
 
-  // Geometry list shown in bottom sheet (names + addresses).
+  // Geometry list (kept for routing space selection compatibility).
   List<String> geometryList = <String>[];
   List<String?> geometryInternalAddressList = <String?>[];
   bool isVenueListAvailable = false;
@@ -62,6 +76,17 @@ class VenueDataProvider extends ChangeNotifier implements VenueDataProviderInter
   bool isTopologyPresent = false;
   bool topologyVisibleOnVenue = false;
   IndoorTopologyInfo? topologyInfo;
+
+  // Sheet display state — drives VenueBottomSheetWidget via provider.
+  VenueSheetMode sheetMode = VenueSheetMode.venueList;
+  List<String> sheetTitleList = <String>[];
+  List<String?> sheetDescriptionList = <String?>[];
+  bool isSingleGeometrySelected = false;
+
+  // Cached full geometry data. Populated once on venue load, reused for resets.
+  List<VenueGeometry> _cachedFullGeometryList = <VenueGeometry>[];
+  List<String> _cachedFullTitleList = <String>[];
+  List<String?> _cachedFullDescriptionList = <String?>[];
 
   @override
   void dispose() {
@@ -89,6 +114,20 @@ class VenueDataProvider extends ChangeNotifier implements VenueDataProviderInter
     isTopologyPresent = false;
     topologyVisibleOnVenue = false;
     topologyInfo = null;
+    venueTapController = null;
+    sheetMode = VenueSheetMode.venueList;
+    sheetTitleList = <String>[];
+    sheetDescriptionList = <String?>[];
+    isSingleGeometrySelected = false;
+    _cachedFullGeometryList = <VenueGeometry>[];
+    _cachedFullTitleList = <String>[];
+    _cachedFullDescriptionList = <String?>[];
+  }
+
+  void setAuthenticationFailed(bool val) {
+    if (isAuthenticationFailed == val) return;
+    isAuthenticationFailed = val;
+    notifyListeners();
   }
 
   void setVenueEngine(VenueEngine engine) {
@@ -115,7 +154,20 @@ class VenueDataProvider extends ChangeNotifier implements VenueDataProviderInter
     if (currSelectedDrawingIndx == newIndex) return;
     currSelectedDrawingIndx = newIndex;
     updateVenueLevelInfo();
-    setMainLevel();
+
+    // Sync level index from SDK's actual selection instead of always picking main level.
+    if (selectedVenue != null && levelList != null && levelList!.isNotEmpty) {
+      final int sdkSelectedLevelIndex = selectedVenue!.selectedLevelIndex;
+      if (sdkSelectedLevelIndex >= 0 && sdkSelectedLevelIndex <= maxLevelIndex) {
+        currSelectedLevelIndx = maxLevelIndex - sdkSelectedLevelIndex;
+      } else {
+        final int matchedLevelIndx = levelList!.indexWhere(
+          (VenueLevel l) => l.identifier == selectedVenue!.selectedLevel.identifier,
+        );
+        if (matchedLevelIndx != -1) currSelectedLevelIndx = matchedLevelIndx;
+      }
+    }
+
     notifyListeners();
   }
 
@@ -253,12 +305,13 @@ class VenueDataProvider extends ChangeNotifier implements VenueDataProviderInter
     currSelectedDrawingIndx = -1;
     venueDrawingList = null;
     geometryList = <String>[];
-    geometryInternalAddressList = <String>[];
+    geometryInternalAddressList = <String?>[];
     venueGeometryList = <VenueGeometry>[];
-    IndoorBottomSheetDataNotifier.showVenueList(
-      venueNameList: filteredVenueNameList.updatedNameList.value,
-      venueIdList: filteredVenueIdList.updatedIdList.value,
-    );
+    _cachedFullGeometryList = <VenueGeometry>[];
+    _cachedFullTitleList = <String>[];
+    _cachedFullDescriptionList = <String?>[];
+    // Revert back to Venue List.
+    showVenueList();
     isTopologyPresent = false;
     topologyVisibleOnVenue = false;
     topologyInfo = null;
@@ -270,64 +323,92 @@ class VenueDataProvider extends ChangeNotifier implements VenueDataProviderInter
     notifyListeners();
   }
 
-  void updateGeometryListInfo() {
-    geometryList = <String>[];
-    geometryInternalAddressList = <String?>[];
-    venueGeometryList = <VenueGeometry>[];
-    final VenueModel? venueModel = venueEngine?.venueMap.selectedVenue?.venueModel;
-    if (venueModel == null) return;
-    final List<VenueGeometry> allGeometries = venueModel.geometries;
-    venueGeometryList = allGeometries;
-    for (final VenueGeometry geometry in allGeometries) {
-      String geometryName = geometry.name.isNotEmpty ? geometry.name : geometry.identifier;
-      geometryName += ', ${geometry.level.name}';
-      final String? internalAddress = geometry.internalAddress != null
-          ? 'Address: ${geometry.internalAddress!.address}'
-          : null;
-      geometryList.add(geometryName);
-      geometryInternalAddressList.add(internalAddress);
-    }
-    IndoorBottomSheetDataNotifier.showGeometryList(
-      geometryList: geometryList,
-      internalAddressList: geometryInternalAddressList,
-    );
+  // ---------------------------------------------------------------------------
+  // Sheet data methods (replaces IndoorBottomSheetDataNotifier)
+  // ---------------------------------------------------------------------------
+
+  void showVenueList() {
+    sheetMode = VenueSheetMode.venueList;
+    sheetTitleList = filteredVenueNameList.updatedNameList.value;
+    sheetDescriptionList = filteredVenueIdList.updatedIdList.value;
+    isSingleGeometrySelected = false;
+  }
+
+  void refreshVenueList() {
+    showVenueList();
     notifyListeners();
   }
 
-  void filterGeometryListInfo(String query) {
-    geometryList.clear();
-    geometryInternalAddressList.clear();
-    venueGeometryList.clear();
-    final VenueModel? venueModel = venueMap.selectedVenue?.venueModel;
-    if (venueModel == null) return;
+  void showAllGeometries() {
+    sheetMode = VenueSheetMode.geometryList;
+    sheetTitleList = List<String>.from(_cachedFullTitleList);
+    sheetDescriptionList = List<String?>.from(_cachedFullDescriptionList);
+    isSingleGeometrySelected = false;
+    venueGeometryList = List<VenueGeometry>.from(_cachedFullGeometryList);
+    geometryList = List<String>.from(_cachedFullTitleList);
+    geometryInternalAddressList = List<String?>.from(_cachedFullDescriptionList);
+  }
 
-    final List<int> indexList = <int>[];
-    final List<VenueGeometry> allGeometries = venueModel.geometries;
-    venueGeometryList = allGeometries;
-    int indx = 0;
-    for (final VenueGeometry geometry in allGeometries) {
-      String geometryName = geometry.name.isNotEmpty ? geometry.name : geometry.identifier;
-      geometryName += ', ${geometry.level.name}';
-      final String? internalAddress = geometry.internalAddress != null
-          ? 'Address: ${geometry.internalAddress!.address}'
-          : null;
-      geometryList.add(geometryName);
-      geometryInternalAddressList.add(internalAddress);
-      if (geometryName.toLowerCase().contains(query)) {
-        indexList.add(indx);
-      }
-      indx++;
+  void showSingleGeometry(VenueGeometry geometry) {
+    sheetMode = VenueSheetMode.geometryList;
+    final String title = geometryDisplayTitle(geometry);
+    final String? description = geometryDisplayDescription(geometry);
+    sheetTitleList = <String>[title];
+    sheetDescriptionList = <String?>[description];
+    isSingleGeometrySelected = true;
+    venueGeometryList = <VenueGeometry>[geometry];
+    geometryList = <String>[title];
+    geometryInternalAddressList = <String?>[description];
+  }
+
+  void filterGeometries(String query) {
+    if (query.isEmpty) {
+      showAllGeometries();
+      notifyListeners();
+      return;
     }
 
-    venueGeometryList = indexList.map((int i) => venueGeometryList[i]).toList();
-    geometryList = indexList.map((int i) => geometryList[i]).toList();
-    geometryInternalAddressList = indexList.map((int i) => geometryInternalAddressList[i]).toList();
+    final List<int> matchingIndices = <int>[];
+    for (int i = 0; i < _cachedFullTitleList.length; i++) {
+      if (_cachedFullTitleList[i].toLowerCase().contains(query)) {
+        matchingIndices.add(i);
+      }
+    }
 
-    IndoorBottomSheetDataNotifier.showGeometryList(
-      geometryList: geometryList,
-      internalAddressList: geometryInternalAddressList,
-    );
+    sheetMode = VenueSheetMode.geometryList;
+    sheetTitleList = matchingIndices.map((int i) => _cachedFullTitleList[i]).toList();
+    sheetDescriptionList = matchingIndices.map((int i) => _cachedFullDescriptionList[i]).toList();
+    isSingleGeometrySelected = false;
+    venueGeometryList = matchingIndices.map((int i) => _cachedFullGeometryList[i]).toList();
+    geometryList = List<String>.from(sheetTitleList);
+    geometryInternalAddressList = List<String?>.from(sheetDescriptionList);
     notifyListeners();
+  }
+
+  void resetGeometryList() {
+    showAllGeometries();
+    notifyListeners();
+  }
+
+  void _populateGeometryCache() {
+    final VenueModel? venueModel = venueEngine?.venueMap.selectedVenue?.venueModel;
+    if (venueModel == null) {
+      _cachedFullGeometryList = <VenueGeometry>[];
+      _cachedFullTitleList = <String>[];
+      _cachedFullDescriptionList = <String?>[];
+      return;
+    }
+    _cachedFullGeometryList = venueModel.geometries;
+    _cachedFullTitleList = _cachedFullGeometryList.map(geometryDisplayTitle).toList();
+    _cachedFullDescriptionList = _cachedFullGeometryList
+        .map((VenueGeometry g) => geometryDisplayDescription(g))
+        .toList();
+    debugPrint('VenueDataProvider: Geometry cache populated, count=${_cachedFullGeometryList.length}');
+  }
+
+  void updateGeometryListInfo() {
+    _populateGeometryCache();
+    showAllGeometries();
   }
 
   void setTopologyVisibilityOnVenue(bool val) {
@@ -406,38 +487,20 @@ class VenueDataProvider extends ChangeNotifier implements VenueDataProviderInter
   @override
   void onVenueInfoListLoadSuccess() {
     isVenueListAvailable = true;
-    IndoorBottomSheetDataNotifier.showVenueList(
-      venueNameList: filteredVenueNameList.updatedNameList.value,
-      venueIdList: filteredVenueIdList.updatedIdList.value,
-    );
+    showVenueList();
     notifyListeners();
   }
 
   @override
   void showTappedGeometryInfo(VenueGeometry geometry) {
-    geometryList = <String>[];
-    geometryInternalAddressList = <String?>[];
-    venueGeometryList = <VenueGeometry>[];
-    String geometryName = geometry.name.isNotEmpty ? geometry.name : geometry.identifier;
-    geometryName += ', ${geometry.level.name}';
-    final String? internalAddress = geometry.internalAddress != null
-        ? 'Address: ${geometry.internalAddress!.address}'
-        : null;
-    geometryList.add(geometryName);
-    geometryInternalAddressList.add(internalAddress);
-    venueGeometryList = <VenueGeometry>[geometry];
-    IndoorBottomSheetDataNotifier.showGeometryList(
-      geometryList: geometryList,
-      internalAddressList: geometryInternalAddressList,
-      isSingleGeometryItem: true,
-    );
+    showSingleGeometry(geometry);
     notifyListeners();
   }
 
   @override
   void onDeselectGeometryFromTapController() {
     if (venueEngine?.venueMap.selectedVenue != null) {
-      updateGeometryListInfo();
+      resetGeometryList();
     }
   }
 

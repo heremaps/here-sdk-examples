@@ -280,7 +280,8 @@ class ElectronicHorizonHandler(private val mapView: MapView) {
                                     if (result.errorCode == null) {
                                         val segmentData = checkNotNull(result.segmentData)
                                         if (isVisualizationEnabled) {
-                                            drawSegmentPolyline(localId, segmentData.polyline, branchingPath.level)
+                                            val polyline = segmentData.polyline ?: continue
+                                            drawSegmentPolyline(localId, polyline, branchingPath.level)
                                         }
                                     }
                                 }
@@ -368,9 +369,10 @@ class ElectronicHorizonHandler(private val mapView: MapView) {
     private fun logRoadSigns(segmentData: SegmentData, directedOCMSegmentId: DirectedOCMSegmentId) {
         val roadSigns: List<RoadSign>? = segmentData.roadSigns
         if (roadSigns == null || roadSigns.isEmpty()) return
+        val polyline = segmentData.polyline ?: return
         for (roadSign in roadSigns) {
             val roadSignCoordinates: GeoCoordinates = getGeoCoordinatesFromOffsetInMeters(
-                segmentData.polyline,
+                polyline,
                 roadSign.offsetInMeters.toDouble()
             )
             Log.d(

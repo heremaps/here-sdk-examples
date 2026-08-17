@@ -248,10 +248,15 @@ class RoutingWithAvoidanceOptionsExample : LongPressDelegate, TapDelegate {
             let metadata = Metadata()
             metadata.setString(key: metadataSegmentIdKey, value: segmentReference.segmentId)
             metadata.setInteger(key: metadataTilePartitionIdKey, value: Int32(segmentReference.tilePartitionId))
+
+            guard let segmentGeoPolyline = segmentData.polyline else {
+                print("Skipping segment polyline: segment geometry is nil.")
+                return
+            }
             
             if let segmentPolyline = createMapPolyline(
                 color: UIColor(red: 1.0, green: 0.0, blue: 0.0, alpha: 1.0),
-                geoPolyline: segmentData.polyline
+                geoPolyline: segmentGeoPolyline
             ) {
                 segmentPolyline.metadata = metadata
                 mapView.mapScene.addMapPolyline(segmentPolyline)

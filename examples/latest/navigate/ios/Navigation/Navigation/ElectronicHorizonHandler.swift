@@ -262,11 +262,12 @@ class ElectronicHorizonHandler {
                                 for branchSegment in branchingPath.segments {
                                     guard let directedOCMSegmentId = branchSegment.segmentId.ocmSegmentId else { continue }
                                     let result = handler.electronicHorizonDataLoader.getSegment(segmentId: directedOCMSegmentId)
-                                    if result.errorCode == nil, let segmentData = result.segmentData {
+                                    if result.errorCode == nil, let segmentData = result.segmentData, let polyline = segmentData.polyline {
                                         if handler.isVisualizationEnabled {
+                                            
                                             handler.drawSegmentPolyline(
                                                 localId: Int64(directedOCMSegmentId.id.localId),
-                                                geoPolyline: segmentData.polyline,
+                                                geoPolyline: polyline,
                                                 level: Int(branchingPath.level)
                                             )
                                         }
@@ -354,11 +355,13 @@ class ElectronicHorizonHandler {
     private func logRoadSigns(segmentData: SegmentData, directedOCMSegmentId: DirectedOCMSegmentId) {
         guard let roadSigns = segmentData.roadSigns, !roadSigns.isEmpty else { return }
         for roadSign in roadSigns {
-            let roadSignCoordinates = getGeoCoordinatesFromOffsetInMeters(
-                geoPolyline: segmentData.polyline,
-                offsetInMeters: Double(roadSign.offsetInMeters)
-            )
-            print("\(ElectronicHorizonHandler.LOG_TAG): RoadSign: type = \(roadSign.roadSignType.rawValue), offsetInMeters = \(roadSign.offsetInMeters), lat/lon: \(roadSignCoordinates.latitude)/\(roadSignCoordinates.longitude), segmentId = \(directedOCMSegmentId.id.localId)")
+            if let polyline = segmentData.polyline {
+                let roadSignCoordinates = getGeoCoordinatesFromOffsetInMeters(
+                    geoPolyline: polyline,
+                    offsetInMeters: Double(roadSign.offsetInMeters)
+                )
+                print("\(ElectronicHorizonHandler.LOG_TAG): RoadSign: type = \(roadSign.roadSignType.rawValue), offsetInMeters = \(roadSign.offsetInMeters), lat/lon: \(roadSignCoordinates.latitude)/\(roadSignCoordinates.longitude), segmentId = \(directedOCMSegmentId.id.localId)")
+            }
         }
     }
 

@@ -46,7 +46,6 @@ import 'package:here_sdk/venue.dart';
 /// [MultiProvider] and renders the HERE map with all indoor-map overlays
 /// (venue list / geometry bottom sheet, routing panels, level/drawing switchers,
 /// topology info).
-///
 class IndoorMapScreen extends StatefulWidget {
   const IndoorMapScreen({super.key});
 
@@ -55,6 +54,8 @@ class IndoorMapScreen extends StatefulWidget {
 }
 
 class _IndoorMapScreenState extends State<IndoorMapScreen> {
+  static String get _currClassName => 'IndoorMapScreen';
+
   // -------- Map camera --------
   static const double _distanceToEarthInMeters = 500;
   static final GeoCoordinates _defaultGeoCoords = GeoCoordinates(52.530932, 13.384915);
@@ -66,8 +67,7 @@ class _IndoorMapScreenState extends State<IndoorMapScreen> {
   final double _watermarkV = 0.84;
 
   // -------- VenueEngine wrapper --------
-  late IndoorVenueEngine _indoorVenueEngine;
-  bool _isVenueEngineInitialized = false;
+  IndoorVenueEngine? _indoorVenueEngine;
 
   VenueEngine? _venueEngine;
   late VenueMap _venueMap;
@@ -112,12 +112,12 @@ class _IndoorMapScreenState extends State<IndoorMapScreen> {
 
   @override
   void dispose() {
-    if (_isVenueEngineInitialized) {
-      _indoorVenueEngine.dispose();
-    }
+    _indoorVenueEngine?.dispose();
+    _indoorVenueEngine = null;
     _venueEngine = null;
     _venueBottomSheetController.dispose();
     _venueDataProvider.resetDataProviderParam();
+    _routingDataProvider.resetRoutingProviderParam();
     venueIdList.dispose();
     venueNameList.dispose();
     filteredVenueIdList.dispose();
@@ -151,24 +151,45 @@ class _IndoorMapScreenState extends State<IndoorMapScreen> {
         providerInterface: _venueDataProvider,
         routingDataProviderInterface: _routingDataProvider,
         onAuthErrorCallback: (String reason) {
-            _venueDataProvider.isAuthenticationFailed = true;
-            _venueDataProvider.notifyListeners();
+          _venueDataProvider.setAuthenticationFailed(true);
+          if (mounted) {
             _showErrorDialog('Authentication Error', reason);
+          }
         },
       );
-      _indoorVenueEngine.createVenueEngine();
-      _indoorVenueEngine.venueEngineInitCompleted.then((_) => _onVenueEngineReady());
+      _indoorVenueEngine!.createVenueEngine().then((IndoorVenueEngineState? venueEngineState) {
+        if (!mounted) {
+          debugPrint('$_currClassName: Cannot bind venue engine state because widget is not mounted.');
+          return;
+        }
+        if (venueEngineState == null) {
+          // If authentication already failed, the error popup is already shown
+          // via onAuthErrorCallback — no need for a second generic error.
+          if (_venueDataProvider.isAuthenticationFailed) {
+            debugPrint('$_currClassName: VenueEngine creation skipped due to authentication failure.');
+            return;
+          }
+          debugPrint('$_currClassName: VenueEngine creation failed due to some unexpected error.');
+          _venueDataProvider.setVenueErrorData(
+            VenueErrorData(
+              errorType: VenueErrorType.venueEngineFailure,
+              title: _currClassName,
+              errorMessage: 'VenueEngine creation failed due to some unexpected error.',
+            ),
+          );
+          return;
+        }
+        _bindVenueEngineState(venueEngineState);
+      });
     } on InstantiationException catch (e) {
       _showErrorDialog('Venue engine error', 'Could not create Venue Engine: $e');
     }
   }
 
-  void _onVenueEngineReady() {
-    if (!mounted) return;
-    _venueEngine = _indoorVenueEngine.venueEngine!;
-    _venueMap = _venueEngine!.venueMap;
-    _venueTapController = _indoorVenueEngine.venueTapController!;
-    _isVenueEngineInitialized = true;
+  void _bindVenueEngineState(IndoorVenueEngineState venueEngineState) {
+    _venueEngine = venueEngineState.venueEngine;
+    _venueMap = venueEngineState.venueMap;
+    _venueTapController = venueEngineState.venueTapController;
 
     _venueDataProvider
       ..setVenueEngine(_venueEngine!)
@@ -224,18 +245,9 @@ class _IndoorMapScreenState extends State<IndoorMapScreen> {
       return;
     }
 
-    // Collapse expanded bottom sheet.
-    if (_venueBottomSheetController.isAttached) {
-      final double size = _venueBottomSheetController.size;
-      if (size > _minBottomSheetSize + 0.01) {
-        _venueBottomSheetKey.currentState?.sheetCollapseCleanup();
-        await _venueBottomSheetController.animateTo(
-          _minBottomSheetSize,
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeOut,
-        );
-        return;
-      }
+    // Let the venue sheet handle progressive back (keyboard -> text -> collapse).
+    if (_venueBottomSheetKey.currentState?.handleBackEvent() ?? false) {
+      return;
     }
 
     // Remove venue from map.
@@ -352,7 +364,7 @@ class _IndoorMapScreenState extends State<IndoorMapScreen> {
     if (routingWarningMsg != null && routingWarningMsg.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        _showErrorDialog('Routing error', routingWarningMsg);
+        _showErrorDialog('Routing', routingWarningMsg);
         context.read<IndoorRoutingDataProvider>().setRoutingWarningMsg('');
       });
     }
@@ -362,13 +374,11 @@ class _IndoorMapScreenState extends State<IndoorMapScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          (venueLoadedOnMap && _venueMap.selectedVenue != null)
+          (venueLoadedOnMap && _venueEngine != null && _venueMap.selectedVenue != null)
               ? _venueNameForId(_venueMap.selectedVenue!.venueModel.identifier)
               : 'Indoor Maps',
         ),
-        leading: venueLoadedOnMap
-            ? IconButton(icon: const Icon(Icons.arrow_back), onPressed: _handleBackPress)
-            : null,
+        leading: venueLoadedOnMap ? IconButton(icon: const Icon(Icons.arrow_back), onPressed: _handleBackPress) : null,
         actions: isTopologyPresent
             ? <Widget>[
                 IconButton(

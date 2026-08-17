@@ -129,6 +129,14 @@
          mapView.getGestures().setTapListener(this::setTransformCenter);
      }
 
+    public void resetTransformCenterToScreenCenter() {
+        // Post to ensure we use the latest view size after orientation/layout changes.
+        mapView.post(() -> {
+            Point2D mapViewCenterInPixels = new Point2D(mapView.getWidth() / 2.0, mapView.getHeight() / 2.0);
+            setTransformCenter(mapViewCenterInPixels);
+        });
+    }
+
      // The new transform center will be used for all programmatical map transformations
      // and determines where the target is located in the view.
      // By default, the target point is located at the center of the view.

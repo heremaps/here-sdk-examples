@@ -33,119 +33,213 @@ import 'package:here_sdk/venue.data.dart';
 import 'package:here_sdk/venue.service.dart';
 import 'package:here_sdk/venue.style.dart';
 
+class IndoorVenueEngineState {
+  const IndoorVenueEngineState({
+    required this.venueEngine,
+    required this.venueService,
+    required this.venueMap,
+    required this.venueTapController,
+  });
+
+  final VenueEngine venueEngine;
+  final VenueService venueService;
+  final VenueMap venueMap;
+  final VenueTapController venueTapController;
+}
+
 /// Wraps the HERE SDK [VenueEngine] lifecycle, creates all required listeners,
 /// and wires up the [VenueTapController].
-/// Also provides a callback for authentication errors, and exposes a future that
-/// completes when venue engine initialization is complete (successfully or not).
+///
+/// Returns a [Future] that completes with [IndoorVenueEngineState] on success
+/// or `null` on failure (authentication error, disposal, etc.).
 class IndoorVenueEngine {
   IndoorVenueEngine({
     required HereMapController mapController,
-    required VenueDataProviderInterface providerInterface,
-    required IndoorRoutingDataProviderInterface routingDataProviderInterface,
+    required this.providerInterface,
+    required this.routingDataProviderInterface,
     required this.onAuthErrorCallback,
-  }) {
-    _hereMapController = mapController;
-    _providerInterface = providerInterface;
-    _routingDataProviderInterface = routingDataProviderInterface;
-  }
+  }) : _hereMapController = mapController;
 
   final void Function(String reason)? onAuthErrorCallback;
+  final HereMapController _hereMapController;
+  final VenueDataProviderInterface providerInterface;
+  final IndoorRoutingDataProviderInterface routingDataProviderInterface;
 
-  VenueEngine? venueEngine;
-  late VenueDataProviderInterface _providerInterface;
-  late IndoorRoutingDataProviderInterface _routingDataProviderInterface;
-  late VenueService venueService;
-  late VenueMap venueMap;
-  late VenueServiceListener _venueServiceListener;
-  late VenueInfoListListener _venueInfoListListener;
-  late VenueMapListener _venueMapListener;
-  late VenueSelectionListener _venueSelectionListener;
-  VenueTapController? venueTapController;
-  late VenueTapListenerImpl tapListener;
-  late HereMapController _hereMapController;
-  final Completer<void> _venueEngineInitialized = Completer<void>();
+  VenueEngine? _venueEngine;
+  VenueServiceListener? _venueServiceListener;
+  VenueInfoListListener? _venueInfoListListener;
+  VenueMapListener? _venueMapListener;
+  VenueSelectionListener? _venueSelectionListener;
+  VenueTapListenerImpl? _tapListener;
+  IndoorVenueEngineState? _currentState;
+  final Completer<IndoorVenueEngineState?> _venueEngineInitialized = Completer<IndoorVenueEngineState?>();
+  bool _isDisposed = false;
 
-  Future<void> get venueEngineInitCompleted => _venueEngineInitialized.future;
+  Future<IndoorVenueEngineState?> get venueEngineInitCompleted => _venueEngineInitialized.future;
+  IndoorVenueEngineState? get currentState => _currentState;
+  VenueEngine? get venueEngine => _currentState?.venueEngine ?? _venueEngine;
+  VenueTapController? get venueTapController => _currentState?.venueTapController;
 
-  void createVenueEngine() {
+  Future<IndoorVenueEngineState?> createVenueEngine() {
+    if (_isDisposed) {
+      return Future<IndoorVenueEngineState?>.value();
+    }
     debugPrint('createVenueEngine called');
-    venueEngine = VenueEngine(_onVenueEngineCreated);
+    _venueEngine = VenueEngine(_onVenueEngineCreated);
+    return venueEngineInitCompleted;
   }
 
   void dispose() {
-    venueService.removeServiceListener(_venueServiceListener);
-    venueMap.removeVenueInfoListListener(_venueInfoListListener);
-    venueService.removeVenueMapListener(_venueMapListener);
-    venueMap.removeVenueSelectionListener(_venueSelectionListener);
-    venueTapController?.removeListener();
-    venueTapController = null;
-    venueEngine?.destroy();
+    if (_isDisposed) {
+      return;
+    }
+    _isDisposed = true;
+    _detachVenueListeners();
+    _detachTapListener();
+    _currentState?.venueTapController.removeListener();
+    _currentState = null;
+    _venueEngine?.destroy();
+    _venueEngine = null;
+    _completeInitialization(null);
   }
 
   void _onAuthCallback(AuthenticationError? error, AuthenticationData? data) {
+    if (_isDisposed) {
+      _completeInitialization(null);
+      return;
+    }
     debugPrint('Venue Engine auth callback hit.');
     if (error != null) {
-      String reason;
-      switch (error) {
-        case AuthenticationError.invalidParameter:
-          reason = 'Invalid parameter received';
-          break;
-        case AuthenticationError.authenticationFailed:
-          reason = 'Authentication failed. Check your credentials.';
-          break;
-        case AuthenticationError.noConnection:
-          reason = 'No network connection';
-          break;
-        case AuthenticationError.operationAfterDispose:
-          reason = 'Operation invoked after SDK engine was disposed';
-          break;
-        default:
-          reason = 'Unknown authentication error';
-          break;
-      }
+      final String reason = error.reasonDescription;
       debugPrint('Failed to authenticate the venue engine: $reason');
       onAuthErrorCallback?.call(reason);
+      _completeInitialization(null);
+      debugPrint('Venue Engine creation completed with error.');
+      return;
     }
+
     if (!_venueEngineInitialized.isCompleted) {
-      _venueEngineInitialized.complete();
+      _completeInitialization(_currentState);
+      debugPrint('Venue Engine creation completed.');
     }
   }
 
   void _onVenueEngineCreated() {
-    debugPrint('Venue Engine created.');
-    venueService = venueEngine!.venueService;
-    venueMap = venueEngine!.venueMap;
+    if (_isDisposed) {
+      _venueEngine?.destroy();
+      _venueEngine = null;
+      _completeInitialization(null);
+      return;
+    }
+    debugPrint('Venue Engine creation started.');
+    if (_venueEngine == null) {
+      debugPrint('VenueEngine creation failed. VenueEngine is null.');
+      _completeInitialization(null);
+      return;
+    }
+    final VenueService venueService = _venueEngine!.venueService;
+    final VenueMap venueMap = _venueEngine!.venueMap;
 
-    _venueServiceListener = VenueServiceListenerImpl(venueEngine: venueEngine!, providerInterface: _providerInterface);
-    _venueInfoListListener = VenueInfoListListenerImpl(providerInterface: _providerInterface);
+    _venueServiceListener = VenueServiceListenerImpl(venueEngine: _venueEngine!, providerInterface: providerInterface);
+    _venueInfoListListener = VenueInfoListListenerImpl(providerInterface: providerInterface);
     _venueMapListener = VenueMapListenerImpl(
       hereMapController: _hereMapController,
-      providerInterface: _providerInterface,
+      providerInterface: providerInterface,
     );
     _venueSelectionListener = VenueSelectionListenerImpl(
       hereMapController: _hereMapController,
-      providerInterface: _providerInterface,
+      providerInterface: providerInterface,
     );
 
-    venueService.addServiceListener(_venueServiceListener);
-    venueMap.addVenueInfoListListener(_venueInfoListListener);
-    venueService.addVenueMapListener(_venueMapListener);
-    venueMap.addVenueSelectionListener(_venueSelectionListener);
+    // Add Venue Engine related listeners
+    venueService
+      ..addServiceListener(_venueServiceListener!)
+      ..addVenueMapListener(_venueMapListener!);
+    venueMap
+      ..addVenueInfoListListener(_venueInfoListListener!)
+      ..addVenueSelectionListener(_venueSelectionListener!);
 
-    venueTapController = VenueTapController(
+    // Create a venue tap controller for handling all SDK tap related events.
+    final VenueTapController venueTapController = VenueTapController(
       venueMap: venueMap,
       hereMapController: _hereMapController,
-      venueDataProviderInterface: _providerInterface,
-      routingDataProviderInterface: _routingDataProviderInterface,
+      venueDataProviderInterface: providerInterface,
+      routingDataProviderInterface: routingDataProviderInterface,
     );
-    tapListener = VenueTapListenerImpl(venueTapController, _routingDataProviderInterface);
-    _hereMapController.gestures.tapListener = tapListener;
 
+    // Tap listener for HereMapController
+    _tapListener = VenueTapListenerImpl(
+      tapController: venueTapController,
+      routingDataProviderInterface: routingDataProviderInterface,
+    );
+    _hereMapController.gestures.tapListener = _tapListener;
+
+    // Load topologies feature
     venueService.loadTopologies();
-    venueEngine?.start(_onAuthCallback);
+
+    _currentState = IndoorVenueEngineState(
+      venueEngine: _venueEngine!,
+      venueService: venueService,
+      venueMap: venueMap,
+      venueTapController: venueTapController,
+    );
+
+    // After listeners are added, start the engine.
+    _venueEngine?.start(_onAuthCallback);
   }
 
-  VenueEngine? getEngine() => venueEngine;
+  void _detachVenueListeners() {
+    if (_currentState == null) {
+      return;
+    }
+    final VenueService venueService = _currentState!.venueService;
+    final VenueMap venueMap = _currentState!.venueMap;
+    if (_venueServiceListener != null) {
+      venueService.removeServiceListener(_venueServiceListener!);
+    }
+    if (_venueMapListener != null) {
+      venueService.removeVenueMapListener(_venueMapListener!);
+    }
+    if (_venueInfoListListener != null) {
+      venueMap.removeVenueInfoListListener(_venueInfoListListener!);
+    }
+    if (_venueSelectionListener != null) {
+      venueMap.removeVenueSelectionListener(_venueSelectionListener!);
+    }
+  }
+
+  void _detachTapListener() {
+    if (_tapListener != null && identical(_hereMapController.gestures.tapListener, _tapListener)) {
+      _hereMapController.gestures.tapListener = null;
+    }
+    _tapListener = null;
+  }
+
+  void _completeInitialization(IndoorVenueEngineState? state) {
+    if (_venueEngineInitialized.isCompleted) {
+      return;
+    }
+    _venueEngineInitialized.complete(state);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// AuthenticationError extension for human-readable descriptions
+// ---------------------------------------------------------------------------
+
+extension _AuthenticationErrorExtension on AuthenticationError {
+  String get reasonDescription {
+    switch (this) {
+      case AuthenticationError.invalidParameter:
+        return 'Invalid parameter received';
+      case AuthenticationError.authenticationFailed:
+        return 'Authentication failed. Check your credentials.';
+      case AuthenticationError.noConnection:
+        return 'No network connection';
+      case AuthenticationError.operationAfterDispose:
+        return 'Operation invoked after SDK engine was disposed';
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -260,18 +354,16 @@ class VenueSelectionListenerImpl implements VenueSelectionListener {
   }
 }
 
-/// Tap listener.  Redirects to routing when the routing menu is active.
+/// Tap listener. Redirects to routing when the routing menu is active.
 class VenueTapListenerImpl implements TapListener {
-  VenueTapListenerImpl(
-    VenueTapController? tapController,
-    IndoorRoutingDataProviderInterface routingDataProviderInterface,
-  ) {
-    _tapController = tapController;
-    _routingDataProviderInterface = routingDataProviderInterface;
-  }
+  VenueTapListenerImpl({
+    required VenueTapController? tapController,
+    required IndoorRoutingDataProviderInterface routingDataProviderInterface,
+  }) : _tapController = tapController,
+       _routingDataProviderInterface = routingDataProviderInterface;
 
-  VenueTapController? _tapController;
-  late IndoorRoutingDataProviderInterface _routingDataProviderInterface;
+  final VenueTapController? _tapController;
+  final IndoorRoutingDataProviderInterface _routingDataProviderInterface;
 
   @override
   void onTap(Point2D origin) {

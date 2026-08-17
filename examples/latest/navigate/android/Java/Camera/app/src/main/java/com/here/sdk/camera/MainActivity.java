@@ -20,6 +20,7 @@
 package com.here.sdk.camera;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -146,6 +147,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         mapView.onSaveInstanceState(outState);
         super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (cameraExample != null) {
+            cameraExample.resetTransformCenterToScreenCenter();
+        }
     }
 
     private void disposeHERESDK() {
