@@ -31,7 +31,7 @@ abstract class IndoorRoutingDataProviderInterface {
   void onSpaceSelectionFromList(VenueGeometry selectedGeometry);
   void onTransportModeChangeInRoutingMenuMode(VenueTransportMode mode);
   bool isRoutingMainMenuUIActiveOnMap();
-  bool isRoutingSpaceSelectionUIActiveOnMap();
+  bool isRoutingSpacePreviewUIActiveOnMap();
   void handleDestinationMarkerOnMapInLevelChange();
   void onSpaceDeselectionOnMap();
   void onTap(Point2D origin);

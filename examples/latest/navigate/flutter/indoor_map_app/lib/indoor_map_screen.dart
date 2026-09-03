@@ -63,8 +63,13 @@ class _IndoorMapScreenState extends State<IndoorMapScreen> {
   HereMapController? _mapController;
 
   // -------- HERE watermark position --------
-  final double _watermarkH = 1.0;
-  final double _watermarkV = 0.84;
+  static const double _watermarkHorizontalPos = 0.0;
+  static const double _watermarkInitialVerticalPos = 0.84;
+  static const double _watermarkMinVertical = 0.5;
+  static const double _watermarkSheetGap = 0.08;
+
+  // -------- Topology panel height (matches IndoorTopologyInfoWidget._sheetHeight) --------
+  static const double _topologyPanelHeight = 190.0;
 
   // -------- VenueEngine wrapper --------
   IndoorVenueEngine? _indoorVenueEngine;
@@ -99,6 +104,7 @@ class _IndoorMapScreenState extends State<IndoorMapScreen> {
   void initState() {
     super.initState();
     _venueBottomSheetController = DraggableScrollableController();
+    _venueBottomSheetController.addListener(_onSheetDrag);
 
     // Initialise global event handlers before the venue engine starts.
     venueIdList = VenueIdListEventHandler();
@@ -112,6 +118,7 @@ class _IndoorMapScreenState extends State<IndoorMapScreen> {
 
   @override
   void dispose() {
+    _venueBottomSheetController.removeListener(_onSheetDrag);
     _indoorVenueEngine?.dispose();
     _indoorVenueEngine = null;
     _venueEngine = null;
@@ -142,7 +149,7 @@ class _IndoorMapScreenState extends State<IndoorMapScreen> {
 
     final MapMeasure zoom = MapMeasure(MapMeasureKind.distanceInMeters, _distanceToEarthInMeters);
     _mapController!.camera.lookAtPointWithMeasure(_defaultGeoCoords, zoom);
-    _mapController!.setWatermarkLocation(Anchor2D.withHorizontalAndVertical(_watermarkH, _watermarkV), Point2D(0, 0));
+    _mapController!.setWatermarkLocation(Anchor2D.withHorizontalAndVertical(_watermarkHorizontalPos, _watermarkInitialVerticalPos), Point2D(0, 0));
     _mapController!.mapScene.disableFeatures(_disabledMapFeatures);
 
     try {
@@ -206,9 +213,51 @@ class _IndoorMapScreenState extends State<IndoorMapScreen> {
       }
       final MapMeasure zoom = MapMeasure(MapMeasureKind.distanceInMeters, _distanceToEarthInMeters);
       _mapController!.camera.lookAtPointWithMeasure(_defaultGeoCoords, zoom);
-      _mapController!.setWatermarkLocation(Anchor2D.withHorizontalAndVertical(_watermarkH, _watermarkV), Point2D(0, 0));
+      _mapController!.setWatermarkLocation(Anchor2D.withHorizontalAndVertical(_watermarkHorizontalPos, _watermarkInitialVerticalPos), Point2D(0, 0));
       _mapController!.mapScene.disableFeatures(_disabledMapFeatures);
     });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Watermark follows bottom sheet
+  // ---------------------------------------------------------------------------
+
+  void _onSheetDrag() {
+    if (!_venueBottomSheetController.isAttached) return;
+    if (_mapController == null) return;
+
+    final double sheetFraction = _venueBottomSheetController.size;
+    // Position watermark just above the sheet top edge with a small gap.
+    final double desiredPos = 1.0 - sheetFraction - _watermarkSheetGap;
+    // Clamp: never above half screen, never below initial position.
+    final double watermarkPos = desiredPos.clamp(_watermarkMinVertical, _watermarkInitialVerticalPos);
+    _mapController!.setWatermarkLocation(
+      Anchor2D.withHorizontalAndVertical(_watermarkHorizontalPos, watermarkPos),
+      Point2D(0, 0),
+    );
+  }
+
+  /// Repositions the watermark above the topology info panel when it is visible.
+  void _updateWatermarkForTopology(bool topologyVisible) {
+    if (_mapController == null) return;
+    if (topologyVisible) {
+      // Calculate the fraction of the screen occupied by the topology panel.
+      final double screenHeight = MediaQuery.of(context).size.height;
+      if (screenHeight <= 0) return;
+      final double panelFraction = _topologyPanelHeight / screenHeight;
+      final double desiredPos = 1.0 - panelFraction - _watermarkSheetGap;
+      final double watermarkPos = desiredPos.clamp(_watermarkMinVertical, _watermarkInitialVerticalPos);
+      _mapController!.setWatermarkLocation(
+        Anchor2D.withHorizontalAndVertical(_watermarkHorizontalPos, watermarkPos),
+        Point2D(0, 0),
+      );
+    } else {
+      // Reset watermark to initial position.
+      _mapController!.setWatermarkLocation(
+        Anchor2D.withHorizontalAndVertical(_watermarkHorizontalPos, _watermarkInitialVerticalPos),
+        Point2D(0, 0),
+      );
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -316,6 +365,13 @@ class _IndoorMapScreenState extends State<IndoorMapScreen> {
     final IndoorTopologyInfo? topologyInfo = context.select<VenueDataProvider, IndoorTopologyInfo?>(
       (VenueDataProvider p) => p.topologyInfo,
     );
+
+    // Update watermark position when topology info panel appears/disappears.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _updateWatermarkForTopology(topologyInfo != null);
+    });
+
     final VenueErrorData? venueErrorData = context.select<VenueDataProvider, VenueErrorData?>(
       (VenueDataProvider p) => p.venueErrorData,
     );
@@ -439,14 +495,12 @@ class _IndoorMapScreenState extends State<IndoorMapScreen> {
 
                 // Venue / geometry bottom sheet
                 if (isVenueListAvailable && routingUIState == RoutingUIState.hidden)
-                  Positioned.fill(
-                    child: IndoorVenueBottomSheetWidget(
-                      key: _venueBottomSheetKey,
-                      dragController: _venueBottomSheetController,
-                      minBottomSheetSize: _minBottomSheetSize,
-                      maxBottomSheetSize: _maxBottomSheetSize,
-                      tapController: _venueTapController,
-                    ),
+                  IndoorVenueBottomSheetWidget(
+                    key: _venueBottomSheetKey,
+                    dragController: _venueBottomSheetController,
+                    minBottomSheetSize: _minBottomSheetSize,
+                    maxBottomSheetSize: _maxBottomSheetSize,
+                    tapController: _venueTapController,
                   ),
 
                 // Topology info

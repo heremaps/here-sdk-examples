@@ -193,6 +193,9 @@ class NavigationExample {
     // Stop in case it was started before.
     _locationSimulationProvider.stop();
 
+    // Ensure a fresh handoff from simulation to device positioning.
+    _herePositioningProvider.stop();
+
     // Access the device's GPS sensor and other data.
     // The navigator is set as listener to receive location updates.
     _herePositioningProvider.startLocating(_visualNavigator, LocationAccuracy.navigation);
@@ -250,7 +253,15 @@ class NavigationExample {
   void _startTracking() {
     // Leaves guidance (if it was running) and enables tracking mode. The camera may optionally follow, see toggleTracking().
     _visualNavigator.route = null;
+    // Restart positioning to avoid stale state after simulation has been stopped.
+    _herePositioningProvider.stop();
     _herePositioningProvider.startLocating(_visualNavigator, LocationAccuracy.navigation);
+
+    // Reset camera center to the current device location when stopping simulation.
+    final lastKnownLocation = _herePositioningProvider.getLastKnownLocation();
+    if (lastKnownLocation != null) {
+      _hereMapController.camera.lookAtPoint(lastKnownLocation.coordinates);
+    }
   }
 
   void toggleEHVisualization(bool enabled) {

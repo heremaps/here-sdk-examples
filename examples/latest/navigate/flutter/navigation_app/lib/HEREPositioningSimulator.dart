@@ -37,6 +37,7 @@ class HEREPositioningSimulator {
 
   void stop() {
     _locationSimulator?.stop();
+    _locationSimulator = null;
   }
 
   // Provides fake GPS signals based on the route geometry.

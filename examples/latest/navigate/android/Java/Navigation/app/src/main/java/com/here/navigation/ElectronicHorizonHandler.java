@@ -47,6 +47,7 @@ import com.here.sdk.electronichorizon.ElectronicHorizonUpdate;
 import com.here.sdk.mapdata.DirectedOCMSegmentId;
 import com.here.sdk.mapdata.SegmentData;
 import com.here.sdk.mapdata.SegmentDataLoaderOptions;
+import com.here.sdk.mapdata.SegmentSpanData;
 import com.here.sdk.mapview.LineCap;
 import com.here.sdk.mapview.MapMeasureDependentRenderSize;
 import com.here.sdk.mapview.MapPolyline;
@@ -84,6 +85,8 @@ import java.util.Set;
 public class ElectronicHorizonHandler {
 
     private static final String LOG_TAG = ElectronicHorizonHandler.class.getName();
+    // Optional: Using a small offset can help mark/log the side street more clearly for visualization.
+    private static final int SIDE_STREET_LOG_OFFSET_METERS = 20;
 
     private final MapView mapView;
     @Nullable
@@ -113,10 +116,12 @@ public class ElectronicHorizonHandler {
         segmentDataLoaderOptions.loadRoadSigns = true;
         segmentDataLoaderOptions.loadSpeedLimits = true;
         segmentDataLoaderOptions.loadRoadAttributes = true;
+        segmentDataLoaderOptions.loadStreetNamesAndRoadNumbers = true;
 
         // The cache size defines how many road segments are cached locally. A larger cache size
         // can reduce data usage, but requires more storage memory in the cache.
-        int segmentDataCacheSize = 10;
+        // A small cache can replace previously loaded segments too early.
+        int segmentDataCacheSize = 1000;
         try {
             electronicHorizonDataLoader = new ElectronicHorizonDataLoader(getSDKNativeEngine(), segmentDataLoaderOptions, segmentDataCacheSize);
         } catch (InstantiationErrorException e) {
@@ -254,14 +259,22 @@ public class ElectronicHorizonHandler {
                     if (loadedLevel == 0 && !allPaths.isEmpty()) {
                         ElectronicHorizonPath mpp = allPaths.get(0);
                         for (ElectronicHorizonSegment segment : mpp.segments) {
+                            if (segment.segmentId.ocmSegmentId == null) {
+                                continue;
+                            }
                             DirectedOCMSegmentId directedOCMSegmentId = segment.segmentId.ocmSegmentId;
-                            if (directedOCMSegmentId == null) continue;
                             ElectronicHorizonDataLoaderResult result = electronicHorizonDataLoader.getSegment(directedOCMSegmentId);
                             if (result.errorCode == null && result.segmentData != null) {
                                 logRoadSigns(result.segmentData, directedOCMSegmentId);
                             }
                         }
                         continue;
+                    }
+
+                    // Wait until first-level side-path data is fully loaded before logging side streets
+                    // that branch directly from the active route.
+                    if (loadedLevel == 1) {
+                        notifySideStreetInfos(allPaths);
                     }
 
                     // For side-path levels (level > 0): walk all path segments and use
@@ -271,6 +284,9 @@ public class ElectronicHorizonHandler {
                     Set<Integer> processedSidePathIndexes = new HashSet<>();
                     for (ElectronicHorizonPath path : allPaths) {
                         for (ElectronicHorizonSegment segment : path.segments) {
+                            if (segment.sidePathIndexes.isEmpty()) {
+                                continue;
+                            }
                             for (Integer sidePathIndex : segment.sidePathIndexes) {
                                 if (sidePathIndex < 0 || sidePathIndex >= allPaths.size()) continue;
                                 if (!processedSidePathIndexes.add(sidePathIndex)) continue;
@@ -285,8 +301,10 @@ public class ElectronicHorizonHandler {
 
                                 // Draw all segments of this branching path.
                                 for (ElectronicHorizonSegment branchSegment : branchingPath.segments) {
+                                    if (branchSegment.segmentId.ocmSegmentId == null) {
+                                        continue;
+                                    }
                                     DirectedOCMSegmentId directedOCMSegmentId = branchSegment.segmentId.ocmSegmentId;
-                                    if (directedOCMSegmentId == null) continue;
 
                                     ElectronicHorizonDataLoaderResult result = electronicHorizonDataLoader.getSegment(directedOCMSegmentId);
                                     if (result.errorCode == null && result.segmentData != null) {
@@ -374,19 +392,112 @@ public class ElectronicHorizonHandler {
 
     // Remove all EH segment polylines from the map.
     private void clearVisualization() {
-        int count = segmentPolylineMap.size();
         for (MapPolyline polyline : segmentPolylineMap.values()) {
             mapView.getMapScene().removeMapPolyline(polyline);
         }
         segmentPolylineMap.clear();
     }
 
+    // Finds first-level side streets whose parent is the currently followed navigation path.
+    private void notifySideStreetInfos(@NonNull List<ElectronicHorizonPath> allPaths) {
+        for (int pathIndex = 0; pathIndex < allPaths.size(); pathIndex++) {
+            ElectronicHorizonPath path = allPaths.get(pathIndex);
+            if (path.level != 1 || path.parentPathIndex == null || path.parentPathIndex != 0) {
+                continue;
+            }
+
+            SideStreetInfo sideStreetInfo = findSideStreetInfo(path, pathIndex);
+            if (sideStreetInfo != null) {
+                Log.d(LOG_TAG, "SideStreetName near active route: " + sideStreetInfo.streetName
+                        + " at lat/lon: " + sideStreetInfo.coordinateAtOffsetFromSegmentStart.latitude
+                        + "/" + sideStreetInfo.coordinateAtOffsetFromSegmentStart.longitude
+                        + ", pathIndex=" + sideStreetInfo.pathIndex
+                        + ", segmentLocalId=" + sideStreetInfo.segmentLocalId);
+            }
+        }
+    }
+
+    @Nullable
+    private SideStreetInfo findSideStreetInfo(@NonNull ElectronicHorizonPath branchingPath, int pathIndex) {
+        for (ElectronicHorizonSegment segment : branchingPath.segments) {
+            DirectedOCMSegmentId directedOCMSegmentId = segment.segmentId.ocmSegmentId;
+            if (directedOCMSegmentId == null) {
+                continue;
+            }
+
+            ElectronicHorizonDataLoaderResult result = electronicHorizonDataLoader.getSegment(directedOCMSegmentId);
+            if (result.errorCode != null || result.segmentData == null) {
+                continue;
+            }
+
+            SegmentData segmentData = result.segmentData;
+            String sideStreetName = getFirstStreetLabel(segmentData);
+            if (sideStreetName == null) {
+                continue;
+            }
+
+            GeoPolyline polyline = segmentData.getPolyline();
+            if (polyline == null) {
+                continue;
+            }
+
+                GeoCoordinates sideStreetCoordinates = polyline.coordinatesAtOffsetInMeters(
+                    SIDE_STREET_LOG_OFFSET_METERS,
+                    GeoPolylineDirection.FROM_BEGINNING);
+                return new SideStreetInfo(
+                    sideStreetName,
+                    sideStreetCoordinates,
+                    pathIndex,
+                    directedOCMSegmentId.id.localId);
+        }
+
+        return null;
+    }
+
+    // Returns the first non-empty street label (street name or road number).
+    @Nullable
+    private String getFirstStreetLabel(@NonNull SegmentData segmentData) {
+        List<SegmentSpanData> segmentSpans = segmentData.getSpans();
+        if (segmentSpans == null || segmentSpans.isEmpty()) {
+            return null;
+        }
+
+        for (SegmentSpanData segmentSpanData : segmentSpans) {
+            if (segmentSpanData == null) {
+                continue;
+            }
+
+            String streetName = null;
+            if (segmentSpanData.getStreetNames() != null) {
+                streetName = segmentSpanData.getStreetNames().getDefaultValue();
+            }
+            if ((streetName == null || streetName.trim().isEmpty()) && segmentSpanData.getRoadNumbers() != null) {
+                streetName = segmentSpanData.getRoadNumbers().getDefaultValue();
+            }
+            if (streetName != null && !streetName.trim().isEmpty()) {
+                return streetName;
+            }
+        }
+
+        return null;
+    }
+
     // Log road sign information from a fully loaded segment.
     private void logRoadSigns(SegmentData segmentData, DirectedOCMSegmentId directedOCMSegmentId) {
         List<RoadSign> roadSigns = segmentData.getRoadSigns();
         if (roadSigns == null || roadSigns.isEmpty()) return;
+        GeoPolyline segmentPolyline = segmentData.getPolyline();
+        if (segmentPolyline == null) {
+            Log.w(LOG_TAG, "Skipping road sign logging: segment polyline is null for segmentId=" + directedOCMSegmentId.id.localId);
+            return;
+        }
         for (RoadSign roadSign : roadSigns) {
-            GeoCoordinates roadSignCoordinates = getGeoCoordinatesFromOffsetInMeters(segmentData.getPolyline(), roadSign.offsetInMeters);
+            @Nullable GeoCoordinates roadSignCoordinates = getGeoCoordinatesFromOffsetInMeters(segmentPolyline, roadSign.offsetInMeters);
+            if (roadSignCoordinates == null) {
+                Log.w(LOG_TAG, "Skipping road sign: coordinates lookup failed for offset=" + roadSign.offsetInMeters
+                        + " on segmentId=" + directedOCMSegmentId.id.localId);
+                continue;
+            }
             Log.d(LOG_TAG, "RoadSign: type = "
                     + roadSign.roadSignType.name()
                     + ", offsetInMeters = " + roadSign.offsetInMeters
@@ -396,7 +507,11 @@ public class ElectronicHorizonHandler {
     }
 
     // Convert an offset in meters along a GeoPolyline to GeoCoordinates using the HERE SDK's coordinatesAtOffsetInMeters.
-    private GeoCoordinates getGeoCoordinatesFromOffsetInMeters(GeoPolyline geoPolyline, int offsetInMeters) {
+    @Nullable
+    private GeoCoordinates getGeoCoordinatesFromOffsetInMeters(@Nullable GeoPolyline geoPolyline, int offsetInMeters) {
+        if (geoPolyline == null) {
+            return null;
+        }
         return geoPolyline.coordinatesAtOffsetInMeters(offsetInMeters, GeoPolylineDirection.FROM_BEGINNING);
     }
 
@@ -409,6 +524,25 @@ public class ElectronicHorizonHandler {
         electronicHorizonDataLoader.removeElectronicHorizonDataLoaderStatusListener(electronicHorizonDataLoaderStatusListener);
         clearVisualization();
         Log.d(LOG_TAG, "ElectronicHorizonEngine stopped.");
+    }
+
+    private static class SideStreetInfo {
+        private final String streetName;
+        // Representative point on the matched side-street segment.
+        private final GeoCoordinates coordinateAtOffsetFromSegmentStart;
+        private final int pathIndex;
+        private final long segmentLocalId;
+
+        private SideStreetInfo(
+                @NonNull String streetName,
+                @NonNull GeoCoordinates coordinateAtOffsetFromSegmentStart,
+                int pathIndex,
+                long segmentLocalId) {
+            this.streetName = streetName;
+            this.coordinateAtOffsetFromSegmentStart = coordinateAtOffsetFromSegmentStart;
+            this.pathIndex = pathIndex;
+            this.segmentLocalId = segmentLocalId;
+        }
     }
 
     private SDKNativeEngine getSDKNativeEngine() {

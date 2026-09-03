@@ -110,7 +110,6 @@ class WarnerEngineExample: WarningDelegate {
     }
 
     // Configures notification distances for specific warning types through the WarnerEngine.
-    // This replaces the individual setWarningNotificationDistances() calls on the VisualNavigator.
     private func configureNotificationDistances() {
         // Configure custom notification distances for road sign warnings.
         var roadSignDistances = warnerEngine.getWarningNotificationDistances(warningType: .roadSign)
@@ -120,7 +119,7 @@ class WarnerEngineExample: WarningDelegate {
         roadSignDistances.regularSpeedDistanceInMeters = 800
         // The distance in meters for emitting warnings when the speed limit or current speed is slow. Defaults to 500.
         roadSignDistances.slowSpeedDistanceInMeters = 600
-        _ = warnerEngine.setWarningNotificationDistances(warningType: .roadSign, warningNotificationDistances: roadSignDistances)
+        warnerEngine.setWarningNotificationDistances(warningType: .roadSign, warningNotificationDistances: roadSignDistances)
     }
 
     // Registers custom warning providers with the WarnerEngine before enabling warnings.
@@ -138,7 +137,7 @@ class WarnerEngineExample: WarningDelegate {
         customDistances.slowSpeedDistanceInMeters = 500
         customDistances.regularSpeedDistanceInMeters = 750
         customDistances.fastSpeedDistanceInMeters = 1500
-        _ = warnerEngine.setCustomWarningNotificationDistances(
+        warnerEngine.setCustomWarningNotificationDistances(
             customWarningType: SpeedBumpWarningProvider.speedBumpWarningID,
             warningNotificationDistances: customDistances)
     }
@@ -207,8 +206,9 @@ class WarnerEngineExample: WarningDelegate {
 
         switch warningUpdate.warningStatus {
         case .ahead:
+            // The start indicates the SafetyCamera spot.
             print("SafetyCameraWarning \(safetyCameraWarning.type) ahead in: " +
-                  "\(safetyCameraWarning.distanceToCameraInMeters) meters" +
+                  "\(warningUpdate.distanceTillStartInMeters) meters" +
                   ", speed limit = \(safetyCameraWarning.speedLimitInMetersPerSecond) m/s.")
         case .passed:
             print("SafetyCameraWarning \(safetyCameraWarning.type) passed.")
@@ -233,7 +233,8 @@ class WarnerEngineExample: WarningDelegate {
 
         switch warningUpdate.warningStatus {
         case .ahead:
-            print("TruckRestrictionWarning ahead in: \(truckRestrictionWarning.distanceInMeters) meters.")
+            // The start indicates where the truck restriction becomes effective.
+            print("TruckRestrictionWarning ahead in: \(warningUpdate.distanceTillStartInMeters) meters.")
             if let timeRule = truckRestrictionWarning.timeRule, !timeRule.appliesTo(dateTime: Date()) {
                 print("Note that this truck restriction warning currently does not apply.")
             }
@@ -264,7 +265,8 @@ class WarnerEngineExample: WarningDelegate {
 
         switch warningUpdate.warningStatus {
         case .ahead:
-            print("RoadSignWarning of type: \(roadSignWarning.type) ahead in (m): \(roadSignWarning.distanceToRoadSignInMeters)")
+            // The start indicates the RoadSign spot.
+            print("RoadSignWarning of type: \(roadSignWarning.type) ahead in (m): \(warningUpdate.distanceTillStartInMeters)")
         case .passed:
             print("RoadSignWarning of type: \(roadSignWarning.type) just passed.")
         default:
@@ -286,7 +288,8 @@ class WarnerEngineExample: WarningDelegate {
 
         switch warningUpdate.warningStatus {
         case .ahead:
-            print("SchoolZoneWarning ahead in: \(schoolZoneWarning.distanceToSchoolZoneInMeters) meters.")
+            // The start indicates where the school zone begins.
+            print("SchoolZoneWarning ahead in: \(warningUpdate.distanceTillStartInMeters) meters.")
             print("Speed limit for this school zone: \(schoolZoneWarning.speedLimitInMetersPerSecond) m/s.")
             if let timeRule = schoolZoneWarning.timeRule, !timeRule.appliesTo(dateTime: Date()) {
                 print("Note that this school zone warning currently does not apply.")
@@ -309,7 +312,8 @@ class WarnerEngineExample: WarningDelegate {
 
         switch warningUpdate.warningStatus {
         case .ahead:
-            print("BorderCrossing ahead in: \(borderCrossingWarning.distanceToBorderCrossingInMeters) meters.")
+            // The start indicates the border crossing spot.
+            print("BorderCrossing ahead in: \(warningUpdate.distanceTillStartInMeters) meters.")
             print("BorderCrossing type: \(borderCrossingWarning.type)")
             print("BorderCrossing country code: \(borderCrossingWarning.administrativeRules.countryCode)")
 
@@ -339,7 +343,8 @@ class WarnerEngineExample: WarningDelegate {
 
         switch warningUpdate.warningStatus {
         case .ahead:
-            print("DangerZone ahead in: \(dangerZoneWarning.distanceInMeters) meters.")
+            // The start indicates where the danger zone begins.
+            print("DangerZone ahead in: \(warningUpdate.distanceTillStartInMeters) meters.")
             print("isZoneStart: \(dangerZoneWarning.isZoneStart)")
         case .reached:
             print("A danger zone has been reached. isZoneStart: \(dangerZoneWarning.isZoneStart)")
@@ -358,7 +363,8 @@ class WarnerEngineExample: WarningDelegate {
 
         switch warningUpdate.warningStatus {
         case .ahead:
-            print("LowSpeedZone ahead in: \(lowSpeedZoneWarning.distanceToLowSpeedZoneInMeters) meters.")
+            // The start indicates where the low speed zone begins.
+            print("LowSpeedZone ahead in: \(warningUpdate.distanceTillStartInMeters) meters.")
             print("Speed limit in low speed zone (m/s): \(lowSpeedZoneWarning.speedLimitInMetersPerSecond)")
         case .reached:
             print("A low speed zone has been reached.")
@@ -377,7 +383,8 @@ class WarnerEngineExample: WarningDelegate {
             return
         }
 
-        let distance = realisticViewWarning.distanceToRealisticViewInMeters
+        // The start indicates the RealisticView spot.
+        let distance = warningUpdate.distanceTillStartInMeters
 
         switch warningUpdate.warningStatus {
         case .ahead:
@@ -429,8 +436,9 @@ class WarnerEngineExample: WarningDelegate {
 
         switch warningUpdate.warningStatus {
         case .ahead:
+            // The start indicates the traffic merge spot.
             print("TrafficMerge: \(trafficMergeWarning.roadType) ahead in: " +
-                  "\(trafficMergeWarning.distanceToTrafficMergeInMeters) meters" +
+                  "\(warningUpdate.distanceTillStartInMeters) meters" +
                   ", merging from the \(trafficMergeWarning.side) side" +
                   ", with lanes = \(trafficMergeWarning.laneCount)")
         case .passed:

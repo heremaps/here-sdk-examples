@@ -123,6 +123,12 @@ public class MainActivity extends AppCompatActivity {
 
     private int initialPeekHeight;
 
+    // Watermark positioning constants
+    private static final double WATERMARK_HORIZONTAL_POS = 0.0;
+    private static final double WATERMARK_INITIAL_VERTICAL_POS = 0.84;
+    private static final double WATERMARK_MIN_VERTICAL = 0.5;
+    private static final double WATERMARK_SHEET_GAP = 0.08;
+
     private IndoorRoutingUIController routingController;
 
     private void initializeHERESDK() {
@@ -342,6 +348,10 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     recyclerView.setAlpha(1f);
                 }
+
+                // Move watermark to stay just above the bottom sheet's top edge.
+                // Use the actual pixel position of the sheet relative to the MapView.
+                updateWatermarkPosition(bottomSheet);
             }
         });
 
@@ -418,7 +428,7 @@ public class MainActivity extends AppCompatActivity {
         // Load a scene from the HERE SDK to render the map with a map scheme.
         mapView.getMapScene().loadScene(MapScheme.NORMAL_DAY, mapError -> {
             if (mapError == null) {
-                setWatermark(1800);
+                setWatermark();
                 double distanceInMeters = 1000 * 10;
                 MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, distanceInMeters);
                 mapView.getCamera().lookAt(
@@ -577,7 +587,7 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 mapLoadDone = true;
                 mapView.getCamera().zoomTo(18);
-                setWatermark(1600);
+                setWatermark();
                 geometryList = venueModel.getGeometries();
                 venueTapController.setGeometries(geometryList);
                 recyclerView.setAdapter(new SpaceAdapter(getApplicationContext(), geometryList, MainActivity.this));
@@ -607,7 +617,7 @@ public class MainActivity extends AppCompatActivity {
                     mapView.getCamera().lookAt(
                             new GeoCoordinates(venueCenter.latitude, venueCenter.longitude),
                             mapMeasureZoom);
-                    setWatermark(1600);
+                    setWatermark();
 
                     // Venue selection is done, enable back the button for the venue selection
                     // to be able to select another venue.
@@ -676,11 +686,49 @@ public class MainActivity extends AppCompatActivity {
         alert.show();
     }
 
-    void setWatermark(int off)
+    void setWatermark()
     {
-        Anchor2D anchor = new Anchor2D(0,0);
-        Point2D offset = new Point2D(0, off);
+        Anchor2D anchor = new Anchor2D(WATERMARK_HORIZONTAL_POS, WATERMARK_INITIAL_VERTICAL_POS);
+        Point2D offset = new Point2D(0, 0);
         mapView.setWatermarkLocation(anchor, offset);
+    }
+
+    /**
+     * Repositions the watermark to stay just above the given overlay view's top edge.
+     * Uses the actual pixel position of the view relative to the MapView for accuracy.
+     */
+    public void updateWatermarkPosition(View overlayView) {
+        int mapViewHeight = mapView.getHeight();
+        if (mapViewHeight <= 0) return;
+
+        // Get the overlay view's top Y in the window coordinate space.
+        int[] sheetLocation = new int[2];
+        overlayView.getLocationInWindow(sheetLocation);
+        int sheetTopY = sheetLocation[1];
+
+        // Get the MapView's top Y in the window coordinate space.
+        int[] mapLocation = new int[2];
+        mapView.getLocationInWindow(mapLocation);
+        int mapTopY = mapLocation[1];
+
+        // Sheet's top position relative to the MapView (in pixels from MapView top).
+        int sheetTopInMap = sheetTopY - mapTopY;
+
+        // Convert to a normalized vertical position within the MapView [0, 1].
+        // Subtract a gap in pixels (WATERMARK_SHEET_GAP * mapViewHeight) so the
+        // watermark sits above the sheet edge rather than right at it.
+        double gapPx = WATERMARK_SHEET_GAP * mapViewHeight;
+        double watermarkYPx = sheetTopInMap - gapPx;
+        double watermarkVertical = watermarkYPx / mapViewHeight;
+
+        // Clamp: never above half screen (0.5), never below initial position (0.84).
+        watermarkVertical = Math.max(WATERMARK_MIN_VERTICAL,
+                Math.min(WATERMARK_INITIAL_VERTICAL_POS, watermarkVertical));
+
+        mapView.setWatermarkLocation(
+                new Anchor2D(WATERMARK_HORIZONTAL_POS, watermarkVertical),
+                new Point2D(0, 0)
+        );
     }
 
     // Hide a keyboard.
@@ -783,7 +831,7 @@ public class MainActivity extends AppCompatActivity {
         // Load a scene from the HERE SDK to render the map with a map scheme.
         mapView.getMapScene().loadScene(MapScheme.NORMAL_DAY, mapError -> {
             if (mapError == null) {
-                setWatermark(1800);
+                setWatermark();
                 double distanceInMeters = 1000 * 10;
                 MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, distanceInMeters);
                 mapView.getCamera().lookAt(

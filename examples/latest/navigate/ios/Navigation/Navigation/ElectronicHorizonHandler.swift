@@ -41,6 +41,8 @@ import UIKit
 class ElectronicHorizonHandler {
 
     private static let LOG_TAG = String(describing: ElectronicHorizonHandler.self)
+    // Optional: Using a small offset can help mark/log the side street more clearly for visualization.
+    private static let SIDE_STREET_LOG_OFFSET_METERS = 20.0
 
     private let mapView: MapView
     private var electronicHorizonEngine: ElectronicHorizonEngine?
@@ -73,10 +75,12 @@ class ElectronicHorizonHandler {
         segmentDataLoaderOptions.loadRoadSigns = true
         segmentDataLoaderOptions.loadSpeedLimits = true
         segmentDataLoaderOptions.loadRoadAttributes = true
+        segmentDataLoaderOptions.loadStreetNamesAndRoadNumbers = true
 
         // The cache size defines how many road segments are cached locally. A larger cache size
         // can reduce data usage, but requires more storage memory in the cache.
-        let segmentDataCacheSize = 10
+        // A small cache can replace previously loaded segments too early.
+        let segmentDataCacheSize = 1000
         do {
             electronicHorizonDataLoader = try ElectronicHorizonDataLoader(
                 sdkEngine: ElectronicHorizonHandler.getSDKNativeEngine(),
@@ -240,6 +244,12 @@ class ElectronicHorizonHandler {
                         continue
                     }
 
+                    // Wait until first-level side-path data is fully loaded before logging side streets
+                    // that branch directly from the active route.
+                    if loadedLevel == 1 {
+                        handler.notifySideStreetInfos(allPaths: allPaths)
+                    }
+
                     // For side-path levels (level > 0): walk all path segments and use
                     // sidePathIndexes to find paths that branch off at each segment.
                     // sidePathIndexes contains indexes into allPaths[], pointing to branching paths.
@@ -281,6 +291,72 @@ class ElectronicHorizonHandler {
         }
 
         return EHStatusDelegate(handler: self)
+    }
+
+    // Finds first-level side streets whose parent is the currently followed navigation path.
+    private func notifySideStreetInfos(allPaths: [ElectronicHorizonPath]) {
+        for (pathIndex, path) in allPaths.enumerated() {
+            if path.level != 1 || path.parentPathIndex == nil || path.parentPathIndex != 0 {
+                continue
+            }
+
+            guard let sideStreetInfo = findSideStreetInfo(branchingPath: path, pathIndex: pathIndex) else {
+                continue
+            }
+
+            print("\(Self.LOG_TAG): SideStreetName near active route: \(sideStreetInfo.streetName) at lat/lon: \(sideStreetInfo.coordinateAtOffsetFromSegmentStart.latitude)/\(sideStreetInfo.coordinateAtOffsetFromSegmentStart.longitude), pathIndex=\(sideStreetInfo.pathIndex), segmentLocalId=\(sideStreetInfo.segmentLocalId)")
+        }
+    }
+
+    private func findSideStreetInfo(branchingPath: ElectronicHorizonPath, pathIndex: Int) -> SideStreetInfo? {
+        for segment in branchingPath.segments {
+            guard let directedOCMSegmentId = segment.segmentId.ocmSegmentId else { continue }
+
+            let result = electronicHorizonDataLoader.getSegment(segmentId: directedOCMSegmentId)
+            if result.errorCode != nil || result.segmentData == nil {
+                continue
+            }
+
+            guard let segmentData = result.segmentData,
+                  let sideStreetName = getFirstStreetLabel(segmentData: segmentData),
+                  let polyline = segmentData.polyline else {
+                continue
+            }
+
+            let sideStreetCoordinates = polyline.coordinatesAt(
+                offsetInMeters: Self.SIDE_STREET_LOG_OFFSET_METERS,
+                direction: .fromBeginning
+            )
+
+            return SideStreetInfo(
+                streetName: sideStreetName,
+                coordinateAtOffsetFromSegmentStart: sideStreetCoordinates,
+                pathIndex: pathIndex,
+                segmentLocalId: Int64(directedOCMSegmentId.id.localId)
+            )
+        }
+
+        return nil
+    }
+
+    // Returns the first non-empty street label (street name or road number).
+    private func getFirstStreetLabel(segmentData: SegmentData) -> String? {
+        let segmentSpans = segmentData.spans
+        if segmentSpans.isEmpty {
+            return nil
+        }
+
+        for segmentSpanData in segmentSpans {
+            var streetName = segmentSpanData.streetNames?.defaultValue()
+            if streetName == nil || streetName!.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                streetName = segmentSpanData.roadNumbers?.defaultValue()
+            }
+            if let streetName = streetName, !streetName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                return streetName
+            }
+        }
+
+        return nil
     }
 
     /// Draw a colored MapPolyline for the given road segment and register it in segmentPolylineMap
@@ -387,4 +463,11 @@ class ElectronicHorizonHandler {
         return sdkNativeEngine
     }
 
+}
+
+private struct SideStreetInfo {
+    let streetName: String
+    let coordinateAtOffsetFromSegmentStart: GeoCoordinates
+    let pathIndex: Int
+    let segmentLocalId: Int64
 }

@@ -404,6 +404,7 @@ class TruckGuidanceExample {
 
     final warningStatus = warningUpdate.warningStatus;
     if (warningStatus == WarningStatus.ahead || warningStatus == WarningStatus.approaching) {
+      // The start indicates where the truck restriction becomes effective.
       print("A TruckRestriction ahead in: ${warningUpdate.distanceTillStartInMeters} meters.");
     } else if (warningStatus == WarningStatus.reached || warningStatus == WarningStatus.inside) {
       print("A TruckRestriction has been reached.");
@@ -429,6 +430,7 @@ class TruckGuidanceExample {
     }
 
     if (warningUpdate.warningStatus == WarningStatus.ahead || warningUpdate.warningStatus == WarningStatus.approaching) {
+      // The start indicates where the environmental zone begins.
       print("An EnvironmentalZone ahead in: ${warningUpdate.distanceTillStartInMeters} meters.");
     } else if (warningUpdate.warningStatus == WarningStatus.reached || warningUpdate.warningStatus == WarningStatus.inside) {
       print("An EnvironmentalZone has been reached.");

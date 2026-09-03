@@ -336,6 +336,9 @@ public class VenueTapController {
         sheetBehavior.setPeekHeight(0);
         topologyLayout.setVisibility(View.VISIBLE);
 
+        // Move watermark above the topology panel.
+        topologyLayout.post(() -> ((MainActivity) context).updateWatermarkPosition(topologyLayout));
+
         // Set a selected style for the geometry.
         ArrayList<VenueTopology> topologies = new ArrayList<>(Collections.singletonList(topology));
         selectedVenue.setCustomStyle(topologies, selectedTopologyStyle);
@@ -365,6 +368,8 @@ public class VenueTapController {
         topologyLayout.setVisibility(View.GONE);
         // restore initial peek height of bottom sheet
         sheetBehavior.setPeekHeight(((MainActivity)context).getInitialPeekHeight());
+        // Reset watermark to initial position.
+        ((MainActivity) context).setWatermark();
 
         // If there is a selected geometry, reset its style.
         if (selectedVenue != null && selectedTopology != null) {

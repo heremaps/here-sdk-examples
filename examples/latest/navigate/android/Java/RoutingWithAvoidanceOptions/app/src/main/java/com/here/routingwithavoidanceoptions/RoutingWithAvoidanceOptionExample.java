@@ -20,6 +20,8 @@
 package com.here.routingwithavoidanceoptions;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -223,6 +225,7 @@ public class RoutingWithAvoidanceOptionExample {
                 }
                 PickMapItemsResult pickMapItemsResult = mapPickResult.getMapItems();
 
+                if (pickMapItemsResult == null) return;
                 List<MapMarker> markers = pickMapItemsResult.getMarkers();
                 if (!markers.isEmpty()) {
                     MapMarker pickedMarker = markers.get(0);
@@ -312,7 +315,7 @@ public class RoutingWithAvoidanceOptionExample {
             Toast.makeText(context,"Map-matched location is highlighted with red dot on the map. Check logs for more information on matched location.", Toast.LENGTH_LONG).show();
 
             // Show the map-matched location on the map.
-            MapMarker mapMatchedMapMarker = addMapMarker(mapMatchedLocation.coordinates, R.drawable.map_matched_location_dot);
+            MapMarker mapMatchedMapMarker = addScaledMapMarker(mapMatchedLocation.coordinates, R.drawable.map_matched_location_dot, 80, 0.7);
             mapMatchedMarkers.add(mapMatchedMapMarker);
 
             // Fetch IDs from mapMatchedLocation and convert them into OCMSegmentID required by loadSegmentData method.
@@ -348,11 +351,17 @@ public class RoutingWithAvoidanceOptionExample {
         List<SegmentSpanData> segmentSpanDataList = segmentData.getSpans();
         SegmentReference segmentReference = segmentData.getSegmentReference();
 
+        GeoPolyline segmentPolyline = segmentData.getPolyline();
+        if (segmentPolyline == null) {
+            Log.d(TAG, "Segment polyline is null for segment: " + segmentReference.segmentId + ". Skipping visualization.");
+            return;
+        }
+
         Metadata metadata = new Metadata();
         metadata.setString(METADATA_SEGMENT_ID_KEY, segmentReference.segmentId);
         metadata.setDouble(METADATA_TILE_PARTITION_ID_KEY, segmentReference.tilePartitionId);
 
-        MapPolyline segmentPolyLine = createMapPolyline(Color.valueOf(1, 0, 0, 1), segmentData.getPolyline());
+        MapPolyline segmentPolyLine = createMapPolyline(Color.valueOf(1, 0, 0, 1), segmentPolyline);
         segmentPolyLine.setMetadata(metadata);
         mapView.getMapScene().addMapPolyline(segmentPolyLine);
         segmentPolyLines.add(segmentPolyLine);
@@ -531,6 +540,18 @@ public class RoutingWithAvoidanceOptionExample {
         MapImage mapImage = MapImageFactory.fromResource(context.getResources(), resourceId);
         Anchor2D anchor2D = new Anchor2D(0.5F, 1);
         MapMarker mapMarker = new MapMarker(geoCoordinates, mapImage, anchor2D);
+        mapView.getMapScene().addMapMarker(mapMarker);
+        return mapMarker;
+    }
+
+    private MapMarker addScaledMapMarker(GeoCoordinates geoCoordinates, int resourceId, int widthInPixels, double opacity) {
+        Bitmap original = BitmapFactory.decodeResource(context.getResources(), resourceId);
+        int height = (int) (original.getHeight() * (widthInPixels / (float) original.getWidth()));
+        Bitmap scaled = Bitmap.createScaledBitmap(original, widthInPixels, height, true);
+        MapImage mapImage = MapImageFactory.fromBitmap(scaled);
+        Anchor2D anchor2D = new Anchor2D(0.5F, 0.5F);
+        MapMarker mapMarker = new MapMarker(geoCoordinates, mapImage, anchor2D);
+        mapMarker.setOpacity(opacity);
         mapView.getMapScene().addMapMarker(mapMarker);
         return mapMarker;
     }

@@ -49,6 +49,8 @@ import 'package:here_sdk/transport.dart';
 /// It is recommended to use a prefetcher to prefetch region data along the route in advance (not shown in this class).
 class ElectronicHorizonHandler {
   static const String _logTag = 'ElectronicHorizonHandler';
+  // Optional: Using a small offset can help mark/log the side street more clearly for visualization.
+  static const double _sideStreetLogOffsetMeters = 20.0;
 
   final HereMapController _hereMapController;
   ElectronicHorizonEngine? _electronicHorizonEngine;
@@ -76,10 +78,12 @@ class ElectronicHorizonHandler {
     segmentDataLoaderOptions.loadRoadSigns = true;
     segmentDataLoaderOptions.loadSpeedLimits = true;
     segmentDataLoaderOptions.loadRoadAttributes = true;
+    segmentDataLoaderOptions.loadStreetNamesAndRoadNumbers = true;
 
     // The cache size defines how many road segments are cached locally. A larger cache size
     // can reduce data usage, but requires more storage memory in the cache.
-    int segmentDataCacheSize = 10;
+    // A small cache can replace previously loaded segments too early.
+    int segmentDataCacheSize = 1000;
 
     try {
       _electronicHorizonDataLoader = ElectronicHorizonDataLoader(
@@ -220,6 +224,12 @@ class ElectronicHorizonHandler {
           return;
         }
 
+        // Wait until first-level side-path data is fully loaded before logging side streets
+        // that branch directly from the active route.
+        if (loadedLevel == 1) {
+          _notifySideStreetInfos(allPaths);
+        }
+
         // For side-path levels (level > 0): walk all path segments and use
         // sidePathIndexes to find paths that branch off at each segment.
         // sidePathIndexes contains indexes into allPaths[], pointing to branching paths.
@@ -255,6 +265,74 @@ class ElectronicHorizonHandler {
         }
       });
     });
+  }
+
+  // Finds first-level side streets whose parent is the currently followed navigation path.
+  void _notifySideStreetInfos(List<ElectronicHorizonPath> allPaths) {
+    for (int pathIndex = 0; pathIndex < allPaths.length; pathIndex++) {
+      final path = allPaths[pathIndex];
+      if (path.level != 1 || path.parentPathIndex == null || path.parentPathIndex != 0) {
+        continue;
+      }
+
+      final sideStreetInfo = _findSideStreetInfo(path, pathIndex);
+      if (sideStreetInfo != null) {
+        print('$_logTag: SideStreetName near active route: ${sideStreetInfo.streetName} '
+            'at lat/lon: ${sideStreetInfo.coordinateAtOffsetFromSegmentStart.latitude}/'
+            '${sideStreetInfo.coordinateAtOffsetFromSegmentStart.longitude}, '
+            'pathIndex=${sideStreetInfo.pathIndex}, '
+            'segmentLocalId=${sideStreetInfo.segmentLocalId}');
+      }
+    }
+  }
+
+  _SideStreetInfo? _findSideStreetInfo(ElectronicHorizonPath branchingPath, int pathIndex) {
+    for (final segment in branchingPath.segments) {
+      final directedOCMSegmentId = segment.segmentId.ocmSegmentId;
+      if (directedOCMSegmentId == null) continue;
+
+      final result = _electronicHorizonDataLoader.getSegment(directedOCMSegmentId);
+      if (result.errorCode != null || result.segmentData == null) continue;
+
+      final segmentData = result.segmentData!;
+      final sideStreetName = _getFirstStreetLabel(segmentData);
+      if (sideStreetName == null) continue;
+
+      final polyline = segmentData.polyline;
+      if (polyline == null) continue;
+
+      final sideStreetCoordinates = polyline.coordinatesAtOffsetInMeters(
+        _sideStreetLogOffsetMeters,
+        GeoPolylineDirection.fromBeginning,
+      );
+
+      return _SideStreetInfo(
+        sideStreetName,
+        sideStreetCoordinates,
+        pathIndex,
+        directedOCMSegmentId.id.localId,
+      );
+    }
+
+    return null;
+  }
+
+  // Returns the first non-empty street label (street name or road number).
+  String? _getFirstStreetLabel(SegmentData segmentData) {
+    final segmentSpans = segmentData.spans;
+    if (segmentSpans.isEmpty) return null;
+
+    for (final segmentSpanData in segmentSpans) {
+      String? streetName = segmentSpanData.streetNames?.getDefaultValue();
+      if (streetName == null || streetName.trim().isEmpty) {
+        streetName = segmentSpanData.roadNumbers?.getDefaultValue();
+      }
+      if (streetName != null && streetName.trim().isNotEmpty) {
+        return streetName;
+      }
+    }
+
+    return null;
   }
 
   /// Draw a colored MapPolyline for the given road segment and register it in _segmentPolylineMap
@@ -375,4 +453,18 @@ class ElectronicHorizonHandler {
     }
     return sdkNativeEngine;
   }
+}
+
+class _SideStreetInfo {
+  final String streetName;
+  final GeoCoordinates coordinateAtOffsetFromSegmentStart;
+  final int pathIndex;
+  final int segmentLocalId;
+
+  _SideStreetInfo(
+    this.streetName,
+    this.coordinateAtOffsetFromSegmentStart,
+    this.pathIndex,
+    this.segmentLocalId,
+  );
 }

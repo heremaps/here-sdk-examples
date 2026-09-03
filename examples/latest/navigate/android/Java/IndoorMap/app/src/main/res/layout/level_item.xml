@@ -9,14 +9,5 @@
         android:textColor="@drawable/level_item_text_color"
         android:textSize="12sp"
         android:background="@drawable/level_item_background" />
-    <View
-        android:id="@+id/levelGroundSep"
-        android:layout_width="fill_parent"
-        android:layout_height="1dp"
-        android:layout_alignParentBottom="true"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:background="#CCBEC8D2"
-        android:visibility="invisible" />
 
 </merge>

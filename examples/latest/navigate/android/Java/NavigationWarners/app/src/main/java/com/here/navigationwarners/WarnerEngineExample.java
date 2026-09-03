@@ -186,7 +186,6 @@ public class WarnerEngineExample {
     }
 
     // Configures notification distances for specific warning types through the WarnerEngine.
-    // This replaces the individual setWarningNotificationDistances() calls on the VisualNavigator.
     private void configureNotificationDistances() {
         // Configure custom notification distances for road sign warnings.
         WarningNotificationDistances roadSignDistances = warnerEngine.getWarningNotificationDistances(WarningType.ROAD_SIGN);
@@ -254,8 +253,9 @@ public class WarnerEngineExample {
         }
 
         if (warningUpdate.warningStatus == WarningStatus.AHEAD) {
+            // The start indicates the SafetyCamera spot.
             Log.d(TAG, "SafetyCameraWarning " + safetyCameraWarning.type.name()
-                    + " ahead in: " + safetyCameraWarning.distanceToCameraInMeters + " meters"
+                    + " ahead in: " + warningUpdate.distanceTillStartInMeters + " meters"
                     + ", speed limit = " + safetyCameraWarning.speedLimitInMetersPerSecond + " m/s.");
         } else if (warningUpdate.warningStatus == WarningStatus.PASSED) {
             Log.d(TAG, "SafetyCameraWarning " + safetyCameraWarning.type.name() + " passed.");
@@ -278,7 +278,8 @@ public class WarnerEngineExample {
         }
 
         if (warningUpdate.warningStatus == WarningStatus.AHEAD) {
-            Log.d(TAG, "TruckRestrictionWarning ahead in: " + truckRestrictionWarning.distanceInMeters + " meters.");
+            // The start indicates where the truck restriction becomes effective.
+            Log.d(TAG, "TruckRestrictionWarning ahead in: " + warningUpdate.distanceTillStartInMeters + " meters.");
             if (truckRestrictionWarning.timeRule != null && !truckRestrictionWarning.timeRule.appliesTo(new Date())) {
                 Log.d(TAG, "Note that this truck restriction warning currently does not apply.");
             }
@@ -312,8 +313,9 @@ public class WarnerEngineExample {
 
         RoadSignType roadSignType = roadSignWarning.type;
         if (warningUpdate.warningStatus == WarningStatus.AHEAD) {
+            // The start indicates the RoadSign spot.
             Log.d(TAG, "RoadSignWarning of type: " + roadSignType.name()
-                    + " ahead in (m): " + roadSignWarning.distanceToRoadSignInMeters);
+                    + " ahead in (m): " + warningUpdate.distanceTillStartInMeters);
         } else if (warningUpdate.warningStatus == WarningStatus.PASSED) {
             Log.d(TAG, "RoadSignWarning of type: " + roadSignType.name() + " just passed.");
         }
@@ -333,7 +335,8 @@ public class WarnerEngineExample {
         }
 
         if (warningUpdate.warningStatus == WarningStatus.AHEAD) {
-            Log.d(TAG, "SchoolZoneWarning ahead in: " + schoolZoneWarning.distanceToSchoolZoneInMeters + " meters.");
+            // The start indicates where the school zone begins.
+            Log.d(TAG, "SchoolZoneWarning ahead in: " + warningUpdate.distanceTillStartInMeters + " meters.");
             Log.d(TAG, "Speed limit for this school zone: " + schoolZoneWarning.speedLimitInMetersPerSecond + " m/s.");
             if (schoolZoneWarning.timeRule != null && !schoolZoneWarning.timeRule.appliesTo(new Date())) {
                 Log.d(TAG, "Note that this school zone warning currently does not apply.");
@@ -356,7 +359,8 @@ public class WarnerEngineExample {
         }
 
         if (warningUpdate.warningStatus == WarningStatus.AHEAD) {
-            Log.d(TAG, "BorderCrossing ahead in: " + borderCrossingWarning.distanceToBorderCrossingInMeters + " meters.");
+            // The start indicates the border crossing spot.
+            Log.d(TAG, "BorderCrossing ahead in: " + warningUpdate.distanceTillStartInMeters + " meters.");
             Log.d(TAG, "BorderCrossing type: " + borderCrossingWarning.type.name());
             Log.d(TAG, "BorderCrossing country code: " + borderCrossingWarning.administrativeRules.countryCode.name());
 
@@ -384,7 +388,8 @@ public class WarnerEngineExample {
         }
 
         if (warningUpdate.warningStatus == WarningStatus.AHEAD) {
-            Log.d(TAG, "DangerZone ahead in: " + dangerZoneWarning.distanceInMeters + " meters.");
+            // The start indicates where the danger zone begins.
+            Log.d(TAG, "DangerZone ahead in: " + warningUpdate.distanceTillStartInMeters + " meters.");
             Log.d(TAG, "isZoneStart: " + dangerZoneWarning.isZoneStart);
         } else if (warningUpdate.warningStatus == WarningStatus.REACHED) {
             Log.d(TAG, "A danger zone has been reached. isZoneStart: " + dangerZoneWarning.isZoneStart);
@@ -403,7 +408,8 @@ public class WarnerEngineExample {
         }
 
         if (warningUpdate.warningStatus == WarningStatus.AHEAD) {
-            Log.d(TAG, "LowSpeedZone ahead in: " + lowSpeedZoneWarning.distanceToLowSpeedZoneInMeters + " meters.");
+            // The start indicates where the low speed zone begins.
+            Log.d(TAG, "LowSpeedZone ahead in: " + warningUpdate.distanceTillStartInMeters + " meters.");
             Log.d(TAG, "Speed limit in low speed zone (m/s): " + lowSpeedZoneWarning.speedLimitInMetersPerSecond);
         } else if (warningUpdate.warningStatus == WarningStatus.REACHED) {
             Log.d(TAG, "A low speed zone has been reached.");
@@ -423,7 +429,8 @@ public class WarnerEngineExample {
             return;
         }
 
-        double distance = realisticViewWarning.distanceToRealisticViewInMeters;
+        // The start indicates the RealisticView spot.
+        double distance = warningUpdate.distanceTillStartInMeters;
 
         if (warningUpdate.warningStatus == WarningStatus.AHEAD) {
             Log.d(TAG, "RealisticView ahead in: " + distance + " meters.");
@@ -479,8 +486,9 @@ public class WarnerEngineExample {
         }
 
         if (warningUpdate.warningStatus == WarningStatus.AHEAD) {
+            // The start indicates the traffic merge spot.
             Log.d(TAG, "TrafficMerge: " + trafficMergeWarning.roadType.name()
-                    + " ahead in: " + trafficMergeWarning.distanceToTrafficMergeInMeters + " meters"
+                    + " ahead in: " + warningUpdate.distanceTillStartInMeters + " meters"
                     + ", merging from the " + trafficMergeWarning.side.name() + " side"
                     + ", with lanes = " + trafficMergeWarning.laneCount);
         } else if (warningUpdate.warningStatus == WarningStatus.PASSED) {

@@ -345,7 +345,6 @@ class IndoorRoutingDataProvider extends ChangeNotifier implements IndoorRoutingD
       isRouteRenderedOnMap = false;
       final String noticeMessages = routeNotices.map((IndoorRouteNotice notice) => notice.title).join('\n');
       setRoutingWarningMsg('Route notices:\n$noticeMessages');
-      return;
     }
 
     // No error, no notices — render the route.
@@ -581,7 +580,7 @@ class IndoorRoutingDataProvider extends ChangeNotifier implements IndoorRoutingD
   bool isRoutingMainMenuUIActiveOnMap() => currentState == RoutingUIState.mainRoutingMenu;
 
   @override
-  bool isRoutingSpaceSelectionUIActiveOnMap() => currentState == RoutingUIState.spacePreview;
+  bool isRoutingSpacePreviewUIActiveOnMap() => currentState == RoutingUIState.spacePreview;
 
   @override
   void onSpaceDeselectionOnMap() {
@@ -591,6 +590,12 @@ class IndoorRoutingDataProvider extends ChangeNotifier implements IndoorRoutingD
 
   @override
   void handleDestinationMarkerOnMapInLevelChange() {
+    // In space preview, the selected space is no longer on the visible level.
+    // Deselect geometry and hide the preview UI.
+    if (currentState == RoutingUIState.spacePreview && selectedDestination?.level != selectedVenue?.selectedLevel) {
+      closeSpacePreviewUI();
+      return;
+    }
     _handleDestinationMarkerOnMap();
   }
 

@@ -44,22 +44,16 @@ import java.util.List;
 
 class LevelItemView extends RelativeLayout {
     private TextView textView;
-    private View separator;
 
     public LevelItemView(Context context) {
         super(context);
 
         LayoutInflater.from(context).inflate(R.layout.level_item, this, true);
         textView = findViewById(R.id.levelName);
-        separator = findViewById(R.id.levelGroundSep);
     }
 
     public void setText(CharSequence text) {
         textView.setText(text);
-    }
-
-    public void setShowSeparator(boolean isVisible) {
-        separator.setVisibility(isVisible ? View.VISIBLE : View.INVISIBLE);
     }
 }
 
@@ -101,9 +95,6 @@ class LevelAdapter extends BaseAdapter {
         VenueLevel level = levels.get(position);
         // Sets the level's short name as a text of the item.
         item.setText(level.getShortName());
-
-        // If the level is the main one, visually separates it from the levels below it.
-        item.setShowSeparator(level.isMainLevel() && position != levels.size() - 1);
         return item;
     }
 }
@@ -134,15 +125,25 @@ public class LevelSwitcher extends LinearLayout {
         levelUp.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
+                if (venueMap == null || venueMap.getSelectedVenue() == null) return;
+                int currLevelIndex = venueMap.getSelectedVenue().getSelectedLevelIndex();
+                if (currLevelIndex >= maxLevelIndex) {
+                    return;
+                }
                 listView.smoothScrollByOffset(1);
-                venueMap.getSelectedVenue().setSelectedLevelIndex(venueMap.getSelectedVenue().getSelectedLevelIndex() + 1);
+                venueMap.getSelectedVenue().setSelectedLevelIndex(currLevelIndex + 1);
             }
         });
         levelDown.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
+                if (venueMap == null || venueMap.getSelectedVenue() == null) return;
+                int currLevelIndex = venueMap.getSelectedVenue().getSelectedLevelIndex();
+                if (currLevelIndex - 1 < 0) {
+                    return;
+                }
                 listView.smoothScrollByOffset(-1);
-                venueMap.getSelectedVenue().setSelectedLevelIndex(venueMap.getSelectedVenue().getSelectedLevelIndex() - 1);
+                venueMap.getSelectedVenue().setSelectedLevelIndex(currLevelIndex - 1);
             }
         });
         setVisibility(View.GONE);

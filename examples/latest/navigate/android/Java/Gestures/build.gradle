@@ -26,7 +26,7 @@ allprojects {
         if (rootProject.ext.HERESDKBuildConfig == "BUNDLE_FROM_ARTIFACTORY") {
             maven {
                 name = 'HERE_SDK_Artifactory_Repository'
-                url = "https://repo.platform.here.com/artifactory/here-sdk-android"
+                url = project.findProperty('HERESDKArtifactoryURL') ?: "https://repo.platform.here.com/artifactory/here-sdk-android"
                 credentials {
                     // Use the username and token created on https://platform.here.com/access/access-tokens.
                     username = project.findProperty('HERESDKArtifactoryUsername') ?: "YOUR_USER_NAME"

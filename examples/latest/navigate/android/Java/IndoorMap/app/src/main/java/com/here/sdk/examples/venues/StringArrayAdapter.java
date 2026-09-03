@@ -35,6 +35,7 @@ import java.util.List;
 class StringArrayAdapter extends ArrayAdapter<String> {
     private final int listTextSize;
     private final int listTextColor;
+    private int selectedPosition = -1;
 
     StringArrayAdapter(
             @NonNull Context context,
@@ -52,6 +53,15 @@ class StringArrayAdapter extends ArrayAdapter<String> {
         this(context, names, 14, 0xFF444444);
     }
 
+    public void setSelectedPosition(int position) {
+        this.selectedPosition = position;
+        notifyDataSetChanged();
+    }
+
+    public int getSelectedPosition() {
+        return selectedPosition;
+    }
+
     @Override
     public @NonNull View
     getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
@@ -60,8 +70,13 @@ class StringArrayAdapter extends ArrayAdapter<String> {
         }
         TextView textView = convertView.findViewById(R.id.itemText);
         textView.setTextSize(listTextSize);
-        textView.setTextColor(listTextColor);
         textView.setText(getItem(position));
+
+        if (position == selectedPosition) {
+            textView.setTextColor(0xFF1976D2);
+        } else {
+            textView.setTextColor(listTextColor);
+        }
         return convertView;
     }
 }
