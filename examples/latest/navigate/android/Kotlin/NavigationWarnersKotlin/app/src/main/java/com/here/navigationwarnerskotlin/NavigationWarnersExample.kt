@@ -41,7 +41,6 @@ import com.here.sdk.navigation.CurrentSituationLaneAssistanceView
 import com.here.sdk.navigation.CurrentSituationLaneAssistanceViewListener
 import com.here.sdk.navigation.CurrentSituationLaneView
 import com.here.sdk.navigation.DestinationReachedListener
-import com.here.sdk.navigation.DistanceType
 import com.here.sdk.navigation.JunctionViewLaneAssistance
 import com.here.sdk.navigation.JunctionViewLaneAssistanceListener
 import com.here.sdk.navigation.Lane

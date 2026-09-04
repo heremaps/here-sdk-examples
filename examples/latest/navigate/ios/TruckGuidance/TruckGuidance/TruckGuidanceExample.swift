@@ -467,6 +467,7 @@ class TruckGuidanceExample: TapDelegate,
 
         let warningStatus = warningUpdate.warningStatus
         if warningStatus == .ahead || warningStatus == .approaching {
+            // The start indicates where the truck restriction becomes effective.
             print("A TruckRestriction ahead in: \(warningUpdate.distanceTillStartInMeters) meters.")
         } else if warningStatus == .reached || warningStatus == .inside {
             print("A TruckRestriction has been reached.")
@@ -492,6 +493,7 @@ class TruckGuidanceExample: TapDelegate,
 
         switch warningUpdate.warningStatus {
         case .ahead, .approaching:
+            // The start indicates where the environmental zone begins.
             print("An EnvironmentalZone ahead in: \(warningUpdate.distanceTillStartInMeters) meters.")
         case .reached, .inside:
             print("An EnvironmentalZone has been reached.")

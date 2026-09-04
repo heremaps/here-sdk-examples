@@ -133,7 +133,6 @@ class WarnerEngineExample {
     }
 
     // Configures notification distances for specific warning types through the WarnerEngine.
-    // This replaces the individual setWarningNotificationDistances() calls on the VisualNavigator.
     private fun configureNotificationDistances() {
         // Configure custom notification distances for road sign warnings.
         val roadSignDistances = warnerEngine.getWarningNotificationDistances(WarningType.ROAD_SIGN)
@@ -214,8 +213,9 @@ class WarnerEngineExample {
 
         when (warningUpdate.warningStatus) {
             WarningStatus.AHEAD -> Log.d(TAG,
+            // The start indicates the SafetyCamera spot.
                 "SafetyCameraWarning ${safetyCameraWarning.type.name} ahead in: " +
-                        "${safetyCameraWarning.distanceToCameraInMeters} meters" +
+                        "${warningUpdate.distanceTillStartInMeters} meters" +
                         ", speed limit = ${safetyCameraWarning.speedLimitInMetersPerSecond} m/s.")
             WarningStatus.PASSED -> Log.d(TAG,
                 "SafetyCameraWarning ${safetyCameraWarning.type.name} passed.")
@@ -236,7 +236,8 @@ class WarnerEngineExample {
 
         when (warningUpdate.warningStatus) {
             WarningStatus.AHEAD -> {
-                Log.d(TAG, "TruckRestrictionWarning ahead in: ${truckRestrictionWarning.distanceInMeters} meters.")
+                // The start indicates where the truck restriction becomes effective.
+                Log.d(TAG, "TruckRestrictionWarning ahead in: ${warningUpdate.distanceTillStartInMeters} meters.")
                 if (truckRestrictionWarning.timeRule != null && !truckRestrictionWarning.timeRule!!.appliesTo(Date())) {
                     Log.d(TAG, "Note that this truck restriction warning currently does not apply.")
                 }
@@ -271,7 +272,8 @@ class WarnerEngineExample {
 
         when (warningUpdate.warningStatus) {
             WarningStatus.AHEAD -> Log.d(TAG,
-                "RoadSignWarning of type: ${roadSignWarning.type.name} ahead in (m): ${roadSignWarning.distanceToRoadSignInMeters}")
+                // The start indicates the RoadSign spot.
+                "RoadSignWarning of type: ${roadSignWarning.type.name} ahead in (m): ${warningUpdate.distanceTillStartInMeters}")
             WarningStatus.PASSED -> Log.d(TAG,
                 "RoadSignWarning of type: ${roadSignWarning.type.name} just passed.")
             else -> {}
@@ -292,7 +294,8 @@ class WarnerEngineExample {
 
         when (warningUpdate.warningStatus) {
             WarningStatus.AHEAD -> {
-                Log.d(TAG, "SchoolZoneWarning ahead in: ${schoolZoneWarning.distanceToSchoolZoneInMeters} meters.")
+                // The start indicates where the school zone begins.
+                Log.d(TAG, "SchoolZoneWarning ahead in: ${warningUpdate.distanceTillStartInMeters} meters.")
                 Log.d(TAG, "Speed limit for this school zone: ${schoolZoneWarning.speedLimitInMetersPerSecond} m/s.")
                 if (schoolZoneWarning.timeRule != null && !schoolZoneWarning.timeRule!!.appliesTo(Date())) {
                     Log.d(TAG, "Note that this school zone warning currently does not apply.")
@@ -315,7 +318,8 @@ class WarnerEngineExample {
 
         when (warningUpdate.warningStatus) {
             WarningStatus.AHEAD -> {
-                Log.d(TAG, "BorderCrossing ahead in: ${borderCrossingWarning.distanceToBorderCrossingInMeters} meters.")
+                // The start indicates the border crossing spot.
+                Log.d(TAG, "BorderCrossing ahead in: ${warningUpdate.distanceTillStartInMeters} meters.")
                 Log.d(TAG, "BorderCrossing type: ${borderCrossingWarning.type.name}")
                 Log.d(TAG, "BorderCrossing country code: ${borderCrossingWarning.administrativeRules.countryCode.name}")
 
@@ -344,7 +348,8 @@ class WarnerEngineExample {
 
         when (warningUpdate.warningStatus) {
             WarningStatus.AHEAD -> {
-                Log.d(TAG, "DangerZone ahead in: ${dangerZoneWarning.distanceInMeters} meters.")
+                // The start indicates where the danger zone begins.
+                Log.d(TAG, "DangerZone ahead in: ${warningUpdate.distanceTillStartInMeters} meters.")
                 Log.d(TAG, "isZoneStart: ${dangerZoneWarning.isZoneStart}")
             }
             WarningStatus.REACHED -> Log.d(TAG, "A danger zone has been reached. isZoneStart: ${dangerZoneWarning.isZoneStart}")
@@ -363,7 +368,8 @@ class WarnerEngineExample {
 
         when (warningUpdate.warningStatus) {
             WarningStatus.AHEAD -> {
-                Log.d(TAG, "LowSpeedZone ahead in: ${lowSpeedZoneWarning.distanceToLowSpeedZoneInMeters} meters.")
+                // The start indicates where the low speed zone begins.
+                Log.d(TAG, "LowSpeedZone ahead in: ${warningUpdate.distanceTillStartInMeters} meters.")
                 Log.d(TAG, "Speed limit in low speed zone (m/s): ${lowSpeedZoneWarning.speedLimitInMetersPerSecond}")
             }
             WarningStatus.REACHED -> {
@@ -384,7 +390,8 @@ class WarnerEngineExample {
             return
         }
 
-        val distance = realisticViewWarning.distanceToRealisticViewInMeters
+        // The start indicates the RealisticView spot.
+        val distance = warningUpdate.distanceTillStartInMeters
 
         when (warningUpdate.warningStatus) {
             WarningStatus.AHEAD -> Log.d(TAG, "RealisticView ahead in: $distance meters.")
@@ -434,8 +441,9 @@ class WarnerEngineExample {
 
         when (warningUpdate.warningStatus) {
             WarningStatus.AHEAD -> Log.d(TAG,
+                // The start indicates the traffic merge spot.
                 "TrafficMerge: ${trafficMergeWarning.roadType.name} ahead in: " +
-                        "${trafficMergeWarning.distanceToTrafficMergeInMeters} meters" +
+                        "${warningUpdate.distanceTillStartInMeters} meters" +
                         ", merging from the ${trafficMergeWarning.side.name} side" +
                         ", with lanes = ${trafficMergeWarning.laneCount}")
             WarningStatus.PASSED -> Log.d(TAG,

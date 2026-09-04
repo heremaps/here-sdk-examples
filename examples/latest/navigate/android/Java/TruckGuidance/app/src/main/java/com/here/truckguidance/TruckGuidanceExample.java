@@ -484,6 +484,7 @@ public class TruckGuidanceExample {
 
         WarningStatus warningStatus = warningUpdate.warningStatus;
         if (warningStatus == WarningStatus.AHEAD || warningStatus == WarningStatus.APPROACHING) {
+            // The start indicates where the truck restriction becomes effective.
             Log.d(TAG, "A TruckRestriction ahead in: " + warningUpdate.distanceTillStartInMeters + " meters.");
         } else if (warningStatus == WarningStatus.REACHED || warningStatus == WarningStatus.INSIDE) {
             Log.d(TAG, "A TruckRestriction has been reached.");
@@ -510,6 +511,7 @@ public class TruckGuidanceExample {
 
         WarningStatus warningStatus = warningUpdate.warningStatus;
         if (warningStatus == WarningStatus.AHEAD || warningStatus == WarningStatus.APPROACHING) {
+            // The start indicates where the environmental zone begins.
             Log.d(TAG, "A EnvironmentalZone ahead in: " + warningUpdate.distanceTillStartInMeters + " meters.");
         } else if (warningStatus == WarningStatus.REACHED || warningStatus == WarningStatus.INSIDE) {
             Log.d(TAG, "A EnvironmentalZone has been reached.");

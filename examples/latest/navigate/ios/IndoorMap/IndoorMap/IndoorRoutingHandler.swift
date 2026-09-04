@@ -20,19 +20,27 @@
 import heresdk
 import UIKit
 
-public class IndoorRoutingHandler {
+/// Handles indoor routing: calculates routes between two indoor waypoints and renders them on the map.
+public class IndoorRoutingHandler: ObservableObject {
     private weak var venueService: VenueService?
     private weak var venueMap: VenueMap?
     private weak var mapView: MapView?
+
     private var routingEngine: IndoorRoutingEngine?
     private var routingController: IndoorRoutingController?
-    private var departure: IndoorWaypoint?
-    private var arrival: IndoorWaypoint?
-    private var routeOptions: IndoorRouteOptions = IndoorRouteOptions()
+    private var routeOptions: IndoorRouteOptions = IndoorRouteOptions(
+        routeOptions: RouteOptions(),
+        transportMode: .pedestrian,
+        indoorAvoidanceOptions: IndoorAvoidanceOptions(),
+        speedInMetersPerSecond: 1.0)
     private var routeStyle: IndoorRouteStyle = IndoorRouteStyle()
-    private var errorBanner = IndoorMap.BannerViewController()
-    weak var viewController: ViewController?
-    
+
+    @Published var isCalculatingRoute = false
+    @Published var routeError: String?
+
+    /// Incremented each time a route request starts; checked in the callback to discard stale results.
+    private var routeRequestId: Int = 0
+
     public func setup(_ venueEngine: VenueEngine?, mapView: MapView?) {
         self.mapView = mapView
         if let venueService = venueEngine?.venueService {
@@ -43,7 +51,32 @@ public class IndoorRoutingHandler {
         }
         initRouting()
     }
-    
+
+    private func initRouting() {
+        guard let venueMap = venueMap,
+              let venueService = venueService,
+              let mapView = mapView else { return }
+
+        routingEngine = IndoorRoutingEngine(_: venueService)
+        routingController = IndoorRoutingController(_: venueMap, mapView: mapView)
+
+        let middleBottomAnchor = Anchor2D(horizontal: 0.5, vertical: 1.0)
+        routeStyle.startMarker = initMapMarker(name: "indoor_route_start", anchor: Anchor2D(horizontal: 0.5, vertical: 0.5))
+        routeStyle.destinationMarker = initMapMarker(name: "ic_route_end", anchor: middleBottomAnchor)
+        routeStyle.walkMarker = initMapMarker(name: "indoor_walk")
+        routeStyle.driveMarker = initMapMarker(name: "indoor_drive")
+
+        let features: [IndoorLevelChangeFeatures] = [.stairs, .elevator, .escalator, .ramp]
+        for feature in features {
+            let featureString = toFeatureString(feature: feature)
+            let marker = initMapMarker(name: "indoor_" + featureString)
+            let upMarker = initMapMarker(name: "indoor_" + featureString + "_up")
+            let downMarker = initMapMarker(name: "indoor_" + featureString + "_down")
+            routeStyle.setIndoorMarkersFor(
+                feature: feature, upMarker: upMarker, downMarker: downMarker, exitMarker: marker)
+        }
+    }
+
     private func initMapMarker(name: String, anchor: Anchor2D = Anchor2D(horizontal: 0.5, vertical: 0.5)) -> MapMarker? {
         if let image = UIImage(named: name), let pngData = image.pngData() {
             let markerImage = MapImage(pixelData: pngData, imageFormat: .png)
@@ -51,7 +84,7 @@ public class IndoorRoutingHandler {
         }
         return nil
     }
-    
+
     private func toFeatureString(feature: IndoorLevelChangeFeatures) -> String {
         switch feature {
         case .elevator:
@@ -76,127 +109,145 @@ public class IndoorRoutingHandler {
             return "connector"
         }
     }
-    
-    private func initRouting() {
-        if let venueMap = venueMap, let venueService = venueService, let mapView = mapView {
-            routingEngine = IndoorRoutingEngine(_: venueService)
-            routingController = IndoorRoutingController(_: venueMap, mapView: mapView)
-            let middleBottomAnchor = Anchor2D(horizontal: 0.5, vertical: 1.0)
-            routeStyle.startMarker = initMapMarker(name: "indoor_route_start", anchor: Anchor2D(horizontal: 0.5, vertical: 0.5))
-            routeStyle.destinationMarker = initMapMarker(name: "ic_route_end", anchor: middleBottomAnchor)
-            routeStyle.walkMarker = initMapMarker(name: "indoor_walk")
-            routeStyle.driveMarker = initMapMarker(name: "indoor_drive")
-            let features = [IndoorLevelChangeFeatures.stairs, IndoorLevelChangeFeatures.elevator, IndoorLevelChangeFeatures.escalator, IndoorLevelChangeFeatures.ramp]
-            for feature in features {
-                let featureString = toFeatureString(feature: feature)
-                let marker = initMapMarker(name: "indoor_" + featureString)
-                let upMarker = initMapMarker(name: "indoor_" + featureString + "_up")
-                let downMarker = initMapMarker(name: "indoor_" + featureString + "_down")
-                routeStyle.setIndoorMarkersFor(
-                    feature: feature, upMarker: upMarker, downMarker: downMarker, exitMarker: marker)
-            }
-        }
-    }
-    
-    private func toIndoorFeature(_ tag: Int) -> IndoorLevelChangeFeatures {
-        switch tag {
-        case 0:
-            return IndoorLevelChangeFeatures.elevator
-        case 1:
-            return IndoorLevelChangeFeatures.escalator
-        case 2:
-            return IndoorLevelChangeFeatures.stairs
-        case 3:
-            return IndoorLevelChangeFeatures.ramp
-        case 4:
-            return IndoorLevelChangeFeatures.driveRamp
-        case 5:
-            return IndoorLevelChangeFeatures.carLift
-        case 6:
-            return IndoorLevelChangeFeatures.elevatorBank
-        default:
-            return IndoorLevelChangeFeatures.connector
-        }
-    }
 
-    public func startRouting(source: heresdk.VenueGeometry, destination: heresdk.VenueGeometry) {
+    /// Calculate and display a route between source and destination geometries.
+    /// - Parameters:
+    ///   - source: The source geometry (used for venue/level info)
+    ///   - destination: The destination geometry (used for venue/level info)
+    ///   - sourceCoordinates: Optional exact coordinates for source. If nil, uses source.center.
+    ///   - destinationCoordinates: Optional exact coordinates for destination. If nil, uses destination.center.
+    public func startRouting(source: VenueGeometry, destination: VenueGeometry,
+                             sourceCoordinates: GeoCoordinates? = nil,
+                             destinationCoordinates: GeoCoordinates? = nil) {
         let sourceVenueModel = source.level.drawing.venueModel
         let destinationVenueModel = destination.level.drawing.venueModel
         let sourceLevel = source.level
         let destinationLevel = destination.level
-        departure = IndoorWaypoint(coordinates: source.center, venueId: sourceVenueModel.identifier, levelId: sourceLevel.identifier)
-        arrival = IndoorWaypoint(coordinates: destination.center, venueId: destinationVenueModel.identifier, levelId: destinationLevel.identifier)
-        viewController?.spinnerView.isHidden = false
-        viewController?.startRotation()
 
-        routingEngine?.calculateRoute(from: departure!, to: arrival!, routeOptions: routeOptions) { error, routes, routeNotices in
-            self.viewController?.spinnerView.isHidden = true
-            self.viewController?.stopRotation()
-            if error == nil && ((routes?.isEmpty) == false), let routes = routes {
-                self.routingController?.showRoute(route: routes[0], style: self.routeStyle)
-            } else if let error = error {
+        let departure = IndoorWaypoint(
+            coordinates: sourceCoordinates ?? source.center,
+            venueId: sourceVenueModel.identifier,
+            levelId: sourceLevel.identifier)
+        let arrival = IndoorWaypoint(
+            coordinates: destinationCoordinates ?? destination.center,
+            venueId: destinationVenueModel.identifier,
+            levelId: destinationLevel.identifier)
+
+        isCalculatingRoute = true
+        routeError = nil
+
+        guard let routingEngine = routingEngine else {
+            isCalculatingRoute = false
+            routeError = "Routing engine not initialized"
+            return
+        }
+
+        routeRequestId += 1
+        let currentRequestId = routeRequestId
+
+        routingEngine.calculateRoute(from: departure, to: arrival, routeOptions: routeOptions) { [weak self] (error: IndoorRoutingError?, routes: [Route]?, notices: [IndoorRouteNotice]?) in
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                // Discard result if a newer request was made or routing was stopped
+                guard currentRequestId == self.routeRequestId else { return }
+
+                self.isCalculatingRoute = false
                 self.routingController?.hideRoute()
-                var errorMessage: String
-                switch error {
-                case .noNetwork:
-                    errorMessage = "The device has no internet connectivity"
-                case .badRequest:
-                    errorMessage = "A bad request was made"
-                case .unauthorizedAccess:
-                    errorMessage = "You don't have access to routing service"
-                case .forbidden:
-                    errorMessage = "Cannot serve this route"
-                case .notFound:
-                    errorMessage = "Resource not found"
-                case .tooManyRequests:
-                    errorMessage = "Too many request received by service"
-                case .internalServerError:
-                    errorMessage = "Internal server error"
-                case .badGateway:
-                    errorMessage = "Bad gateway"
-                case .serviceUnavailable:
-                    errorMessage = "Routing service is currently unavailable"
-                case .mapNotFound:
-                    errorMessage = "Requested map not found"
-                case .parsingError:
-                    errorMessage = "Routing response not in correct format"
-                case .unknownError:
-                    errorMessage = "Unknown Error encountered"
-                default:
-                    errorMessage = "Unknown Error encountered"
+
+                // 1. If error, show error and return
+                if let error = error {
+                    self.routeError = self.errorMessage(for: error)
+                    return
                 }
-                
-                // Ensure errorBanner is initialized only once
-                if self.errorBanner.parent == nil {
-                    self.errorBanner.showErrorBanner(withMessage: errorMessage)
-                    self.showBannerView()
+
+                // 2. If routeNotices exist and not empty, show the first one
+                if let notices = notices, !notices.isEmpty {
+                    let firstNotice = notices[0]
+                    self.routeError = firstNotice.title.isEmpty ? self.noticeCodeMessage(for: firstNotice.code) : firstNotice.title
                 }
-            } else if let routeNotices = routeNotices, !routeNotices.isEmpty {
-                self.routingController?.hideRoute()
-                let noticeMessages = routeNotices.map { $0.title }.joined(separator: "\n")
-                // Ensure errorBanner is initialized only once
-                if self.errorBanner.parent == nil {
-                    self.errorBanner.showErrorBanner(withMessage: noticeMessages)
-                    self.showBannerView()
-                }
-            } else {
-                self.routingController?.hideRoute()
-                // Ensure errorBanner is initialized only once
-                if self.errorBanner.parent == nil {
-                    self.errorBanner.showErrorBanner(withMessage: "No route found.")
-                    self.showBannerView()
+
+                // 3. If routes exist, show the route
+                if let routes = routes, let firstRoute = routes.first {
+                    self.routingController?.showRoute(route: firstRoute, style: self.routeStyle)
                 }
             }
         }
     }
-    
-    private func showBannerView() {
-        viewController!.addChild(errorBanner)
-        viewController!.view.addSubview(errorBanner.view)
-        errorBanner.didMove(toParent: viewController)
-    }
-    
+
+    /// Hide the currently displayed route.
     public func stopRouting() {
-        self.routingController?.hideRoute()
+        routeRequestId += 1
+        isCalculatingRoute = false
+        routingController?.hideRoute()
+        routeError = nil
+    }
+
+    private func errorMessage(for error: IndoorRoutingError?) -> String {
+        guard let error = error else { return "Unknown Error encountered" }
+        switch error {
+        case .noNetwork:
+            return "The device has no internet connectivity"
+        case .badRequest:
+            return "A bad request was made"
+        case .unauthorizedAccess:
+            return "You don't have access to routing service"
+        case .forbidden:
+            return "Cannot serve this route"
+        case .notFound:
+            return "Resource not found"
+        case .tooManyRequests:
+            return "Too many requests received by service"
+        case .internalServerError:
+            return "Internal server error"
+        case .badGateway:
+            return "Bad gateway"
+        case .serviceUnavailable:
+            return "Routing service is currently unavailable"
+        case .noRouteFound:
+            return "No route found between selected waypoints"
+        case .couldNotMatchOrigin:
+            return "Origin could not be matched"
+        case .couldNotMatchDestination:
+            return "Destination could not be matched"
+        case .mapNotFound:
+            return "Requested map not found"
+        case .parsingError:
+            return "Routing response not in correct format"
+        case .unknownError:
+            return "Unknown Error encountered"
+        default:
+            return "Unknown Error encountered"
+        }
+    }
+
+    private func noticeCodeMessage(for code: IndoorRouteNoticeCode) -> String {
+        switch code {
+        case .noRouteFound:
+            return "No route found between selected waypoints"
+        case .couldNotMatchOrigin:
+            return "Origin could not be matched"
+        case .couldNotMatchDestination:
+            return "Destination could not be matched"
+        case .violatedRouteHeadCondition:
+            return "Route head condition violated"
+        case .violatedRouteTailCondition:
+            return "Route tail condition violated"
+        case .violatedEntireRouteCondition:
+            return "Entire route condition violated"
+        case .ignoredVehicleEnable:
+            return "Vehicle enable setting was ignored"
+        case .ignoredVehicleSpeed:
+            return "Vehicle speed setting was ignored"
+        case .ignoredVehicleAvoidFeatures:
+            return "Vehicle avoid features setting was ignored"
+        case .violatedTransportMode:
+            return "Transport mode was violated"
+        case .couldNotMatchWaypoint:
+            return "Waypoint could not be matched"
+        case .noRouteFoundWithWaypoint:
+            return "No route found with the given waypoint"
+        @unknown default:
+            return "Route notice encountered"
+        }
     }
 }

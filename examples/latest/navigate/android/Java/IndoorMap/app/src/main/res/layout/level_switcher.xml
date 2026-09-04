@@ -9,11 +9,16 @@
         android:background="@drawable/level_up"
         />
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#CCBEC8D2"
+        />
+
     <ListView
         android:id="@+id/levelList"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="1dp"
         android:choiceMode="singleChoice"
         android:clickable="true"
         android:divider="@null"
@@ -24,6 +29,13 @@
         android:scrollbars="none"
         android:focusable="true"
         />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#CCBEC8D2"
+        />
+
     <ImageButton
         android:id="@+id/LevelArrowDown"
         android:layout_width="40dp"

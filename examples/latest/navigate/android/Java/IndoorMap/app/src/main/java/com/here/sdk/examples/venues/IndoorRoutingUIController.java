@@ -483,9 +483,11 @@ public class IndoorRoutingUIController {
         srcPosition = null;
         cancelBtn.setOnClickListener(v -> handleBackPressed());
 
-        // Check if same level as selected destination geometry level then put a destination marker
-        // on top of geometry.
-        handleDstMarkerInMapOnLevelChange();
+        // If same level as selected destination geometry, put a destination marker on top of geometry.
+        if (selectedDestinationGeometry.getLevel() == selectedVenue.getSelectedLevel()) {
+            dstMarker = new MapMarker(dstPosition, dstMarkerImage, new Anchor2D(0.5, 1));
+            mapView.getMapScene().addMapMarker(dstMarker);
+        }
     }
 
     /**
@@ -568,7 +570,7 @@ public class IndoorRoutingUIController {
             final IndoorRoutingError routingError,
             final List<Route> routeList,
             final List<IndoorRouteNotice> routeNotices) {
-        ((MainActivity)context).showProgressBarOnMap(false);
+        ((MainActivity) context).showProgressBarOnMap(false);
         controller.hideRoute();
 
         // Route calculation happens in async mode, so if user has already closed the UI, no need to render it.
@@ -576,35 +578,7 @@ public class IndoorRoutingUIController {
             return;
         }
 
-        if (routingError == null) {
-            if (routeList != null && !routeList.isEmpty()) {
-                Route route = routeList.get(0);
-                // check If length came as 0 it means same source and destination
-                Log.d(TAG, "Route Calculated with total Length: " + route.getLengthInMeters());
-                if (route.getLengthInMeters() <= 0) {
-                    String errorMsg = "Selected Source and Destination are same. Please select different"
-                            + " source and destination points.";
-                    showAlertOnRouteCalculationError(errorMsg);
-                    return;
-                }
-
-                controller.showRoute(route, routeStyle);
-
-                // change current level on venue to source geometry level.
-                if (selectedVenue.getSelectedLevel() != selectedSourceGeometry.getLevel()) {
-                    selectedVenue.setSelectedLevel(selectedSourceGeometry.getLevel());
-                }
-
-                // Move the camera to source position.
-                mapView.getCamera().lookAt(srcPosition);
-                // remove marker from map once route is rendered.
-                removeMarkerImageFromMap();
-                isRouteRenderedOnMap = true;
-            } else {
-                isRouteRenderedOnMap = false;
-                showAlertOnRouteCalculationError("No route found.");
-            }
-        } else if (routingError != null) {
+        if (routingError != null) {
             isRouteRenderedOnMap = false;
             String errorMsg;
             switch (routingError) {
@@ -649,7 +623,9 @@ public class IndoorRoutingUIController {
             }
             Log.d(TAG, "Route Calculation Error Msg: " + errorMsg);
             showAlertOnRouteCalculationError(errorMsg);
+            return;
         }
+
         if (routeNotices != null && !routeNotices.isEmpty()) {
             isRouteRenderedOnMap = false;
             StringBuilder noticeMessages = new StringBuilder();
@@ -661,6 +637,31 @@ public class IndoorRoutingUIController {
             }
             Log.d(TAG, "Route Notices: " + noticeMessages);
             showAlertOnRouteCalculationError(noticeMessages.toString());
+        }
+
+        if (routeList != null && !routeList.isEmpty()) {
+            Route route = routeList.get(0);
+            // check If length came as 0 it means same source and destination
+            Log.d(TAG, "Route Calculated with total Length: " + route.getLengthInMeters());
+            if (route.getLengthInMeters() <= 0) {
+                String errorMsg = "Selected Source and Destination are same. Please select different"
+                        + " source and destination points.";
+                showAlertOnRouteCalculationError(errorMsg);
+                return;
+            }
+
+            controller.showRoute(route, routeStyle);
+
+            // change current level on venue to source geometry level.
+            if (selectedVenue.getSelectedLevel() != selectedSourceGeometry.getLevel()) {
+                selectedVenue.setSelectedLevel(selectedSourceGeometry.getLevel());
+            }
+
+            // Move the camera to source position.
+            mapView.getCamera().lookAt(srcPosition);
+            // remove marker from map once route is rendered.
+            removeMarkerImageFromMap();
+            isRouteRenderedOnMap = true;
         }
     }
 
@@ -808,6 +809,10 @@ public class IndoorRoutingUIController {
      * destination marker on Venue or remove it.
      */
     public void handleDstMarkerInMapOnLevelChange() {
+        if (currentState == State.SPACE_SELECTION_DETAILS && selectedDestinationGeometry.getLevel() != selectedVenue.getSelectedLevel()) {
+            handleBackPressed();
+            return;
+        }
         // If route is rendered on map, no need to put the marker on map.
         if(isRouteRenderedOnMap) {
             return;

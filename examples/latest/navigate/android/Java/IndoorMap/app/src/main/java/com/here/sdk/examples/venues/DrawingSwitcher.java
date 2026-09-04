@@ -122,6 +122,8 @@ public class DrawingSwitcher implements View.OnClickListener, AdapterView.OnItem
         VenueModel venueModel = venue.getVenueModel();
         // Set the selected drawing when a user clicks on the item in the list.
         venue.setSelectedDrawing(venueModel.getDrawings().get(position));
+        // Highlight the selected item.
+        updateSelectedDrawingPosition();
         // Hide the list.
         setCollapsed(true);
     }
@@ -157,6 +159,9 @@ public class DrawingSwitcher implements View.OnClickListener, AdapterView.OnItem
             // Set a new adapter with the new list of drawing's names.
             final StringArrayAdapter adapter = new StringArrayAdapter(context, drawingNames);
             listView.setAdapter(adapter);
+
+            // Highlight the currently selected drawing.
+            updateSelectedDrawingPosition();
 
             // This Runnable gets called after the ListView has been measured
             // and laid out. Then we calculate the height of listView.
@@ -242,6 +247,27 @@ public class DrawingSwitcher implements View.OnClickListener, AdapterView.OnItem
             return;
         }
         String selectedDrawingName = getDrawingName(selectedDrawing);
+        updateSelectedDrawingPosition();
+    }
+
+    // Updates the adapter's selected position to match the currently selected drawing.
+    private void updateSelectedDrawingPosition() {
+        if (venue == null) return;
+        ListAdapter adapter = listView.getAdapter();
+        if (!(adapter instanceof StringArrayAdapter)) return;
+
+        VenueDrawing selectedDrawing = venue.getSelectedDrawing();
+
+        VenueModel venueModel = venue.getVenueModel();
+        List<VenueDrawing> drawings = venueModel.getDrawings();
+        int selectedIndex = -1;
+        for (int i = 0; i < drawings.size(); i++) {
+            if (drawings.get(i) == selectedDrawing) {
+                selectedIndex = i;
+                break;
+            }
+        }
+        ((StringArrayAdapter) adapter).setSelectedPosition(selectedIndex);
     }
 
     public void setVisible(boolean visible) {

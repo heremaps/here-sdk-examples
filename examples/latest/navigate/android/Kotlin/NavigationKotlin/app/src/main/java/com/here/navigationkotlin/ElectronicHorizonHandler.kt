@@ -68,6 +68,7 @@ import com.here.sdk.transport.TransportMode
 // it will asynchronously request the data from the HERE backend services.
 // It is recommended to use a prefetcher to prefetch region data along the route in advance (not shown in this class).
 class ElectronicHorizonHandler(private val mapView: MapView) {
+
     private var electronicHorizon: ElectronicHorizonEngine? = null
     private val electronicHorizonDataLoader: ElectronicHorizonDataLoader
     private var electronicHorizonListener: ElectronicHorizonListener
@@ -94,10 +95,12 @@ class ElectronicHorizonHandler(private val mapView: MapView) {
         segmentDataLoaderOptions.loadRoadSigns = true
         segmentDataLoaderOptions.loadSpeedLimits = true
         segmentDataLoaderOptions.loadRoadAttributes = true
+        segmentDataLoaderOptions.loadStreetNamesAndRoadNumbers = true
 
         // The cache size defines how many road segments are cached locally. A larger cache size
         // can reduce data usage, but requires more storage memory in the cache.
-        val segmentDataCacheSize = 10
+        // A small cache can replace previously loaded segments too early.
+        val segmentDataCacheSize = 1000
         try {
             electronicHorizonDataLoader = ElectronicHorizonDataLoader(
                 this.sDKNativeEngine,
@@ -255,6 +258,12 @@ class ElectronicHorizonHandler(private val mapView: MapView) {
                         continue
                     }
 
+                    // Wait until first-level side-path data is fully loaded before logging side streets
+                    // that branch directly from the active route.
+                    if (loadedLevel == 1) {
+                        notifySideStreetInfos(allPaths)
+                    }
+
                     // For side-path levels (level > 0): walk all path segments and use
                     // sidePathIndexes to find paths that branch off at each segment.
                     // sidePathIndexes contains indexes into allPaths[], pointing to branching paths.
@@ -364,6 +373,73 @@ class ElectronicHorizonHandler(private val mapView: MapView) {
         segmentPolylineMap.clear()
     }
 
+    // Finds first-level side streets whose parent is the currently followed navigation path.
+    private fun notifySideStreetInfos(allPaths: List<com.here.sdk.electronichorizon.ElectronicHorizonPath>) {
+        for ((pathIndex, path) in allPaths.withIndex()) {
+            if (path.level != 1 || path.parentPathIndex == null || path.parentPathIndex != 0) {
+                continue
+            }
+
+            val sideStreetInfo = findSideStreetInfo(path, pathIndex) ?: continue
+            Log.d(
+                LOG_TAG,
+                "SideStreetName near active route: ${sideStreetInfo.streetName} at lat/lon: " +
+                    "${sideStreetInfo.coordinateAtOffsetFromSegmentStart.latitude}/" +
+                    "${sideStreetInfo.coordinateAtOffsetFromSegmentStart.longitude}, " +
+                    "pathIndex=${sideStreetInfo.pathIndex}, segmentLocalId=${sideStreetInfo.segmentLocalId}"
+            )
+        }
+    }
+
+    private fun findSideStreetInfo(
+        branchingPath: com.here.sdk.electronichorizon.ElectronicHorizonPath,
+        pathIndex: Int
+    ): SideStreetInfo? {
+        for (segment in branchingPath.segments) {
+            val directedOCMSegmentId = segment.segmentId.ocmSegmentId ?: continue
+            val result = electronicHorizonDataLoader.getSegment(directedOCMSegmentId)
+            if (result.errorCode != null || result.segmentData == null) {
+                continue
+            }
+
+            val segmentData = result.segmentData!!
+            val sideStreetName = getFirstStreetLabel(segmentData) ?: continue
+            val polyline = segmentData.polyline ?: continue
+            val sideStreetCoordinates = polyline.coordinatesAtOffsetInMeters(
+                SIDE_STREET_LOG_OFFSET_METERS,
+                GeoPolylineDirection.FROM_BEGINNING
+            )
+            return SideStreetInfo(
+                sideStreetName,
+                sideStreetCoordinates,
+                pathIndex,
+                directedOCMSegmentId.id.localId
+            )
+        }
+
+        return null
+    }
+
+    // Returns the first non-empty street label (street name or road number).
+    private fun getFirstStreetLabel(segmentData: SegmentData): String? {
+        val segmentSpans = segmentData.spans ?: return null
+        if (segmentSpans.isEmpty()) {
+            return null
+        }
+
+        for (segmentSpanData in segmentSpans) {
+            var streetName: String? = segmentSpanData.streetNames?.getDefaultValue()
+            if (streetName.isNullOrBlank()) {
+                streetName = segmentSpanData.roadNumbers?.getDefaultValue()
+            }
+            if (!streetName.isNullOrBlank()) {
+                return streetName
+            }
+        }
+
+        return null
+    }
+
     // Log road sign information from a fully loaded segment. Demonstrates how to read
     // road attributes from SegmentData for MPP segments.
     private fun logRoadSigns(segmentData: SegmentData, directedOCMSegmentId: DirectedOCMSegmentId) {
@@ -412,6 +488,16 @@ class ElectronicHorizonHandler(private val mapView: MapView) {
         }
 
     companion object {
+        // Optional: Using a small offset can help mark/log the side street more clearly for visualization.
+        private const val SIDE_STREET_LOG_OFFSET_METERS = 20.0
         private val LOG_TAG: String = ElectronicHorizonHandler::class.java.name
     }
+
+    private data class SideStreetInfo(
+        val streetName: String,
+        // Representative point on the matched side-street segment.
+        val coordinateAtOffsetFromSegmentStart: GeoCoordinates,
+        val pathIndex: Int,
+        val segmentLocalId: Int,
+    )
 }

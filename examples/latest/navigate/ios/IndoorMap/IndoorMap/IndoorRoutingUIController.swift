@@ -17,647 +17,450 @@
  * License-Filename: LICENSE
  */
 
-import UIKit
 import heresdk
+import SwiftUI
+import Combine
 
-
-// GradientButton subclass for gradient background support
-class GradientButton: UIButton {
-    private var gradientLayer: CAGradientLayer?
-
-    func setGradientBackground(startColor: UIColor, endColor: UIColor) {
-        gradientLayer?.removeFromSuperlayer()
-        let gradient = CAGradientLayer()
-        gradient.colors = [startColor.cgColor, endColor.cgColor]
-        // 45 degree angle: startPoint (0,1) to endPoint (1,0)
-        gradient.startPoint = CGPoint(x: 0, y: 1)
-        gradient.endPoint = CGPoint(x: 1, y: 0)
-        gradient.frame = bounds
-        gradient.cornerRadius = layer.cornerRadius
-        layer.insertSublayer(gradient, at: 0)
-        gradientLayer = gradient
-    }
-
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        gradientLayer?.frame = bounds
-        gradientLayer?.cornerRadius = layer.cornerRadius
-    }
+/// States for the indoor routing bottom sheet
+enum IndoorRoutingState {
+    case closed
+    case spaceSelected
+    case routingUI
+    case showSpaceList
 }
 
-public class IndoorRoutingUIController: UIViewController {
+/// Space selection state for routing
+enum SpaceSelectionState {
+    case selectingArrival
+    case selectingDeparture
+}
 
-    public enum States {
-        case ROUTING_CLOSED
-        case SPACE_SELECTED
-        case ROUTING_UI
-        case SHOW_SPACE_LIST
-    }
-    
-    public enum SpaceSelection {
-        case SELECTING_ARRIVAL_SPACE
-        case SELECTING_DEPARTURE_SPACE
-    }
-    
-    public var currentState: States!
-    public var spaceSelectionState: SpaceSelection!
-    
-    public var selectedArrivalGeometry: heresdk.VenueGeometry? {
+/// ViewModel managing the indoor routing UI state
+class IndoorRoutingViewModel: ObservableObject {
+    @Published var currentState: IndoorRoutingState = .closed
+    @Published var spaceSelectionState: SpaceSelectionState = .selectingArrival
+    @Published var selectedArrivalGeometry: VenueGeometry?
+    @Published var selectedDepartureGeometry: VenueGeometry?
+    @Published var searchText: String = ""
+    @Published var routeError: String?
+
+    weak var selectedVenue: Venue?
+    weak var mapView: MapView?
+    weak var venueTapHandler: VenueTapHandler?
+
+    var indoorRoutingHandler: IndoorRoutingHandler? {
         didSet {
-            if isViewLoaded, let data = selectedArrivalGeometry {
-                addDynamicContentToSpaceSelectionView(with: data)
-                currentState = .SPACE_SELECTED
-                loadExpectedView()
-            }
+            handlerCancellable = indoorRoutingHandler?.$routeError
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] error in self?.routeError = error }
         }
     }
-    
-    public var selectedDepartureGeometry: VenueGeometry?
-    public var selectedVenue: Venue!
-    public var mapview: MapView!
-    public var departureLable: UILabel!
-    public var indoorRoutingHandler: IndoorRoutingHandler!
-    public var topologyButton: UIImageView!
-    public var topologyVisibility: Bool!
-    public var venueTapHandler: VenueTapHandler!
+    private var handlerCancellable: AnyCancellable?
     var markerImage: MapImage?
     var marker: MapMarker?
-    var iconApplied: Bool = false
-    // Container View
-    var containerView: UIView!
-        
-    // subviews
-    var spaceSelectionView: UIView!
-    var indoorRoutingView: UIView!
-    var spaceListView: UIView!
-    private var handlerView: UIView!
-    private var panGestureRecognizer: UIPanGestureRecognizer!
-    private var currentHeight: CGFloat = 150 // Default height
-    private let defaultHeight: CGFloat = 150
-    private let expandedHeight: CGFloat = 800
-    
-    private var arrivalLable: UILabel!
-    private var customSearchBar: IndoorMap.SearchBar!
-    private var geometryTableView: UITableView!
-    private var allGeometries: [VenueGeometry] = []
-    private var filteredGeometries: [VenueGeometry] = []
+    var iconApplied = false
 
-    public override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        view.layer.cornerRadius = 16
-        view.clipsToBounds = true
-        
-        setupContainerView()
-        setupHandlerView()
-        setupSpaceSelectionView()
-        
-        if let data = selectedArrivalGeometry {
-            addDynamicContentToSpaceSelectionView(with: data)
+    /// Exact tapped coordinates for departure (nil means use geometry center)
+    var departureCoordinates: GeoCoordinates?
+    /// Exact tapped coordinates for arrival (nil means use geometry center)
+    var arrivalCoordinates: GeoCoordinates?
+
+    /// All geometries from the selected venue (for space list)
+    var allGeometries: [VenueGeometry] {
+        selectedVenue?.venueModel.geometries ?? []
+    }
+
+    /// Filtered geometries based on search text
+    var filteredGeometries: [VenueGeometry] {
+        if searchText.isEmpty {
+            return allGeometries
         }
-        currentState = .SPACE_SELECTED
-        loadExpectedView()
-    }
-    
-    func setupContainerView() {
-        containerView = UIView(frame: view.bounds)
-        spaceSelectionView = UIView(frame: containerView.bounds)
-        indoorRoutingView = UIView(frame: containerView.bounds)
-        spaceListView = UIView(frame: containerView.bounds)
-        view.addSubview(containerView)
-    }
-    
-    private func setupHandlerView() {
-        handlerView = UIView()
-        handlerView.backgroundColor = UIColor.systemGray4
-        handlerView.layer.cornerRadius = 3
-        handlerView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(handlerView)
-        NSLayoutConstraint.activate([
-            handlerView.topAnchor.constraint(equalTo: view.topAnchor, constant: 8),
-            handlerView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            handlerView.widthAnchor.constraint(equalToConstant: 40),
-            handlerView.heightAnchor.constraint(equalToConstant: 6)
-        ])
-        panGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture(_:)))
-        view.addGestureRecognizer(panGestureRecognizer)
-    }
-    
-    func setupSpaceSelectionView() {
-        containerView.addSubview(spaceSelectionView)
-    }
-    
-    
-    func setupIndoorRoutingView() {
-        containerView.addSubview(indoorRoutingView)
-        addDynamicContentToIndoorRoutingView()
-    }
-    
-    func setupSpaceListView() {
-        containerView.addSubview(spaceListView)
-        addDynamicContentToSpaceList()
-    }
-
-    public func addDynamicContentToSpaceSelectionView(with data: VenueGeometry) {
-        
-        spaceSelectionView.subviews.forEach { $0.removeFromSuperview() }
-        // Label 1
-        let selectedSpaceName = UILabel()
-        selectedSpaceName.numberOfLines = 0
-        selectedSpaceName.lineBreakMode = .byWordWrapping
-        var name = data.name.isEmpty ? data.identifier : data.name
-        name += ", " + data.level.name
-        selectedSpaceName.text = name
-        
-        selectedSpaceName.font = UIFont.systemFont(ofSize: 20, weight: .bold)
-        selectedSpaceName.translatesAutoresizingMaskIntoConstraints = false
-        
-        // Label 2
-        let selectedSpaceAddress = UILabel()
-        selectedSpaceAddress.text = data.internalAddress?.address
-        selectedSpaceAddress.font = UIFont.systemFont(ofSize: 16)
-        selectedSpaceAddress.translatesAutoresizingMaskIntoConstraints = false
-        
-        // Button
-        let directionButton = GradientButton(type: .system)
-        directionButton.setTitle("Directions", for: .normal)
-        directionButton.setTitleColor(.black, for: .normal)
-        directionButton.translatesAutoresizingMaskIntoConstraints = false
-        directionButton.backgroundColor = .clear // Set to clear to show gradient
-        directionButton.layer.cornerRadius = 20
-        directionButton.clipsToBounds = true
-        directionButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
-        directionButton.setGradientBackground(
-            startColor: UIColor(hex: "#69AdF8"),
-            endColor: UIColor(hex: "#53D9D0")
-        )
-        directionButton.addTarget(self, action: #selector(setCurrentStateRoutingUI), for: .touchUpInside)
-
-        // Close image
-        let closeButtonImageView = UIImageView()
-        closeButtonImageView.translatesAutoresizingMaskIntoConstraints = false
-        closeButtonImageView.contentMode = .scaleAspectFit
-        closeButtonImageView.clipsToBounds = true
-        closeButtonImageView.isUserInteractionEnabled = true
-        closeButtonImageView.image = UIImage(systemName: "xmark")
-        closeButtonImageView.tintColor = .black
-        closeButtonImageView.layer.cornerRadius = 12
-        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(SpaceSelectioncloseTapped))
-        closeButtonImageView.addGestureRecognizer(tapGestureRecognizer)
-
-        
-        // Add to spaceSelectionView
-        spaceSelectionView.addSubview(selectedSpaceName)
-        spaceSelectionView.addSubview(selectedSpaceAddress)
-        spaceSelectionView.addSubview(directionButton)
-        spaceSelectionView.addSubview(closeButtonImageView)
-        
-        // Constraints
-        NSLayoutConstraint.activate([
-            selectedSpaceName.topAnchor.constraint(equalTo: spaceSelectionView.topAnchor, constant: 20),
-            selectedSpaceName.leadingAnchor.constraint(equalTo: spaceSelectionView.leadingAnchor, constant: 20),
-            selectedSpaceName.trailingAnchor.constraint(equalTo: spaceSelectionView.trailingAnchor, constant: -20),
-
-            selectedSpaceAddress.topAnchor.constraint(equalTo: selectedSpaceName.bottomAnchor, constant: 5),
-            selectedSpaceAddress.leadingAnchor.constraint(equalTo: spaceSelectionView.leadingAnchor, constant: 20),
-
-            directionButton.topAnchor.constraint(equalTo: selectedSpaceAddress.bottomAnchor, constant: 10),
-            directionButton.leadingAnchor.constraint(equalTo: spaceSelectionView.leadingAnchor, constant: 20),
-            directionButton.trailingAnchor.constraint(equalTo: spaceSelectionView.trailingAnchor, constant: -20),
-            //directionButton.bottomAnchor.constraint(equalTo: spaceSelectionView.bottomAnchor, constant: -10),
-
-            closeButtonImageView.topAnchor.constraint(equalTo: spaceSelectionView.topAnchor, constant: 20),
-            closeButtonImageView.trailingAnchor.constraint(equalTo: spaceSelectionView.trailingAnchor, constant: -20),
-            closeButtonImageView.widthAnchor.constraint(equalToConstant: 25),
-            closeButtonImageView.heightAnchor.constraint(equalToConstant: 25)
-
-        ])
-    }
-    
-    func addDynamicContentToIndoorRoutingView() {
-        // Remove previous subviews to avoid stacking
-        indoorRoutingView.subviews.forEach { $0.removeFromSuperview() }
-        // departure section
-        let departureView = UIView()
-        departureView.translatesAutoresizingMaskIntoConstraints = false
-        let departureIcon = UIImageView()
-        departureIcon.translatesAutoresizingMaskIntoConstraints = false
-        departureIcon.contentMode = .scaleAspectFit
-        departureIcon.clipsToBounds = true
-        departureIcon.image = UIImage(systemName: "smallcircle.filled.circle")
-        departureIcon.tintColor = .black
-        
-        // Remove departureLable from previous superview if needed
-        departureLable = UILabel()
-        departureLable.translatesAutoresizingMaskIntoConstraints = false
-        departureLable.textColor = UIColor(hex: "#53D9D0")
-        departureLable.font = UIFont.systemFont(ofSize: 17, weight: .medium)
-        departureLable.numberOfLines = 0
-        departureLable.lineBreakMode = .byWordWrapping
-        departureLable.text = "Choose a starting point"
-        departureLable.isUserInteractionEnabled = true
-        let departureTap = UITapGestureRecognizer(target: self, action: #selector(departureLabelTapped))
-        
-        departureView.addSubview(departureIcon)
-        departureView.addSubview(departureLable)
-        departureView.isUserInteractionEnabled = true
-        departureView.addGestureRecognizer(departureTap)
-        
-        NSLayoutConstraint.activate([
-            departureIcon.leadingAnchor.constraint(equalTo: departureView.leadingAnchor, constant: 10),
-            departureIcon.topAnchor.constraint(equalTo: departureView.topAnchor, constant: 10),
-            departureIcon.bottomAnchor.constraint(equalTo: departureView.bottomAnchor, constant: -10),
-            departureIcon.widthAnchor.constraint(equalToConstant: 20),
-            departureIcon.heightAnchor.constraint(equalToConstant: 20),
-            departureLable.leadingAnchor.constraint(equalTo: departureIcon.trailingAnchor, constant: 5),
-            departureLable.topAnchor.constraint(equalTo: departureIcon.topAnchor),
-            departureLable.bottomAnchor.constraint(equalTo: departureIcon.bottomAnchor),
-            departureLable.trailingAnchor.constraint(equalTo: departureView.trailingAnchor, constant: -5)
-        ])
-        // separator line
-        let separatorView = UIView()
-        separatorView.translatesAutoresizingMaskIntoConstraints = false
-        separatorView.backgroundColor = .systemGray6
-        
-        // arrival section
-        let arrivalView = UIView()
-        arrivalView.translatesAutoresizingMaskIntoConstraints = false
-        let arrivalIcon = UIImageView()
-        arrivalIcon.translatesAutoresizingMaskIntoConstraints = false
-        arrivalIcon.contentMode = .scaleAspectFit
-        arrivalIcon.clipsToBounds = true
-        arrivalIcon.image = UIImage(named: "indoor_destination")
-        arrivalIcon.tintColor = .black
-        
-        arrivalLable = UILabel()
-        arrivalLable.translatesAutoresizingMaskIntoConstraints = false
-        arrivalLable.numberOfLines = 0
-        arrivalLable.lineBreakMode = .byWordWrapping
-        arrivalLable.textColor = .black
-        arrivalLable.font = UIFont.systemFont(ofSize: 17, weight: .medium)
-        // Set arrival label text based on selectedSpace
-        if let space = selectedArrivalGeometry {
-            var name = space.name.isEmpty ? space.identifier : space.name
-            name += ", " + space.level.name
-            arrivalLable.text = name
+        let searchLower = searchText.lowercased()
+        return allGeometries.filter {
+            let displayName = $0.name.isEmpty ? $0.identifier : $0.name
+            return displayName.lowercased().contains(searchLower)
+                || $0.level.name.lowercased().contains(searchLower)
         }
-        arrivalView.addSubview(arrivalIcon)
-        arrivalView.addSubview(arrivalLable)
-        let arrivalTap = UITapGestureRecognizer(target: self, action: #selector(arrivalLabelTapped))
-        arrivalView.isUserInteractionEnabled = true
-        arrivalView.addGestureRecognizer(arrivalTap)
-        
-        NSLayoutConstraint.activate([
-            arrivalIcon.leadingAnchor.constraint(equalTo: arrivalView.leadingAnchor, constant: 10),
-            arrivalIcon.topAnchor.constraint(equalTo: arrivalView.topAnchor, constant: 10),
-            arrivalIcon.bottomAnchor.constraint(equalTo: arrivalView.bottomAnchor, constant: -10),
-            arrivalIcon.widthAnchor.constraint(equalToConstant: 20),
-            arrivalIcon.heightAnchor.constraint(equalToConstant: 20),
-            arrivalLable.leadingAnchor.constraint(equalTo: arrivalIcon.trailingAnchor, constant: 5),
-            arrivalLable.topAnchor.constraint(equalTo: arrivalIcon.topAnchor),
-            arrivalLable.bottomAnchor.constraint(equalTo: arrivalIcon.bottomAnchor),
-            arrivalLable.trailingAnchor.constraint(equalTo: arrivalView.trailingAnchor, constant: -5)
-        ])
-        
-        // Close image
-        let closeButtonImageView = UIImageView()
-        closeButtonImageView.translatesAutoresizingMaskIntoConstraints = false
-        closeButtonImageView.contentMode = .scaleAspectFit
-        closeButtonImageView.clipsToBounds = true
-        closeButtonImageView.isUserInteractionEnabled = true
-        closeButtonImageView.image = UIImage(systemName: "xmark")
-        closeButtonImageView.tintColor = .black
-        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(IndoorRoutingCloseTapped))
-        closeButtonImageView.addGestureRecognizer(tapGestureRecognizer)
-        
-        indoorRoutingView.addSubview(departureView)
-        indoorRoutingView.addSubview(separatorView)
-        indoorRoutingView.addSubview(arrivalView)
-        indoorRoutingView.addSubview(closeButtonImageView)
-        
-        NSLayoutConstraint.activate([
-            departureView.leadingAnchor.constraint(equalTo: indoorRoutingView.leadingAnchor),
-            departureView.trailingAnchor.constraint(equalTo: indoorRoutingView.trailingAnchor, constant: -40),
-            departureView.topAnchor.constraint(equalTo: indoorRoutingView.topAnchor, constant: 20),
-            departureView.heightAnchor.constraint(equalToConstant: 40),
-            separatorView.topAnchor.constraint(equalTo: departureView.bottomAnchor),
-            separatorView.leadingAnchor.constraint(equalTo: indoorRoutingView.leadingAnchor, constant: 20),
-            separatorView.trailingAnchor.constraint(equalTo: indoorRoutingView.trailingAnchor, constant: -80),
-            separatorView.heightAnchor.constraint(equalToConstant: 2),
-            arrivalView.leadingAnchor.constraint(equalTo: indoorRoutingView.leadingAnchor),
-            arrivalView.trailingAnchor.constraint(equalTo: indoorRoutingView.trailingAnchor, constant: -40),
-            arrivalView.topAnchor.constraint(equalTo: separatorView.bottomAnchor),
-            arrivalView.heightAnchor.constraint(equalToConstant: 40),
-            closeButtonImageView.topAnchor.constraint(equalTo: indoorRoutingView.topAnchor, constant: 20),
-            closeButtonImageView.trailingAnchor.constraint(equalTo: indoorRoutingView.trailingAnchor, constant: -20),
-            closeButtonImageView.widthAnchor.constraint(equalToConstant: 25),
-            closeButtonImageView.heightAnchor.constraint(equalToConstant: 25),
-        ])
     }
-    
-    
-    @IBAction func SpaceSelectioncloseTapped(_ sender: Any) {
-        currentState = .ROUTING_CLOSED
-        if iconApplied {
-            if let currentMarker = marker {
-                mapview.mapScene.removeMapMarker(currentMarker)
-                iconApplied = false
-            }
-        }
-        dismissBottomSheet()
+
+    /// Called when a space is selected (tapped) on a venue with topologies
+    func showSpaceSelection(geometry: VenueGeometry, venue: Venue, mapView: MapView, tapHandler: VenueTapHandler) {
+        self.selectedArrivalGeometry = geometry
+        self.selectedVenue = venue
+        self.mapView = mapView
+        self.venueTapHandler = tapHandler
+        self.currentState = .spaceSelected
     }
-    
-    @IBAction func IndoorRoutingCloseTapped(_ sender: Any) {
-        currentState = .SPACE_SELECTED
-        loadExpectedView()
-        topologyVisibility = false
-        if selectedVenue.venueModel.topologies.isEmpty == false {
-            topologyButton.image = UIImage(named: "topology-default")
-            topologyButton.isHidden = false
+
+    /// Close the space selection view
+    func closeSpaceSelection() {
+        currentState = .closed
+        if iconApplied, let currentMarker = marker {
+            mapView?.mapScene.removeMapMarker(currentMarker)
+            iconApplied = false
         }
-        if selectedArrivalGeometry?.lookupType == .icon {
-            if let image = getMarkerImage() {
-                marker = MapMarker(at: selectedArrivalGeometry!.center,
-                                   image: image,
-                                   anchor: Anchor2D(horizontal: 0.5, vertical: 1.0))
-                if let marker = marker {
-                    mapview.mapScene.addMapMarker(marker)
-                    iconApplied = true
+        venueTapHandler?.deselectGeometry()
+    }
+
+    /// Transition to routing UI state
+    func openRoutingUI() {
+        currentState = .routingUI
+        selectedVenue?.isTopologyVisible = false
+        // Remove highlight from selected geometry
+        if let geometry = selectedArrivalGeometry, let venue = selectedVenue {
+            venue.setCustomStyle(geometries: [geometry], style: nil, labelStyle: nil)
+        }
+    }
+
+    /// Close routing UI and return to space selected state
+    func closeRoutingUI() {
+        currentState = .spaceSelected
+        selectedDepartureGeometry = nil
+        departureCoordinates = nil
+        arrivalCoordinates = nil
+        indoorRoutingHandler?.stopRouting()
+        // Re-highlight the arrival geometry with marker if it's icon type
+        if let geometry = selectedArrivalGeometry {
+            if geometry.lookupType == .icon {
+                if let image = getMarkerImage() {
+                    marker = MapMarker(at: geometry.center,
+                                       image: image,
+                                       anchor: Anchor2D(horizontal: 0.5, vertical: 1.0))
+                    if let marker = marker {
+                        mapView?.mapScene.addMapMarker(marker)
+                        iconApplied = true
+                    }
                 }
             }
         }
-        indoorRoutingHandler.stopRouting()
     }
-    
+
+    /// Show space list for selecting departure or arrival
+    func showSpaceList(for selection: SpaceSelectionState) {
+        spaceSelectionState = selection
+        searchText = ""
+        currentState = .showSpaceList
+    }
+
+    /// Called when a space is picked from the space list (uses geometry center)
+    func selectSpace(_ geometry: VenueGeometry) {
+        if spaceSelectionState == .selectingDeparture {
+            selectedDepartureGeometry = geometry
+            departureCoordinates = nil // Use center of space
+        } else {
+            selectedArrivalGeometry = geometry
+            arrivalCoordinates = nil // Use center of space
+        }
+
+        // Switch level and center map
+        if let departure = selectedDepartureGeometry {
+            selectedVenue?.selectedLevel = departure.level
+            mapView?.camera.lookAt(point: departure.center)
+        }
+
+        // If both waypoints are set, start routing
+        if let source = selectedDepartureGeometry, let destination = selectedArrivalGeometry {
+            indoorRoutingHandler?.startRouting(
+                source: source, destination: destination,
+                sourceCoordinates: departureCoordinates,
+                destinationCoordinates: arrivalCoordinates)
+        }
+
+        // Collapse back to routing UI
+        searchText = ""
+        currentState = .routingUI
+    }
+
+    /// Dismiss the entire routing bottom sheet
+    func dismiss() {
+        currentState = .closed
+        selectedDepartureGeometry = nil
+        departureCoordinates = nil
+        arrivalCoordinates = nil
+        indoorRoutingHandler?.stopRouting()
+        if iconApplied, let currentMarker = marker {
+            mapView?.mapScene.removeMapMarker(currentMarker)
+            iconApplied = false
+        }
+        venueTapHandler?.deselectGeometry()
+    }
+
     func getMarkerImage() -> MapImage? {
         if let image = markerImage {
             return image
         }
-
-        // Get an image for MapMarker.
-        if let image = UIImage(named: "poi.png"), let pngData = image.pngData() {
+        if let image = UIImage(named: "poi"), let pngData = image.pngData() {
             markerImage = MapImage(pixelData: pngData, imageFormat: .png)
         }
         return markerImage
     }
-    
-    @objc private func handlePanGesture(_ gesture: UIPanGestureRecognizer) {
-        if currentState == .SHOW_SPACE_LIST {
-            guard let superview = view.superview else { return }
-            let translation = gesture.translation(in: superview)
-            switch gesture.state {
-            /*case .changed:
-                let newHeight = max(defaultHeight, min(expandedHeight, currentHeight - translation.y))
-                view.frame.origin.y = superview.frame.height - newHeight
-                view.frame.size.height = newHeight*/
-            case .ended:
-                let velocity = gesture.velocity(in: superview).y
-                if velocity > 0 {
-                    collapseBottomSheet()
+}
+
+// MARK: - Space Selection View
+
+/// Space Selection View - shows space name, address, close button, and Directions button
+struct SpaceSelectionView: View {
+    @ObservedObject var viewModel: IndoorRoutingViewModel
+
+    var body: some View {
+        if let geometry = viewModel.selectedArrivalGeometry {
+            VStack(alignment: .leading, spacing: 0) {
+                // Space name
+                let name: String = {
+                    if !geometry.name.isEmpty {
+                        return geometry.name + ", " + geometry.level.name
+                    } else {
+                        return geometry.identifier + ", " + geometry.level.name
+                    }
+                }()
+
+                Text(name)
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(.primary)
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(nil)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.trailing, 40)
+
+                // Address - 5pt below name
+                if let address = geometry.internalAddress?.address, !address.isEmpty {
+                    Text(address)
+                        .font(.system(size: 16))
+                        .foregroundColor(.primary)
+                        .padding(.top, 5)
                 }
-            default:
-                break
+
+                // Directions button - 10pt below address, height 40, cornerRadius 20
+                Button(action: {
+                    viewModel.openRoutingUI()
+                }) {
+                    Text("Directions")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(.black)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 40)
+                        .background(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color(hex: "69AdF8"),
+                                    Color(hex: "53D9D0")
+                                ]),
+                                startPoint: .bottomLeading,
+                                endPoint: .topTrailing
+                            )
+                        )
+                        .cornerRadius(20)
+                }
+                .padding(.top, 15)
+                .padding(.bottom, 30)
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 10)
+        }
+    }
+}
+
+// MARK: - Indoor Routing View
+
+/// Indoor Routing View - shows departure/arrival rows with close button
+struct IndoorRoutingView: View {
+    @ObservedObject var viewModel: IndoorRoutingViewModel
+    var onDepartureTapped: () -> Void = {}
+    var onArrivalTapped: () -> Void = {}
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Departure row
+            Button(action: onDepartureTapped) {
+                HStack(spacing: 5) {
+                    Image(systemName: "smallcircle.filled.circle")
+                        .font(.system(size: 18))
+                        .foregroundColor(.black)
+                        .frame(width: 20, height: 20)
+                        .padding(.leading, 10)
+
+                    Text(viewModel.selectedDepartureGeometry != nil
+                         ? departureName
+                         : "Choose a starting point")
+                        .font(.system(size: 17, weight: .medium))
+                        .foregroundColor(Color(hex: "53D9D0"))
+                        .lineLimit(nil)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .multilineTextAlignment(.leading)
+
+                    Spacer()
+                }
+                .padding(.trailing, 40)
+                .frame(minHeight: 40)
+            }
+
+            // Separator
+            Rectangle()
+                .fill(Color(.systemGray6))
+                .frame(height: 2)
+                .padding(.leading, 35)
+                .padding(.trailing, 80)
+
+            // Arrival row
+            Button(action: onArrivalTapped) {
+                HStack(spacing: 5) {
+                    Image("indoor_destination")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 20, height: 20)
+                        .padding(.leading, 10)
+
+                    Text(arrivalName)
+                        .font(.system(size: 17, weight: .medium))
+                        .foregroundColor(.black)
+                        .lineLimit(nil)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .multilineTextAlignment(.leading)
+
+                    Spacer()
+                }
+                .padding(.trailing, 40)
+                .frame(minHeight: 40)
+            }
+
+        }
+        .padding(.top, 10)
+        .padding(.bottom, 30)
+    }
+
+    private var departureName: String {
+        guard let geometry = viewModel.selectedDepartureGeometry else { return "" }
+        if !geometry.name.isEmpty {
+            return geometry.name + ", " + geometry.level.name
+        } else {
+            return geometry.identifier + ", " + geometry.level.name
+        }
+    }
+
+    private var arrivalName: String {
+        guard let geometry = viewModel.selectedArrivalGeometry else { return "" }
+        if !geometry.name.isEmpty {
+            return geometry.name + ", " + geometry.level.name
+        } else {
+            return geometry.identifier + ", " + geometry.level.name
+        }
+    }
+}
+
+// MARK: - Space List View
+
+/// Full-screen searchable list of venue geometries for selecting departure/arrival space
+struct RoutingSpaceListView: View {
+    @ObservedObject var viewModel: IndoorRoutingViewModel
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Search bar
+            HStack(spacing: 0) {
+                Image(systemName: "magnifyingglass")
+                    .foregroundColor(.secondary)
+                    .font(.system(size: 17))
+                    .padding(.leading, 16)
+                    .padding(.trailing, 8)
+
+                TextField("Search for Spaces", text: $viewModel.searchText)
+                    .font(.system(size: 18))
+
+                if !viewModel.searchText.isEmpty {
+                    Button(action: {
+                        viewModel.searchText = ""
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.secondary)
+                            .font(.system(size: 17))
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .padding(.trailing, 16)
+                }
+            }
+            .frame(height: 50)
+            .background(Color.white)
+            .cornerRadius(25)
+            .overlay(
+                RoundedRectangle(cornerRadius: 25)
+                    .stroke(Color.black, lineWidth: 1)
+            )
+            .padding(.horizontal, 10)
+            .padding(.top, 10)
+            .padding(.bottom, 10)
+
+            // Geometry list
+            ScrollView {
+                LazyVStack(spacing: 0) {
+                    let geometries = viewModel.filteredGeometries
+                    ForEach(0..<geometries.count, id: \.self) { index in
+                        let geometry = geometries[index]
+                        Button {
+                            // Dismiss keyboard
+                            UIApplication.shared.sendAction(
+                                #selector(UIResponder.resignFirstResponder),
+                                to: nil, from: nil, for: nil)
+                            viewModel.selectSpace(geometry)
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image("spacenameimage")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 21, height: 31)
+                                    .padding(.leading, 4)
+
+                                VStack(alignment: .leading, spacing: 2) {
+                                    let spaceName = geometry.name.isEmpty ? geometry.identifier : geometry.name
+                                    Text(spaceName + ", " + geometry.level.name)
+                                        .font(.system(size: 16))
+                                        .foregroundColor(Color(red: 0, green: 0.039, blue: 0.098).opacity(0.8))
+                                        .multilineTextAlignment(.leading)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                                    if let address = geometry.internalAddress?.address, !address.isEmpty {
+                                        Text(address)
+                                            .font(.system(size: 14))
+                                            .foregroundColor(Color(red: 0.031, green: 0.09, blue: 0.204).opacity(0.6))
+                                            .multilineTextAlignment(.leading)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                    }
+                                }
+
+                                Spacer()
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                            .background(Color.white)
+                        }
+
+                        if index < geometries.count - 1 {
+                            Divider()
+                                .padding(.leading, 10)
+                                .padding(.trailing, 10)
+                        }
+                    }
+                }
             }
         }
     }
-    
-    private func collapseBottomSheet() {
-        guard let superview = view.superview else { return }
-        currentHeight = defaultHeight
-        UIView.animate(withDuration: 0.3) {
-            self.view.frame.origin.y = superview.frame.height - self.defaultHeight
-            self.view.frame.size.height = self.defaultHeight
-        }
-        
-        currentState = .ROUTING_UI
-        loadExpectedView()
-    }
-    
-    public func showBottomSheet(height: CGFloat) {
-        
-        guard let superview = view.superview else { return }
-        view.frame = CGRect(x: 0, y: superview.frame.height, width: superview.frame.width, height: height)
-        UIView.animate(withDuration: 0.3) {
-            self.view.frame.origin.y = superview.frame.height - height
-        }
-    }
-    public func dismissBottomSheet() {
-        UIView.animate(withDuration: 0.3, animations: {
-            self.view.frame.origin.y = self.view.superview!.frame.height
-        }) { _ in
-            self.view.removeFromSuperview()
-            self.removeFromParent()
-        }
-        currentState = .ROUTING_CLOSED
-        topologyVisibility = false
-        if selectedVenue.venueModel.topologies.isEmpty == false {
-            topologyButton.image = UIImage(named: "topology-default")
-            topologyButton.isHidden = false
-        }
-        venueTapHandler.deselectGeometry()
-    }
-    
-    private func expandBottomSheet() {
-        guard let superview = view.superview else { return }
-        let fullHeight = superview.frame.height
-        UIView.animate(withDuration: 0.3) {
-            self.view.frame.origin.y = 0
-            self.view.frame.size.height = fullHeight
-        }
-    }
-    
-    @objc func setCurrentStateRoutingUI() {
-        currentState = .ROUTING_UI
-        selectedVenue.isTopologyVisible = false
-        topologyButton.isHidden = true
-        selectedVenue.setCustomStyle(geometries: [selectedArrivalGeometry!], style: nil, labelStyle: nil)
-        setupIndoorRoutingView()
-        loadExpectedView()
-    }
-    
-    func loadExpectedView() {
-        switch currentState {
-        case .ROUTING_CLOSED:
-            spaceSelectionView.isHidden = true
-            indoorRoutingView.isHidden = true
-            spaceListView.isHidden = true
-            
-        case .SPACE_SELECTED:
-            spaceSelectionView.isHidden = false
-            indoorRoutingView.isHidden = true
-            spaceListView.isHidden = true
-            
-        case .ROUTING_UI:
-            spaceSelectionView.isHidden = true
-            indoorRoutingView.isHidden = false
-            spaceListView.isHidden = true
-        case .SHOW_SPACE_LIST:
-            spaceSelectionView.isHidden = true
-            indoorRoutingView.isHidden = true
-            spaceListView.isHidden = false
-        case .none:
-            spaceSelectionView.isHidden = true
-            indoorRoutingView.isHidden = true
-            spaceListView.isHidden = true
-        }
-    }
-    
-    @objc private func departureLabelTapped() {
-        print("departureLabelTapped")
-        spaceSelectionState = .SELECTING_DEPARTURE_SPACE
-        showSpaceList()
-    }
-    
-    @objc private func arrivalLabelTapped() {
-        spaceSelectionState = .SELECTING_ARRIVAL_SPACE
-        showSpaceList()
-    }
-    
-    @objc private func showSpaceList() {
-        currentState = .SHOW_SPACE_LIST
-        loadExpectedView()
-        // Expand bottom sheet to full size
-        expandBottomSheet() // Assumes you have this method for expansion
-        // Show search bar and geometry list
-        print("departureLabelTapped")
-        //dismissBottomSheet()
-        showBottomSheet(height: 800)
-        setupSpaceListView()
-    }
-
-    private func addDynamicContentToSpaceList() {
-        // Remove previous search bar and table if any
-        geometryTableView?.removeFromSuperview()
-        // Add search bar
-        customSearchBar = IndoorMap.SearchBar()
-        customSearchBar.delegate = self
-        customSearchBar.translatesAutoresizingMaskIntoConstraints = false
-        customSearchBar.placeholder = "Search for Spaces"
-        spaceListView.addSubview(customSearchBar)
-        NSLayoutConstraint.activate([
-            customSearchBar.topAnchor.constraint(equalTo: spaceListView.topAnchor, constant: 5),
-            customSearchBar.leadingAnchor.constraint(equalTo: spaceListView.leadingAnchor),
-            customSearchBar.trailingAnchor.constraint(equalTo: spaceListView.trailingAnchor),
-            customSearchBar.heightAnchor.constraint(equalToConstant: 56)
-        ])
-        // Add table view
-        geometryTableView = UITableView()
-        geometryTableView.translatesAutoresizingMaskIntoConstraints = false
-        geometryTableView.dataSource = self
-        geometryTableView.delegate = self
-        spaceListView.addSubview(geometryTableView)
-        NSLayoutConstraint.activate([
-            geometryTableView.topAnchor.constraint(equalTo: customSearchBar.bottomAnchor, constant: 5),
-            geometryTableView.leadingAnchor.constraint(equalTo: spaceListView.leadingAnchor),
-            geometryTableView.trailingAnchor.constraint(equalTo: spaceListView.trailingAnchor),
-            geometryTableView.bottomAnchor.constraint(equalTo: spaceListView.bottomAnchor)
-        ])
-        // Load geometries from selectedVenue
-        if let venue = selectedVenue {
-            allGeometries = venue.venueModel.geometries
-            filteredGeometries = allGeometries
-            geometryTableView.reloadData()
-        }
-    }
-
 }
 
-// MARK: - UITableViewDataSource, UITableViewDelegate
-extension IndoorRoutingUIController: UITableViewDataSource, UITableViewDelegate {
-    public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return filteredGeometries.count
-    }
-    public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "GeometryCell")
-        let geometry = filteredGeometries[indexPath.row]
-        cell.textLabel?.numberOfLines = 0
-        cell.textLabel?.lineBreakMode = .byWordWrapping
-        let name = geometry.name.isEmpty ? geometry.identifier : geometry.name
-        cell.textLabel?.text = name + ", " + geometry.level.name
-        cell.detailTextLabel?.text = geometry.internalAddress?.address
-        return cell
-    }
-    public func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 60
-    }
-    public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let geometry = filteredGeometries[indexPath.row]
-        if spaceSelectionState == .SELECTING_DEPARTURE_SPACE {
-            selectedDepartureGeometry = geometry
-            let name = geometry.name.isEmpty ? geometry.identifier : geometry.name
-            departureLable.text = name + ", " + geometry.level.name
-        } else {
-            selectedArrivalGeometry = geometry
-            let name = geometry.name.isEmpty ? geometry.identifier : geometry.name
-            arrivalLable.text = name + ", " + geometry.level.name
+// MARK: - Helper extension for hex color
+
+extension Color {
+    init(hex: String) {
+        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int: UInt64 = 0
+        Scanner(string: hex).scanHexInt64(&int)
+        let r, g, b: Double
+        switch hex.count {
+        case 6:
+            r = Double((int >> 16) & 0xFF) / 255.0
+            g = Double((int >> 8) & 0xFF) / 255.0
+            b = Double(int & 0xFF) / 255.0
+        default:
+            r = 0; g = 0; b = 0
         }
-        
-        selectedVenue.selectedLevel = selectedDepartureGeometry!.level
-        mapview.camera.lookAt(point: selectedDepartureGeometry!.center)
-        
-        indoorRoutingHandler.startRouting(source: selectedDepartureGeometry!, destination: selectedArrivalGeometry!)
-        
-        // Dismiss keyboard
-        customSearchBar.resignFirstResponder()
-        showBottomSheet(height: 150)
-        currentState = .ROUTING_UI
-        loadExpectedView()
-    }
-}
-
-// MARK: - UISearchBarDelegate
-extension IndoorRoutingUIController: UISearchBarDelegate {
-    public func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        if searchText.isEmpty {
-            filteredGeometries = allGeometries
-        } else {
-            let searchTextLowercased = searchText.lowercased()
-            filteredGeometries = allGeometries.filter {
-                let spaceNameStr = $0.name.isEmpty ? $0.identifier : $0.name
-                return spaceNameStr.lowercased().contains(searchTextLowercased)
-                    || $0.level.name.lowercased().contains(searchTextLowercased)
-            }
-        }
-        geometryTableView.reloadData()
-        searchBar.placeholder = "Search for spaces"
-    }
-    
-    public func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        searchBar.resignFirstResponder()
-    }
-    
-    public func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
-        // Update the bottom drawer height constraint
-        searchBar.text = ""
-        if let searchBarTextField = searchBar.value(forKey: "searchField") as? UITextField {
-            searchBarTextField.attributedPlaceholder = NSAttributedString(string: "", attributes: [NSAttributedString.Key.foregroundColor: UIColor.black, NSAttributedString.Key.font: UIFont.systemFont(ofSize: 18)])
-        }
-        searchBar.becomeFirstResponder()
-        UIView.animate(withDuration: 0.3) {
-            self.view.layoutIfNeeded()
-        }
-    }
-    
-    public func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
-        searchBar.resignFirstResponder()
-        searchBar.text = "Search for spaces"
-    }
-}
-
-
-extension UIColor {
-    convenience init(hex: String, alpha: CGFloat = 1.0) {
-        var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
-        hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
-
-        var rgb: UInt64 = 0
-
-        Scanner(string: hexSanitized).scanHexInt64(&rgb)
-
-        let red = CGFloat((rgb & 0xFF0000) >> 16) / 255.0
-        let green = CGFloat((rgb & 0x00FF00) >> 8) / 255.0
-        let blue = CGFloat(rgb & 0x0000FF) / 255.0
-
-        self.init(red: red, green: green, blue: blue, alpha: alpha)
+        self.init(red: r, green: g, blue: b)
     }
 }

@@ -107,7 +107,6 @@ class AppLogic {
   }
 
   void stopNavigation() {
-    _navigationExample.stopNavigation();
     _clearMap();
   }
 

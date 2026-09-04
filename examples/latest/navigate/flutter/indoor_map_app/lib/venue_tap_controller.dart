@@ -164,7 +164,7 @@ class VenueTapController {
   }
 
   void deselectGeometry() {
-    if (routingDataProviderInterface.isRoutingSpaceSelectionUIActiveOnMap()) {
+    if (routingDataProviderInterface.isRoutingSpacePreviewUIActiveOnMap()) {
       routingDataProviderInterface.onSpaceDeselectionOnMap();
       return;
     }
@@ -244,7 +244,7 @@ class VenueTapController {
     if (_isSelectingFromList) return;
 
     if (routingDataProviderInterface.isRoutingMainMenuUIActiveOnMap() ||
-        routingDataProviderInterface.isRoutingSpaceSelectionUIActiveOnMap()) {
+        routingDataProviderInterface.isRoutingSpacePreviewUIActiveOnMap()) {
       routingDataProviderInterface.handleDestinationMarkerOnMapInLevelChange();
       return;
     }
