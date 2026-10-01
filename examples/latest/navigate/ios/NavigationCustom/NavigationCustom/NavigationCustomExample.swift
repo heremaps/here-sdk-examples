@@ -386,7 +386,7 @@ class NavigationCustomExample: AnimationDelegate, LocationDelegate {
         
         // Set custom zoom level and tilt.
         cameraBehavior.cameraTiltInDegrees = cameraTiltInDegrees
-        cameraBehavior.cameraDistanceInMeters = cameraDistanceInMeters
+        cameraBehavior.zoom = MapMeasure(kind: .distanceInMeters, value: cameraDistanceInMeters)
         // Disable North-Up mode by setting nil. Enable North-up mode by setting 0.
         // By default, North-Up mode is disabled.
         cameraBehavior.cameraBearingInDegrees = nil

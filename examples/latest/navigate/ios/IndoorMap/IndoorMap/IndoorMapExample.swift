@@ -361,8 +361,10 @@ extension IndoorMapExample: VenueSelectionDelegate {
         }
         
         if moveToVenue {
-            // Move camera to the selected venue.
-            mapView.camera.lookAt(point: venueModel.center)
+            // Move camera to the selected drawing's centre with zoom to frame the venue.
+            let distanceInMeters: Double = 500
+            let mapMeasureZoom = MapMeasure(kind: .distanceInMeters, value: distanceInMeters)
+            mapView.camera.lookAt(point: selectedVenue?.selectedDrawing.center ?? venueModel.center, zoom: mapMeasureZoom)
             moveToVenue = false
             
             DispatchQueue.main.async {

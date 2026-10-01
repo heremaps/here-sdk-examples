@@ -184,6 +184,13 @@ public class IndoorRoutingUIController {
 
             @Override
             public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                // Keep the watermark just above the routing sheet's top edge as it slides,
+                // so it is not hidden behind the sheet while it animates up/down.
+                if (currentState != State.HIDDEN) {
+                    View activeView = getActiveRoutingView();
+                    ((MainActivity) context).updateWatermarkPosition(
+                            activeView != null ? activeView : bottomSheet);
+                }
             }
          });
 
@@ -374,6 +381,8 @@ public class IndoorRoutingUIController {
         removeMarkerImageFromMap();
         selectedVenue = null;
         geometryList = null;
+        // Reset the watermark to its initial position as the routing sheet is dismissed.
+        ((MainActivity) context).setWatermark();
     }
 
     public void onBackButtonClickOnVenue() {
@@ -404,6 +413,23 @@ public class IndoorRoutingUIController {
                 geometryList = null;
             }
         }
+    }
+
+    /**
+     * Returns the routing sheet child view that is currently visible, so the watermark can be
+     * positioned just above its top edge. Returns null if none is visible.
+     */
+    private View getActiveRoutingView() {
+        if (viewSelectedPlacesDetails.getVisibility() == View.VISIBLE) {
+            return viewSelectedPlacesDetails;
+        }
+        if (viewMainRoutingMenu.getVisibility() == View.VISIBLE) {
+            return viewMainRoutingMenu;
+        }
+        if (viewSpaceSelectionList.getVisibility() == View.VISIBLE) {
+            return viewSpaceSelectionList;
+        }
+        return null;
     }
 
     /**
@@ -441,6 +467,9 @@ public class IndoorRoutingUIController {
         contentContainer.post(() -> {
             bottomSheetBehavior.setHideable(false);
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+            // Move the watermark above the space details sheet so it is not hidden behind it.
+            viewSelectedPlacesDetails.post(() ->
+                    ((MainActivity) context).updateWatermarkPosition(viewSelectedPlacesDetails));
         });
 
         // Show the topology button when selected space menu is active.
@@ -500,6 +529,9 @@ public class IndoorRoutingUIController {
         switchView(viewMainRoutingMenu);
         applyTopInsetsToRoutingBottomSheet(false);
         isRouteRenderedOnMap = false;
+        // Move the watermark above the routing menu sheet so it is not hidden behind it.
+        viewMainRoutingMenu.post(() ->
+                ((MainActivity) context).updateWatermarkPosition(viewMainRoutingMenu));
         // hide the topology button when routing menu is active.
         ((MainActivity)context).hideTopologyButtonOnMap(true);
 
@@ -675,6 +707,9 @@ public class IndoorRoutingUIController {
         ((MainActivity)context).showProgressBarOnMap(false);
         switchView(viewSpaceSelectionList);
         applyTopInsetsToRoutingBottomSheet(true);
+        // Move the watermark above the space selection list so it is not hidden behind it.
+        viewSpaceSelectionList.post(() ->
+                ((MainActivity) context).updateWatermarkPosition(viewSpaceSelectionList));
 
         recyclerView = viewSpaceSelectionList.findViewById(R.id.spaceListView);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
@@ -777,6 +812,8 @@ public class IndoorRoutingUIController {
                     bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
                 });
                 currentState = State.HIDDEN;
+                // Reset the watermark to its initial position as the space details sheet is dismissed.
+                ((MainActivity) context).setWatermark();
                 removeMarkerImageFromMap();
                 // As we are going back to Space bottom sheet, should revert back the custom style
                 // applied to previously selected geometry.

@@ -20,8 +20,6 @@
 package com.here.routingwithavoidanceoptions;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -158,8 +156,9 @@ public class RoutingWithAvoidanceOptionExample {
         segmentAvoidanceList.put(segmentReferenceInBerlin.segmentId, createSegmentInBerlin());
 
         // Add markers to indicate the currently selected starting point and destination.
-        startMapMarker = addMapMarker(startGeoCoordinates, R.drawable.poi_start);
-        destinationMapMarker = addMapMarker(destinationGeoCoordinates, R.drawable.poi_destination);
+        // Use a higher draw order so these markers stay on top of the map-matched location dot.
+        startMapMarker = addMapMarker(startGeoCoordinates, R.drawable.poi_start, 1);
+        destinationMapMarker = addMapMarker(destinationGeoCoordinates, R.drawable.poi_destination, 1);
 
         setTapGestureHandler();
         setLongPressGestureHandler();
@@ -225,7 +224,6 @@ public class RoutingWithAvoidanceOptionExample {
                 }
                 PickMapItemsResult pickMapItemsResult = mapPickResult.getMapItems();
 
-                if (pickMapItemsResult == null) return;
                 List<MapMarker> markers = pickMapItemsResult.getMarkers();
                 if (!markers.isEmpty()) {
                     MapMarker pickedMarker = markers.get(0);
@@ -315,7 +313,7 @@ public class RoutingWithAvoidanceOptionExample {
             Toast.makeText(context,"Map-matched location is highlighted with red dot on the map. Check logs for more information on matched location.", Toast.LENGTH_LONG).show();
 
             // Show the map-matched location on the map.
-            MapMarker mapMatchedMapMarker = addScaledMapMarker(mapMatchedLocation.coordinates, R.drawable.map_matched_location_dot, 80, 0.7);
+            MapMarker mapMatchedMapMarker = addMapMarker(mapMatchedLocation.coordinates, R.drawable.map_matched_location_dot, 0);
             mapMatchedMarkers.add(mapMatchedMapMarker);
 
             // Fetch IDs from mapMatchedLocation and convert them into OCMSegmentID required by loadSegmentData method.
@@ -341,6 +339,7 @@ public class RoutingWithAvoidanceOptionExample {
         segmentDataLoaderOptions.loadBaseSpeeds = true;
         segmentDataLoaderOptions.loadRoadAttributes = true;
         segmentDataLoaderOptions.loadFunctionalRoadClass = true;
+        segmentDataLoaderOptions.loadPolyline = true;
 
         try {
             segmentData = segmentDataLoader.loadData(ocmSegmentId, segmentDataLoaderOptions);
@@ -351,17 +350,11 @@ public class RoutingWithAvoidanceOptionExample {
         List<SegmentSpanData> segmentSpanDataList = segmentData.getSpans();
         SegmentReference segmentReference = segmentData.getSegmentReference();
 
-        GeoPolyline segmentPolyline = segmentData.getPolyline();
-        if (segmentPolyline == null) {
-            Log.d(TAG, "Segment polyline is null for segment: " + segmentReference.segmentId + ". Skipping visualization.");
-            return;
-        }
-
         Metadata metadata = new Metadata();
         metadata.setString(METADATA_SEGMENT_ID_KEY, segmentReference.segmentId);
         metadata.setDouble(METADATA_TILE_PARTITION_ID_KEY, segmentReference.tilePartitionId);
 
-        MapPolyline segmentPolyLine = createMapPolyline(Color.valueOf(1, 0, 0, 1), segmentPolyline);
+        MapPolyline segmentPolyLine = createMapPolyline(Color.valueOf(1, 0, 0, 1), segmentData.getPolyline());
         segmentPolyLine.setMetadata(metadata);
         mapView.getMapScene().addMapPolyline(segmentPolyLine);
         segmentPolyLines.add(segmentPolyLine);
@@ -536,22 +529,11 @@ public class RoutingWithAvoidanceOptionExample {
         segmentsAvoidanceViolated = false;
     }
 
-    private MapMarker addMapMarker(GeoCoordinates geoCoordinates, int resourceId) {
+    private MapMarker addMapMarker(GeoCoordinates geoCoordinates, int resourceId, int drawOrder) {
         MapImage mapImage = MapImageFactory.fromResource(context.getResources(), resourceId);
         Anchor2D anchor2D = new Anchor2D(0.5F, 1);
         MapMarker mapMarker = new MapMarker(geoCoordinates, mapImage, anchor2D);
-        mapView.getMapScene().addMapMarker(mapMarker);
-        return mapMarker;
-    }
-
-    private MapMarker addScaledMapMarker(GeoCoordinates geoCoordinates, int resourceId, int widthInPixels, double opacity) {
-        Bitmap original = BitmapFactory.decodeResource(context.getResources(), resourceId);
-        int height = (int) (original.getHeight() * (widthInPixels / (float) original.getWidth()));
-        Bitmap scaled = Bitmap.createScaledBitmap(original, widthInPixels, height, true);
-        MapImage mapImage = MapImageFactory.fromBitmap(scaled);
-        Anchor2D anchor2D = new Anchor2D(0.5F, 0.5F);
-        MapMarker mapMarker = new MapMarker(geoCoordinates, mapImage, anchor2D);
-        mapMarker.setOpacity(opacity);
+        mapMarker.setDrawOrder(drawOrder);
         mapView.getMapScene().addMapMarker(mapMarker);
         return mapMarker;
     }

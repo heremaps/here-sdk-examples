@@ -276,6 +276,9 @@ public class VenueTapController {
             float density = context.getResources().getDisplayMetrics().density;
             int spaceContentHeight = Math.round(dp * density);
             sheetBehavior.setPeekHeight(((MainActivity) context).getInitialPeekHeight() + spaceContentHeight);
+            // Changing the peek height programmatically grows the sheet without firing onSlide,
+            // so move the watermark up explicitly to stay above the space details content.
+            ((MainActivity) context).updateWatermarkForVenueSheet();
         } else {
             // Highlight the selected space for routing.
             routingController.showSelectedSpace(geometry, position);
@@ -348,6 +351,9 @@ public class VenueTapController {
         routingController.removeRoutingBottomSheetFromMap();
         // restore initial peek height of bottom sheet
         sheetBehavior.setPeekHeight(((MainActivity)context).getInitialPeekHeight());
+        // Reset the watermark to sit above the collapsed sheet. The peek height change does not
+        // fire onSlide, so the watermark must be repositioned explicitly.
+        ((MainActivity) context).updateWatermarkForVenueSheet();
 
         // If the map marker is already on the screen, remove it.
         if (marker != null) {

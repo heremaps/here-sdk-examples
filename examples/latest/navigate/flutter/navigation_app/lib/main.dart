@@ -139,7 +139,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
         // 2. Ensure that the required permissions are handled.
         if (!await _requestPermissions()) {
-          await _showDialog("Error", "Cannot start app: Location service and permissions are needed for this app.");
+          await _showDialog("Error", "Cannot start app: Please enable location service and grant necessary permissions needed for this app.");
           // Let the user set the permissions from the system settings as fallback.
           openAppSettings();
           SystemNavigator.pop();

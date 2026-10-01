@@ -101,11 +101,9 @@ class _IndoorDrawingSwitcherState extends State<IndoorDrawingSwitcher> {
   }
 
   void _tapDrawingChangeAction(int index) {
-    final List<VenueDrawing>? drawingList = _dataProvider.venueDrawingList;
-    if (drawingList == null || index < 0 || index >= drawingList.length) return;
-    if (_selectedVenue?.selectedDrawing.identifier == drawingList[index].identifier) return;
-    _selectedVenue?.selectedDrawing = drawingList[index];
-    _dataProvider.setCurrentSelectedDrawingIndex(index);
+    // Delegate the SDK interaction (drawing selection + camera move) to the
+    // provider; the widget only handles UI.
+    _dataProvider.selectDrawing(index);
   }
 
   String _drawingName(VenueDrawing drawing) {

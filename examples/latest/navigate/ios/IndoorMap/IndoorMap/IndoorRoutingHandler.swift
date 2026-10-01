@@ -28,11 +28,7 @@ public class IndoorRoutingHandler: ObservableObject {
 
     private var routingEngine: IndoorRoutingEngine?
     private var routingController: IndoorRoutingController?
-    private var routeOptions: IndoorRouteOptions = IndoorRouteOptions(
-        routeOptions: RouteOptions(),
-        transportMode: .pedestrian,
-        indoorAvoidanceOptions: IndoorAvoidanceOptions(),
-        speedInMetersPerSecond: 1.0)
+    private var routeOptions: IndoorRouteOptions = IndoorRouteOptions()
     private var routeStyle: IndoorRouteStyle = IndoorRouteStyle()
 
     @Published var isCalculatingRoute = false
@@ -203,12 +199,6 @@ public class IndoorRoutingHandler: ObservableObject {
             return "Bad gateway"
         case .serviceUnavailable:
             return "Routing service is currently unavailable"
-        case .noRouteFound:
-            return "No route found between selected waypoints"
-        case .couldNotMatchOrigin:
-            return "Origin could not be matched"
-        case .couldNotMatchDestination:
-            return "Destination could not be matched"
         case .mapNotFound:
             return "Requested map not found"
         case .parsingError:

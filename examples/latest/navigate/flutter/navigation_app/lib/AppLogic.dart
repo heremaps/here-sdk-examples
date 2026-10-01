@@ -40,6 +40,8 @@ class AppLogic {
   final List<MapMarker> _mapMarkerList = [];
   final List<MapPolyline> _mapPolylines = [];
   final _timeUtils = TimeUtils();
+  MapMarker? _startMapMarker;
+  MapMarker? _destinationMapMarker;
 
   HERE.Waypoint? _startWaypoint;
   HERE.Waypoint? _destinationWaypoint;
@@ -70,11 +72,19 @@ class AppLogic {
       if (gestureState == GestureState.begin) {
         if (_setLongPressDestination) {
           _destinationWaypoint = HERE.Waypoint(geoCoordinates);
-          _addCircleMapMarker(_destinationWaypoint!.coordinates, "assets/green_dot.png");
+          _destinationMapMarker = _addOrReplaceWaypointMarker(
+            _destinationMapMarker,
+            _destinationWaypoint!.coordinates,
+            "assets/poi_destination.png",
+          );
           _updateMessageState("New long press destination set.");
         } else {
           _startWaypoint = HERE.Waypoint(geoCoordinates);
-          _addCircleMapMarker(_startWaypoint!.coordinates, "assets/green_dot.png");
+          _startMapMarker = _addOrReplaceWaypointMarker(
+            _startMapMarker,
+            _startWaypoint!.coordinates,
+            "assets/poi_start.png",
+          );
           _updateMessageState("New long press starting point set.");
         }
         _setLongPressDestination = !_setLongPressDestination;
@@ -241,6 +251,8 @@ class AppLogic {
       _hereMapController.mapScene.removeMapMarker(mapMarker);
     }
     _mapMarkerList.clear();
+    _startMapMarker = null;
+    _destinationMapMarker = null;
   }
 
   void _clearRoute() {
@@ -254,7 +266,16 @@ class AppLogic {
     }
   }
 
-  void _addCircleMapMarker(GeoCoordinates geoCoordinates, String imageName) {
+  MapMarker _addOrReplaceWaypointMarker(
+    MapMarker? markerToReplace,
+    GeoCoordinates geoCoordinates,
+    String imageName,
+  ) {
+    if (markerToReplace != null) {
+      _hereMapController.mapScene.removeMapMarker(markerToReplace);
+      _mapMarkerList.remove(markerToReplace);
+    }
+
     // For this app, we only add images of size 60x60 pixels.
     int imageWidth = 60;
     int imageHeight = 60;
@@ -264,6 +285,7 @@ class AppLogic {
     MapMarker mapMarker = MapMarker(geoCoordinates, mapImage);
     _hereMapController.mapScene.addMapMarker(mapMarker);
     _mapMarkerList.add(mapMarker);
+    return mapMarker;
   }
 
   GeoCoordinates _createRandomGeoCoordinatesAroundMapCenter() {

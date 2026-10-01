@@ -164,9 +164,10 @@ class CartoPOIPickingExample: TapDelegate {
         print("Mapview validity: \(self.mapView.isValid)")
         let iconCallback: IconProviderCallback = { icon, description, error in
             if let error = error {
-                self.showDialog(title: "IconProvider error ", message: "An error occurred while creating the icon: \(error)")
+                self.showDialog(title: "IconProvider error", message: "An error occurred while creating the icon: \(error)")
             } else {
-                self.showDialog(title:"Vehicle restriction picked", message: " \(String(describing: description))", icon: icon)
+                let descriptionText = (description?.isEmpty == false) ? description! : "Not available"
+                self.showDialog(title:"Vehicle Restriction", message: "Description: \(descriptionText)", icon: icon)
             }
         }
         let size = Size2D(width: 20.0, height: 20.0)

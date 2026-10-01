@@ -469,7 +469,7 @@ class _MyAppState extends State<MyApp> implements HERE.LocationListener, Animati
   void _customizeGuidanceView() {
     FixedCameraBehavior cameraBehavior = FixedCameraBehavior();
     // Set custom zoom level and tilt.
-    cameraBehavior.cameraDistanceInMeters = _cameraDistanceInMeters; // Defaults to 150.
+    cameraBehavior.zoom = MapMeasure(MapMeasureKind.distanceInMeters, _cameraDistanceInMeters); // Defaults to 150 m.
     cameraBehavior.cameraTiltInDegrees = _cameraTiltInDegrees; // Defaults to 50.
     // Disable North-Up mode by setting null. Enable North-up mode by setting 0.
     // By default, North-Up mode is disabled.

@@ -79,9 +79,6 @@ class RoutingExample {
 
     waypoints = [startWaypoint, destinationWaypoint];
 
-    _addMapMarker(_startGeoCoordinates!, "assets/poi_start.png");
-    _addMapMarker(_destinationGeoCoordinates!, "assets/poi_destination.png");
-
     _calculateRoute(waypoints);
   }
 
@@ -192,6 +189,7 @@ class RoutingExample {
         _logRouteViolations(route);
         _logTollDetails(route);
         _animateToRoute(route);
+        _showWaypointsOnMap(waypoints);
       } else {
         var error = routingError.toString();
         _showDialog('Error', 'Error while calculating a route: $error');
@@ -323,11 +321,6 @@ class RoutingExample {
       waypoint2,
       Waypoint.withDefaults(_destinationGeoCoordinates!),
     ];
-
-    _addMapMarker(_startGeoCoordinates!, "assets/poi_start.png");
-    _addMapMarker(waypoint1GeoCoordinates, "assets/waypoint_one.png");
-    _addMapMarker(waypoint2GeoCoordinates, "assets/waypoint_two.png");
-    _addMapMarker(_destinationGeoCoordinates!, "assets/poi_destination.png");
 
     _calculateRoute(waypoints);
   }
@@ -539,6 +532,22 @@ class RoutingExample {
       here.Easing(here.EasingFunction.inCubic),
     );
     _hereMapController.camera.startAnimation(animation);
+  }
+
+  void _showWaypointsOnMap(List<Waypoint> waypoints) {
+    int n = waypoints.length;
+    for (int i = 0; i < n; i++) {
+      GeoCoordinates geoCoordinates = waypoints[i].coordinates;
+      if (i == 0) {
+        _addMapMarker(geoCoordinates, "assets/poi_start.png");
+      } else if (i == n - 1) {
+        _addMapMarker(geoCoordinates, "assets/poi_destination.png");
+      } else if (i == 1) {
+        _addMapMarker(geoCoordinates, "assets/waypoint_one.png");
+      } else if (i == 2) {
+        _addMapMarker(geoCoordinates, "assets/waypoint_two.png");
+      }
+    }
   }
 
   void _addMapMarker(GeoCoordinates geoCoordinates, String imageName) {

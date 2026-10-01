@@ -58,6 +58,8 @@ class TruckGuidanceExample {
   HEREPositioningSimulator? _herePositioningSimulator;
   double _simulationSpeedFactor = 1;
   Route? lastCalculatedTruckRoute;
+  bool _isRouteCalculationInProgress = false;
+  bool _isRouteVisible = false;
   bool _isGuidance = false;
   bool _isTracking = false;
 
@@ -103,15 +105,13 @@ class TruckGuidanceExample {
       throw ("Initialization of Navigator failed: " + e.error.name);
     }
 
-    // Create a TransportProfile instance.
-    // This profile is currently only used to retrieve speed limits during tracking mode
+    // Create a TransportSpecification instance.
+    // This specification is used to retrieve truck speed limits during tracking mode
     // when no route is set to the VisualNavigator instance.
-    // This profile needs to be set only once during the lifetime of the VisualNavigator
+    // This specification needs to be set only once during the lifetime of the VisualNavigator
     // instance - unless it should be updated.
     // Note that currently not all parameters are consumed, see API Reference for details.
-    TransportProfile transportProfile = TransportProfile();
-    transportProfile.vehicleProfile = _createVehicleProfile();
-    _visualNavigator?.trackingTransportProfile = transportProfile;
+    _visualNavigator?.trackingTransportSpecification = _createTrackingTransportSpecification();
 
     // Optionally, set a filter to configure which icons to show for MapFeatures.vehicleRestrictions.
     // By default, all icons are shown.
@@ -149,19 +149,12 @@ class TruckGuidanceExample {
     });
   }
 
-  // Used during tracking mode.
-  VehicleProfile _createVehicleProfile() {
-    VehicleProfile vehicleProfile = new VehicleProfile(VehicleType.truck);
-    vehicleProfile.grossWeightInKilograms = MyTruckSpecs.grossWeightInKilograms;
-    vehicleProfile.heightInCentimeters = MyTruckSpecs.heightInCentimeters;
-    // The total length including all trailers (if any).
-    vehicleProfile.lengthInCentimeters = MyTruckSpecs.lengthInCentimeters;
-    vehicleProfile.widthInCentimeters = MyTruckSpecs.widthInCentimeters;
-    vehicleProfile.truckCategory = MyTruckSpecs.truckCategory;
-    vehicleProfile.trailerCount = MyTruckSpecs.trailerCount;
-    vehicleProfile.axleCount = MyTruckSpecs.axleCount;
-    vehicleProfile.weightPerAxleInKilograms = MyTruckSpecs.weightPerAxleInKilograms;
-    return vehicleProfile;
+  // Used during tracking mode and route calculation.
+  TransportSpecification _createTrackingTransportSpecification() {
+    TransportSpecification transportSpecification = TransportSpecification();
+    transportSpecification.transportMode = TransportMode.truck;
+    transportSpecification.vehicleSpecification = _createVehicleSpecification();
+    return transportSpecification;
   }
 
   // Used for vehicle restriction filter and route calculation configuration.
@@ -574,6 +567,7 @@ class TruckGuidanceExample {
         }
         // Toggle the marker that should be updated on next long press.
         changeDestination = !changeDestination;
+        _invalidateRoute();
       }
     });
   }
@@ -592,6 +586,23 @@ class TruckGuidanceExample {
   }
 
   void onShowRouteButtonClicked() {
+    if (_isGuidance || _isTracking) {
+      _showDialog("Note", "Turn-by-turn navigation or tracking must be stopped before showing a route.");
+      return;
+    }
+
+    if (lastCalculatedTruckRoute != null) {
+      print("Reusing cached truck route.");
+      _showCachedRoute();
+      return;
+    }
+
+    if (_isRouteCalculationInProgress) {
+      print("Truck route calculation already in progress.");
+      return;
+    }
+
+    _isRouteCalculationInProgress = true;
     _routingEngine?.calculateRouteWithRoutingOptions(_getCurrentWaypoints(), _createTruckRoutingOptions(), (routingError, routes) {
       _handleTruckRouteResults(routingError, routes);
     });
@@ -628,6 +639,8 @@ class TruckGuidanceExample {
   }
 
   void _handleTruckRouteResults(RoutingError? routingError, List<Route>? routes) {
+    _isRouteCalculationInProgress = false;
+
     if (routingError != null) {
       _showDialog("Error while calculating a truck route: ", routingError.toString());
       return;
@@ -647,6 +660,22 @@ class TruckGuidanceExample {
     final truckRouteColor = Color.fromRGBO(0, 153, 255, 1.0); // For example, a shade of blue.
     const truckRouteWidthInPixels = 30.0;
     _showRouteOnMap(lastCalculatedTruckRoute!, truckRouteColor, truckRouteWidthInPixels);
+  }
+
+  void _showCachedRoute() {
+    final route = lastCalculatedTruckRoute;
+    if (route == null) {
+      return;
+    }
+
+    if (_isRouteVisible) {
+      _animateToRoute(route);
+      return;
+    }
+
+    final truckRouteColor = Color.fromRGBO(0, 153, 255, 1.0);
+    const truckRouteWidthInPixels = 30.0;
+    _showRouteOnMap(route, truckRouteColor, truckRouteWidthInPixels);
   }
 
   void onStartStopButtonClicked() {
@@ -681,7 +710,7 @@ class TruckGuidanceExample {
       // Start tracking.
       _visualNavigator?.route = null;
       _startRendering();
-      // During tracking the set TransportProfile becomes active to receive suitable speed limits.
+      // During tracking the set TransportSpecification becomes active to receive suitable speed limits.
       _showDialog("Note", "Started tracking along the last calculated route.");
     } else {
       // Stop tracking.
@@ -709,11 +738,7 @@ class TruckGuidanceExample {
     avoidanceOptions.zoneCategories = [ZoneCategory.environmental];
     routingOptions.avoidanceOptions = avoidanceOptions;
 
-    // Set the transport mode to truck and attach the vehicle specification.
-    TransportSpecification transportSpecification = TransportSpecification();
-    transportSpecification.transportMode = TransportMode.truck;
-    transportSpecification.vehicleSpecification = _createVehicleSpecification();
-    routingOptions.transportSpecification = transportSpecification;
+    routingOptions.transportSpecification = _createTrackingTransportSpecification();
 
     return routingOptions;
   }
@@ -787,7 +812,7 @@ class TruckGuidanceExample {
           }
           if (details.forbiddenTruckCategory != null) {
             print(
-              "ViolatedRestriction: Section $sectionNr: ForbiddenTruckType is required: ${details.forbiddenTruckCategory?.name}",
+              "ViolatedRestriction: Section $sectionNr: Forbidden truck category: ${details.forbiddenTruckCategory?.name}",
             );
           }
           if (details.timeRule != null) {
@@ -797,7 +822,7 @@ class TruckGuidanceExample {
           }
           for (HazardousMaterial hazardousMaterial in details.forbiddenHazardousGoods) {
             print(
-              "ViolatedRestriction: Section $sectionNr: Forbidden hazardousMaterial carried: ${hazardousMaterial.name}",
+              "ViolatedRestriction: Section $sectionNr: Forbidden hazardous material carried: ${hazardousMaterial.name}",
             );
           }
         }
@@ -891,6 +916,8 @@ class TruckGuidanceExample {
 
   // Displays the given route on the map as a polyline.
   void _showRouteOnMap(Route route, Color color, double widthInPixels) {
+    clearRoute();
+
     GeoPolyline routeGeoPolyline = route.geometry;
     MapPolyline? routeMapPolyline;
     try {
@@ -907,8 +934,13 @@ class TruckGuidanceExample {
     }
 
     // Optionally hide irrelevant icons from the vehicle restriction layer.
+    if (routeMapPolyline == null) {
+      return;
+    }
+
     _hereMapController.mapScene.addMapPolyline(routeMapPolyline!);
     mapPolylines.add(routeMapPolyline);
+    _isRouteVisible = true;
 
     _animateToRoute(route);
   }
@@ -952,6 +984,12 @@ class TruckGuidanceExample {
       _hereMapController.mapScene.removeMapPolyline(mapPolyline);
     }
     mapPolylines.clear();
+    _isRouteVisible = false;
+  }
+
+  void _invalidateRoute() {
+    lastCalculatedTruckRoute = null;
+    clearRoute();
   }
 
   // Removes all map markers from the map.

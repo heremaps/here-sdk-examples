@@ -32,6 +32,7 @@ public class SpatialAudioExample {
     private EncoderInterface encoder;
     private boolean isEncoderInitialized = false;
     private final MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+    private volatile boolean isSpatialAudioActive = false;
 
     // Avoid IO operations run from main thread.
     private ExecutorService executorPanning;
@@ -47,16 +48,30 @@ public class SpatialAudioExample {
         if(!isEncoderInitialized){
             encoder = new DefaultEncoder(); // Switch to 'Mach1Encoder()' in order to use Mach1 spatial audio engine.
             isEncoderInitialized = true;
+            isSpatialAudioActive = true;
         }
     }
 
     public void updatePanning(SpatialTrajectoryData spatialTrajectoryData) {
+        if (!isSpatialAudioActive || encoder == null || executorPanning == null || executorPanning.isShutdown()) {
+            return;
+        }
+        
         executorPanning.execute(new Runnable() {
             @Override
             public void run() {
-                encoder.setCurrentAzimuthDegrees((float) spatialTrajectoryData.azimuthInDegrees);
-                if (spatialTrajectoryData.completedSpatialTrajectory) {
-                    executorPanning.shutdown();
+                try {
+                    if (!isSpatialAudioActive) {
+                        return;
+                    }
+                    encoder.setCurrentAzimuthDegrees((float) spatialTrajectoryData.azimuthInDegrees);
+                    if (spatialTrajectoryData.completedSpatialTrajectory) {
+                        if (executorPanning != null && !executorPanning.isShutdown()) {
+                            executorPanning.shutdown();
+                        }
+                    }
+                } catch (Exception e) {
+                    Log.e(SpatialAudioExample.class.getSimpleName(), "Error in updatePanning", e);
                 }
             }
         });
@@ -142,13 +157,21 @@ public class SpatialAudioExample {
 
     // Stops playing the current audio cue and shutdown the executors required for spatial audio.
     public void stopSpatialAudio() {
-        if (encoder != null)
-            encoder.stopPlayingAudioCue(); // Stops current spatial audio cue.
+        isSpatialAudioActive = false;
+        
+        if (encoder != null) {
+            try {
+                encoder.stopPlayingAudioCue(); // Stops current spatial audio cue.
+            } catch (Exception e) {
+                Log.e(SpatialAudioExample.class.getSimpleName(), "Error stopping audio cue", e);
+            }
+        }
         shutdownExecutors();
     }
 
     // Initiates a new thread when required audio synthesization.
     public void initSpatialAudioExecutors() {
+        isSpatialAudioActive = true;
         if (executorSynthesization == null || executorSynthesization.isShutdown())
             executorSynthesization = Executors.newSingleThreadExecutor();
         if (executorPanning == null || executorPanning.isShutdown())
@@ -159,12 +182,23 @@ public class SpatialAudioExample {
 
     // Shuts down the initialized executors.
     public void shutdownExecutors() {
-        if (executorSynthesization != null && !executorSynthesization.isShutdown())
+        isSpatialAudioActive = false;
+        if (executorSynthesization != null && !executorSynthesization.isShutdown()) {
             executorSynthesization.shutdown();
-        if (executorPlayFile != null && !executorPlayFile.isShutdown())
+        }
+        if (executorPanning != null && !executorPanning.isShutdown()) {
+            executorPanning.shutdown();
+        }
+        if (executorPlayFile != null && !executorPlayFile.isShutdown()) {
             executorPlayFile.shutdown();
-        if (encoder != null)
-            encoder.shutdownEncoderExecutors();
+        }
+        if (encoder != null) {
+            try {
+                encoder.shutdownEncoderExecutors();
+            } catch (Exception e) {
+                Log.e(SpatialAudioExample.class.getSimpleName(), "Error shutting down encoder executors", e);
+            }
+        }
     }
 
 }

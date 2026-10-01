@@ -71,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
     private LocationSimulator locationSimulator;
     private SpatialAudioExample spatialAudioExample;
     private VoiceAssistant voiceAssistant;
+    private boolean isAppInForeground = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -291,18 +292,49 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
+        isAppInForeground = false;
+        if (locationSimulator != null) {
+            locationSimulator.stop();
+        }
+        if (visualNavigator != null) {
+            visualNavigator.stopRendering();
+        }
+        if (spatialAudioExample != null) {
+            spatialAudioExample.stopSpatialAudio();
+        }
         mapView.onPause();
         super.onPause();
     }
 
     @Override
     protected void onResume() {
+        isAppInForeground = true;
         mapView.onResume();
         super.onResume();
     }
 
     @Override
     protected void onDestroy() {
+        if (locationSimulator != null) {
+            locationSimulator.stop();
+            locationSimulator = null;
+        }
+        if (visualNavigator != null) {
+            visualNavigator.stopRendering();
+            visualNavigator = null;
+        }
+        if (spatialAudioExample != null) {
+            spatialAudioExample.stopSpatialAudio();
+            spatialAudioExample = null;
+        }
+        if (voiceAssistant != null) {
+            voiceAssistant.shutdown();
+            voiceAssistant = null;
+        }
+        if (routingEngine != null) {
+            routingEngine.dispose();
+            routingEngine = null;
+        }
         mapView.onDestroy();
         super.onDestroy();
         if (isFinishing()) {

@@ -157,6 +157,9 @@ class TrafficExample {
     _trafficEngine.lookupIncident(originalId, trafficIncidentsLookupOptions, (trafficQueryError, trafficIncident) {
       if (trafficQueryError == null) {
         print("Fetched TrafficIncident from lookup request." + " Description: " + trafficIncident!.description.text);
+        final incidentDetails = _formatTrafficIncidentDetails(trafficIncident);
+        print(incidentDetails);
+        _showDialog("Traffic incident details", incidentDetails);
 
         TrafficLocation incidentLocation = trafficIncident.location;
         _addTrafficIncidentsMapPolyline(incidentLocation.polyline);
@@ -169,6 +172,77 @@ class TrafficExample {
         _showDialog("TrafficLookupError:", trafficQueryError.toString());
       }
     });
+  }
+
+  String _formatTrafficIncidentDetails(TrafficIncident trafficIncident) {
+    final buffer = StringBuffer()
+      ..writeln("Description: ${trafficIncident.description.text}")
+      ..writeln("Impact: ${trafficIncident.impact.name}")
+      ..write("Vehicle restrictions:");
+
+    final vehicleRestrictions = trafficIncident.vehicleRestrictions;
+    if (vehicleRestrictions.isEmpty) {
+      buffer.write(" none");
+      return buffer.toString();
+    }
+
+    vehicleRestrictions.forEach((category, restriction) {
+      buffer.write("\n${category.name}: ${_formatVehicleRestriction(restriction)}");
+    });
+
+    return buffer.toString();
+  }
+
+  String _formatVehicleRestriction(TrafficIncidentVehicleRestriction restriction) {
+    final rules = <String>[];
+
+    final booleanRules = <String, bool>{
+      "always restricted": restriction.isRestrictedAlways,
+      "through traffic restricted": restriction.isThroughTrafficRestricted,
+      "residents traffic restricted": restriction.isResidentsTrafficRestricted,
+      "destination in incident area restricted": restriction.isDestinationInIncidentAreaRestricted,
+      "trailer restricted": restriction.isTrailerRestricted,
+      "caravan restricted": restriction.isCaravanRestricted,
+      "snow chains required": restriction.isDrivingWithoutSnowChainsRestricted,
+      "winter tyres required": restriction.isDrivingWithoutWinterTyresRestricted,
+      "diesel restricted": restriction.isDieselFuelRestricted,
+      "petrol restricted": restriction.isPetrolFuelRestricted,
+      "LPG restricted": restriction.isLpgFuelRestricted,
+      "even number plate restricted": restriction.isEvenNumberPlateRestricted,
+      "odd number plate restricted": restriction.isOddNumberPlateRestricted,
+      "Euro 3 and weaker restricted": restriction.isEuro3EmissionStandardRestricted,
+      "Euro 4 and weaker restricted": restriction.isEuro4EmissionStandardRestricted,
+      "Euro 5 and weaker restricted": restriction.isEuro5EmissionStandardRestricted,
+    };
+
+    booleanRules.forEach((text, isRestricted) {
+      if (isRestricted) {
+        rules.add(text);
+      }
+    });
+
+    final thresholdRules = <String, int?>{
+      "gross weight > %d kg": restriction.restrictedIfGrossWeightMoreThanInKilograms,
+      "gross weight < %d kg": restriction.restrictedIfGrossWeightLessThanInKilograms,
+      "axle weight > %d kg": restriction.restrictedIfAxleWeightMoreThanInKilograms,
+      "axle weight < %d kg": restriction.restrictedIfAxleWeightLessThanInKilograms,
+      "height > %d cm": restriction.restrictedIfHigherThanInCentimeters,
+      "height < %d cm": restriction.restrictedIfLowerThanInCentimeters,
+      "width > %d cm": restriction.restrictedIfWiderThanInCentimeters,
+      "width < %d cm": restriction.restrictedIfNarrowerThanInCentimeters,
+      "length > %d cm": restriction.restrictedIfLongerThanInCentimeters,
+      "length < %d cm": restriction.restrictedIfShorterThanInCentimeters,
+      "occupants > %d": restriction.restrictedIfOccupantsMoreThan,
+      "occupants < %d": restriction.restrictedIfOccupantsFewerThan,
+    };
+
+    thresholdRules.forEach((template, value) {
+      if (value != null) {
+        rules.add(template.replaceAll("%d", value.toString()));
+      }
+    });
+
+    return rules.isEmpty ? "restriction present" : rules.join(", ");
   }
 
   void _addTrafficIncidentsMapPolyline(GeoPolyline geoPolyline) {

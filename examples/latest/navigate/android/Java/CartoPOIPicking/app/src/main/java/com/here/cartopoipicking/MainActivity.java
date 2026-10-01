@@ -268,7 +268,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCreateIconReply(@Nullable Bitmap bitmap, @Nullable String description, @Nullable IconProviderError iconProviderError) {
                 if (iconProviderError == null) {
-                    showDialog("Vehicle Restriction", "Description: " + ((description==null || description.isBlank())?"Not Available":description), bitmap);
+                    showDialog("Vehicle Restriction", "Description: " + ((description==null || description.isBlank())?"Not available":description), bitmap);
                     return;
                 }
                 showDialog("IconProvider error", "An error occurred while creating the icon: " + iconProviderError.name());

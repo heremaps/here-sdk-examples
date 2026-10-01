@@ -238,6 +238,7 @@ class RoutingWithAvoidanceOptionsExample : LongPressDelegate, TapDelegate {
         var segmentDataLoaderOptions = SegmentDataLoaderOptions()
         segmentDataLoaderOptions.loadBaseSpeeds = true
         segmentDataLoaderOptions.loadRoadAttributes = true
+        segmentDataLoaderOptions.loadPolyline = true
         
         do {
             let segmentData = try segmentDataLoader.loadData(segment: ocmSegmentId, options: segmentDataLoaderOptions)

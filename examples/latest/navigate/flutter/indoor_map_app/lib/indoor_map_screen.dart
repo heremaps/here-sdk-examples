@@ -71,6 +71,12 @@ class _IndoorMapScreenState extends State<IndoorMapScreen> {
   // -------- Topology panel height (matches IndoorTopologyInfoWidget._sheetHeight) --------
   static const double _topologyPanelHeight = 190.0;
 
+  // -------- Routing panel heights (content-sized widgets, estimated) --------
+  // Space preview sheet (name/address + Directions button).
+  static const double _spacePreviewPanelHeight = 150.0;
+  // Main routing menu (source/destination rows).
+  static const double _mainRoutingMenuPanelHeight = 110.0;
+
   // -------- VenueEngine wrapper --------
   IndoorVenueEngine? _indoorVenueEngine;
 
@@ -200,6 +206,7 @@ class _IndoorMapScreenState extends State<IndoorMapScreen> {
 
     _venueDataProvider
       ..setVenueEngine(_venueEngine!)
+      ..setMapController(_mapController!)
       ..setTapController(_venueTapController);
 
     _routingDataProvider.initializeIndoorRoutingDataProvider(_venueEngine!, _mapController!, _venueDataProvider);
@@ -241,23 +248,58 @@ class _IndoorMapScreenState extends State<IndoorMapScreen> {
   void _updateWatermarkForTopology(bool topologyVisible) {
     if (_mapController == null) return;
     if (topologyVisible) {
-      // Calculate the fraction of the screen occupied by the topology panel.
-      final double screenHeight = MediaQuery.of(context).size.height;
-      if (screenHeight <= 0) return;
-      final double panelFraction = _topologyPanelHeight / screenHeight;
-      final double desiredPos = 1.0 - panelFraction - _watermarkSheetGap;
-      final double watermarkPos = desiredPos.clamp(_watermarkMinVertical, _watermarkInitialVerticalPos);
-      _mapController!.setWatermarkLocation(
-        Anchor2D.withHorizontalAndVertical(_watermarkHorizontalPos, watermarkPos),
-        Point2D(0, 0),
-      );
+      _liftWatermarkAbovePanel(_topologyPanelHeight);
     } else {
-      // Reset watermark to initial position.
-      _mapController!.setWatermarkLocation(
-        Anchor2D.withHorizontalAndVertical(_watermarkHorizontalPos, _watermarkInitialVerticalPos),
-        Point2D(0, 0),
-      );
+      _resetWatermark();
     }
+  }
+
+  /// Repositions the watermark above a routing panel (space preview / main routing menu /
+  /// space selection list) so that it is not hidden behind the panel.
+  void _updateWatermarkForRouting(RoutingUIState? routingUIState) {
+    if (_mapController == null) return;
+    switch (routingUIState) {
+      case RoutingUIState.spacePreview:
+        _liftWatermarkAbovePanel(_spacePreviewPanelHeight);
+        break;
+      case RoutingUIState.mainRoutingMenu:
+        _liftWatermarkAbovePanel(_mainRoutingMenuPanelHeight);
+        break;
+      case RoutingUIState.spaceSelectionList:
+        // Full-screen list - lift to the highest allowed position (clamped to half screen).
+        final double screenHeight = MediaQuery.of(context).size.height;
+        _liftWatermarkAbovePanel(screenHeight);
+        break;
+      case RoutingUIState.hidden:
+      case null:
+        // Routing dismissed - the venue bottom sheet drag / topology logic takes over.
+        _resetWatermark();
+        break;
+    }
+  }
+
+  /// Lifts the watermark to sit just above a bottom panel of the given height (in logical pixels),
+  /// clamped so it never rises above half screen nor drops below the initial position.
+  void _liftWatermarkAbovePanel(double panelHeight) {
+    if (_mapController == null) return;
+    final double screenHeight = MediaQuery.of(context).size.height;
+    if (screenHeight <= 0) return;
+    final double panelFraction = panelHeight / screenHeight;
+    final double desiredPos = 1.0 - panelFraction - _watermarkSheetGap;
+    final double watermarkPos = desiredPos.clamp(_watermarkMinVertical, _watermarkInitialVerticalPos);
+    _mapController!.setWatermarkLocation(
+      Anchor2D.withHorizontalAndVertical(_watermarkHorizontalPos, watermarkPos),
+      Point2D(0, 0),
+    );
+  }
+
+  /// Resets the watermark to its initial position.
+  void _resetWatermark() {
+    if (_mapController == null) return;
+    _mapController!.setWatermarkLocation(
+      Anchor2D.withHorizontalAndVertical(_watermarkHorizontalPos, _watermarkInitialVerticalPos),
+      Point2D(0, 0),
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -366,18 +408,25 @@ class _IndoorMapScreenState extends State<IndoorMapScreen> {
       (VenueDataProvider p) => p.topologyInfo,
     );
 
-    // Update watermark position when topology info panel appears/disappears.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      _updateWatermarkForTopology(topologyInfo != null);
-    });
-
     final VenueErrorData? venueErrorData = context.select<VenueDataProvider, VenueErrorData?>(
       (VenueDataProvider p) => p.venueErrorData,
     );
     final RoutingUIState? routingUIState = context.select<IndoorRoutingDataProvider, RoutingUIState?>(
       (IndoorRoutingDataProvider p) => p.currentState,
     );
+
+    // Update watermark position when a bottom overlay appears/disappears.
+    // Routing panels take priority over the topology info panel; when neither is active,
+    // the venue bottom sheet drag logic (_onSheetDrag) controls the watermark.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final bool routingActive = routingUIState != null && routingUIState != RoutingUIState.hidden;
+      if (routingActive) {
+        _updateWatermarkForRouting(routingUIState);
+      } else {
+        _updateWatermarkForTopology(topologyInfo != null);
+      }
+    });
     final bool isRouteCalculating = context.select<IndoorRoutingDataProvider, bool>(
       (IndoorRoutingDataProvider p) => p.isRouteCalculating,
     );

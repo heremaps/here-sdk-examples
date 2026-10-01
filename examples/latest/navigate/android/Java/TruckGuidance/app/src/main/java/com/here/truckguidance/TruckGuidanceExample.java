@@ -137,6 +137,8 @@ public class TruckGuidanceExample {
     private final HEREPositioningSimulator herePositioningSimulator;
     private double simulationSpeedFactor = 1;
     private Route lastCalculatedTruckRoute;
+    private boolean isRouteCalculationInProgress = false;
+    private boolean isRouteVisible = false;
     private boolean isGuidance = false;
     private boolean isTracking = false;
     private MainActivity.UICallback uiCallback;
@@ -658,6 +660,7 @@ public class TruckGuidanceExample {
                 }
                 // Toggle the marker that should be updated on next long press.
                 changeDestination = !changeDestination;
+                invalidateRoute();
             }
         });
     }
@@ -676,6 +679,23 @@ public class TruckGuidanceExample {
     }
 
     public void onShowRouteButtonClicked() {
+        if (isGuidance || isTracking) {
+            showDialog("Note", "Turn-by-turn navigation or tracking must be stopped before showing a route.");
+            return;
+        }
+
+        if (lastCalculatedTruckRoute != null) {
+            Log.d(TAG, "Reusing cached truck route.");
+            showCachedRoute();
+            return;
+        }
+
+        if (isRouteCalculationInProgress) {
+            Log.d(TAG, "Truck route calculation already in progress.");
+            return;
+        }
+
+        isRouteCalculationInProgress = true;
         routingEngine.calculateRoute(getCurrentWaypoints(), createTruckOptions(), (routingError, list) -> {
             handleTruckRouteResults(routingError, list);
         });
@@ -759,6 +779,8 @@ public class TruckGuidanceExample {
     }
 
     private void handleTruckRouteResults(RoutingError routingError, List<Route> routes) {
+        isRouteCalculationInProgress = false;
+
         if (routingError != null) {
             showDialog("Error while calculating a truck route: ", routingError.toString());
             return;
@@ -772,6 +794,21 @@ public class TruckGuidanceExample {
 
         for (Route route : routes) {
             logRouteViolations(route);
+        }
+
+        Color truckRouteColor = Color.valueOf(0, 0.6f, 1, 1); // RGBA
+        int truckRouteWidthInPixels = 30;
+        showRouteOnMap(lastCalculatedTruckRoute, truckRouteColor, truckRouteWidthInPixels);
+    }
+
+    private void showCachedRoute() {
+        if (lastCalculatedTruckRoute == null) {
+            return;
+        }
+
+        if (isRouteVisible) {
+            animateToRoute(lastCalculatedTruckRoute);
+            return;
         }
 
         Color truckRouteColor = Color.valueOf(0, 0.6f, 1, 1); // RGBA
@@ -884,7 +921,7 @@ public class TruckGuidanceExample {
 
                     for (HazardousMaterial hazardousMaterial : details.forbiddenHazardousGoods) {
                         Log.d("ViolatedRestriction", "Section " + sectionNr + ": " +
-                                "Forbidden hazardousMaterial carried: " + hazardousMaterial.name());
+                                "Forbidden hazardous material carried: " + hazardousMaterial.name());
                     }
                 }
             }
@@ -981,6 +1018,8 @@ public class TruckGuidanceExample {
     }
 
     private void showRouteOnMap(Route route, Color color, int widthInPixels) {
+        clearRoute();
+
         // Show route as polyline.
         GeoPolyline routeGeoPolyline = route.getGeometry();
         MapPolyline routeMapPolyline = null;
@@ -1001,8 +1040,13 @@ public class TruckGuidanceExample {
         // Note that the VisualNavigator, too, hides all icons that cross the route during guidance.
         // routeMapPolyline.setMapContentCategoriesToBlock(Arrays.asList(MapContentCategory.VEHICLE_RESTRICTION_ICONS));
 
+        if (routeMapPolyline == null) {
+            return;
+        }
+
         mapView.getMapScene().addMapPolyline(routeMapPolyline);
         mapPolylines.add(routeMapPolyline);
+        isRouteVisible = true;
 
         animateToRoute(route);
     }
@@ -1038,6 +1082,12 @@ public class TruckGuidanceExample {
             mapView.getMapScene().removeMapPolyline(mapPolyline);
         }
         mapPolylines.clear();
+        isRouteVisible = false;
+    }
+
+    private void invalidateRoute() {
+        lastCalculatedTruckRoute = null;
+        clearRoute();
     }
 
     private void clearMapMarker() {

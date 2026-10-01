@@ -57,4 +57,12 @@ public class VoiceAssistant {
         boolean isLanguageSet = textToSpeech.setLanguage(locale) == LANG_AVAILABLE;
         return isLanguageSet;
     }
+
+    public void shutdown() {
+        if (textToSpeech != null) {
+            textToSpeech.stop();
+            textToSpeech.shutdown();
+            Log.d(TAG, "TextToSpeech shutdown completed");
+        }
+    }
 }

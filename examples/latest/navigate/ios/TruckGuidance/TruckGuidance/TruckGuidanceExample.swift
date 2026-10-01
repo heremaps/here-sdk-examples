@@ -48,6 +48,8 @@ class TruckGuidanceExample: TapDelegate,
     private let herePositioningSimulator: HEREPositioningSimulator
     private var simulationSpeedFactor: Double = 1
     private var lastCalculatedTruckRoute: Route?
+    private var isRouteCalculationInProgress = false
+    private var isRouteVisible = false
     private var isGuidance = false
     private var isTracking = false
 
@@ -104,15 +106,13 @@ class TruckGuidanceExample: TapDelegate,
         mapView.mapScene.addMapMarker(startMapMarker)
         mapView.mapScene.addMapMarker(destinationMapMarker)
 
-        // Create a TransportProfile instance.
-        // This profile is currently only used to retrieve speed limits during tracking mode
+        // Create a TransportSpecification instance.
+        // This specification is used to retrieve truck speed limits during tracking mode
         // when no route is set to the VisualNavigator instance.
-        // This profile needs to be set only once during the lifetime of the VisualNavigator
+        // This specification needs to be set only once during the lifetime of the VisualNavigator
         // instance - unless it should be updated.
         // Note that currently not all parameters are consumed, see API Reference for details.
-        var transportProfile = TransportProfile()
-        transportProfile.vehicleProfile = createVehicleProfile()
-        visualNavigator.trackingTransportProfile = transportProfile
+        visualNavigator.trackingTransportSpecification = createTrackingTransportSpecification()
 
         // Configure the map.
         let camera = mapView.camera
@@ -160,23 +160,33 @@ class TruckGuidanceExample: TapDelegate,
         static let weightPerAxleInKilograms: Int32? = nil
         static let axleCount: Int32? = nil
         static let trailerCount: Int32? = nil
-        static let truckType: TruckType = .straight
         static let truckCategory: TruckCategory = .straight
     }
 
-    // Used during tracking mode.
-    func createVehicleProfile() -> VehicleProfile {
-        var vehicleProfile = VehicleProfile(vehicleType: .truck)
-        vehicleProfile.grossWeightInKilograms = MyTruckSpecs.grossWeightInKilograms
-        vehicleProfile.heightInCentimeters = MyTruckSpecs.heightInCentimeters
-        // The total length including all trailers (if any).
-        vehicleProfile.lengthInCentimeters = MyTruckSpecs.lengthInCentimeters
-        vehicleProfile.widthInCentimeters = MyTruckSpecs.widthInCentimeters
-        vehicleProfile.truckCategory = MyTruckSpecs.truckCategory
-        vehicleProfile.trailerCount = MyTruckSpecs.trailerCount ?? 0
-        vehicleProfile.axleCount = MyTruckSpecs.axleCount
-        vehicleProfile.weightPerAxleInKilograms = MyTruckSpecs.weightPerAxleInKilograms
-        return vehicleProfile
+    // Used during tracking mode and route calculation.
+    func createTrackingTransportSpecification() -> TransportSpecification {
+        let vehicleSpecBuilder = VehicleSpecification.TruckBuilder()
+            .withGrossWeightInKilograms(MyTruckSpecs.grossWeightInKilograms)
+            .withHeightInCentimeters(MyTruckSpecs.heightInCentimeters)
+            .withWidthInCentimeters(MyTruckSpecs.widthInCentimeters)
+            .withLengthInCentimeters(MyTruckSpecs.lengthInCentimeters)
+            .withTruckCategory(MyTruckSpecs.truckCategory)
+
+        if let weightPerAxle = MyTruckSpecs.weightPerAxleInKilograms {
+            vehicleSpecBuilder.withWeightPerAxleInKilograms(weightPerAxle)
+        }
+
+        if let axleCount = MyTruckSpecs.axleCount {
+            vehicleSpecBuilder.withAxleCount(axleCount)
+        }
+
+        if let trailerCount = MyTruckSpecs.trailerCount {
+            vehicleSpecBuilder.withTrailerCount(trailerCount)
+        }
+
+        return TransportSpecification.TruckBuilder()
+            .withVehicleSpecification(vehicleSpecBuilder.build())
+            .build()
     }
 
     // Used for route calculation.
@@ -193,7 +203,6 @@ class TruckGuidanceExample: TapDelegate,
         truckSpecifications.weightPerAxleInKilograms = MyTruckSpecs.weightPerAxleInKilograms
         truckSpecifications.axleCount = MyTruckSpecs.axleCount
         truckSpecifications.trailerCount = MyTruckSpecs.trailerCount
-        truckSpecifications.truckType = MyTruckSpecs.truckType
         return truckSpecifications
     }
 
@@ -343,6 +352,7 @@ class TruckGuidanceExample: TapDelegate,
             }
             // Toggle the marker that should be updated on next long press.
             changeDestination = !changeDestination
+            invalidateRoute()
         }
     }
 
@@ -664,6 +674,23 @@ class TruckGuidanceExample: TapDelegate,
     }
 
     func onShowRouteClicked() {
+        if isGuidance || isTracking {
+            showDialog(title: "Note", message: "Turn-by-turn navigation or tracking must be stopped before showing a route.")
+            return
+        }
+
+        if lastCalculatedTruckRoute != nil {
+            print("Reusing cached truck route.")
+            showCachedRoute()
+            return
+        }
+
+        if isRouteCalculationInProgress {
+            print("Truck route calculation already in progress.")
+            return
+        }
+
+        isRouteCalculationInProgress = true
         // Calculate a truck route with the current waypoints and truck options
         routingEngine.calculateRoute(with: getCurrentWaypoints(),
                                      options: createTruckRoutingOptions()) { (routingError, routes) in
@@ -703,7 +730,7 @@ class TruckGuidanceExample: TapDelegate,
             // Start tracking.
             visualNavigator.route = nil
             startRendering()
-            // Note that during tracking the above set TransportProfile becomes active to receive
+            // Note that during tracking the above set TransportSpecification becomes active to receive
             // suitable speed limits.
             showDialog(title: "Note", message: "Started tracking along the last calculated route.")
         } else {
@@ -757,6 +784,8 @@ class TruckGuidanceExample: TapDelegate,
     }
     
     private func handleTruckRouteResults(_ routingError: RoutingError?, _ routes: [Route]?) {
+        isRouteCalculationInProgress = false
+
         if let routingError = routingError {
             showDialog(title: "Error while calculating a truck route: ", message: getRoutingErrorMessage(routingError))
             return
@@ -777,6 +806,19 @@ class TruckGuidanceExample: TapDelegate,
         }
 
         showRouteOnMap(route: lastCalculatedTruckRoute!, color: UIColor(red: 0, green: 0.6, blue: 1, alpha: 1), widthInPixels: 30)
+    }
+
+    private func showCachedRoute() {
+        guard let route = lastCalculatedTruckRoute else {
+            return
+        }
+
+        if isRouteVisible {
+            animateToRoute(route)
+            return
+        }
+
+        showRouteOnMap(route: route, color: UIColor(red: 0, green: 0.6, blue: 1, alpha: 1), widthInPixels: 30)
     }
 
     private func getRoutingErrorMessage(_ routingError: RoutingError) -> String {
@@ -804,28 +846,7 @@ class TruckGuidanceExample: TapDelegate,
         avoidanceOptions.zoneCategories = [.environmental]
         routingOptions.avoidanceOptions = avoidanceOptions
 
-        // Build the vehicle specification for a truck using the builder pattern.
-        let vehicleSpecBuilder = VehicleSpecification.TruckBuilder()
-            .withGrossWeightInKilograms(MyTruckSpecs.grossWeightInKilograms)
-            .withHeightInCentimeters(MyTruckSpecs.heightInCentimeters)
-            .withWidthInCentimeters(MyTruckSpecs.widthInCentimeters)
-            .withLengthInCentimeters(MyTruckSpecs.lengthInCentimeters)
-            .withTruckCategory(MyTruckSpecs.truckCategory)
-        if let weightPerAxle = MyTruckSpecs.weightPerAxleInKilograms {
-            vehicleSpecBuilder.withWeightPerAxleInKilograms(weightPerAxle)
-        }
-        if let axleCount = MyTruckSpecs.axleCount {
-            vehicleSpecBuilder.withAxleCount(axleCount)
-        }
-        if let trailerCount = MyTruckSpecs.trailerCount {
-            vehicleSpecBuilder.withTrailerCount(trailerCount)
-        }
-
-        // Use TransportSpecification.TruckBuilder to set the transport mode to truck
-        // and attach the vehicle specification.
-        routingOptions.transportSpecification = TransportSpecification.TruckBuilder()
-            .withVehicleSpecification(vehicleSpecBuilder.build())
-            .build()
+        routingOptions.transportSpecification = createTrackingTransportSpecification()
 
         return routingOptions
     }
@@ -875,15 +896,15 @@ class TruckGuidanceExample: TapDelegate,
                         if let maxTunnelCategory = details.maxTunnelCategory {
                             print("Section \(sectionNr): Exceeded maxTunnelCategory: \(maxTunnelCategory.rawValue)")
                         }
-                        if let forbiddenTruckType = details.forbiddenTruckCategory {
-                            print("Section \(sectionNr): ForbiddenTruckType is required: \(forbiddenTruckType.rawValue)")
+                        if let forbiddenTruckCategory = details.forbiddenTruckCategory {
+                            print("Section \(sectionNr): Forbidden truck category: \(forbiddenTruckCategory.rawValue)")
                         }
                         if let timeRule = details.timeRule {
                             print("Section \(sectionNr): Time restriction violated: \(timeRule.timeRuleString)")
                         }
 
                         for hazardousMaterial in details.forbiddenHazardousGoods {
-                            print("Section \(sectionNr): Forbidden hazardousMaterial carried: \(hazardousMaterial.rawValue)")
+                            print("Section \(sectionNr): Forbidden hazardous material carried: \(hazardousMaterial.rawValue)")
                         }
                     }
                 }
@@ -975,6 +996,8 @@ class TruckGuidanceExample: TapDelegate,
     }
 
     private func showRouteOnMap(route: Route, color: UIColor, widthInPixels: Double) {
+        clearRoute()
+
         let routeGeoPolyline = route.geometry
         do {
             let routeMapPolyline =  try MapPolyline(geometry: routeGeoPolyline,
@@ -987,6 +1010,7 @@ class TruckGuidanceExample: TapDelegate,
 
             mapView.mapScene.addMapPolyline(routeMapPolyline)
             mapPolylines.append(routeMapPolyline)
+            isRouteVisible = true
         } catch let error {
             fatalError("Failed to render MapPolyline. Cause: \(error)")
         }
@@ -1029,6 +1053,12 @@ class TruckGuidanceExample: TapDelegate,
             mapView.mapScene.removeMapPolyline(mapPolyline)
         }
         mapPolylines.removeAll()
+        isRouteVisible = false
+    }
+
+    private func invalidateRoute() {
+        lastCalculatedTruckRoute = nil
+        clearRoute()
     }
 
     private func clearMapMarker() {
