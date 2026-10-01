@@ -40,6 +40,7 @@ import androidx.car.app.model.ActionStrip;
 import androidx.car.app.model.Template;
 import androidx.car.app.navigation.model.NavigationTemplate;
 
+import com.here.sdk.mapview.MapCamera;
 import com.here.sdk.mapview.MapSurface;
 import com.here.sdk.mapview.MapSurfaceHost;
 
@@ -114,6 +115,14 @@ public class HelloMapAutoScreen extends Screen implements SurfaceCallback {
     // Android Auto requires at least one ActionStrip on the NavigationTemplate (car API
     // level 2+). Without it the car host rejects the template and crashes the service.
     ActionStrip actionStrip = new ActionStrip.Builder()
+        .addAction(new Action.Builder()
+            .setTitle("+")
+            .setOnClickListener(this::zoomIn)
+            .build())
+        .addAction(new Action.Builder()
+            .setTitle("-")
+            .setOnClickListener(this::zoomOut)
+            .build())
         .addAction(new Action.Builder()
             .setTitle("Exit")
             .setOnClickListener(this::exit)
@@ -210,6 +219,16 @@ public class HelloMapAutoScreen extends Screen implements SurfaceCallback {
 
     private void exit() {
         getCarContext().finishCarApp();
+    }
+
+    private void zoomIn() {
+        MapCamera camera = mapSurface.getCamera();
+        camera.zoomBy(2.0, camera.getPrincipalPoint());
+    }
+
+    private void zoomOut() {
+        MapCamera camera = mapSurface.getCamera();
+        camera.zoomBy(0.5, camera.getPrincipalPoint());
     }
 
     // Caps scale notifications to Flutter to reduce MethodChannel load (~30 FPS).

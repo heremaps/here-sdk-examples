@@ -261,7 +261,8 @@ class RoutingWithAvoidanceOptionsExample {
         SegmentDataLoaderOptions()
           ..loadBaseSpeeds = true
           ..loadRoadAttributes = true
-          ..loadFunctionalRoadClass = true;
+          ..loadFunctionalRoadClass = true
+          ..loadPolyline = true;
 
     try {
       segmentData = _segmentDataLoader.loadData(

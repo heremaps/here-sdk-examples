@@ -208,7 +208,7 @@ class _MyAppState extends State<MyApp> {
       if (iconProviderError == null) {
         _showDialogWithIcon(
           "Vehicle Restriction",
-          "Description: " + ((description == null || description.isEmpty) ? "Not Available" : description),
+          "Description: " + ((description == null || description.isEmpty) ? "Not available" : description),
           imageInfo!,
         );
         return;

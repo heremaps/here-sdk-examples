@@ -155,7 +155,7 @@ struct ContentView: View {
         }
         .onChange(of: indoorMapExample.venueTapHandler?.isTopologyTapped) { isTapped in
             if isTapped == true {
-                indoorMapExample.updateWatermarkPosition(drawerHeight: 100)
+                indoorMapExample.updateWatermarkPosition(drawerHeight: 130)
             } else {
                 indoorMapExample.updateWatermarkPosition(drawerHeight: drawerHeight)
             }
@@ -164,10 +164,19 @@ struct ContentView: View {
             if newState == .routingUI && indoorMapExample.topologyVisible {
                 indoorMapExample.toggleTopology()
             }
-            if newState == .closed {
+            switch newState {
+            case .closed:
+                // Routing dismissed - restore watermark based on the venue drawer height.
                 indoorMapExample.updateWatermarkPosition(drawerHeight: drawerHeight)
-            } else {
-                indoorMapExample.resetWatermarkPosition()
+            case .spaceSelected:
+                // Space details sheet is open - lift the watermark above it.
+                indoorMapExample.updateWatermarkPosition(drawerHeight: 110)
+            case .routingUI:
+                // Routing UI panel is open - lift the watermark above it.
+                indoorMapExample.updateWatermarkPosition(drawerHeight: 110)
+            case .showSpaceList:
+                // Full-screen space list - lift the watermark to its highest allowed position.
+                indoorMapExample.updateWatermarkPosition(drawerHeight: UIScreen.main.bounds.height)
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in

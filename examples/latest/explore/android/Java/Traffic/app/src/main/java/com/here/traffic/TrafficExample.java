@@ -59,8 +59,11 @@ import com.here.time.Duration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.StringJoiner;
 
 // This example shows how to query traffic info on incidents with the TrafficEngine.
 public class TrafficExample {
@@ -206,6 +209,10 @@ public class TrafficExample {
                     Log.d(TAG, "Fetched TrafficIncident from lookup request." +
                             " Description: " + trafficIncident.getDescription().text);
 
+                    String incidentDetails = formatTrafficIncidentDetails(trafficIncident);
+                    Log.d(TAG, incidentDetails);
+                    showDialog("Traffic incident details", incidentDetails);
+
                     TrafficLocation incidentLocation = trafficIncident.getLocation();
                     addTrafficIncidentsMapPolyline(incidentLocation.polyline);
 
@@ -218,6 +225,89 @@ public class TrafficExample {
                 }
             }
         });
+    }
+
+    private String formatTrafficIncidentDetails(TrafficIncident trafficIncident) {
+        StringBuilder messageBuilder = new StringBuilder();
+        messageBuilder.append("Description: ")
+                .append(trafficIncident.getDescription().text)
+                .append("\nImpact: ")
+                .append(trafficIncident.getImpact().name())
+                .append("\nVehicle restrictions: ");
+
+        Map<TrafficIncident.RestrictedVehicleCategory, TrafficIncident.VehicleRestriction> vehicleRestrictions =
+                trafficIncident.getVehicleRestrictions();
+        if (vehicleRestrictions.isEmpty()) {
+            messageBuilder.append("none");
+            return messageBuilder.toString();
+        }
+
+        boolean isFirstCategory = true;
+        for (Map.Entry<TrafficIncident.RestrictedVehicleCategory, TrafficIncident.VehicleRestriction> entry
+                : vehicleRestrictions.entrySet()) {
+            if (!isFirstCategory) {
+                messageBuilder.append("\n");
+            }
+            isFirstCategory = false;
+
+            messageBuilder.append(entry.getKey().name())
+                    .append(": ")
+                    .append(formatVehicleRestriction(entry.getValue()));
+        }
+
+        return messageBuilder.toString();
+    }
+
+    private String formatVehicleRestriction(TrafficIncident.VehicleRestriction restriction) {
+        StringJoiner rules = new StringJoiner(", ");
+
+        Map<String, Boolean> booleanRules = new LinkedHashMap<>();
+        booleanRules.put("always restricted", restriction.isRestrictedAlways);
+        booleanRules.put("through traffic restricted", restriction.isThroughTrafficRestricted);
+        booleanRules.put("residents traffic restricted", restriction.isResidentsTrafficRestricted);
+        booleanRules.put("destination in incident area restricted", restriction.isDestinationInIncidentAreaRestricted);
+        booleanRules.put("trailer restricted", restriction.isTrailerRestricted);
+        booleanRules.put("caravan restricted", restriction.isCaravanRestricted);
+        booleanRules.put("snow chains required", restriction.isDrivingWithoutSnowChainsRestricted);
+        booleanRules.put("winter tyres required", restriction.isDrivingWithoutWinterTyresRestricted);
+        booleanRules.put("diesel restricted", restriction.isDieselFuelRestricted);
+        booleanRules.put("petrol restricted", restriction.isPetrolFuelRestricted);
+        booleanRules.put("LPG restricted", restriction.isLpgFuelRestricted);
+        booleanRules.put("even number plate restricted", restriction.isEvenNumberPlateRestricted);
+        booleanRules.put("odd number plate restricted", restriction.isOddNumberPlateRestricted);
+        booleanRules.put("Euro 3 and weaker restricted", restriction.isEuro3EmissionStandardRestricted);
+        booleanRules.put("Euro 4 and weaker restricted", restriction.isEuro4EmissionStandardRestricted);
+        booleanRules.put("Euro 5 and weaker restricted", restriction.isEuro5EmissionStandardRestricted);
+
+        for (Map.Entry<String, Boolean> rule : booleanRules.entrySet()) {
+            if (Boolean.TRUE.equals(rule.getValue())) {
+                rules.add(rule.getKey());
+            }
+        }
+
+        Map<String, Integer> thresholdRules = new LinkedHashMap<>();
+        thresholdRules.put("gross weight > %d kg", restriction.restrictedIfGrossWeightMoreThanInKilograms);
+        thresholdRules.put("gross weight < %d kg", restriction.restrictedIfGrossWeightLessThanInKilograms);
+        thresholdRules.put("axle weight > %d kg", restriction.restrictedIfAxleWeightMoreThanInKilograms);
+        thresholdRules.put("axle weight < %d kg", restriction.restrictedIfAxleWeightLessThanInKilograms);
+        thresholdRules.put("height > %d cm", restriction.restrictedIfHigherThanInCentimeters);
+        thresholdRules.put("height < %d cm", restriction.restrictedIfLowerThanInCentimeters);
+        thresholdRules.put("width > %d cm", restriction.restrictedIfWiderThanInCentimeters);
+        thresholdRules.put("width < %d cm", restriction.restrictedIfNarrowerThanInCentimeters);
+        thresholdRules.put("length > %d cm", restriction.restrictedIfLongerThanInCentimeters);
+        thresholdRules.put("length < %d cm", restriction.restrictedIfShorterThanInCentimeters);
+        thresholdRules.put("occupants > %d", restriction.restrictedIfOccupantsMoreThan);
+        thresholdRules.put("occupants < %d", restriction.restrictedIfOccupantsFewerThan);
+
+        for (Map.Entry<String, Integer> rule : thresholdRules.entrySet()) {
+            Integer value = rule.getValue();
+            if (value != null) {
+                rules.add(String.format(Locale.US, rule.getKey(), value));
+            }
+        }
+
+        String rulesText = rules.toString();
+        return rulesText.isEmpty() ? "restriction present" : rulesText;
     }
 
     private void addTrafficIncidentsMapPolyline(GeoPolyline geoPolyline) {

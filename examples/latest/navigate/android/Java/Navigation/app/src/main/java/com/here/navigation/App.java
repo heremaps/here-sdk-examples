@@ -59,6 +59,8 @@ public class App {
     private final MapView mapView;
     private final List<MapMarker> mapMarkerList = new ArrayList<>();
     private final List<MapPolyline> mapPolylines = new ArrayList<>();
+    private MapMarker startMapMarker;
+    private MapMarker destinationMapMarker;
     private Waypoint startWaypoint;
     private Waypoint destinationWaypoint;
     private boolean setLongpressDestination;
@@ -208,6 +210,8 @@ public class App {
             mapView.getMapScene().removeMapMarker(mapMarker);
         }
         mapMarkerList.clear();
+        startMapMarker = null;
+        destinationMapMarker = null;
     }
 
     private void clearRoute() {
@@ -226,11 +230,17 @@ public class App {
             if (gestureState == GestureState.BEGIN) {
                 if (setLongpressDestination) {
                     destinationWaypoint = new Waypoint(geoCoordinates);
-                    addCircleMapMarker(geoCoordinates, R.drawable.green_dot);
+                    destinationMapMarker = addOrReplaceWaypointMarker(
+                            destinationMapMarker,
+                            geoCoordinates,
+                            R.drawable.poi_destination);
                     messageView.setText("New long press destination set.");
                 } else {
                     startWaypoint = new Waypoint(geoCoordinates);
-                    addCircleMapMarker(geoCoordinates, R.drawable.green_dot);
+                    startMapMarker = addOrReplaceWaypointMarker(
+                            startMapMarker,
+                            geoCoordinates,
+                            R.drawable.poi_start);
                     messageView.setText("New long press starting point set.");
                 }
                 setLongpressDestination = !setLongpressDestination;
@@ -254,12 +264,21 @@ public class App {
         return mapView.getCamera().getState().targetCoordinates;
     }
 
-    private void addCircleMapMarker(GeoCoordinates geoCoordinates, int resourceId) {
+    private MapMarker addOrReplaceWaypointMarker(
+            MapMarker markerToReplace,
+            GeoCoordinates geoCoordinates,
+            int resourceId) {
+        if (markerToReplace != null) {
+            mapView.getMapScene().removeMapMarker(markerToReplace);
+            mapMarkerList.remove(markerToReplace);
+        }
+
         MapImage mapImage = MapImageFactory.fromResource(context.getResources(), resourceId);
         MapMarker mapMarker = new MapMarker(geoCoordinates, mapImage);
 
         mapView.getMapScene().addMapMarker(mapMarker);
         mapMarkerList.add(mapMarker);
+        return mapMarker;
     }
 
     private void showDialog(String title, String message) {

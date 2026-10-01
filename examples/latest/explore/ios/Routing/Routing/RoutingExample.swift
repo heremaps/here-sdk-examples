@@ -80,9 +80,6 @@ class RoutingExample {
         waypoints = [Waypoint(coordinates: startGeoCoordinates!),
                      Waypoint(coordinates: destinationGeoCoordinates!)]
 
-        addMapMarker(geoCoordinates: startGeoCoordinates!, imageName: "poi_start.png")
-        addMapMarker(geoCoordinates: destinationGeoCoordinates!, imageName: "poi_destination.png")
-
         calculateRoute(waypoints: waypoints)
     }
     
@@ -166,6 +163,7 @@ class RoutingExample {
             self.logRouteViolations(route: self.currentRoute!)
             self.logTollDetails(route: self.currentRoute!)
             self.animateToRoute(route: self.currentRoute!)
+            self.showWaypointsOnMap(waypoints: waypoints)
         }
     }
     
@@ -415,11 +413,6 @@ class RoutingExample {
                          Waypoint(coordinates: waypoint2GeoCoordinates),
                          Waypoint(coordinates: destinationGeoCoordinates)]
         
-        addMapMarker(geoCoordinates: startGeoCoordinates, imageName: "poi_start.png")
-        addMapMarker(geoCoordinates: waypoint1GeoCoordinates, imageName: "waypoint_one.png")
-        addMapMarker(geoCoordinates: waypoint2GeoCoordinates, imageName: "waypoint_two.png")
-        addMapMarker(geoCoordinates: destinationGeoCoordinates, imageName: "poi_destination.png")
-        
         calculateRoute(waypoints: waypoints)
     }
 
@@ -558,6 +551,22 @@ class RoutingExample {
         return Double.random(in: min ... max)
     }
     
+    private func showWaypointsOnMap(waypoints: Array<Waypoint>) {
+        let n = waypoints.count
+        for i in 0..<n {
+            let geoCoordinates = waypoints[i].coordinates
+            if i == 0 {
+                addMapMarker(geoCoordinates: geoCoordinates, imageName: "poi_start.png")
+            } else if i == n - 1 {
+                addMapMarker(geoCoordinates: geoCoordinates, imageName: "poi_destination.png")
+            } else if i == 1 {
+                addMapMarker(geoCoordinates: geoCoordinates, imageName: "waypoint_one.png")
+            } else if i == 2 {
+                addMapMarker(geoCoordinates: geoCoordinates, imageName: "waypoint_two.png")
+            }
+        }
+    }
+
     private func addMapMarker(geoCoordinates: GeoCoordinates, imageName: String) {
         guard
             let image = UIImage(named: imageName),

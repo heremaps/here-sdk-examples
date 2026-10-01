@@ -167,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
         progressBarBottom = findViewById(R.id.progress_bar_bottom);
         drawingButton = findViewById(R.id.drawing_switcher_button);
         drawingList = findViewById(R.id.drawingList);
-        drawingSwitcher = new DrawingSwitcher(this, drawingButton, drawingList);
+        drawingSwitcher = new DrawingSwitcher(this, drawingButton, drawingList, mapView);
 
         // Get drawing and level UI switchers.
         levelSwitcher = findViewById(R.id.level_switcher);
@@ -691,6 +691,17 @@ public class MainActivity extends AppCompatActivity {
         Anchor2D anchor = new Anchor2D(WATERMARK_HORIZONTAL_POS, WATERMARK_INITIAL_VERTICAL_POS);
         Point2D offset = new Point2D(0, 0);
         mapView.setWatermarkLocation(anchor, offset);
+    }
+
+    /**
+     * Repositions the watermark above the venue bottom sheet's current top edge.
+     * The bottom sheet's peek height can be changed programmatically (e.g. when a space is
+     * selected). In that case the sheet grows without firing onSlide, so the watermark must be
+     * repositioned explicitly. The update is posted so it runs after the sheet has been laid out
+     * at its new height.
+     */
+    public void updateWatermarkForVenueSheet() {
+        bottomSheet.post(() -> updateWatermarkPosition(bottomSheet));
     }
 
     /**

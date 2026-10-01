@@ -132,9 +132,6 @@ public class RoutingExample {
         waypoints =
                 new ArrayList<>(Arrays.asList(startWaypoint, destinationWaypoint));
 
-        addMapMarker(startGeoCoordinates, R.drawable.poi_start);
-        addMapMarker(destinationGeoCoordinates, R.drawable.poi_destination);
-
         calculateRoute(waypoints);
     }
 
@@ -158,6 +155,7 @@ public class RoutingExample {
                             logRouteViolations(currentRoute);
                             logTollDetails(currentRoute);
                             animateToRoute(currentRoute);
+                            showWaypointsOnMap(waypoints);
                         } else {
                             showDialog("Error while calculating a route:", routingError.toString());
                         }
@@ -344,11 +342,6 @@ public class RoutingExample {
         Waypoint waypoint2 = new Waypoint(waypoint2GeoCoordinates);
         waypoints = new ArrayList<>(Arrays.asList(new Waypoint(startGeoCoordinates),
                 waypoint1, waypoint2, new Waypoint(destinationGeoCoordinates)));
-
-        addMapMarker(startGeoCoordinates, R.drawable.poi_start);
-        addMapMarker(waypoint1GeoCoordinates, R.drawable.waypoint_one);
-        addMapMarker(waypoint2GeoCoordinates, R.drawable.waypoint_two);
-        addMapMarker(destinationGeoCoordinates, R.drawable.poi_destination);
 
         calculateRoute(waypoints);
     }
@@ -570,6 +563,22 @@ public class RoutingExample {
 
     private double getRandom(double min, double max) {
         return min + Math.random() * (max - min);
+    }
+
+    private void showWaypointsOnMap(List<Waypoint> waypoints) {
+        int n = waypoints.size();
+        for (int i = 0; i < n; i++) {
+            GeoCoordinates geoCoordinates = waypoints.get(i).coordinates;
+            if (i == 0) {
+                addMapMarker(geoCoordinates, R.drawable.poi_start);
+            } else if (i == n - 1) {
+                addMapMarker(geoCoordinates, R.drawable.poi_destination);
+            } else if (i == 1) {
+                addMapMarker(geoCoordinates, R.drawable.waypoint_one);
+            } else if (i == 2) {
+                addMapMarker(geoCoordinates, R.drawable.waypoint_two);
+            }
+        }
     }
 
     private void addMapMarker(GeoCoordinates geoCoordinates, int resourceId) {

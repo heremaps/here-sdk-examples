@@ -344,9 +344,9 @@ class VenueSelectionListenerImpl implements VenueSelectionListener {
   void onSelectedVenueChanged(Venue? deselectedVenue, Venue? selectedVenue) {
     if (selectedVenue != null) {
       debugPrint('onSelectedVenueChanged venue ID: ${selectedVenue.venueModel.identifier}');
-      final GeoCoordinates venueCenter = selectedVenue.venueModel.center;
       final MapMeasure mapMeasure = MapMeasure(MapMeasureKind.distanceInMeters, 500);
-      hereMapController?.camera.lookAtPointWithMeasure(venueCenter, mapMeasure);
+      // Move camera to the selected drawing's centre with zoom to frame the venue.
+      hereMapController?.camera.lookAtPointWithMeasure(selectedVenue.selectedDrawing.center, mapMeasure);
       providerInterface.onSelectedVenueChanged(deselectedVenue, selectedVenue);
     } else {
       debugPrint('onSelectedVenueChanged: Venue ${deselectedVenue?.venueModel.identifier} removed.');

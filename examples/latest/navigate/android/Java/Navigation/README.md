@@ -7,7 +7,7 @@ Features demonstrated:
 
 - **Route calculation**: Calculates a car route between two waypoints using the `RoutingEngine`.
 - **Turn-by-turn navigation**: Uses the `VisualNavigator` with `startRendering()` to display a navigation arrow and guide the user along the route.
-- **Voice guidance**: Provides localized maneuver instructions via the `EventTextListener` and a built-in TTS engine (`VoiceAssistant`). The preferred device language is automatically detected and matched against available voice skins.
+- **Voice guidance**: Demonstrates TTS voice guidance with localized maneuver instructions via the `EventTextListener` and Android's default TTS engine (`VoiceAssistant`). See [Add voice guidance](../../../guides/android/markdown/en-US/topics/android-navigation-voice-guidance.md).
 - **Maneuver notifications**: Delivers `RouteProgressListener` updates including next maneuver action, remaining distance, ETA, and traffic delay. Supports turn angle and roundabout angle information.
 - **Dynamic camera behavior**: Enables auto-zoom during guidance via `DynamicCameraBehavior` (or alternatively `SpeedBasedCameraBehavior`). The guidance frame rate is set to 60 fps for smooth rendering.
 - **Location simulation**: Supports both real GPS positioning (`HEREPositioningProvider` with `LocationAccuracy.NAVIGATION`) and simulated route playback (`HEREPositioningSimulator`) for testing.

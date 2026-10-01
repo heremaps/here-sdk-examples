@@ -38,6 +38,8 @@ class NavigationAppLogic: ObservableObject, MessageDelegate, LongPressDelegate {
     private var routeCalculator: RouteCalculator?
     private var navigationExample: NavigationExample?
     private var mapMarkers = [MapMarker]()
+    private var startMapMarker: MapMarker?
+    private var destinationMapMarker: MapMarker?
     private var mapPolylineList = [MapPolyline]()
     private var startingWaypoint: Waypoint?
     private var destinationWaypoint: Waypoint?
@@ -209,6 +211,8 @@ class NavigationAppLogic: ObservableObject, MessageDelegate, LongPressDelegate {
             mapView?.mapScene.removeMapMarker(mapMarker)
         }
         mapMarkers.removeAll()
+        startMapMarker = nil
+        destinationMapMarker = nil
     }
     
     private func clearRoute() {
@@ -232,11 +236,17 @@ class NavigationAppLogic: ObservableObject, MessageDelegate, LongPressDelegate {
         if state == GestureState.begin {
             if (isLongpressDestination) {
                 destinationWaypoint = Waypoint(coordinates: geoCoordinates);
-                addCircleMapMarker(geoCoordinates: destinationWaypoint!.coordinates, imageName: "green_dot.png")
+                destinationMapMarker = addOrReplaceWaypointMarker(
+                    markerToReplace: destinationMapMarker,
+                    geoCoordinates: destinationWaypoint!.coordinates,
+                    imageName: "poi_destination.png")
                 updateMessage("New long press destination set.")
             } else {
                 startingWaypoint = Waypoint(coordinates: geoCoordinates)
-                addCircleMapMarker(geoCoordinates: startingWaypoint!.coordinates, imageName: "green_dot.png")
+                startMapMarker = addOrReplaceWaypointMarker(
+                    markerToReplace: startMapMarker,
+                    geoCoordinates: startingWaypoint!.coordinates,
+                    imageName: "poi_start.png")
                 updateMessage("New long press starting point set.")
             }
             isLongpressDestination = !isLongpressDestination;
@@ -261,11 +271,20 @@ class NavigationAppLogic: ObservableObject, MessageDelegate, LongPressDelegate {
         return mapView?.camera.state.targetCoordinates ?? GeoCoordinates(latitude: 52, longitude: 13)
     }
     
-    private func addCircleMapMarker(geoCoordinates: GeoCoordinates, imageName: String) {
+    private func addOrReplaceWaypointMarker(
+        markerToReplace: MapMarker?,
+        geoCoordinates: GeoCoordinates,
+        imageName: String
+    ) -> MapMarker? {
+        if let markerToReplace = markerToReplace {
+            mapView?.mapScene.removeMapMarker(markerToReplace)
+            mapMarkers.removeAll { $0 === markerToReplace }
+        }
+
         guard
             let image = UIImage(named: imageName),
             let imageData = image.pngData() else {
-            return
+            return nil
         }
         
         let mapImage = MapImage(pixelData: imageData,
@@ -274,6 +293,7 @@ class NavigationAppLogic: ObservableObject, MessageDelegate, LongPressDelegate {
                                   image: mapImage)
         mapView?.mapScene.addMapMarker(mapMarker)
         mapMarkers.append(mapMarker)
+        return mapMarker
     }
     
     private func showStartNavigationDialog(title: String,

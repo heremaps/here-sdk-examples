@@ -37,6 +37,7 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.here.sdk.mapview.MapView;
 import com.here.sdk.venue.control.VenueDrawingSelectionListener;
 import com.here.sdk.venue.control.VenueSelectionListener;
 import com.here.sdk.venue.control.Venue;
@@ -56,14 +57,16 @@ public class DrawingSwitcher implements View.OnClickListener, AdapterView.OnItem
     private Venue venue;
     private ImageButton titleView;
     private ListView listView;
+    private MapView mapView;
     private boolean collapsed;
     final private int maxRowsVisibleInList = 3;
 
-    public DrawingSwitcher(Context context, ImageButton imageButton, ListView listView) {
+    public DrawingSwitcher(Context context, ImageButton imageButton, ListView listView, MapView mapView) {
 
         this.context = context;
         this.titleView = imageButton;
         this.listView = listView;
+        this.mapView = mapView;
         titleView.setVisibility(View.GONE);
         listView.setVisibility(View.GONE);
         titleView.setOnClickListener(this);
@@ -248,6 +251,9 @@ public class DrawingSwitcher implements View.OnClickListener, AdapterView.OnItem
         }
         String selectedDrawingName = getDrawingName(selectedDrawing);
         updateSelectedDrawingPosition();
+
+        // Move camera to selected drawing.
+        mapView.getCamera().lookAt(selectedDrawing.getCenter());
     }
 
     // Updates the adapter's selected position to match the currently selected drawing.

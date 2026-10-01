@@ -188,6 +188,10 @@ class TrafficExample(private val context: Context, private val mapView: MapView)
                             " Description: " + trafficIncident!!.description.text
                 )
 
+                val incidentDetails = formatTrafficIncidentDetails(trafficIncident)
+                Log.d(TAG, incidentDetails)
+                showDialog("Traffic incident details", incidentDetails)
+
                 val incidentLocation = trafficIncident.location
                 addTrafficIncidentsMapPolyline(incidentLocation.polyline)
 
@@ -199,6 +203,86 @@ class TrafficExample(private val context: Context, private val mapView: MapView)
                 showDialog("TrafficLookupError:", trafficQueryError.toString())
             }
         }
+    }
+
+    private fun formatTrafficIncidentDetails(trafficIncident: TrafficIncident): String {
+        val messageBuilder = StringBuilder()
+        messageBuilder.append("Description: ")
+            .append(trafficIncident.description.text)
+            .append("\nImpact: ")
+            .append(trafficIncident.impact.name)
+            .append("\nVehicle restrictions: ")
+
+        val vehicleRestrictions = trafficIncident.vehicleRestrictions
+        if (vehicleRestrictions.isEmpty()) {
+            messageBuilder.append("none")
+            return messageBuilder.toString()
+        }
+
+        var isFirstCategory = true
+        for ((category, restriction) in vehicleRestrictions) {
+            if (!isFirstCategory) {
+                messageBuilder.append("\n")
+            }
+            isFirstCategory = false
+            messageBuilder.append(category.name)
+                .append(": ")
+                .append(formatVehicleRestriction(restriction))
+        }
+
+        return messageBuilder.toString()
+    }
+
+    private fun formatVehicleRestriction(restriction: TrafficIncident.VehicleRestriction): String {
+        val rules = mutableListOf<String>()
+
+        val booleanRules = linkedMapOf(
+            "always restricted" to restriction.isRestrictedAlways,
+            "through traffic restricted" to restriction.isThroughTrafficRestricted,
+            "residents traffic restricted" to restriction.isResidentsTrafficRestricted,
+            "destination in incident area restricted" to restriction.isDestinationInIncidentAreaRestricted,
+            "trailer restricted" to restriction.isTrailerRestricted,
+            "caravan restricted" to restriction.isCaravanRestricted,
+            "snow chains required" to restriction.isDrivingWithoutSnowChainsRestricted,
+            "winter tyres required" to restriction.isDrivingWithoutWinterTyresRestricted,
+            "diesel restricted" to restriction.isDieselFuelRestricted,
+            "petrol restricted" to restriction.isPetrolFuelRestricted,
+            "LPG restricted" to restriction.isLpgFuelRestricted,
+            "even number plate restricted" to restriction.isEvenNumberPlateRestricted,
+            "odd number plate restricted" to restriction.isOddNumberPlateRestricted,
+            "Euro 3 and weaker restricted" to restriction.isEuro3EmissionStandardRestricted,
+            "Euro 4 and weaker restricted" to restriction.isEuro4EmissionStandardRestricted,
+            "Euro 5 and weaker restricted" to restriction.isEuro5EmissionStandardRestricted
+        )
+
+        for ((text, isRestricted) in booleanRules) {
+            if (isRestricted) {
+                rules.add(text)
+            }
+        }
+
+        val thresholdRules = linkedMapOf(
+            "gross weight > %d kg" to restriction.restrictedIfGrossWeightMoreThanInKilograms,
+            "gross weight < %d kg" to restriction.restrictedIfGrossWeightLessThanInKilograms,
+            "axle weight > %d kg" to restriction.restrictedIfAxleWeightMoreThanInKilograms,
+            "axle weight < %d kg" to restriction.restrictedIfAxleWeightLessThanInKilograms,
+            "height > %d cm" to restriction.restrictedIfHigherThanInCentimeters,
+            "height < %d cm" to restriction.restrictedIfLowerThanInCentimeters,
+            "width > %d cm" to restriction.restrictedIfWiderThanInCentimeters,
+            "width < %d cm" to restriction.restrictedIfNarrowerThanInCentimeters,
+            "length > %d cm" to restriction.restrictedIfLongerThanInCentimeters,
+            "length < %d cm" to restriction.restrictedIfShorterThanInCentimeters,
+            "occupants > %d" to restriction.restrictedIfOccupantsMoreThan,
+            "occupants < %d" to restriction.restrictedIfOccupantsFewerThan
+        )
+
+        for ((template, value) in thresholdRules) {
+            if (value != null) {
+                rules.add(template.replace("%d", value.toString()))
+            }
+        }
+
+        return if (rules.isEmpty()) "restriction present" else rules.joinToString(", ")
     }
 
     private fun addTrafficIncidentsMapPolyline(geoPolyline: GeoPolyline) {

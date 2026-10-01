@@ -23,6 +23,7 @@ import 'package:indoor_map_app/indoor_topology_info.dart';
 import 'package:indoor_map_app/venue_data_provider_interface.dart';
 import 'package:indoor_map_app/venue_error_data.dart';
 import 'package:indoor_map_app/venue_tap_controller.dart';
+import 'package:here_sdk/mapview.dart';
 import 'package:here_sdk/venue.control.dart';
 import 'package:here_sdk/venue.dart';
 import 'package:here_sdk/venue.data.dart';
@@ -47,6 +48,8 @@ String? geometryDisplayDescription(VenueGeometry geometry) {
 class VenueDataProvider extends ChangeNotifier implements VenueDataProviderInterface {
   VenueEngine? venueEngine;
   late VenueMap venueMap;
+  // Map controller used to drive camera movements from the provider.
+  HereMapController? mapController;
   Venue? selectedVenue;
   bool isVenueLoading = false;
   bool venueLoadedOnMap = false;
@@ -97,6 +100,7 @@ class VenueDataProvider extends ChangeNotifier implements VenueDataProviderInter
   void resetDataProviderParam() {
     selectedVenue = null;
     venueEngine = null;
+    mapController = null;
     isVenueLoading = false;
     venueLoadedOnMap = false;
     venueErrorData = null;
@@ -138,6 +142,27 @@ class VenueDataProvider extends ChangeNotifier implements VenueDataProviderInter
       debugPrint('VenueDataProvider: VenueEngine is set');
       venueMap = venueEngine!.venueMap;
     }
+  }
+
+  void setMapController(HereMapController controller) {
+    mapController = controller;
+  }
+
+  // Selects a drawing (triggered from the drawing switcher UI): updates the
+  // SDK's selected drawing, syncs the UI state and moves the camera to the
+  // selected drawing's centre. Interacting with the SDK/camera is kept here in
+  // the provider so the widget only renders UI.
+  void selectDrawing(int index) {
+    final List<VenueDrawing>? drawings = venueDrawingList;
+    if (drawings == null || index < 0 || index >= drawings.length) return;
+    final Venue? venue = venueEngine?.venueMap.selectedVenue;
+    if (venue == null) return;
+    final VenueDrawing selectedDrawing = drawings[index];
+    if (venue.selectedDrawing.identifier == selectedDrawing.identifier) return;
+    venue.selectedDrawing = selectedDrawing;
+    setCurrentSelectedDrawingIndex(index);
+    // Move camera to the selected drawing centre.
+    mapController?.camera.lookAtPoint(selectedDrawing.center);
   }
 
   void setTapController(VenueTapController? tapController) {

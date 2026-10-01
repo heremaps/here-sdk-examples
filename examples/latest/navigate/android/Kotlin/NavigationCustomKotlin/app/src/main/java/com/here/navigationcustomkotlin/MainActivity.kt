@@ -574,7 +574,7 @@ class MainActivity : ComponentActivity() {
     private fun customizeGuidanceView() {
         val cameraBehavior = FixedCameraBehavior()
         // Set custom zoom level and tilt.
-        cameraBehavior.cameraDistanceInMeters = cameraDistanceInMeters
+        cameraBehavior.zoom = MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, cameraDistanceInMeters)
         cameraBehavior.cameraTiltInDegrees = cameraTiltInDegrees
         // Disable North-Up mode by setting null. Enable North-up mode by setting Double.valueOf(0).
         // By default, North-Up mode is disabled.

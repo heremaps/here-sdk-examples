@@ -165,6 +165,9 @@ class TrafficExample : TapDelegate {
         if trafficQueryError == nil {
             print("Fetched TrafficIncident from lookup request." +
                     " Description: " + trafficIncident!.description.text)
+            let incidentDetails = formatTrafficIncidentDetails(trafficIncident!)
+            print(incidentDetails)
+            showDialog(title: "Traffic incident details", message: incidentDetails)
             let incidentLocation = trafficIncident!.location
             addTrafficIncidentsMapPolyline(geoPolyline: incidentLocation.polyline)
 
@@ -175,6 +178,75 @@ class TrafficExample : TapDelegate {
         } else {
             showDialog(title: "TrafficLookupError:", message: trafficQueryError.debugDescription)
         }
+    }
+
+    private func formatTrafficIncidentDetails(_ trafficIncident: TrafficIncident) -> String {
+        var details = [
+            "Description: \(trafficIncident.description.text)",
+            "Impact: \(trafficIncident.impact)",
+            "Vehicle restrictions:"
+        ]
+
+        if trafficIncident.vehicleRestrictions.isEmpty {
+            details[2] += " none"
+            return details.joined(separator: "\n")
+        }
+
+        for (category, restriction) in trafficIncident.vehicleRestrictions {
+            details.append("\(String(describing: category)): \(formatVehicleRestriction(restriction))")
+        }
+
+        return details.joined(separator: "\n")
+    }
+
+    private func formatVehicleRestriction(_ restriction: TrafficIncident.VehicleRestriction) -> String {
+        var rules: [String] = []
+
+        let booleanRules: [(String, Bool)] = [
+            ("always restricted", restriction.isRestrictedAlways),
+            ("through traffic restricted", restriction.isThroughTrafficRestricted),
+            ("residents traffic restricted", restriction.isResidentsTrafficRestricted),
+            ("destination in incident area restricted", restriction.isDestinationInIncidentAreaRestricted),
+            ("trailer restricted", restriction.isTrailerRestricted),
+            ("caravan restricted", restriction.isCaravanRestricted),
+            ("snow chains required", restriction.isDrivingWithoutSnowChainsRestricted),
+            ("winter tyres required", restriction.isDrivingWithoutWinterTyresRestricted),
+            ("diesel restricted", restriction.isDieselFuelRestricted),
+            ("petrol restricted", restriction.isPetrolFuelRestricted),
+            ("LPG restricted", restriction.isLpgFuelRestricted),
+            ("even number plate restricted", restriction.isEvenNumberPlateRestricted),
+            ("odd number plate restricted", restriction.isOddNumberPlateRestricted),
+            ("Euro 3 and weaker restricted", restriction.isEuro3EmissionStandardRestricted),
+            ("Euro 4 and weaker restricted", restriction.isEuro4EmissionStandardRestricted),
+            ("Euro 5 and weaker restricted", restriction.isEuro5EmissionStandardRestricted)
+        ]
+
+        for (text, isRestricted) in booleanRules where isRestricted {
+            rules.append(text)
+        }
+
+        let thresholdRules: [(String, Int32?)] = [
+            ("gross weight > %d kg", restriction.restrictedIfGrossWeightMoreThanInKilograms),
+            ("gross weight < %d kg", restriction.restrictedIfGrossWeightLessThanInKilograms),
+            ("axle weight > %d kg", restriction.restrictedIfAxleWeightMoreThanInKilograms),
+            ("axle weight < %d kg", restriction.restrictedIfAxleWeightLessThanInKilograms),
+            ("height > %d cm", restriction.restrictedIfHigherThanInCentimeters),
+            ("height < %d cm", restriction.restrictedIfLowerThanInCentimeters),
+            ("width > %d cm", restriction.restrictedIfWiderThanInCentimeters),
+            ("width < %d cm", restriction.restrictedIfNarrowerThanInCentimeters),
+            ("length > %d cm", restriction.restrictedIfLongerThanInCentimeters),
+            ("length < %d cm", restriction.restrictedIfShorterThanInCentimeters),
+            ("occupants > %d", restriction.restrictedIfOccupantsMoreThan),
+            ("occupants < %d", restriction.restrictedIfOccupantsFewerThan)
+        ]
+
+        for (template, value) in thresholdRules {
+            if let value {
+                rules.append(template.replacingOccurrences(of: "%d", with: String(value)))
+            }
+        }
+
+        return rules.isEmpty ? "restriction present" : rules.joined(separator: ", ")
     }
 
     private func addTrafficIncidentsMapPolyline(geoPolyline: GeoPolyline) {

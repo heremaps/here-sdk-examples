@@ -467,7 +467,8 @@ public class MainActivity extends AppCompatActivity {
     private void customizeGuidanceView() {
         FixedCameraBehavior cameraBehavior = new FixedCameraBehavior();
         // Set custom zoom level and tilt.
-        cameraBehavior.setCameraDistanceInMeters(cameraDistanceInMeters);
+        MapMeasure mapMeasureZoom = new MapMeasure(MapMeasure.Kind.DISTANCE_IN_METERS, cameraDistanceInMeters);
+        cameraBehavior.setZoom(mapMeasureZoom);
         cameraBehavior.setCameraTiltInDegrees(cameraTiltInDegrees);
         // Disable North-Up mode by setting null. Enable North-up mode by setting Double.valueOf(0).
         // By default, North-Up mode is disabled.

@@ -323,7 +323,7 @@ public class ElectronicHorizonHandler {
 
     // Draw a colored MapPolyline for the given road segment and register it in segmentPolylineMap
     // so it can be removed when the segment leaves the horizon.
-    private void drawSegmentPolyline(long localId, GeoPolyline geoPolyline, int level) {
+    private void drawSegmentPolyline(long localId, @Nullable GeoPolyline geoPolyline, int level) {
         // MPP (Most Preferred Path, level == 0) is already rendered as the main route
         // We only draw visual polylines for alternative side-paths (level > 0)
         if (level == 0) {
@@ -333,6 +333,12 @@ public class ElectronicHorizonHandler {
 
         // Skip if a polyline for this segment is already on the map.
         if (segmentPolylineMap.containsKey(localId)) return;
+
+        // Segment data may not carry geometry; passing null crashes the native MapPolyline constructor.
+        if (geoPolyline == null) {
+            Log.w(LOG_TAG, "Skipping polyline for localId=" + localId + " - no geometry available.");
+            return;
+        }
 
         Color color;
         String colorName;
