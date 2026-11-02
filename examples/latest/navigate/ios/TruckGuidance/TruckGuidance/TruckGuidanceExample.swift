@@ -163,9 +163,8 @@ class TruckGuidanceExample: TapDelegate,
         static let truckCategory: TruckCategory = .straight
     }
 
-    // Used during tracking mode and route calculation.
-    func createTrackingTransportSpecification() -> TransportSpecification {
-        let vehicleSpecBuilder = VehicleSpecification.TruckBuilder()
+    private func createTruckVehicleSpecification() -> VehicleSpecification {
+        var vehicleSpecBuilder = VehicleSpecification.TruckBuilder()
             .withGrossWeightInKilograms(MyTruckSpecs.grossWeightInKilograms)
             .withHeightInCentimeters(MyTruckSpecs.heightInCentimeters)
             .withWidthInCentimeters(MyTruckSpecs.widthInCentimeters)
@@ -173,37 +172,25 @@ class TruckGuidanceExample: TapDelegate,
             .withTruckCategory(MyTruckSpecs.truckCategory)
 
         if let weightPerAxle = MyTruckSpecs.weightPerAxleInKilograms {
-            vehicleSpecBuilder.withWeightPerAxleInKilograms(weightPerAxle)
+            vehicleSpecBuilder = vehicleSpecBuilder.withWeightPerAxleInKilograms(weightPerAxle)
         }
 
         if let axleCount = MyTruckSpecs.axleCount {
-            vehicleSpecBuilder.withAxleCount(axleCount)
+            vehicleSpecBuilder = vehicleSpecBuilder.withAxleCount(axleCount)
         }
 
         if let trailerCount = MyTruckSpecs.trailerCount {
-            vehicleSpecBuilder.withTrailerCount(trailerCount)
+            vehicleSpecBuilder = vehicleSpecBuilder.withTrailerCount(trailerCount)
         }
 
-        return TransportSpecification.TruckBuilder()
-            .withVehicleSpecification(vehicleSpecBuilder.build())
-            .build()
+        return vehicleSpecBuilder.build()
     }
 
-    // Used for route calculation.
-    func createTruckSpecifications() -> TruckSpecifications {
-        var truckSpecifications = TruckSpecifications()
-        // When weight is not set, possible weight restrictions will not be taken into consideration
-        // for route calculation. By default, weight is not set.
-        // Specify the weight including trailers and shipped goods (if any).
-        truckSpecifications.grossWeightInKilograms = MyTruckSpecs.grossWeightInKilograms
-        truckSpecifications.heightInCentimeters = MyTruckSpecs.heightInCentimeters
-        truckSpecifications.widthInCentimeters = MyTruckSpecs.widthInCentimeters
-        // The total length including all trailers (if any).
-        truckSpecifications.lengthInCentimeters = MyTruckSpecs.lengthInCentimeters
-        truckSpecifications.weightPerAxleInKilograms = MyTruckSpecs.weightPerAxleInKilograms
-        truckSpecifications.axleCount = MyTruckSpecs.axleCount
-        truckSpecifications.trailerCount = MyTruckSpecs.trailerCount
-        return truckSpecifications
+    // Used during tracking mode and route calculation.
+    func createTrackingTransportSpecification() -> TransportSpecification {
+        return TransportSpecification.TruckBuilder()
+            .withVehicleSpecification(createTruckVehicleSpecification())
+            .build()
     }
 
     // Configure the displayed vehicle restrictions.
@@ -218,29 +205,9 @@ class TruckGuidanceExample: TapDelegate,
         hazardousMaterials.append(.explosive)
         hazardousMaterials.append(.flammable)
 
-        let truckSpecifications = createTruckSpecifications()
-        let truckBuilder = VehicleSpecification.TruckBuilder()
-            .withGrossWeightInKilograms(truckSpecifications.grossWeightInKilograms!)
-            .withHeightInCentimeters(truckSpecifications.heightInCentimeters!)
-            .withWidthInCentimeters(truckSpecifications.widthInCentimeters!)
-            .withLengthInCentimeters(truckSpecifications.lengthInCentimeters!)
-            .withTruckCategory(MyTruckSpecs.truckCategory)
-            .withTunnelCategory(.b)
-            .withHazardousMaterials(hazardousMaterials)
-
-        if let weightPerAxle = truckSpecifications.weightPerAxleInKilograms {
-            truckBuilder.withWeightPerAxleInKilograms(weightPerAxle)
-        }
-
-        if let axleCount = truckSpecifications.axleCount {
-            truckBuilder.withAxleCount(axleCount)
-        }
-
-        if let trailerCount = truckSpecifications.trailerCount {
-            truckBuilder.withTrailerCount(trailerCount)
-        }
-
-        let vehicleSpecification = truckBuilder.build()
+        var vehicleSpecification = createTruckVehicleSpecification()
+        vehicleSpecification.tunnelCategory = .b
+        vehicleSpecification.hazardousMaterials = hazardousMaterials
         let transportSpecification = TransportSpecification.TruckBuilder()
             .withVehicleSpecification(vehicleSpecification)
             .build()

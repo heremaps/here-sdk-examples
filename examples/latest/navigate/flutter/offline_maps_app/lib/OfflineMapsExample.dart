@@ -90,6 +90,10 @@ class OfflineMapsExample {
 
     // Enable indexing to improve the search experience.
     _enableOfflineSearchIndexing(sdkNativeEngine);
+
+    // Configure scene load cache options (beta feature).
+    // Note: This is a beta release of this feature and may contain bugs or exhibit unexpected behavior.
+    _configureSceneLoadCache();
   }
 
   void _performUpdateChecks() {
@@ -641,6 +645,27 @@ class OfflineMapsExample {
       } else {
         print("Deleting regions failed: {$_error}");
         _showDialog("Deleted regions", "Deleting regions failed: {$_error}");
+      }
+    });
+  }
+
+  void _configureSceneLoadCache() {
+    // Create scene load cache options to customize cache behavior.
+    // Note: This is a beta release of this feature and may contain bugs or exhibit unexpected behavior.
+    // Related APIs are subject to change without a deprecation process.
+    MapContextSceneLoadCacheOptions cacheOptions = MapContextSceneLoadCacheOptions();
+    cacheOptions.capacity = 100; // Sets the cache capacity in MB
+
+    // Add cache options to memory management settings
+    MapContextMemoryManagementOptions memoryOptions = MapContextMemoryManagementOptions();
+    memoryOptions.sceneLoadCacheOptions = cacheOptions;
+
+    // Apply memory management options to map context
+    _hereMapController.mapContext.setMemoryManagementOptions(memoryOptions, (result) {
+      if (result.success) {
+        print('Scene load cache options configured successfully');
+      } else {
+        print('Failed to configure scene load cache options');
       }
     });
   }

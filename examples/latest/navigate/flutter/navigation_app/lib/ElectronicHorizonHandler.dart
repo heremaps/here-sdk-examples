@@ -55,6 +55,9 @@ class ElectronicHorizonHandler {
   final HereMapController _hereMapController;
   ElectronicHorizonEngine? _electronicHorizonEngine;
   late final ElectronicHorizonDataLoader _electronicHorizonDataLoader;
+  // Keep a strong reference to the listener while updates are needed.
+  // ElectronicHorizonEngine.addElectronicHorizonListener(...) supports weak listener registration.
+  // This stored instance is the one that gets registered in start() and removed again in stop().
   ElectronicHorizonListener? _electronicHorizonListener;
   ElectronicHorizonDataLoaderStatusListener? _electronicHorizonDataLoaderStatusListener;
 
@@ -85,11 +88,18 @@ class ElectronicHorizonHandler {
     // A small cache can replace previously loaded segments too early.
     int segmentDataCacheSize = 1000;
 
+    const corridorHalfWidthInMeters = 0;
+    const corridorLengthInMeters = 0;
+
     try {
       _electronicHorizonDataLoader = ElectronicHorizonDataLoader(
         _getSDKNativeEngine(),
-        segmentDataLoaderOptions,
-        segmentDataCacheSize,
+        ElectronicHorizonDataLoaderOptions.withValues(
+          segmentDataLoaderOptions,
+          segmentDataCacheSize,
+          corridorHalfWidthInMeters,
+          corridorLengthInMeters,
+        ),
       );
     } on InstantiationException {
       throw Exception('ElectronicHorizonDataLoader is not initialized.');
@@ -138,6 +148,7 @@ class ElectronicHorizonHandler {
 
     // Create and add new listeners.
     _electronicHorizonListener = _createElectronicHorizonListener();
+    // Keep the stored listener instance alive while callbacks are needed.
     _electronicHorizonEngine?.addElectronicHorizonListener(_electronicHorizonListener!);
     _electronicHorizonDataLoaderStatusListener = _createElectronicHorizonDataLoaderStatusListener();
     _electronicHorizonDataLoader.addElectronicHorizonDataLoaderStatusListener(_electronicHorizonDataLoaderStatusListener!);

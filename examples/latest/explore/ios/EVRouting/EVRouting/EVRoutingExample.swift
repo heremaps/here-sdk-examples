@@ -60,6 +60,7 @@ class EVRoutingExample: TapDelegate {
     private let facilityTypesMetadataKey = "facility_types"
     private let parkingTypeMetadataKey = "parking_type"
     private let energyMixMetadataKey = "energy_mix"
+    private let evseCountMetadataKey = "evse_count"
     private let tariffCountMetadataKey = "tariff_count"
     private let connectorGroupCountMetadataKey = "connector_group_count"
     private let supportedVehicleCountMetadataKey = "supported_vehicle_count"
@@ -68,14 +69,14 @@ class EVRoutingExample: TapDelegate {
     private let supportPhoneNumberMetadataKey = "support_phone_number"
     private let timeZoneMetadataKey = "time_zone"
     private let openingHoursMetadataKey = "opening_hours"
+    private let placeCoordinatesMetadataKey = "place_coordinates"
 
     private var evSearchExample: EVSearchExample?
 
-    // This flag enables the use of the EVSearchEngine.
-    // This engine will look online for enhanced data for EV charging stations.
-    // Internally, the engine accesses the Electric Vehicle Charging Point (EVCP) 3.0 backend.
+    // This flag enables EVCP3-specific charging metadata.
+    // The EVSearchEngine uses the Electric Vehicle Charging Point (EVCP) 3.0 backend.
     // Find more info here: https://www.here.com/docs/bundle/ev-charge-points-api-v3-developer-guide/page/README.html
-    // ATTENTION: This new API requires a separate license; find info more in the linked document.
+    // This API requires a separate license. Find more information in the linked document.
     private var isEVCP3 :Bool = false
     
     init(_ mapView: MapView) {
@@ -106,8 +107,8 @@ class EVRoutingExample: TapDelegate {
         // Create an instance of EVSearchExample to enable EVSearchEngine for enriching search results with EVCP 3.0 data.
         evSearchExample = EVSearchExample()
         if isEVCP3 {
-            // Attach EVSearchEngine to SearchEngine for EV enrichment.
-            // Place results will contain additional data such as operator, sub-operator and eMSPs info, facility types, parking type, energy mix.
+            // Attach EVSearchEngine to SearchEngine for basic EVCP3 enrichment on Place details.
+            // A direct EVSearchEngine lookup is still used later for fields gated by EVSearchOptions.
             if let evSearchEngine = evSearchExample?.getSearchEngine() {
                 searchEngine.setEVInterface(evcpInterface: evSearchEngine)
             } else {
@@ -401,7 +402,9 @@ class EVRoutingExample: TapDelegate {
         let placeCategory = PlaceCategory(id: PlaceCategory.businessAndServicesEvChargingStation)
         let categoryQuery = CategoryQuery(placeCategory, area: queryArea)
         let searchOptions = SearchOptions(languageCode: LanguageCode.enUs, maxItems: 30)
-        enableEVChargingStationDetails()
+        if !isEVCP3 {
+            enableEVChargingStationDetails()
+        }
         searchEngine.searchByCategory(categoryQuery, options: searchOptions) { [weak self] searchError, items in
             guard let self = self else { return }
             if let searchError = searchError {
@@ -410,39 +413,73 @@ class EVRoutingExample: TapDelegate {
             }
             guard let items = items else { return }
             print("Search along route found \(items.count) charging stations:")
-            for place in items {
-                let details = place.details
-                let metadata: Metadata
-                if self.isEVCP3 {
-                    metadata = self.getMetadataForEVChargingLocation(details)
-                } else {
-                    metadata = self.getMetadataForEVChargingPools(details)
-                }
-                var foundExistingChargingStation = false
-                for mapMarker in self.mapMarkers {
-                    if let markerMetadata = mapMarker.metadata,
-                       let id = markerMetadata.getString(key: self.requiredChargingMetadataKey),
-                       id.caseInsensitiveCompare(place.id) == .orderedSame {
-                        print("Insert metadata to existing charging station: This charging station was already required to reach the destination (see red charging icon).")
-                        mapMarker.metadata = metadata
-                        foundExistingChargingStation = true
-                        break
-                    }
-                }
-                if !foundExistingChargingStation {
-                    if let geoCoordinates = place.geoCoordinates {
-                        self.addMapMarker(geoCoordinates: geoCoordinates, imageName: "charging.png", metadata: metadata)
-                    }
-                }
+            if self.isEVCP3 {
+                self.enrichChargingStationsWithEVCP3(items)
+            } else {
+                self.addChargingStationsToMap(items, evLocationsByPlaceId: nil)
             }
         }
     }
     
-    // Enable fetching online availability details for EV charging stations.
-    // It allows retrieving additional details, such as whether a charging station is currently occupied.
-    // Check the API Reference for more details.
+    private func enrichChargingStationsWithEVCP3(_ items: [Place]) {
+        let placeIds = items.map { $0.id }
+        if placeIds.isEmpty {
+            print("Skipping direct EVCP3 lookup because no HERE Place IDs are available.")
+            addChargingStationsToMap(items, evLocationsByPlaceId: nil)
+            return
+        }
+
+        evSearchExample?.runSearchExample(placeIds: placeIds) { [weak self] error, results in
+            guard let self = self else { return }
+            if let error = error, error != .noResultsFound {
+                print("Direct EVCP3 lookup failed. Falling back to Place details: \(error)")
+                self.addChargingStationsToMap(items, evLocationsByPlaceId: nil)
+                return
+            }
+
+            var evLocationsByPlaceId = [String: EVChargingLocation]()
+            for location in results ?? [] {
+                evLocationsByPlaceId[location.id] = location
+            }
+            self.addChargingStationsToMap(items, evLocationsByPlaceId: evLocationsByPlaceId)
+        }
+    }
+
+    private func addChargingStationsToMap(_ items: [Place],
+                                          evLocationsByPlaceId: [String: EVChargingLocation]?) {
+        for place in items {
+            let details = place.details
+            let metadata: Metadata
+            if isEVCP3 {
+                let evChargingLocation = evLocationsByPlaceId?[place.id] ?? details.evChargingLocation
+                metadata = getMetadataForEVChargingLocation(place, evChargingLocation)
+                if let evChargingLocation = evChargingLocation {
+                    logEVCP3ChargingSpot(place, evChargingLocation)
+                }
+            } else {
+                metadata = getMetadataForEVChargingPools(details)
+            }
+            var foundExistingChargingStation = false
+            for mapMarker in mapMarkers {
+                if let markerMetadata = mapMarker.metadata,
+                   let id = markerMetadata.getString(key: requiredChargingMetadataKey),
+                   id.caseInsensitiveCompare(place.id) == .orderedSame {
+                    print("Insert metadata into existing charging station: This charging station was already required to reach the destination (see red charging icon).")
+                    mapMarker.metadata = metadata
+                    foundExistingChargingStation = true
+                    break
+                }
+            }
+            if !foundExistingChargingStation, let geoCoordinates = place.geoCoordinates {
+                addMapMarker(geoCoordinates: geoCoordinates, imageName: "charging.png", metadata: metadata)
+            }
+        }
+    }
+    
+    // Enable legacy Search/Browse EV charging pool details such as availability counts.
+    // This custom option is independent from EVCP3 and is used only for the non-EVCP3 path.
     private func enableEVChargingStationDetails() {
-        // Fetching additional charging stations details requires a custom option call.
+        // Fetching additional charging station pool details requires a custom option call.
         if let error = searchEngine.setCustomOption(name: "browse.show", value: "ev") {
         showDialog(
             title: "Charging Station",
@@ -536,6 +573,8 @@ class EVRoutingExample: TapDelegate {
             appendMetadataValue(&details, label: "Facility Types", value: metadata.getString(key: facilityTypesMetadataKey))
             appendMetadataValue(&details, label: "Parking Type", value: metadata.getString(key: parkingTypeMetadataKey))
             appendMetadataValue(&details, label: "Energy Mix", value: metadata.getString(key: energyMixMetadataKey))
+            appendMetadataValue(&details, label: "Place Coordinates", value: metadata.getString(key: placeCoordinatesMetadataKey))
+            appendMetadataValue(&details, label: "EVSE Count", value: metadata.getString(key: evseCountMetadataKey))
             appendMetadataValue(&details, label: "Connector Count", value: metadata.getString(key: connectorCountMetadataKey))
             appendMetadataValue(&details, label: "Tariff Count", value: metadata.getString(key: tariffCountMetadataKey))
             appendMetadataValue(&details, label: "Connector Group Count", value: metadata.getString(key: connectorGroupCountMetadataKey))
@@ -595,77 +634,91 @@ class EVRoutingExample: TapDelegate {
         return metadata
     }
 
-    // Returns metadata for an EVChargingLocation, mapping all relevant fields to metadata keys.
-    // This is a Swift adaptation of the provided Java/Kotlin logic.
-    private func getMetadataForEVChargingLocation(_ details: Details) -> Metadata {
+    // Returns metadata for EVCP3 details.
+    private func getMetadataForEVChargingLocation(_ place: Place?,
+                                                  _ evChargingLocation: EVChargingLocation?) -> Metadata {
         let metadata = Metadata()
-        guard let evChargingLocation = details.evChargingLocation else {
+        if let geoCoordinates = place?.geoCoordinates {
+            metadata.setString(key: placeCoordinatesMetadataKey,
+                               value: formatGeoCoordinates(geoCoordinates))
+        }
+        guard let evChargingLocation = evChargingLocation else {
             return metadata
         }
-        // Name
+        var connectorCount = 0
+
         if let name = evChargingLocation.name {
             metadata.setString(key: nameMetadataKey, value: name)
         }
-        // CPO ID (if available)
         if let cpoId = evChargingLocation.cpoID {
             metadata.setString(key: cpoIdMetadataKey, value: cpoId)
         }
-        // Supplier/Operator Name
         if let operatorName = evChargingLocation.evChargingOperator?.name {
             metadata.setString(key: supplierNameMetadataKey, value: operatorName)
         }
-        // Sub Operator Name
         if let subOperatorName = evChargingLocation.evChargingSubOperator?.name {
             metadata.setString(key: subOperatorNameMetadataKey, value: subOperatorName)
         }
-        // eMSPs
         let emsps = evChargingLocation.eMobilityServiceProviders
         if !emsps.isEmpty {
             let emspNames = emsps.compactMap { $0.name }.joined(separator: ", ")
             metadata.setString(key: emspNamesMetadataKey, value: emspNames)
         }
-        // Facility Types
         let facilityTypes = evChargingLocation.facilityTypes
         if !facilityTypes.isEmpty {
             metadata.setString(key: facilityTypesMetadataKey, value: String(describing: facilityTypes))
         }
-        // Parking Type
         if let parkingType = evChargingLocation.parkingType {
             metadata.setString(key: parkingTypeMetadataKey, value: String(describing: parkingType))
         }
-        // Energy Mix
         if let energyMix = evChargingLocation.energyMix {
             metadata.setString(key: energyMixMetadataKey, value: String(describing: energyMix))
         }
-        // Tariffs
+
+        metadata.setString(key: evseCountMetadataKey, value: String(evChargingLocation.evses.count))
+        for evse in evChargingLocation.evses {
+            connectorCount += evse.connectors.count
+        }
+        metadata.setString(key: connectorCountMetadataKey, value: String(connectorCount))
+
+        // Tariffs require tariffs and either evses or connectorGroups in EVSearchOptions.
         let tariffs = evChargingLocation.tariffs
         metadata.setString(key: tariffCountMetadataKey, value: String(tariffs.count))
-        // Connector Groups
+
         let connectorGroups = evChargingLocation.connectorGroups
         metadata.setString(key: connectorGroupCountMetadataKey, value: String(connectorGroups.count))
-        // Supported Vehicles
+
         let supportedVehicles = evChargingLocation.supportedVehicles
         metadata.setString(key: supportedVehicleCountMetadataKey, value: String(supportedVehicles.count))
-        // Truck Restrictions
+
         if let truckRestrictions = evChargingLocation.truckRestrictions {
             metadata.setString(key: truckRestrictionsMetadataKey, value: String(describing: truckRestrictions))
         }
-        // Opening Hours
+
         if let openingHours = evChargingLocation.openingHours {
             metadata.setString(key: openingHoursMetadataKey, value: String(describing: openingHours))
         }
-        // Restrictions
+
         let restrictions = evChargingLocation.restrictions
         metadata.setString(key: restrictionCountMetadataKey, value: String(restrictions.count))
-        // Support Phone Number
+
         if let supportPhoneNumber = evChargingLocation.supportPhoneNumber {
             metadata.setString(key: supportPhoneNumberMetadataKey, value: supportPhoneNumber)
         }
-        // Time Zone
+
         if let timeZone = evChargingLocation.timeZone {
             metadata.setString(key: timeZoneMetadataKey, value: timeZone)
         }
         return metadata
+    }
+
+    private func logEVCP3ChargingSpot(_ place: Place, _ evChargingLocation: EVChargingLocation) {
+        let coordinates = place.geoCoordinates.map(formatGeoCoordinates) ?? "unavailable"
+        print("EVCP3: Charging spot placeId=\(place.id), coordinates(from Place)=\(coordinates), locationId=\(evChargingLocation.id), evses=\(evChargingLocation.evses.count), tariffs=\(evChargingLocation.tariffs.count)")
+    }
+
+    private func formatGeoCoordinates(_ geoCoordinates: GeoCoordinates) -> String {
+        String(format: "%.6f, %.6f", geoCoordinates.latitude, geoCoordinates.longitude)
     }
 
     // Shows the reachable area for this electric vehicle from the current start coordinates and EV car options when the goal is

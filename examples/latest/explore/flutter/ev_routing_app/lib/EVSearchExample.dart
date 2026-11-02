@@ -20,7 +20,8 @@
 import 'package:here_sdk/core.errors.dart';
 import 'package:here_sdk/search.dart';
 
-// Example usage of HERE EVSearchEngine for querying detailed EV charging location information. Requires an additional EVCP3 license (not included with standard Navigation license).
+// Example usage of HERE EVSearchEngine for querying detailed EV charging location information.
+// Requires an additional EVCP3 license that is not included with a standard Navigate license.
 class EVSearchExample {
   late EVSearchEngine? _evSearchEngine;
 
@@ -35,24 +36,53 @@ class EVSearchExample {
 
   EVSearchEngine? get evSearchEngine => _evSearchEngine;
 
-  // Overload to support passing placeIds to EVSearchExample
+  // This standalone EVCP3 lookup is useful only when the caller already has HERE Place IDs.
+  // EVRoutingExample uses SearchEngine.setEVInterface() for generic EV enrichment and this
+  // direct lookup when it needs feature-gated EVCP3 fields such as tariffs and EVSE details.
   void runSearchExample(List<String> placeIds) {
+    runSearchExampleWithCallback(placeIds, null);
+  }
+
+  void runSearchExampleWithCallback(
+    List<String> placeIds,
+    void Function(EVSearchError? evSearchError, List<EVChargingLocation>? results)? callback,
+  ) {
     if (_evSearchEngine == null || placeIds.isEmpty) {
       print('EVSearchEngine or placeIds is null/empty');
       return;
     }
-    // Add any additional options if needed
+    EVSearchOptions options = _createEVCP3DetailsOptions();
+    _evSearchEngine!.setOptions(options);
     _evSearchEngine!.search(placeIds, (EVSearchError? evSearchError, List<EVChargingLocation>? results) {
+      callback?.call(evSearchError, results);
       if (evSearchError != null && evSearchError != EVSearchError.noResultsFound) {
         print('EV search failed: ' + evSearchError.toString());
         return;
       }
+
+      if (evSearchError == EVSearchError.noResultsFound) {
+        print('EV search completed: No results found.');
+      }
+
       if (results != null) {
         for (EVChargingLocation location in results) {
           printLocation(location);
         }
       }
     });
+  }
+
+  EVSearchOptions _createEVCP3DetailsOptions() {
+    EVSearchOptions options = EVSearchOptions();
+    options.additionalFeatures = [
+      EVChargingLocationFeature.evses,
+      EVChargingLocationFeature.tariffs,
+      EVChargingLocationFeature.connectorGroups,
+      EVChargingLocationFeature.emsps,
+      EVChargingLocationFeature.locationInfo,
+      EVChargingLocationFeature.truckRestrictions,
+    ];
+    return options;
   }
 
   void printLocation(EVChargingLocation location) {
@@ -68,7 +98,12 @@ class EVSearchExample {
         print(' - Connector: ' + c.id);
       }
     }
-    for (EVChargingTariff tariff in location.tariffs) {
+    final tariffs = location.tariffs;
+    print(
+      'Tariff count: ${tariffs.length} '
+      '(requires tariffs plus evses or connectorGroups in EVSearchOptions)',
+    );
+    for (EVChargingTariff tariff in tariffs) {
       print('Tariff: ' + (tariff.name ?? ""));
     }
   }

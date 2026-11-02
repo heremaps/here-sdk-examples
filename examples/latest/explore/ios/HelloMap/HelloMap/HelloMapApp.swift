@@ -55,6 +55,7 @@ struct HelloMapApp: App {
         let authenticationMode = AuthenticationMode.withKeySecret(accessKeyId: accessKeyID, accessKeySecret: accessKeySecret)
         let options = SDKOptions(authenticationMode: authenticationMode)
         do {
+            // Note that invalid credentials do not cause an error during initialization.
             try SDKNativeEngine.makeSharedInstance(options: options)
         } catch let engineInstantiationError {
             fatalError("Failed to initialize the HERE SDK. Cause: \(engineInstantiationError)")

@@ -81,6 +81,7 @@ class EVRoutingExample {
   final String facilityTypesMetadataKey = "facility_types";
   final String parkingTypeMetadataKey = "parking_type";
   final String energyMixMetadataKey = "energy_mix";
+  final String evseCountMetadataKey = "evse_count";
   final String tariffCountMetadataKey = "tariff_count";
   final String connectorGroupCountMetadataKey = "connector_group_count";
   final String supportedVehicleCountMetadataKey = "supported_vehicle_count";
@@ -89,14 +90,14 @@ class EVRoutingExample {
   final String supportPhoneNumberMetadataKey = "support_phone_number";
   final String timeZoneMetadataKey = "time_zone";
   final String openingHoursMetadataKey = "opening_hours";
+  final String placeCoordinatesMetadataKey = "place_coordinates";
 
   late EVSearchExample _evSearchExample;
 
-  // This flag enables the use of the EVSearchEngine.
-  // This engine will look online for enhanced data for EV charging stations.
-  // Internally, the engine accesses the Electric Vehicle Charging Point (EVCP) 3.0 backend.
+  // This flag enables EVCP3-specific charging metadata.
+  // The EVSearchEngine uses the Electric Vehicle Charging Point (EVCP) 3.0 backend.
   // Find more info here: https://www.here.com/docs/bundle/ev-charge-points-api-v3-developer-guide/page/README.html
-  // ATTENTION: This new API requires a separate license; find info more in the linked document.
+  // This API requires a separate license. Find more information in the linked document.
   bool _isEVCP3 = false;
 
   EVRoutingExample(ShowDialogFunction showDialogCallback, HereMapController hereMapController)
@@ -133,8 +134,8 @@ class EVRoutingExample {
 
     // Create an instance of EVSearchExample to enable EVSearchEngine for enriching search results with EVCP 3.0 data.
     _evSearchExample=EVSearchExample();
-    // Attach EVSearchEngine to SearchEngine for EV enrichment.
-    // Place results will contain additional data such as operator, sub-operator and eMSPs info, facility types, parking type, energy mix.
+    // Attach EVSearchEngine to SearchEngine for basic EVCP3 enrichment on Place details.
+    // A direct EVSearchEngine lookup is still used later for fields gated by EVSearchOptions.
     EVSearchEngine? _evSearchEngine = _evSearchExample.evSearchEngine;
     if (_evSearchExample.evSearchEngine != null && _isEVCP3) {
       _searchEngine.setEVInterface(_evSearchEngine!);
@@ -589,7 +590,9 @@ class EVRoutingExample {
     searchOptions.languageCode = LanguageCode.enUs;
     searchOptions.maxItems = 30;
 
-    enableEVChargingStationDetails();
+    if (!_isEVCP3) {
+      enableEVChargingStationDetails();
+    }
 
     _searchEngine.searchByCategory(categoryQuery, searchOptions, (SearchError? searchError, List<Place>? items) {
       if (searchError != null) {
@@ -597,39 +600,80 @@ class EVRoutingExample {
         return;
       }
       print("Search: Search along route found \\${items!.length} charging stations:");
-      List<String> placeIds = [];
-      for (Place place in items) {
-        Details details = place.details;
-        Metadata metadata;
-        if (_isEVCP3) {
-          metadata = getMetadataForEVChargingLocation(details);
-        } else {
-          metadata = getMetadataForEVChargingPools(details);
-        }
-        bool foundExistingChargingStation = false;
-        for (MapMarker mapMarker in _mapMarkers) {
-          if (mapMarker.metadata != null) {
-            String? id = mapMarker.metadata!.getString(requiredChargingMetadataKey);
-            if (id != null && id.toLowerCase() == place.id.toLowerCase()) {
-              print("Search: Insert metadata to existing charging station: This charging station was already required to reach the destination (see red charging icon).");
-              mapMarker.metadata = metadata;
-              foundExistingChargingStation = true;
-              break;
-            }
-          }
-        }
-        if (!foundExistingChargingStation) {
-          _addMapMarker(place.geoCoordinates!, "assets/charging.png", metadata);
-        }
+      if (_isEVCP3) {
+        _enrichChargingStationsWithEVCP3(items);
+      } else {
+        _addChargingStationsToMap(items, null);
       }
     });
   }
 
-  // Enable fetching online availability details for EV charging stations.
-  // It allows retrieving additional details, such as whether a charging station is currently occupied.
-  // Check the API Reference for more details.
+  void _enrichChargingStationsWithEVCP3(List<Place> items) {
+    final List<String> placeIds = items.map((place) => place.id).toList();
+    if (placeIds.isEmpty) {
+      print("Search: Skipping direct EVCP3 lookup because no HERE Place IDs are available.");
+      _addChargingStationsToMap(items, null);
+      return;
+    }
+
+    _evSearchExample.runSearchExampleWithCallback(
+      placeIds,
+      (EVSearchError? evSearchError, List<EVChargingLocation>? results) {
+        if (evSearchError != null && evSearchError != EVSearchError.noResultsFound) {
+          print("Search: Direct EVCP3 lookup failed. Falling back to Place details: $evSearchError");
+          _addChargingStationsToMap(items, null);
+          return;
+        }
+
+        final Map<String, EVChargingLocation> evLocationsByPlaceId = {};
+        for (final EVChargingLocation location in results ?? const <EVChargingLocation>[]) {
+          evLocationsByPlaceId[location.id] = location;
+        }
+        _addChargingStationsToMap(items, evLocationsByPlaceId);
+      },
+    );
+  }
+
+  void _addChargingStationsToMap(
+    List<Place> items,
+    Map<String, EVChargingLocation>? evLocationsByPlaceId,
+  ) {
+    for (Place place in items) {
+      Details details = place.details;
+      Metadata metadata;
+      if (_isEVCP3) {
+        final EVChargingLocation? evChargingLocation =
+            evLocationsByPlaceId?[place.id] ?? details.evChargingLocation;
+        metadata = getMetadataForEVChargingLocation(place, evChargingLocation);
+        if (evChargingLocation != null) {
+          _logEVCP3ChargingSpot(place, evChargingLocation);
+        }
+      } else {
+        metadata = getMetadataForEVChargingPools(details);
+      }
+
+      bool foundExistingChargingStation = false;
+      for (MapMarker mapMarker in _mapMarkers) {
+        if (mapMarker.metadata != null) {
+          String? id = mapMarker.metadata!.getString(requiredChargingMetadataKey);
+          if (id != null && id.toLowerCase() == place.id.toLowerCase()) {
+            print("Search: Insert metadata into existing charging station: This charging station was already required to reach the destination (see red charging icon).");
+            mapMarker.metadata = metadata;
+            foundExistingChargingStation = true;
+            break;
+          }
+        }
+      }
+      if (!foundExistingChargingStation) {
+        _addMapMarker(place.geoCoordinates!, "assets/charging.png", metadata);
+      }
+    }
+  }
+
+  // Enable legacy Search/Browse EV charging pool details such as availability counts.
+  // This custom option is independent from EVCP3 and is used only for the non-EVCP3 path.
   void enableEVChargingStationDetails() {
-    // Fetching additional charging stations details requires a custom option call.
+    // Fetching additional charging station pool details requires a custom option call.
     SearchError? error = _searchEngine.setCustomOption("browse.show", "ev");
     if (error != null) {
       _showDialog("Charging Station", "Failed to enableEVChargingStationDetails. ");
@@ -691,6 +735,8 @@ class EVRoutingExample {
       addDetail(facilityTypesMetadataKey, "Facility Types");
       addDetail(parkingTypeMetadataKey, "Parking Type");
       addDetail(energyMixMetadataKey, "Energy Mix");
+      addDetail(placeCoordinatesMetadataKey, "Place Coordinates");
+      addDetail(evseCountMetadataKey, "EVSE Count");
       addDetail(connectorCountMetadataKey, "Connector Count");
       addDetail(tariffCountMetadataKey, "Tariff Count");
       addDetail(connectorGroupCountMetadataKey, "Connector Group Count");
@@ -747,84 +793,101 @@ class EVRoutingExample {
     return metadata;
   }
 
-  // Returns metadata for an EVChargingLocation using both original and camelCase keys.
-  Metadata getMetadataForEVChargingLocation(Details details) {
+  // Returns metadata for EVCP3 details.
+  Metadata getMetadataForEVChargingLocation(
+    Place? place,
+    EVChargingLocation? evChargingLocation,
+  ) {
     Metadata metadata = Metadata();
-    final evChargingLocation = details.evChargingLocation;
+    if (place?.geoCoordinates != null) {
+      metadata.setString(
+        placeCoordinatesMetadataKey,
+        _formatGeoCoordinates(place!.geoCoordinates!),
+      );
+    }
+
     if (evChargingLocation != null) {
-      // Name
+      int connectorCount = 0;
+
       if (evChargingLocation.name != null) {
         metadata.setString(nameMetadataKey, evChargingLocation.name!);
-        metadata.setString("name_metadata_key", evChargingLocation.name!);
       }
-      // CPO ID (if available)
       final cpoId = evChargingLocation.cpoID;
       if (cpoId != null) {
         metadata.setString(cpoIdMetadataKey, cpoId);
-        metadata.setString("cpo_id_metadata_key", cpoId);
       }
-      // Supplier/Operator Name
       if (evChargingLocation.evChargingOperator?.name != null) {
         metadata.setString(supplierNameMetadataKey, evChargingLocation.evChargingOperator!.name!);
       }
-      // Sub Operator Name
       if (evChargingLocation.evChargingSubOperator?.name != null) {
         metadata.setString(subOperatorNameMetadataKey, evChargingLocation.evChargingSubOperator!.name!);
-        metadata.setString("sub_operator_name_metadata_key", evChargingLocation.evChargingSubOperator!.name!);
       }
-      // eMSPs
       final emsps = evChargingLocation.eMobilityServiceProviders;
       if (emsps.isNotEmpty) {
         final emspNames = emsps.map((emsp) => emsp.name).whereType<String>().join(", ");
         metadata.setString(emspNamesMetadataKey, emspNames);
-        metadata.setString("emsp_names_metadata_key", emspNames);
       }
-      // Facility Types
       final facilityTypes = evChargingLocation.facilityTypes;
       if (facilityTypes.isNotEmpty) {
         metadata.setString(facilityTypesMetadataKey, facilityTypes.toString());
-        metadata.setString("facility_types_metadata_key", facilityTypes.toString());
       }
-      // Parking Type
       if (evChargingLocation.parkingType != null) {
         metadata.setString(parkingTypeMetadataKey, evChargingLocation.parkingType.toString());
-        metadata.setString("parking_type_metadata_key", evChargingLocation.parkingType.toString());
       }
-      // Energy Mix
       if (evChargingLocation.energyMix != null) {
         metadata.setString(energyMixMetadataKey, evChargingLocation.energyMix.toString());
-        metadata.setString("energy_mix_metadata_key", evChargingLocation.energyMix.toString());
       }
-      // Tariffs
+
+      metadata.setString(evseCountMetadataKey, evChargingLocation.evses.length.toString());
+      for (final evse in evChargingLocation.evses) {
+        connectorCount += evse.connectors.length;
+      }
+      metadata.setString(connectorCountMetadataKey, connectorCount.toString());
+
+      // Tariffs require tariffs and either evses or connectorGroups in EVSearchOptions.
       final tariffs = evChargingLocation.tariffs;
       metadata.setString(tariffCountMetadataKey, tariffs.length.toString());
-      // Connector Groups
+
       final connectorGroups = evChargingLocation.connectorGroups;
       metadata.setString(connectorGroupCountMetadataKey, connectorGroups.length.toString());
-      // Supported Vehicles
+
       final supportedVehicles = evChargingLocation.supportedVehicles;
       metadata.setString(supportedVehicleCountMetadataKey, supportedVehicles.length.toString());
-      // Truck Restrictions
+
       if (evChargingLocation.truckRestrictions != null) {
         metadata.setString(truckRestrictionsMetadataKey, evChargingLocation.truckRestrictions.toString());
       }
-      // Opening Hours (mapped to lastUpdatedMetadataKey for parity)
+
       if (evChargingLocation.openingHours != null) {
         metadata.setString(openingHoursMetadataKey, evChargingLocation.openingHours.toString());
       }
-      // Restrictions
+
       final restrictions = evChargingLocation.restrictions;
       metadata.setString(restrictionCountMetadataKey, restrictions.length.toString());
-      // Support Phone Number
+
       if (evChargingLocation.supportPhoneNumber != null) {
         metadata.setString(supportPhoneNumberMetadataKey, evChargingLocation.supportPhoneNumber!);
       }
-      // Time Zone
+
       if (evChargingLocation.timeZone != null) {
         metadata.setString(timeZoneMetadataKey, evChargingLocation.timeZone!);
       }
     }
     return metadata;
+  }
+
+  void _logEVCP3ChargingSpot(Place place, EVChargingLocation evChargingLocation) {
+    final coordinates = place.geoCoordinates != null
+        ? _formatGeoCoordinates(place.geoCoordinates!)
+        : "unavailable";
+    print(
+      "EVCP3: Charging spot placeId=${place.id}, coordinates(from Place)=$coordinates, "
+      "locationId=${evChargingLocation.id}, evses=${evChargingLocation.evses.length}, tariffs=${evChargingLocation.tariffs.length}",
+    );
+  }
+
+  String _formatGeoCoordinates(GeoCoordinates geoCoordinates) {
+    return '${geoCoordinates.latitude.toStringAsFixed(6)}, ${geoCoordinates.longitude.toStringAsFixed(6)}';
   }
 
   // Shows the reachable area for this electric vehicle from the current start coordinates and EV car options when the goal is

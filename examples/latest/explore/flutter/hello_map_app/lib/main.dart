@@ -41,6 +41,7 @@ Future<void> _initializeHERESDK() async {
   SDKOptions sdkOptions = SDKOptions.withAuthenticationMode(authenticationMode);
 
   try {
+    // Note that invalid credentials do not cause an InstantiationException during initialization.
     await SDKNativeEngine.makeSharedInstance(sdkOptions);
   } on InstantiationException {
     throw Exception("Failed to initialize the HERE SDK.");

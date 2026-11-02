@@ -99,6 +99,7 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             Context context = this;
+            // Note that invalid credentials do not cause an InstantiationErrorException during initialization.
             SDKNativeEngine.makeSharedInstance(context, options);
         } catch (InstantiationErrorException e) {
             throw new RuntimeException("Initialization of HERE SDK failed: " + e.error.name());

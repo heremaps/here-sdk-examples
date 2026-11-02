@@ -84,6 +84,10 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
         
         // Enable indexing to improve the search experience.
         enableOfflineSearchIndexing(sdkNativeEngine: sdkNativeEngine)
+        
+        // Configure scene load cache options (beta feature).
+        // Note: This is a beta release of this feature and may contain bugs or exhibit unexpected behavior.
+        configureSceneLoadCache()
     }
     
     // Completion handler for loadScene().
@@ -660,6 +664,27 @@ class OfflineMapsExample : DownloadRegionsStatusListener {
             } else {
                 print("Deleting regions failed: \(String(describing: error))")
                 showMessage("Deleting regions failed: \(String(describing: error))")
+            }
+        }
+    }
+    
+    private func configureSceneLoadCache() {
+        // Create scene load cache options to customize cache behavior.
+        // Note: This is a beta release of this feature and may contain bugs or exhibit unexpected behavior.
+        // Related APIs are subject to change without a deprecation process.
+        var cacheOptions = MapContext.SceneLoadCacheOptions()
+        cacheOptions.capacity = 100 // Sets the cache capacity in MB
+        
+        // Add cache options to memory management settings
+        var memoryOptions = MapContext.MemoryManagementOptions()
+        memoryOptions.sceneLoadCacheOptions = cacheOptions
+        
+        // Apply memory management options to map context
+        mapViewObservable.mapView?.mapContext.setMemoryManagementOptions(memoryOptions) { result in
+            if result.success {
+                print("Scene load cache options configured successfully")
+            } else {
+                print("Failed to configure scene load cache options")
             }
         }
     }

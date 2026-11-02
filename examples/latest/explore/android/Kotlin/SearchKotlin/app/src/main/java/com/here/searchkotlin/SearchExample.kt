@@ -20,6 +20,7 @@ package com.here.searchkotlin
 
 import android.app.AlertDialog
 import android.content.Context
+import android.content.DialogInterface
 import android.util.Log
 import android.widget.Toast
 import com.here.sdk.core.Anchor2D
@@ -53,6 +54,7 @@ class SearchExample(private val context: Context, private val mapView: MapView) 
     private val camera = mapView.camera
     private val mapMarkerList: MutableList<MapMarker> = ArrayList()
     private val searchEngine: SearchEngine
+    private var selectedMapMarker: MapMarker? = null
 
     init {
         val distanceInMeters = (1000 * 10).toDouble()
@@ -181,7 +183,11 @@ class SearchExample(private val context: Context, private val mapView: MapView) 
                 if (mapMarkerList.isEmpty()) {
                     return@MapPickCallback
                 }
-                val topmostMapMarker = mapMarkerList[0]
+                // Pick results are not guaranteed to be sorted by draw order when markers overlap.
+                // If multiple markers are picked, this example highlights the one with the highest draw order.
+                // Zoom in to separate nearby markers before tapping.
+                val topmostMapMarker = mapMarkerList.maxByOrNull { it.drawOrder } ?: mapMarkerList[0]
+                highlightMarker(topmostMapMarker)
                 val metadata = topmostMapMarker.metadata
                 if (metadata != null) {
                     val customMetadataValue = metadata.getCustomValue("key_search_result")
@@ -189,7 +195,10 @@ class SearchExample(private val context: Context, private val mapView: MapView) 
                         val searchResultMetadata = customMetadataValue as SearchResultMetadata
                         val title = searchResultMetadata.searchResult.title
                         val vicinity = searchResultMetadata.searchResult.address.addressText
-                        showDialog("Picked Search Result", "$title. Vicinity: $vicinity")
+                        showDialog(
+                            "Picked Search Result",
+                            "$title. Vicinity: $vicinity"
+                        ) { cancelHighlightMarker() }
                         return@MapPickCallback
                     }
                 }
@@ -198,7 +207,7 @@ class SearchExample(private val context: Context, private val mapView: MapView) 
                     "Geographic coordinates: " +
                             topmostMapMarker.coordinates.latitude + ", " +
                             topmostMapMarker.coordinates.longitude
-                )
+                ) { cancelHighlightMarker() }
             })
     }
 
@@ -364,6 +373,10 @@ class SearchExample(private val context: Context, private val mapView: MapView) 
     private fun addPoiMapMarker(geoCoordinates: GeoCoordinates, metadata: Metadata) {
         val mapMarker = createPoiMapMarker(geoCoordinates)
         mapMarker.metadata = metadata
+        // Increase the draw order for each search result so later markers are drawn on top.
+        // This simple approach is used for later highlighting a picked marker by changing its image.
+        // Use MapMarkerCluster for dense or overlapping search results.
+        mapMarker.drawOrder = mapMarkerList.size
         mapView.mapScene.addMapMarker(mapMarker)
         mapMarkerList.add(mapMarker)
     }
@@ -371,6 +384,20 @@ class SearchExample(private val context: Context, private val mapView: MapView) 
     private fun createPoiMapMarker(geoCoordinates: GeoCoordinates): MapMarker {
         val mapImage = MapImageFactory.fromResource(context.resources, com.here.sdk.units.core.R.drawable.poi)
         return MapMarker(geoCoordinates, mapImage, Anchor2D(0.5, 1.0))
+    }
+
+    private fun highlightMarker(marker: MapMarker) {
+        val selectedMarkerImage = MapImageFactory.fromResource(context.resources, R.drawable.poi_highlight)
+        marker.image = selectedMarkerImage
+        selectedMapMarker = marker
+    }
+
+    private fun cancelHighlightMarker() {
+        selectedMapMarker?.let {
+            val normalMarkerImage = MapImageFactory.fromResource(context.resources, com.here.sdk.units.core.R.drawable.poi)
+            it.image = normalMarkerImage
+            selectedMapMarker = null
+        }
     }
 
     private val mapViewCenter: GeoCoordinates
@@ -401,12 +428,21 @@ class SearchExample(private val context: Context, private val mapView: MapView) 
         mapMarkerList.clear()
     }
 
-    private fun showDialog(title: String, message: String) {
+    private fun showDialog(
+        title: String,
+        message: String,
+        onDismissListener: DialogInterface.OnDismissListener? = null
+    ) {
         val builder: AlertDialog.Builder =
             AlertDialog.Builder(context)
         builder.setTitle(title)
         builder.setMessage(message)
-        builder.show()
+
+        val dialog = builder.create()
+        if (onDismissListener != null) {
+            dialog.setOnDismissListener(onDismissListener)
+        }
+        dialog.show()
     }
 
     companion object {

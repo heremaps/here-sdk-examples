@@ -21,7 +21,7 @@ import heresdk
 import Foundation
 import SwiftUI
 
-class SpatialNavigationExample: EventTextDelegate {
+class SpatialNavigationExample: EventTextDelegate, DestinationReachedDelegate {
     
     private var spatialAudioExample: SpatialAudioExample?
     private var visualNavigator: VisualNavigator?
@@ -63,6 +63,11 @@ class SpatialNavigationExample: EventTextDelegate {
             visualNavigator?.route = nil
             locationSimulator!.stop()
         }
+    }
+
+    func onDestinationReached() {
+        print("Destination reached.")
+        locationSimulator?.stop()
     }
     
     func onEventTextUpdated(_ eventText: heresdk.EventText) {
@@ -107,6 +112,7 @@ class SpatialNavigationExample: EventTextDelegate {
         // Hook in one of the many listeners. Here we set up a listener to get instructions on the spatial maneuvers to take while driving.
         // For more details, please check the "Navigation" example app and the Developer's Guide.
         visualNavigator!.eventTextDelegate = self
+        visualNavigator!.destinationReachedDelegate = self
         
         // Set a route to follow. This leaves tracking mode.
         visualNavigator!.route = route

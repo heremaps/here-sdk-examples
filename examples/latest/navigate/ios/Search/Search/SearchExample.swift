@@ -26,6 +26,7 @@ class SearchExample: TapDelegate,
     private let mapView: MapView
     private let searchEngine: SearchEngine
     private var mapMarkers = [MapMarker]()
+    private var selectedMapMarker: MapMarker?
 
     init(_ mapView: MapView) {
         self.mapView = mapView
@@ -239,9 +240,10 @@ class SearchExample: TapDelegate,
 
     // Conforming to TapDelegate protocol.
     func onTap(origin: Point2D) {
+        // Use a small pick area at the tap position to reduce selection of nearby markers.
         // You can also use a larger area to include multiple map icons.
         let rectangle2D = Rectangle2D(origin: origin,
-                                      size: Size2D(width: 50, height: 50))
+                                      size: Size2D(width: 1, height: 1))
         // Creates a list of map content type from which the results will be picked.
         // The content type values can be mapContent, mapItems and customLayerData.
         var contentTypesToPickFrom = Array<MapScene.MapPickFilter.ContentType>();
@@ -264,9 +266,13 @@ class SearchExample: TapDelegate,
             print("Pick operation failed.")
             return
         }
-        guard let topmostMapMarker = pickedMapItems.markers.first else {
+        // Pick results are not guaranteed to be sorted by draw order when markers overlap.
+        // If multiple markers are picked, this example highlights the one with the highest draw order.
+        // Zoom in to separate nearby markers before tapping.
+        guard let topmostMapMarker = pickedMapItems.markers.max(by: { $0.drawOrder < $1.drawOrder }) else {
             return
         }
+        highlightMarker(topmostMapMarker)
         
         if let searchResultMetadata =
             topmostMapMarker.metadata?.getCustomValue(key: "key_search_result") as? SearchResultMetadata {
@@ -274,12 +280,14 @@ class SearchExample: TapDelegate,
             let title = searchResultMetadata.searchResult.title
             let vicinity = searchResultMetadata.searchResult.address.addressText
             showDialog(title: "Picked Search Result",
-                       message: "Title: \(title), Vicinity: \(vicinity)")
+                       message: "Title: \(title), Vicinity: \(vicinity)",
+                       onDismiss: { [weak self] in self?.cancelHighlightMarker() })
             return
         }
         
         showDialog(title: "Map Marker picked at: ",
-                   message: "\(topmostMapMarker.coordinates.latitude), \(topmostMapMarker.coordinates.longitude)")
+                   message: "\(topmostMapMarker.coordinates.latitude), \(topmostMapMarker.coordinates.longitude)",
+                   onDismiss: { [weak self] in self?.cancelHighlightMarker() })
     }
 
     // Conforming to LongPressDelegate protocol.
@@ -314,6 +322,7 @@ class SearchExample: TapDelegate,
 
     private func addPoiMapMarker(geoCoordinates: GeoCoordinates) {
         let mapMarker = createPoiMapMarker(geoCoordinates: geoCoordinates)
+        mapMarker.drawOrder = Int32(mapMarkers.count)
         mapView.mapScene.addMapMarker(mapMarker)
         mapMarkers.append(mapMarker)
     }
@@ -321,6 +330,10 @@ class SearchExample: TapDelegate,
     private func addPoiMapMarker(geoCoordinates: GeoCoordinates, metadata: Metadata) {
         let mapMarker = createPoiMapMarker(geoCoordinates: geoCoordinates)
         mapMarker.metadata = metadata
+        // Increase the draw order for each search result so later markers are drawn on top.
+        // This simple approach is used for later highlighting a picked marker by changing its image.
+        // Use MapMarkerCluster for dense or overlapping search results.
+        mapMarker.drawOrder = Int32(mapMarkers.count)
         mapView.mapScene.addMapMarker(mapMarker)
         mapMarkers.append(mapMarker)
     }
@@ -340,6 +353,27 @@ class SearchExample: TapDelegate,
 
     private func getMapViewCenter() -> GeoCoordinates {
         return mapView.camera.state.targetCoordinates
+    }
+
+    private func highlightMarker(_ marker: MapMarker) {
+        guard let image = UIImage(named: "poi_highlight"),
+              let imageData = image.pngData() else {
+            fatalError("Error: Highlight image not found.")
+        }
+        marker.image = MapImage(pixelData: imageData, imageFormat: .png)
+        selectedMapMarker = marker
+    }
+
+    private func cancelHighlightMarker() {
+        guard let marker = selectedMapMarker else {
+            return
+        }
+        guard let image = UIImage(named: "poi"),
+              let imageData = image.pngData() else {
+            fatalError("Error: Image not found.")
+        }
+        marker.image = MapImage(pixelData: imageData, imageFormat: .png)
+        selectedMapMarker = nil
     }
 
     private func getMapViewGeoBox() -> GeoBox {
@@ -364,7 +398,7 @@ class SearchExample: TapDelegate,
         mapMarkers.removeAll()
     }
     
-    private func showDialog(title: String, message: String) {
+    private func showDialog(title: String, message: String, onDismiss: (() -> Void)? = nil) {
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let rootViewController = windowScene.windows.first(where: { $0.isKeyWindow })?.rootViewController {
 
@@ -376,7 +410,7 @@ class SearchExample: TapDelegate,
 
             alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
                 // Handle OK button action.
-                alert.dismiss(animated: true, completion: nil)
+                onDismiss?()
             }))
 
             rootViewController.present(alert, animated: true, completion: nil)

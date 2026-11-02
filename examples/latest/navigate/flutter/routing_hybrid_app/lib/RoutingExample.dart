@@ -92,14 +92,14 @@ class RoutingExample {
     List<Waypoint> waypoints = [startWaypoint, destinationWaypoint];
 
     _routingEngine.calculateRouteWithRoutingOptions(waypoints, routingOptions,
-        (RoutingError? routingError, List<here.Route>? routeList) async {
+        (RoutingError? routingError, List<here.Route>? routeList) {
       if (routingError == null) {
         // When error is null, it is guaranteed that the list is not empty.
         here.Route route = routeList!.first;
-        _showRouteDetails(route);
         _showRouteOnMap(route);
         _logRouteViolations(route);
         _logRouteLabels(route);
+        _showRouteDetails(route);
       } else {
         var error = routingError.toString();
         _showDialog('Error', 'Error while calculating a route: $error');
@@ -131,11 +131,10 @@ class RoutingExample {
     List<Waypoint> waypoints = [startWaypoint, waypoint1, waypoint2, destinationWaypoint];
 
     _routingEngine.calculateRouteWithRoutingOptions(waypoints, routingOptions,
-        (RoutingError? routingError, List<here.Route>? routeList) async {
+        (RoutingError? routingError, List<here.Route>? routeList) {
       if (routingError == null) {
         // When error is null, it is guaranteed that the list is not empty.
         here.Route route = routeList!.first;
-        _showRouteDetails(route);
         _showRouteOnMap(route);
         _logRouteViolations(route);
         _logRouteLabels(route);
@@ -144,6 +143,7 @@ class RoutingExample {
         // Draw a circle to indicate the location of the waypoints.
         _addCircleMapMarker(waypoint1.coordinates, "assets/red_dot.png");
         _addCircleMapMarker(waypoint2.coordinates, "assets/red_dot.png");
+        _showRouteDetails(route);
       } else {
         var error = routingError.toString();
         _showDialog('Error', 'Error while calculating a route: $error');

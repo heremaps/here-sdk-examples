@@ -49,6 +49,7 @@ import com.here.sdk.maploader.RegionId
 import com.here.sdk.maploader.RepairPersistentMapCallback
 import com.here.sdk.maploader.SDKCache
 import com.here.sdk.mapview.MapMeasure
+import com.here.sdk.mapview.MapContext
 import com.here.sdk.mapview.MapScheme
 import com.here.sdk.mapview.MapView
 import com.here.sdk.search.OfflineSearchEngine
@@ -140,6 +141,10 @@ class OfflineMapsExample(
 
         // Enable indexing to improve the search experience.
         enableOfflineSearchIndexing(sdkNativeEngine)
+
+        // Configure scene load cache options (beta feature).
+        // Note: MapContext.SceneLoadCacheOptions is a beta feature.
+        configureSceneLoadCache()
 
         val info = "This example allows to download the region Switzerland."
         snackbar.show(info)
@@ -832,6 +837,27 @@ class OfflineMapsExample(
         return installedRegionList.stream()
             .mapToLong { region: InstalledRegion -> region.sizeOnDiskInBytes }
             .sum()
+    }
+
+    private fun configureSceneLoadCache() {
+        // Create scene load cache options to customize cache behavior.
+        // Note: This is a beta release of this feature and may contain bugs or exhibit unexpected behavior.
+        // Related APIs are subject to change without a deprecation process.
+        val cacheOptions = MapContext.SceneLoadCacheOptions()
+        cacheOptions.capacity = 100 // Sets the cache capacity in MB
+
+        // Add cache options to memory management settings
+        val memoryOptions = com.here.sdk.mapview.MapContext.MemoryManagementOptions()
+        memoryOptions.sceneLoadCacheOptions = cacheOptions
+
+        // Apply memory management options to map context
+        mapView.mapContext.setMemoryManagementOptions(memoryOptions) { result ->
+            if (result.success) {
+                Log.d(TAG, "Scene load cache options configured successfully")
+            } else {
+                Log.e(TAG, "Failed to configure scene load cache options")
+            }
+        }
     }
 
     companion object {

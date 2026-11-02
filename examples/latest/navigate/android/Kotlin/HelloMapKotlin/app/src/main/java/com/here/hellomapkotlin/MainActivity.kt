@@ -92,6 +92,7 @@ class MainActivity : AppCompatActivity() {
         val options = SDKOptions(authenticationMode)
         try {
             val context = this
+            // Note that invalid credentials do not cause an InstantiationErrorException during initialization.
             SDKNativeEngine.makeSharedInstance(context, options)
         } catch (e: InstantiationErrorException) {
             throw RuntimeException("Initialization of HERE SDK failed: " + e.error.name)
