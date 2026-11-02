@@ -167,6 +167,11 @@ class _MyAppState extends State<MyApp> {
       }
     });
 
+    _visualNavigator!.destinationReachedListener = HERE.DestinationReachedListener(() {
+      print("Destination reached.");
+      _locationSimulator?.stop();
+    });
+
     // Set a route to follow. This leaves tracking mode.
     _visualNavigator!.route = route;
 

@@ -29,12 +29,14 @@ import 'package:here_sdk/search.dart';
 import 'SearchResultMetadata.dart';
 
 // A callback to notify the hosting widget.
-typedef ShowDialogFunction = void Function(String title, String message);
+typedef ShowDialogFunction = Future<void> Function(String title, String message);
 
 class SearchExample {
   HereMapController _hereMapController;
   MapCamera _camera;
   MapImage? _poiMapImage;
+  MapImage? _poiHighlightMapImage;
+  MapMarker? _selectedMapMarker;
   List<MapMarker> _mapMarkerList = [];
   late SearchEngine _searchEngine;
   ShowDialogFunction _showDialog;
@@ -153,7 +155,9 @@ class SearchExample {
 
   void _pickMapMarker(Point2D touchPoint) {
     Point2D originInPixels = Point2D(touchPoint.x, touchPoint.y);
-    Size2D sizeInPixels = Size2D(50, 50);
+    // Use a small pick area at the tap position to reduce selection of nearby markers.
+    // You can also use a larger area to include multiple map icons.
+    Size2D sizeInPixels = Size2D(1, 1);
     Rectangle2D rectangle = Rectangle2D(originInPixels, sizeInPixels);
 
     // Creates a list of map content type from which the results will be picked.
@@ -165,7 +169,7 @@ class SearchExample {
     // Currently we need map marker so adding the mapItems filter.
     contentTypesToPickFrom.add(MapSceneMapPickFilterContentType.mapItems);
     MapSceneMapPickFilter filter = MapSceneMapPickFilter(contentTypesToPickFrom);
-    _hereMapController.pick(filter, rectangle, (pickMapResult) {
+    _hereMapController.pick(filter, rectangle, (pickMapResult) async {
       if (pickMapResult == null) {
         // Pick operation failed.
         return;
@@ -182,20 +186,33 @@ class SearchExample {
         return;
       }
       MapMarker topmostMapMarker = mapMarkerList.first;
-      Metadata? metadata = topmostMapMarker.metadata;
-      if (metadata != null) {
-        CustomMetadataValue? customMetadataValue = metadata.getCustomValue("key_search_result");
-        if (customMetadataValue != null) {
-          SearchResultMetadata searchResultMetadata = customMetadataValue as SearchResultMetadata;
-          String title = searchResultMetadata.searchResult.title;
-          String vicinity = searchResultMetadata.searchResult.address.addressText;
-          _showDialog("Picked Search Result", title + ". Vicinity: " + vicinity);
-          return;
+      // Pick results are not guaranteed to be sorted by draw order.
+      // If multiple markers are picked, this example highlights the one with the highest draw order.
+      // Zoom in to separate nearby markers before tapping.
+      for (MapMarker marker in mapMarkerList) {
+        if (marker.drawOrder > topmostMapMarker.drawOrder) {
+          topmostMapMarker = marker;
         }
       }
-      double lat = topmostMapMarker.coordinates.latitude;
-      double lon = topmostMapMarker.coordinates.longitude;
-      _showDialog("Picked Map Marker", "Geographic coordinates: $lat, $lon.");
+      _highlightMarker(topmostMapMarker);
+      try {
+        Metadata? metadata = topmostMapMarker.metadata;
+        if (metadata != null) {
+          CustomMetadataValue? customMetadataValue = metadata.getCustomValue("key_search_result");
+          if (customMetadataValue != null) {
+            SearchResultMetadata searchResultMetadata = customMetadataValue as SearchResultMetadata;
+            String title = searchResultMetadata.searchResult.title;
+            String vicinity = searchResultMetadata.searchResult.address.addressText;
+            await _showDialog("Picked Search Result", title + ". Vicinity: " + vicinity);
+            return;
+          }
+        }
+        double lat = topmostMapMarker.coordinates.latitude;
+        double lon = topmostMapMarker.coordinates.longitude;
+        await _showDialog("Picked Map Marker", "Geographic coordinates: $lat, $lon.");
+      } finally {
+        _cancelHighlightMarker();
+      }
     });
   }
 
@@ -353,12 +370,32 @@ class SearchExample {
       Uint8List imagePixelData = await _loadFileAsUint8List('poi.png');
       _poiMapImage = MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
     }
+    if (_poiHighlightMapImage == null) {
+      Uint8List imagePixelData = await _loadFileAsUint8List('poi_highlight.png');
+      _poiHighlightMapImage = MapImage.withPixelDataAndImageFormat(imagePixelData, ImageFormat.png);
+    }
 
     MapMarker mapMarker = MapMarker(geoCoordinates, _poiMapImage!);
+    // Increase the draw order for each search result so later markers are drawn on top.
+    // This simple approach is used for later highlighting a picked marker by changing its image.
+    // Use MapMarkerCluster for dense or overlapping search results.
+    mapMarker.drawOrder = _mapMarkerList.length;
     _hereMapController.mapScene.addMapMarker(mapMarker);
     _mapMarkerList.add(mapMarker);
 
     return mapMarker;
+  }
+
+  void _highlightMarker(MapMarker marker) {
+    marker.image = _poiHighlightMapImage!;
+    _selectedMapMarker = marker;
+  }
+
+  void _cancelHighlightMarker() {
+    if (_selectedMapMarker != null) {
+      _selectedMapMarker!.image = _poiMapImage!;
+      _selectedMapMarker = null;
+    }
   }
 
   Future<Uint8List> _loadFileAsUint8List(String fileName) async {

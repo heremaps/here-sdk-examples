@@ -1,0 +1,131 @@
+{
+  "camera": {
+    "maxZoomLevel": 20.0,
+    "fixedAnimationDurationMs": 500,
+    "recenterAnimationDurationMs": 500,
+    "principalPointAnimationDurationMs": 500,
+    "maxRotationSpeedDegreesPerSecond": 60.0,
+    "zoomMeasureKind": "distanceInMeters",
+    "zoomSpeed": 250.0,
+    "headingStabilizationThresholdDegrees": 5.0,
+    "dynamicAnimationSpeedTimeConstantMs": 993
+  },
+  "roadParameters": {
+    "default": {
+      "zoom": 500.0
+    },
+    "speedBasedTiltMapping": {
+      "minTilt": 52.0,
+      "maxTilt": 60.0,
+      "maxSpeedKmh": 100.0
+    },
+    "speedClassMap": {
+      "delayBetweenThresholdChanges": 0,
+      "slowSpeed": {
+        "thresholds": [
+          { "speed": 0.0,   "zoom": 600.0, "interpolate": true },
+          { "speed": 25.0,  "zoom": 550.0, "interpolate": true },
+          { "speed": 120.0, "zoom": 600.0 }
+        ]
+      },
+      "regularSpeed": {
+        "thresholds": [
+          { "speed": 0.0,   "zoom": 600.0, "interpolate": true },
+          { "speed": 25.0,  "zoom": 550.0, "interpolate": true },
+          { "speed": 120.0, "zoom": 600.0 }
+        ]
+      },
+      "fastSpeed": {
+        "thresholds": [
+          { "speed": 0.0,   "zoom": 600.0, "interpolate": true },
+          { "speed": 25.0,  "zoom": 550.0, "interpolate": true },
+          { "speed": 120.0, "zoom": 600.0 }
+        ]
+      }
+    }
+  },
+  "modes": {
+    "2D": {
+      "tiltDegrees": 0.0,
+      "principalPoint": { "x": 0.5, "y": 0.75 }
+    },
+    "3D": {
+      "tiltDegrees": 50.0,
+      "principalPoint": { "x": 0.5, "y": 0.95 }
+    },
+    "northUp": {
+      "tiltDegrees": 0.0,
+      "bearingDegrees": 0.0,
+      "principalPoint": { "x": 0.5, "y": 0.5 }
+    }
+  },
+  "maneuverDetection": {
+    "enabled": false,
+    "bearingThresholdDegrees": 25.0,
+    "rules": [
+      {
+        "roadClasses": [],
+        "actions": [
+          "depart",
+          "arrive",
+          "continue",
+          "leftFork",
+          "middleFork",
+          "rightFork",
+          "leftRamp",
+          "rightRamp"
+        ],
+        "options": null
+      },
+      {
+        "roadClasses": [],
+        "actions": [],
+        "options": {
+          "zoom": {
+            "value": 300.0,
+            "earlyPreActivationMeters": 300.0,
+            "preActivationMeters": 200.0,
+            "postActivationMeters": 200.0
+          },
+          "tilt": {
+            "value": 0.0,
+            "earlyPreActivationMeters": 150.0,
+            "preActivationMeters": 100.0,
+            "postActivationMeters": 100.0
+          }
+        }
+      }
+    ]
+  },
+  "HighDefinition": {
+    "speedClassMap": {
+      "delayBetweenThresholdChanges": 0,
+      "slowSpeed": {
+        "thresholds": [
+          { "speed": 0.0,   "zoom": 300.0, "interpolate": true },
+          { "speed": 25.0,  "zoom": 200.0, "interpolate": true },
+          { "speed": 120.0, "zoom": 310.0 }
+        ]
+      },
+      "regularSpeed": {
+        "thresholds": [
+          { "speed": 0.0,   "zoom": 300.0, "interpolate": true },
+          { "speed": 25.0,  "zoom": 200.0, "interpolate": true },
+          { "speed": 120.0, "zoom": 315.0 }
+        ]
+      },
+      "fastSpeed": {
+        "thresholds": [
+          { "speed": 0.0,   "zoom": 300.0, "interpolate": true },
+          { "speed": 25.0,  "zoom": 200.0, "interpolate": true },
+          { "speed": 120.0, "zoom": 315.0 }
+        ]
+      }
+    },
+    "speedBasedTiltMapping": {
+      "minTilt": 52.0,
+      "maxTilt": 60.0,
+      "maxSpeedKmh": 100.0
+    }
+  }
+}

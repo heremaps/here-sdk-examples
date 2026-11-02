@@ -48,6 +48,9 @@ class ElectronicHorizonHandler {
     private var electronicHorizonEngine: ElectronicHorizonEngine?
     private let electronicHorizonDataLoader: ElectronicHorizonDataLoader
 
+    // Keep a strong reference to the delegate while updates are needed.
+    // ElectronicHorizonEngine.addElectronicHorizonDelegate(_:) supports weak delegate registration.
+    // This stored instance is the one that gets registered in start() and removed again in stop().
     private lazy var electronicHorizonDelegate: ElectronicHorizonDelegate = {
         return createElectronicHorizonDelegate()
     }()
@@ -81,11 +84,20 @@ class ElectronicHorizonHandler {
         // can reduce data usage, but requires more storage memory in the cache.
         // A small cache can replace previously loaded segments too early.
         let segmentDataCacheSize = 1000
+        // The corridor extends this far from each side of the preferred path.
+        let corridorHalfWidthInMeters: Int32 = 0
+        // A length of 0 disables corridor fetching; this example loads horizon segments only.
+        let corridorLengthInMeters: Int32 = 0
+        let electronicHorizonDataLoaderOptions = ElectronicHorizonDataLoaderOptions(
+            segmentDataLoaderOptions: segmentDataLoaderOptions,
+            segmentDataCacheSize: Int32(segmentDataCacheSize),
+            corridorHalfWidthInMeters: corridorHalfWidthInMeters,
+            corridorLengthInMeters: corridorLengthInMeters
+        )
         do {
             electronicHorizonDataLoader = try ElectronicHorizonDataLoader(
-                sdkEngine: ElectronicHorizonHandler.getSDKNativeEngine(),
-                options: segmentDataLoaderOptions,
-                segmentDataCacheSize: Int32(segmentDataCacheSize)
+                ElectronicHorizonHandler.getSDKNativeEngine(),
+                options: electronicHorizonDataLoaderOptions
             )
         } catch let instantiationError {
             fatalError("ElectronicHorizonDataLoader is not initialized: \(instantiationError)")

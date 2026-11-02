@@ -27,14 +27,17 @@ import com.here.sdk.search.EVSearchEngine;
 import com.here.sdk.search.EVSearchOptions;
 import com.here.sdk.search.EVSearchError;
 import com.here.sdk.search.EVChargingLocation;
+import com.here.sdk.search.EVChargingLocationFeature;
 import com.here.sdk.search.EVChargingOperator;
 import com.here.sdk.search.EVSEInfo;
 import com.here.sdk.search.EVChargingTariff;
 import com.here.sdk.search.EVSearchCallback;
 
+import java.util.Arrays;
 import java.util.List;
 
-// Example usage of HERE EVSearchEngine for querying detailed EV charging location information. Requires an additional EVCP3 license (not included with standard Navigation license).
+// Example usage of HERE EVSearchEngine for querying detailed EV charging location information.
+// Requires an additional EVCP3 license that is not included with a standard Navigate license.
 public class EVSearchExample {
 
     private static final String TAG = "EvSearchExample";
@@ -52,25 +55,38 @@ public class EVSearchExample {
         return evSearchEngine;
     }
 
-    // Overload to support passing placeIds to EvSearchExample
+    // This standalone EVCP3 lookup is useful only when the caller already has HERE Place IDs.
+    // EVRoutingExample uses SearchEngine.setEVInterface(...) for generic EV enrichment and this
+    // direct lookup when it needs feature-gated EVCP3 fields such as tariffs and EVSE details.
     public void runSearchExample(List<String> placeIds) {
+        runSearchExample(placeIds, null);
+    }
+
+    public void runSearchExample(List<String> placeIds, EVSearchCallback callback) {
         if (evSearchEngine == null || placeIds == null || placeIds.isEmpty()) {
             Log.d(TAG, "EVSearchEngine or placeIds is null/empty");
             return;
         }
-        EVSearchOptions options = new EVSearchOptions();
+
+        EVSearchOptions options = createEVCP3DetailsOptions();
         evSearchEngine.setOptions(options);
         evSearchEngine.search(placeIds, new EVSearchCallback() {
             @Override
             public void onEVCP3SearchCompleted(EVSearchError evSearchError, List<EVChargingLocation> results) {
-                // Per API, NO_RESULTS_FOUND is not a fatal error, but indicates no results. Document this logic.
+                if (callback != null) {
+                    callback.onEVCP3SearchCompleted(evSearchError, results);
+                }
+
+                // Per API, NO_RESULTS_FOUND is not a fatal error, but indicates no results.
                 if (evSearchError != null && evSearchError != EVSearchError.NO_RESULTS_FOUND) {
                     Log.d(TAG, "EV search failed: " + evSearchError);
                     return;
                 }
+
                 if (evSearchError == EVSearchError.NO_RESULTS_FOUND) {
                     Log.d(TAG, "EV search completed: No results found.");
                 }
+
                 if (results != null) {
                     for (EVChargingLocation location : results) {
                         printLocation(location);
@@ -78,6 +94,18 @@ public class EVSearchExample {
                 }
             }
         });
+    }
+
+    private EVSearchOptions createEVCP3DetailsOptions() {
+        EVSearchOptions options = new EVSearchOptions();
+        options.additionalFeatures = Arrays.asList(
+                EVChargingLocationFeature.EVSES,
+                EVChargingLocationFeature.TARIFFS,
+                EVChargingLocationFeature.CONNECTOR_GROUPS,
+                EVChargingLocationFeature.EMSPS,
+                EVChargingLocationFeature.LOCATION_INFO,
+                EVChargingLocationFeature.TRUCK_RESTRICTIONS);
+        return options;
     }
 
     private void printLocation(EVChargingLocation location) {
@@ -93,7 +121,11 @@ public class EVSearchExample {
                 Log.d(TAG, " - Connector: " + c.id );
             }
         }
-        for (EVChargingTariff tariff : location.getTariffs()) {
+
+        List<EVChargingTariff> tariffs = location.getTariffs();
+        Log.d(TAG, "Tariff count: " + tariffs.size()
+                + " (requires TARIFFS plus EVSES or CONNECTOR_GROUPS in EVSearchOptions)");
+        for (EVChargingTariff tariff : tariffs) {
             Log.d(TAG, "Tariff: " + tariff.name);
         }
     }

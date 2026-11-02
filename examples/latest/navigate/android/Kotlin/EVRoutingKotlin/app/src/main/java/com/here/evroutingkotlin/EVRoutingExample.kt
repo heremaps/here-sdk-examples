@@ -69,6 +69,8 @@ import com.here.sdk.routing.Waypoint
 import com.here.sdk.search.CategoryQuery
 import com.here.sdk.search.Details
 import com.here.sdk.search.EVChargingLocation
+import com.here.sdk.search.EVSearchCallback
+import com.here.sdk.search.EVSearchError
 import com.here.sdk.search.EVSearchEngine
 import com.here.sdk.search.PlaceCategory
 import com.here.sdk.search.SearchCallback
@@ -109,6 +111,7 @@ class EVRoutingExample(private val context: Context, private val mapView: MapVie
     private val FACILITY_TYPES_METADATA_KEY = "facility_types"
     private val PARKING_TYPE_METADATA_KEY = "parking_type"
     private val ENERGY_MIX_METADATA_KEY = "energy_mix"
+    private val EVSE_COUNT_METADATA_KEY = "evse_count"
     private val TARIFF_COUNT_METADATA_KEY = "tariff_count"
     private val CONNECTOR_GROUP_COUNT_METADATA_KEY = "connector_group_count"
     private val SUPPORTED_VEHICLE_COUNT_METADATA_KEY = "supported_vehicle_count"
@@ -117,14 +120,14 @@ class EVRoutingExample(private val context: Context, private val mapView: MapVie
     private val SUPPORT_PHONE_NUMBER_METADATA_KEY = "support_phone_number"
     private val TIME_ZONE_METADATA_KEY = "time_zone"
     private val OPENING_HOURS_METADATA_KEY = "opening_hours"
+    private val PLACE_COORDINATES_METADATA_KEY = "place_coordinates"
 
     private lateinit var evSearchExample: EVSearchExample
 
-    // This flag enables the use of the EVSearchEngine.
-    // This engine will look online for enhanced data for EV charging stations.
-    // Internally, the engine accesses the Electric Vehicle Charging Point (EVCP) 3.0 backend.
+    // This flag enables EVCP3-specific charging metadata.
+    // The EVSearchEngine uses the Electric Vehicle Charging Point (EVCP) 3.0 backend.
     // Find more info here: https://www.here.com/docs/bundle/ev-charge-points-api-v3-developer-guide/page/README.html
-    // ATTENTION: This new API requires a separate license; find info more in the linked document.
+    // This API requires a separate license. Find more information in the linked document.
     private var isEVCP3 = false
 
     // TaskHandle to track calculation progress and prevent concurrent route calculations.
@@ -159,8 +162,8 @@ class EVRoutingExample(private val context: Context, private val mapView: MapVie
 
         // Create an instance of EVSearchExample to enable EVSearchEngine for enriching search results with EVCP 3.0 data.
         evSearchExample = EVSearchExample()
-        // Attach EVSearchEngine to SearchEngine for EV enrichment
-        // Place results will contain additional data such as operator, sub-operator and eMSPs info, facility types, parking type, energy mix.
+        // Attach EVSearchEngine to SearchEngine for basic EVCP3 enrichment on Place details.
+        // A direct EVSearchEngine lookup is still used later for fields gated by EVSearchOptions.
         val evSearchEngine: EVSearchEngine? = evSearchExample.evSearchEngine
         if (evSearchEngine != null && isEVCP3) {
             searchEngine.setEVInterface(evSearchEngine)
@@ -491,7 +494,9 @@ class EVRoutingExample(private val context: Context, private val mapView: MapVie
         searchOptions.languageCode = LanguageCode.EN_US
         searchOptions.maxItems = 30
 
-        enableEVChargingStationDetails()
+        if (!isEVCP3) {
+            enableEVChargingStationDetails()
+        }
 
         searchEngine.searchByCategory(
             categoryQuery, searchOptions,
@@ -505,42 +510,78 @@ class EVRoutingExample(private val context: Context, private val mapView: MapVie
                 }
                 // If error is nil, it is guaranteed that the items will not be nil.
                 Log.d("Search", "Search along route found " + items!!.size + " charging stations:")
-                for (place in items) {
-                    val details = place.details
-                    val metadata: Metadata?
-                    if (isEVCP3) {
-                        metadata = getMetadataForEVChargingLocation(details)
-                    } else {
-                        metadata = getMetadataForEVChargingPools(details)
-                    }
-                    var foundExistingChargingStation = false
-                    for (mapMarker in mapMarkers) {
-                        if (mapMarker.metadata != null) {
-                            val id =
-                                mapMarker.metadata!!.getString(REQUIRED_CHARGING_METADATA_KEY)
-                            if (id != null && id.equals(place.id, ignoreCase = true)) {
-                                Log.d(
-                                    "Search",
-                                    "Insert metdata to existing charging station: This charging station was already required to reach the destination (see red charging icon)."
-                                )
-                                mapMarker.metadata = metadata
-                                foundExistingChargingStation = true
-                                break
-                            }
-                        }
-                    }
-                    if (!foundExistingChargingStation) {
-                        addMapMarker(place.geoCoordinates!!, R.drawable.charging, metadata)
-                    }
+                if (isEVCP3) {
+                    enrichChargingStationsWithEVCP3(items)
+                } else {
+                    addChargingStationsToMap(items, null)
                 }
             })
     }
 
-    // Enable fetching online availability details for EV charging stations.
-    // It allows retrieving additional details, such as whether a charging station is currently occupied.
-    // Check the API Reference for more details.
+    private fun enrichChargingStationsWithEVCP3(items: List<com.here.sdk.search.Place>) {
+        val placeIds = items.mapNotNull { it.id }
+        if (placeIds.isEmpty()) {
+            Log.d("Search", "Skipping direct EVCP3 lookup because no HERE Place IDs are available.")
+            addChargingStationsToMap(items, null)
+            return
+        }
+
+        evSearchExample.runSearchExample(placeIds, EVSearchCallback { evSearchError, results ->
+            if (evSearchError != null && evSearchError != EVSearchError.NO_RESULTS_FOUND) {
+                Log.d("Search", "Direct EVCP3 lookup failed. Falling back to Place details: $evSearchError")
+                addChargingStationsToMap(items, null)
+                return@EVSearchCallback
+            }
+
+            val evLocationsByPlaceId = HashMap<String, EVChargingLocation>()
+            results?.forEach { location ->
+                evLocationsByPlaceId[location.id] = location
+            }
+            addChargingStationsToMap(items, evLocationsByPlaceId)
+        })
+    }
+
+    private fun addChargingStationsToMap(
+        items: List<com.here.sdk.search.Place>,
+        evLocationsByPlaceId: HashMap<String, EVChargingLocation>?
+    ) {
+        for (place in items) {
+            val details = place.details
+            val metadata: Metadata = if (isEVCP3) {
+                val evChargingLocation = evLocationsByPlaceId?.get(place.id)
+                    ?: details?.evChargingLocation
+                val evMetadata = getMetadataForEVChargingLocation(place, evChargingLocation)
+                if (evChargingLocation != null) {
+                    logEVCP3ChargingSpot(place, evChargingLocation)
+                }
+                evMetadata
+            } else {
+                getMetadataForEVChargingPools(details)
+            }
+
+            var foundExistingChargingStation = false
+            for (mapMarker in mapMarkers) {
+                val id = mapMarker.metadata?.getString(REQUIRED_CHARGING_METADATA_KEY)
+                if (id != null && place.id != null && id.equals(place.id, ignoreCase = true)) {
+                    Log.d(
+                        "Search",
+                        "Insert metadata into existing charging station: This charging station was already required to reach the destination (see red charging icon)."
+                    )
+                    mapMarker.metadata = metadata
+                    foundExistingChargingStation = true
+                    break
+                }
+            }
+            if (!foundExistingChargingStation) {
+                addMapMarker(place.geoCoordinates!!, R.drawable.charging, metadata)
+            }
+        }
+    }
+
+    // Enable legacy Search/Browse EV charging pool details such as availability counts.
+    // This custom option is independent from EVCP3 and is used only for the non-EVCP3 path.
     private fun enableEVChargingStationDetails() {
-        // Fetching additional charging stations details requires a custom option call.
+        // Fetching additional charging station pool details requires a custom option call.
         val error = searchEngine.setCustomOption("browse.show", "ev")
         if (error != null) {
             showDialog(
@@ -625,6 +666,16 @@ class EVRoutingExample(private val context: Context, private val mapView: MapVie
                 messageBuilder,
                 "Energy Mix",
                 metadata.getString(ENERGY_MIX_METADATA_KEY)
+            )
+            appendMetadataValue(
+                messageBuilder,
+                "Place Coordinates",
+                metadata.getString(PLACE_COORDINATES_METADATA_KEY)
+            )
+            appendMetadataValue(
+                messageBuilder,
+                "EVSE Count",
+                metadata.getString(EVSE_COUNT_METADATA_KEY)
             )
             appendMetadataValue(
                 messageBuilder,
@@ -767,11 +818,17 @@ class EVRoutingExample(private val context: Context, private val mapView: MapVie
         return metadata
     }
 
-    // Helper to extract metadata from evChargingLocation (EVCP3)
-    private fun getMetadataForEVChargingLocation(details: Details?): Metadata {
+    // Helper to extract metadata from EVCP3 details.
+    private fun getMetadataForEVChargingLocation(
+        place: com.here.sdk.search.Place?,
+        evChargingLocation: EVChargingLocation?
+    ): Metadata {
         val metadata = Metadata()
-        if (details != null && details.evChargingLocation != null) {
-            val evChargingLocation: EVChargingLocation = details.evChargingLocation!!
+        place?.geoCoordinates?.let {
+            metadata.setString(PLACE_COORDINATES_METADATA_KEY, formatGeoCoordinates(it))
+        }
+        if (evChargingLocation != null) {
+            var connectorCount = 0
 
             if (evChargingLocation.name != null) {
                 metadata.setString(NAME_METADATA_KEY, evChargingLocation.name!!)
@@ -820,7 +877,13 @@ class EVRoutingExample(private val context: Context, private val mapView: MapVie
                     evChargingLocation.energyMix.toString()
                 )
             }
-            // Tariffs
+            metadata.setString(EVSE_COUNT_METADATA_KEY, evChargingLocation.evses.size.toString())
+            evChargingLocation.evses.forEach { evse ->
+                connectorCount += evse.connectors.size
+            }
+            metadata.setString(CONNECTOR_COUNT_METADATA_KEY, connectorCount.toString())
+
+            // Tariffs require TARIFFS and either EVSES or CONNECTOR_GROUPS in EVSearchOptions.
             val tariffs = evChargingLocation.tariffs
             metadata.setString(TARIFF_COUNT_METADATA_KEY, tariffs.size.toString())
             // Connector Groups
@@ -861,6 +924,19 @@ class EVRoutingExample(private val context: Context, private val mapView: MapVie
             }
         }
         return metadata
+    }
+
+    private fun logEVCP3ChargingSpot(place: com.here.sdk.search.Place, evChargingLocation: EVChargingLocation) {
+        val placeId = place.id ?: "unknown"
+        val coordinates = place.geoCoordinates?.let { formatGeoCoordinates(it) } ?: "unavailable"
+        Log.d(
+            "EVCP3",
+            "Charging spot placeId=$placeId, coordinates(from Place)=$coordinates, locationId=${evChargingLocation.id}, evses=${evChargingLocation.evses.size}, tariffs=${evChargingLocation.tariffs.size}"
+        )
+    }
+
+    private fun formatGeoCoordinates(geoCoordinates: GeoCoordinates): String {
+        return String.format("%.6f, %.6f", geoCoordinates.latitude, geoCoordinates.longitude)
     }
 
 

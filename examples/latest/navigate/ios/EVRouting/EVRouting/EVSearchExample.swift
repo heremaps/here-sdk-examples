@@ -20,7 +20,8 @@
 import heresdk
 import Foundation
 
-// Example usage of HERE EVSearchEngine for querying detailed EV charging location information. Requires an additional EVCP3 license (not included with standard Navigation license).
+// Example usage of HERE EVSearchEngine for querying detailed EV charging location information.
+// Requires an additional EVCP3 license that is not included with a standard Navigate license.
 class EVSearchExample {
     private let searchEngine: EVSearchEngine?
 
@@ -37,17 +38,43 @@ class EVSearchExample {
         return searchEngine
     }
 
-    // Overload to support passing placeIds to EVSearchExample
+    // This standalone EVCP3 lookup is useful only when the caller already has HERE Place IDs.
+    // EVRoutingExample uses SearchEngine.setEVInterface(...) for generic EV enrichment and this
+    // direct lookup when it needs feature-gated EVCP3 fields such as tariffs and EVSE details.
     func runSearchExample(placeIds: [String]) {
+        runSearchExample(placeIds: placeIds, completion: nil)
+    }
+
+    func runSearchExample(placeIds: [String],
+                          completion: ((EVSearchError?, [EVChargingLocation]?) -> Void)?) {
         guard let searchEngine = searchEngine, !placeIds.isEmpty else {
             print("EVSearchEngine or placeIds is nil/empty")
             return
         }
+
+        var options = EVSearchOptions()
+        options.additionalFeatures = [
+            .evses,
+            .tariffs,
+            .connectorGroups,
+            .emsps,
+            .locationInfo,
+            .truckRestrictions
+        ]
+        searchEngine.setOptions(options: options)
+
         searchEngine.search(ids: placeIds) { error, results in
+            completion?(error, results)
+
             if let searchError = error, searchError != .noResultsFound {
                 print("EV search failed: \(searchError)")
                 return
             }
+
+            if error == .noResultsFound {
+                print("EV search completed: No results found.")
+            }
+
             guard let results = results else { return }
             for location in results {
                 self.printLocation(location)
@@ -66,7 +93,9 @@ class EVSearchExample {
                 print(" - Connector: \(connector.id ?? "-")")
             }
         }
-        for tariff in location.tariffs {
+            let tariffs = location.tariffs
+            print("Tariff count: \(tariffs.count) (requires tariffs plus evses or connectorGroups in EVSearchOptions)")
+            for tariff in tariffs {
             print("Tariff: \(tariff.name ?? "-")")
         }
     }

@@ -37,6 +37,7 @@ import com.here.sdk.core.errors.InstantiationErrorException;
 import com.here.sdk.navigation.EventText;
 import com.here.sdk.navigation.EventTextListener;
 import com.here.sdk.navigation.EventTextOptions;
+import com.here.sdk.navigation.DestinationReachedListener;
 import com.here.sdk.navigation.LocationSimulator;
 import com.here.sdk.navigation.LocationSimulatorOptions;
 import com.here.sdk.navigation.ManeuverNotificationOptions;
@@ -214,6 +215,16 @@ public class MainActivity extends AppCompatActivity {
                     spatialAudioExample.synthesizeStringToAudioFile(eventText.text, (float) eventText.spatialNotificationDetails.initialAzimuthInDegrees, eventText.spatialNotificationDetails.audioCuePanning, MainActivity.this);
                 } else {
                     // TTS Speak mono
+                }
+            }
+        });
+
+        visualNavigator.setDestinationReachedListener(new DestinationReachedListener() {
+            @Override
+            public void onDestinationReached() {
+                Log.d(TAG, "Destination reached.");
+                if (locationSimulator != null) {
+                    locationSimulator.stop();
                 }
             }
         });

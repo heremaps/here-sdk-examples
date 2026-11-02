@@ -20,6 +20,7 @@
 package com.here.search;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -71,6 +72,7 @@ public class SearchExample {
     private final MapCamera camera;
     private final List<MapMarker> mapMarkerList = new ArrayList<>();
     private SearchEngine searchEngine;
+    private MapMarker selectedMapMarker;
 
     public SearchExample(Context context, MapView mapView) {
         this.context = context;
@@ -195,6 +197,17 @@ public class SearchExample {
                     return;
                 }
                 MapMarker topmostMapMarker = mapMarkerList.get(0);
+                // Pick results are not guaranteed to be sorted by draw order when markers overlap.
+                // If multiple markers are picked, this example highlights the one with the highest draw order.
+                // Zoom in to separate nearby markers before tapping.
+                if (mapMarkerList.size() > 1) {
+                    for (MapMarker marker : mapMarkerList) {
+                        if (marker.getDrawOrder() > topmostMapMarker.getDrawOrder()) {
+                            topmostMapMarker = marker;
+                        }
+                    }
+                }
+                highlightMarker(topmostMapMarker);
                 Metadata metadata = topmostMapMarker.getMetadata();
                 if (metadata != null) {
                     CustomMetadataValue customMetadataValue = metadata.getCustomValue("key_search_result");
@@ -202,14 +215,17 @@ public class SearchExample {
                         SearchResultMetadata searchResultMetadata = (SearchResultMetadata) customMetadataValue;
                         String title = searchResultMetadata.searchResult.getTitle();
                         String vicinity = searchResultMetadata.searchResult.getAddress().addressText;
-                        showDialog("Picked Search Result", title + ". Vicinity: " + vicinity);
+                        showDialog("Picked Search Result",
+                                title + ". Vicinity: " + vicinity,
+                                dialogInterface -> cancelHighlightMarker());
                         return;
                     }
                 }
                 showDialog("Picked Map Marker",
                         "Geographic coordinates: " +
                                 topmostMapMarker.getCoordinates().latitude + ", " +
-                                topmostMapMarker.getCoordinates().longitude);
+                                topmostMapMarker.getCoordinates().longitude,
+                        dialogInterface -> cancelHighlightMarker());
 
             }
         });
@@ -397,6 +413,10 @@ public class SearchExample {
     private void addPoiMapMarker(GeoCoordinates geoCoordinates, Metadata metadata) {
         MapMarker mapMarker = createPoiMapMarker(geoCoordinates);
         mapMarker.setMetadata(metadata);
+        // Increase the draw order for each search result so later markers are drawn on top.
+        // This simple approach is used for later highlighting a picked marker by changing its image.
+        // Use MapMarkerCluster for dense or overlapping search results.
+        mapMarker.setDrawOrder(mapMarkerList.size());
         mapView.getMapScene().addMapMarker(mapMarker);
         mapMarkerList.add(mapMarker);
     }
@@ -404,6 +424,20 @@ public class SearchExample {
     private MapMarker createPoiMapMarker(GeoCoordinates geoCoordinates) {
         MapImage mapImage = MapImageFactory.fromResource(context.getResources(), R.drawable.poi);
         return new MapMarker(geoCoordinates, mapImage, new Anchor2D(0.5F, 1));
+    }
+
+    private void highlightMarker(MapMarker marker) {
+        MapImage selectedMarkerImage = MapImageFactory.fromResource(context.getResources(), R.drawable.poi_highlight);
+        marker.setImage(selectedMarkerImage);
+        selectedMapMarker = marker;
+    }
+
+    private void cancelHighlightMarker() {
+        if (selectedMapMarker != null) {
+            MapImage normalMarkerImage = MapImageFactory.fromResource(context.getResources(), R.drawable.poi);
+            selectedMapMarker.setImage(normalMarkerImage);
+            selectedMapMarker = null;
+        }
     }
 
     private GeoCoordinates getMapViewCenter() {
@@ -435,10 +469,19 @@ public class SearchExample {
     }
 
     private void showDialog(String title, String message) {
+        showDialog(title, message, null);
+    }
+
+    private void showDialog(String title, String message, DialogInterface.OnDismissListener onDismissListener) {
         AlertDialog.Builder builder =
                 new AlertDialog.Builder(context);
         builder.setTitle(title);
         builder.setMessage(message);
-        builder.show();
+
+        AlertDialog dialog = builder.create();
+        if (onDismissListener != null) {
+            dialog.setOnDismissListener(onDismissListener);
+        }
+        dialog.show();
     }
 }

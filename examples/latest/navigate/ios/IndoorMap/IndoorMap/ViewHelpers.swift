@@ -26,8 +26,87 @@ import SwiftUI
 /// to a SwiftUI view. The map view is created in the ContentView and bound here.
 struct WrappedMapView: UIViewRepresentable {
     @Binding var mapView: MapView
-    func makeUIView(context: Context) -> MapView { return mapView }
+    func makeUIView(context: Context) -> MapView {
+        #if targetEnvironment(simulator)
+        context.coordinator.installTrackpadRecognizers(on: mapView)
+        #endif
+        return mapView
+    }
     func updateUIView(_ mapView: MapView, context: Context) { }
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
+    final class Coordinator: NSObject, UIGestureRecognizerDelegate {
+        #if targetEnvironment(simulator)
+        private weak var mapView: MapView?
+        private var lastScale: CGFloat = 1.0
+        private var lastRotation: CGFloat = 0.0
+
+        /// Xcode 27 Device Hub can no longer send a two-finger touch to the simulator, but it forwards
+        /// Mac trackpad pinch and rotate gestures as transform events. A UIPinchGestureRecognizer and a
+        /// UIRotationGestureRecognizer receive them, so they are used to zoom and rotate the map.
+        /// Only needed (and only compiled) for simulator builds.
+        func installTrackpadRecognizers(on mapView: MapView) {
+            guard self.mapView == nil else { return }
+            self.mapView = mapView
+            let pinch = UIPinchGestureRecognizer(target: self, action: #selector(handlePinch(_:)))
+            pinch.delegate = self
+            mapView.addGestureRecognizer(pinch)
+
+            let rotation = UIRotationGestureRecognizer(target: self, action: #selector(handleRotation(_:)))
+            rotation.delegate = self
+            mapView.addGestureRecognizer(rotation)
+        }
+
+        /// The HERE SDK expects the camera origin in pixels, while gesture recognizers report points.
+        /// Without converting, the zoom/rotation origin is off and the map drifts away from the touch point.
+        private func pixelPoint(_ point: CGPoint, in view: UIView) -> Point2D {
+            let scale = Double(view.contentScaleFactor)
+            return Point2D(x: Double(point.x) * scale, y: Double(point.y) * scale)
+        }
+
+        @objc private func handleRotation(_ recognizer: UIRotationGestureRecognizer) {
+            guard let mapView = mapView else { return }
+            switch recognizer.state {
+            case .began:
+                lastRotation = 0.0
+            case .changed:
+                // The recognizer reports a cumulative rotation in radians (clockwise is positive),
+                // so apply only the change since the last event.
+                let deltaDegrees = Double(recognizer.rotation - lastRotation) * 180.0 / Double.pi
+                lastRotation = recognizer.rotation
+                let location = recognizer.location(in: mapView)
+                // Increasing the camera bearing turns the map counter-clockwise, so negate the delta
+                // to make the map follow the fingers.
+                mapView.camera.orbitBy(GeoOrientationUpdate(bearing: -deltaDegrees, tilt: 0),
+                                       around: pixelPoint(location, in: mapView))
+            default:
+                break
+            }
+        }
+
+        @objc private func handlePinch(_ recognizer: UIPinchGestureRecognizer) {
+            guard let mapView = mapView else { return }
+            switch recognizer.state {
+            case .began:
+                lastScale = 1.0
+            case .changed:
+                // The recognizer reports a cumulative scale, so apply only the change since the last event.
+                guard recognizer.scale > 0 else { return }
+                let delta = recognizer.scale / lastScale
+                lastScale = recognizer.scale
+                let location = recognizer.location(in: mapView)
+                mapView.camera.zoomBy(Double(delta), around: pixelPoint(location, in: mapView))
+            default:
+                break
+            }
+        }
+
+        func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer,
+                               shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer) -> Bool {
+            return true
+        }
+        #endif
+    }
 }
 
 // MARK: - VenueLoadingSpinner

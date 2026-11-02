@@ -17,6 +17,10 @@
  * License-Filename: LICENSE
  */
 
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -141,6 +145,36 @@ class _IndoorMapScreenState extends State<IndoorMapScreen> {
   // ---------------------------------------------------------------------------
   // Map lifecycle
   // ---------------------------------------------------------------------------
+
+  double _lastTrackpadScale = 1.0;
+  double _lastTrackpadRotation = 0.0;
+
+  /// Trackpad pinch and rotate are forwarded to the map on iOS only. The iOS map view reads raw touches
+  /// and never sees the trackpad gestures that the Xcode 27 Device Hub sends. Other platforms keep the
+  /// map's own gesture handling, so forwarding there could zoom or rotate the map twice.
+  bool get _isTrackpadGestureForwardingEnabled => !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
+
+  /// Trackpad pinch and rotate. The event scale and rotation are cumulative, so apply only the change
+  /// since the last event.
+  void _onPointerPanZoomUpdate(PointerPanZoomUpdateEvent event) {
+    final HereMapController? controller = _mapController;
+    if (controller == null) return;
+    final double dpr = MediaQuery.of(context).devicePixelRatio;
+    final Point2D origin = Point2D(event.localPosition.dx * dpr, event.localPosition.dy * dpr);
+
+    if (event.scale > 0) {
+      controller.camera.zoomBy(event.scale / _lastTrackpadScale, origin);
+      _lastTrackpadScale = event.scale;
+    }
+
+    // Rotation is in radians (clockwise is positive). Increasing the camera bearing turns the map
+    // counter-clockwise, so negate the delta to make the map follow the fingers.
+    final double deltaDegrees = (event.rotation - _lastTrackpadRotation) * 180.0 / math.pi;
+    _lastTrackpadRotation = event.rotation;
+    if (deltaDegrees != 0) {
+      controller.camera.orbitByWithGeoOrientation(GeoOrientationUpdate(-deltaDegrees, 0), origin);
+    }
+  }
 
   void _onMapCreated(HereMapController controller) {
     _mapController = controller;
@@ -505,7 +539,20 @@ class _IndoorMapScreenState extends State<IndoorMapScreen> {
           child: Stack(
             children: <Widget>[
               // HERE Map
-              HereMap(onMapCreated: _onMapCreated, mode: NativeViewMode.hybridComposition),
+              // The Listener forwards trackpad pinch and rotate events (PointerPanZoom) to the map camera. This is
+              // needed for the iOS Simulator in Xcode 27, which no longer supports two-finger touch emulation but
+              // sends Mac trackpad pinch and rotate gestures instead. The callbacks are only set on iOS.
+              Listener(
+                behavior: HitTestBehavior.translucent,
+                onPointerPanZoomStart: _isTrackpadGestureForwardingEnabled
+                    ? (_) {
+                        _lastTrackpadScale = 1.0;
+                        _lastTrackpadRotation = 0.0;
+                      }
+                    : null,
+                onPointerPanZoomUpdate: _isTrackpadGestureForwardingEnabled ? _onPointerPanZoomUpdate : null,
+                child: HereMap(onMapCreated: _onMapCreated, mode: NativeViewMode.hybridComposition),
+              ),
 
               // Loading overlay (while venue list loads or venue is being placed)
               if ((isVenueLoading || (!isVenueListAvailable) || isRouteCalculating) && !isAuthenticationFailed)

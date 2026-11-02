@@ -28,6 +28,7 @@ import com.here.sdk.core.errors.InstantiationErrorException
 import com.here.sdk.electronichorizon.ElectronicHorizon
 import com.here.sdk.electronichorizon.ElectronicHorizonDataLoadedStatus
 import com.here.sdk.electronichorizon.ElectronicHorizonDataLoader
+import com.here.sdk.electronichorizon.ElectronicHorizonDataLoaderOptions
 import com.here.sdk.electronichorizon.ElectronicHorizonDataLoaderResult
 import com.here.sdk.electronichorizon.ElectronicHorizonDataLoaderStatusListener
 import com.here.sdk.electronichorizon.ElectronicHorizonEngine
@@ -71,6 +72,9 @@ class ElectronicHorizonHandler(private val mapView: MapView) {
 
     private var electronicHorizon: ElectronicHorizonEngine? = null
     private val electronicHorizonDataLoader: ElectronicHorizonDataLoader
+    // Keep a strong reference to the listener while updates are needed.
+    // ElectronicHorizonEngine.addElectronicHorizonListener(...) supports weak listener registration.
+    // This stored instance is the one that gets registered in start() and removed again in stop().
     private var electronicHorizonListener: ElectronicHorizonListener
     private var electronicHorizonDataLoaderStatusListener: ElectronicHorizonDataLoaderStatusListener
 
@@ -101,11 +105,16 @@ class ElectronicHorizonHandler(private val mapView: MapView) {
         // can reduce data usage, but requires more storage memory in the cache.
         // A small cache can replace previously loaded segments too early.
         val segmentDataCacheSize = 1000
+        val dataLoaderOptions = ElectronicHorizonDataLoaderOptions(
+            segmentDataLoaderOptions,
+            segmentDataCacheSize,
+            0,
+            0
+        )
         try {
             electronicHorizonDataLoader = ElectronicHorizonDataLoader(
                 this.sDKNativeEngine,
-                segmentDataLoaderOptions,
-                segmentDataCacheSize
+                dataLoaderOptions
             )
         } catch (e: InstantiationErrorException) {
             throw RuntimeException("ElectronicHorizonDataLoader is not initialized: " + e.error.name)
@@ -155,6 +164,7 @@ class ElectronicHorizonHandler(private val mapView: MapView) {
 
         // Create and add new listeners.
         electronicHorizonListener = createElectronicHorizonListener()
+        // Keep the stored listener instance alive while callbacks are needed.
         electronicHorizon?.addElectronicHorizonListener(electronicHorizonListener)
 
         electronicHorizonDataLoaderStatusListener =
